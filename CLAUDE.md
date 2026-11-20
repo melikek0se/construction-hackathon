@@ -13,7 +13,7 @@ Deliverables are a live demo and a pitch. Speed and a convincing demo matter mor
 Read when relevant:
 
 - `docs/01-challenge-analysis.md` — brief, priorities, check catalogue, pitch skeleton
-- `docs/02-dataset.md` — the six projects in `data/raw/`, format notes, gotchas (read before touching a parser)
+- `docs/02-dataset.md` — the six projects in `dataset/`, format notes, gotchas (read before touching a parser)
 - `docs/03-domain-primer.md` — glossary, how unit prices are built, VOB rules, red-flag wording, tooling
 - `docs/04-field-insights.md` — a civil engineer's input and what it means for the design
 - `docs/05-voice-agent.md` — supplier-call voice agent (ElevenLabs): concept, API plan, legal
@@ -52,7 +52,7 @@ Tests only where they protect the demo (parsers).
 - Anonymisation tokens like `[FIRMA_044]`, `[ORT_016]`, `TELEFON_084` also replaced product names and standards.
   Checks must ignore them; tell the LLM about them.
 - Units are spelled many ways (`St`/`Stk.`, `m3`/`m³`, `h`/`Std.`). Normalise first.
-- `data/raw/` is read-only input. Derived files go to `data/processed/` (git-ignored).
+- `dataset/` is read-only input (subfolders by format: GAEB XML, GAEB 90, PDF building project, PDF civil, item lists). Derived files go to `data/processed/` (git-ignored).
 
 ## Commands
 

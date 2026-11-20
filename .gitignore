@@ -20,7 +20,7 @@ node_modules/
 .next/
 dist/
 
-# Data: raw dataset is extracted to data/raw/ (committed); the original zip is redundant
+# Data: the dataset lives in dataset/ (committed); the original zip is redundant
 *.zip
 data/processed/
 data/cache/

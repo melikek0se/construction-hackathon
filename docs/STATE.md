@@ -11,7 +11,7 @@ Repository prepared; no application code yet. Next step is the team agreeing on 
 
 ## Done
 
-- Dataset extracted to `data/raw/` and analysed → `02-dataset.md`
+- Dataset (`dataset/`) analysed → `02-dataset.md`
 - `scripts/inspect_dataset.py`: inventory of all GAEB files, totals of the three priced bids verified
   (`EP × Qty = GP` holds for all 720 priced items)
 - Challenge analysis, check catalogue, pitch skeleton → `01-challenge-analysis.md`

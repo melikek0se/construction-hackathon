@@ -1,6 +1,7 @@
 # Dataset
 
-Source: `Challenge A Dataset` zip from the organisers, extracted flat into `data/raw/` (44 files, ~25 MB).
+Source: `Challenge A Dataset` zip from the organisers, committed under `dataset/` (44 files, ~25 MB), sorted by format:
+`01_gaeb_xml/`, `02_gaeb_90/`, `03_pdf_hochbau_projekt/` (project F), `04_pdf_tiefbau_sonstige/`, `05_positionslisten/`.
 Reproduce the numbers below with `python3 scripts/inspect_dataset.py`.
 
 Everything is anonymised with placeholder tokens: `[FIRMA_044]`, `[PERSON_132]`, `[ORT_024]`, `[ADRESSE_016]`,

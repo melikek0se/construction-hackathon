@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Inventory of the challenge dataset (stdlib only).
 
-    python3 scripts/inspect_dataset.py [data/raw]
+    python3 scripts/inspect_dataset.py [dataset]
 
 Prints, per GAEB file: format, item count, units, and (for priced D84/D86
 files) the bid total plus a GP == EP * Qty self-check. This is a throwaway
@@ -69,13 +69,14 @@ def inspect_gaeb90(path):
 
 
 def main():
-    d = sys.argv[1] if len(sys.argv) > 1 else "data/raw"
-    for f in sorted(os.listdir(d)):
-        ext = f.rsplit(".", 1)[-1].lower()
+    d = sys.argv[1] if len(sys.argv) > 1 else "dataset"
+    paths = sorted(os.path.join(root, f) for root, _, files in os.walk(d) for f in files)
+    for path in paths:
+        ext = path.rsplit(".", 1)[-1].lower()
         if ext == "x83":
-            print(f); inspect_xml(os.path.join(d, f))
+            print(path); inspect_xml(path)
         elif ext in ("d83", "d84", "d86"):
-            print(f); inspect_gaeb90(os.path.join(d, f))
+            print(path); inspect_gaeb90(path)
 
 
 if __name__ == "__main__":

@@ -46,8 +46,9 @@ Status: proposed · 2026-11-20
 
 The brief and the pitch are in English; the data is German. Team conversation can be in any language.
 
-## D-008 — Raw dataset is committed under `data/raw/`
-Status: proposed · 2026-11-20
+## D-008 — Raw dataset is committed under `dataset/`
+Status: decided · 2026-11-20
 
 It is anonymised, 25 MB, and every teammate needs it. The original zip is redundant.
+We use the folder layout Utku committed (sorted by format); the flat `data/raw/` copy was removed.
 Revisit if: the organisers restrict redistribution and the repository is public (Q9).
