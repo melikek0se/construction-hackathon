@@ -1,0 +1,35 @@
+Challenge A: AI-Powered Cost Estimation and BoQ Analysis
+
+Working Title
+"AI Estimation and Bidding Assistant for Bills of Quantities"
+
+Problem Statement
+Bills of quantities (BoQs) often contain thousands of line items, multiple cost groups and cross-trade dependencies. Companies lack the time and staff to review them in detail, identify risks and learn from past projects. Typos, calculation errors and overlooked change order potential can have major financial consequences.
+
+Challenge Objective
+Build a prototype for intelligent BoQ analysis:
+Import and parse long BoQs (PDF, GAEB, Excel)
+Error detection (priority): missing items, unclear descriptions, contradictions, typos
+Risk assessment: flag imprecise scope descriptions and unusual quantities
+Detect change order potential and likely disputes during execution
+Optional: suggest unit prices or markups from historical project data
+
+Milestones
+BoQ parsing and structured data extraction
+Error detection and plausibility checks
+Risk scoring and change order detection
+Integration of historical project data (optional)
+What-if analyses (material prices, alternatives)
+
+Data
+Anonymized sample BoQs from various trades and project sizes (GAEB preferred)
+Optional: historical project data (planned vs. actual costs, change order summaries)
+Real-world examples of faulty BoQ items
+Unit price catalogs or benchmarks (if available)
+
+Deliverables
+Demo of a web app or assistant tool with upload and risk report
+Pitch from an estimator's perspective: How does the prototype change the bidding process?
+
+Dataset with example BoQs:
+https://drive.google.com/drive/folders/1wS4UMVghBL8T5opmZ2UBmBu0kr6U8zIB?usp=sharing 
