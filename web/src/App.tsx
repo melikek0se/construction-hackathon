@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { analyzeSample, analyzeUpload, listSamples } from "./api";
+import { analyzeSample, analyzeUpload, listSamples, runLlmReview } from "./api";
 import type { Analysis, Finding, Item, Sample, Severity } from "./api";
 
 const SEVERITIES: Severity[] = ["high", "warn", "info"];
@@ -77,7 +77,7 @@ export default function App() {
         </p>
       )}
       {analysis ? (
-        <Workspace key={analysis.boq.file} analysis={analysis} />
+        <Workspace key={analysis.id} analysis={analysis} />
       ) : (
         <Start samples={samples} onFile={upload} onSample={openSample} busy={busy !== ""} />
       )}
@@ -163,7 +163,26 @@ function Start(props: { samples: Sample[]; onFile: (f: File) => void; onSample: 
 }
 
 function Workspace({ analysis }: { analysis: Analysis }) {
-  const { boq, findings } = analysis;
+  const { boq } = analysis;
+  const [aiFindings, setAiFindings] = useState<Finding[]>([]);
+  const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
+  const [aiError, setAiError] = useState("");
+  const findings = useMemo(() => {
+    const rank = { high: 0, warn: 1, info: 2 };
+    return [...analysis.findings, ...aiFindings].sort((a, b) => rank[a.severity] - rank[b.severity]);
+  }, [analysis.findings, aiFindings]);
+
+  async function review() {
+    setAi("running");
+    setAiError("");
+    try {
+      setAiFindings((await runLlmReview(analysis.id)).findings);
+      setAi("done");
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : String(e));
+      setAi("idle");
+    }
+  }
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [shown, setShown] = useState<Set<Severity>>(new Set(SEVERITIES));
@@ -213,8 +232,14 @@ function Workspace({ analysis }: { analysis: Analysis }) {
         <h1>{boq.name || boq.file}</h1>
         <p>
           {PHASE_LABEL[boq.phase] ?? "LV"} with {boq.items.length} items
-          {priced ? `, ${money.format(total)} EUR net` : ", no prices yet"}. {findings.length} findings.
+          {priced ? `, ${money.format(total)} EUR net` : ", no prices yet"}. {findings.length} findings
+          {ai === "done" ? `, ${aiFindings.length} of them from the AI review.` : " from the rule checks."}
         </p>
+        {aiError && (
+          <p className="error inline" role="alert">
+            {aiError}
+          </p>
+        )}
         <div className="filters">
           {SEVERITIES.map((s) => (
             <button key={s} className={`chip ${s}`} aria-pressed={shown.has(s)} onClick={() => toggle(s)}>
@@ -222,6 +247,9 @@ function Workspace({ analysis }: { analysis: Analysis }) {
               {SEVERITY_LABEL[s]} <b>{counts[s]}</b>
             </button>
           ))}
+          <button className="chip ai" onClick={review} disabled={ai !== "idle"}>
+            {ai === "idle" ? "Run AI review" : ai === "running" ? "AI is reading the LV…" : "AI review done"}
+          </button>
           <label className="check">
             <input type="checkbox" checked={flaggedOnly} onChange={(e) => setFlaggedOnly(e.target.checked)} />
             Only items with findings
@@ -330,7 +358,10 @@ function FindingList({ findings, onOpen }: { findings: Finding[]; onOpen: (oz: s
             <button onClick={() => f.item_oz && onOpen(f.item_oz)}>
               <span className={`mark ${f.severity}`} />
               <span className="finding-oz">{f.item_oz ?? "LV"}</span>
-              <span className="finding-title">{f.title || f.check_id}</span>
+              <span className="finding-title">
+                {f.title || f.check_id}
+                {f.origin === "llm" && <span className="origin">AI</span>}
+              </span>
             </button>
           </li>
         ))}
@@ -362,7 +393,10 @@ function ItemDetail(props: { item: Item; findings: Finding[]; onBack: () => void
         <article key={i} className={`finding ${f.severity}`}>
           <h3>
             <span className={`mark ${f.severity}`} />
-            {f.title || f.check_id}
+            <span>
+              {f.title || f.check_id}
+              {f.origin === "llm" && <span className="origin">AI</span>}
+            </span>
           </h3>
           <blockquote>{f.evidence}</blockquote>
           <p>{f.explanation}</p>

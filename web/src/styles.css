@@ -267,6 +267,32 @@ p {
   font-variant-numeric: tabular-nums;
 }
 
+.chip.ai {
+  border-color: var(--blue);
+  color: var(--blue);
+  font-weight: 500;
+}
+
+.chip.ai:disabled {
+  cursor: default;
+  border-color: #9fb0b3;
+  color: var(--ink-soft);
+}
+
+.origin {
+  margin-left: 8px;
+  padding: 0 5px;
+  border: 1px solid var(--blue);
+  border-radius: 2px;
+  color: var(--blue);
+  font: 500 12px var(--table);
+  vertical-align: 1px;
+}
+
+.error.inline {
+  margin: 10px 0 0;
+}
+
 .check {
   display: inline-flex;
   align-items: center;

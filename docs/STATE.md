@@ -8,7 +8,7 @@ Last updated: 2026-11-20 (evening, hackathon day 1)
 
 Upload → parse → rule findings → table works end to end for GAEB files: Python package `src/boq` (parsers, model,
 rule checks, missing-item check, CLI, FastAPI) and a React screen in `web/`. GAEB XML, GAEB 90 and PDF are
-parsed. No LLM checks, no prices or report export yet.
+parsed, and the LLM checks run against the Claude API. No prices or report export yet.
 
 ## Done
 
@@ -42,7 +42,21 @@ parsed. No LLM checks, no prices or report export yet.
   100 % on offer C and 99.2 % on bid B (the two differences are real, see `02-dataset.md`), text 96–99 %.
   All 34 PDFs parse; the 27 building-trade LVs of project F give 1,104 items (no ground truth for those).
 
+- LLM checks (`src/boq/checks/llm.py`, Claude API): one request per title (large titles split, at most 60
+  items each), shared context (preliminary remarks + index of all items) prompt-cached, JSON-schema output,
+  answers cached on disk in `data/cache/llm/`. Six check types: unclear scope, contradiction, missing item, typo,
+  risk shift, quantity. A finding is kept only if its quote is found verbatim in the item text or the remarks.
+  Wired into the API (`POST /api/analyses/{id}/llm`), the UI ("Run AI review") and the CLI (`--llm`).
+  Offline tests in `tests/test_llm.py` (request building, evidence filter, cache, missing credentials).
+  Live runs with `claude-opus-5-5`, effort medium (2026-11-20): project D (50 items) 4 requests, 53 s, 12 findings;
+  project C PDF (274 items) 9 requests, 90 s, 36 findings, about 0.90 USD (81k input, 96k cache-read, 12k
+  cache-write, 25k output tokens). No finding was dropped by the evidence filter in either run. The findings
+  have been read but not verified one by one against the LVs.
+
 ## In progress
+
+- LLM findings: verify a sample against the LV text, tune the prompt where they are weak, and decide model and
+  effort by cost per LV.
 
 - nothing
 
@@ -52,7 +66,7 @@ parsed. No LLM checks, no prices or report export yet.
 2. Risk report export and bidder-question list from the findings
 3. Companion rules for building trades (project F parses now; the rules still only know civil work)
 4. Money at stake for findings on unpriced LVs (needs the price history)
-5. LLM checks per title
+5. Verification and prompt tuning of the LLM findings (see In progress)
 6. Risk score, change-order classification, report
 7. Price suggestion + what-if · RFQ (email, then voice) — in parallel if people allow
 

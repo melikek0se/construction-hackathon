@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "BoQ (Leistungsverzeichnis) parsing and rule checks"
 requires-python = ">=3.12,<3.14"
 dependencies = [
+    "anthropic>=2.12.0",
     "fastapi>=0.165.0",
     "pydantic>=2.7",
     "pymupdf<1.26",  # newer releases need onnxruntime, which has no wheel for Intel Macs

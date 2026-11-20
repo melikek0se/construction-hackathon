@@ -4,11 +4,14 @@
     uv run boq FILE --json > data/processed/findings.json
 """
 import argparse
+import asyncio
 import collections
 import json
+import sys
 import textwrap
 
 from boq.checks import run_checks
+from boq.env import load_env
 from boq.parsers import parse_file
 
 
@@ -17,11 +20,24 @@ def main(argv=None):
     ap.add_argument("file")
     ap.add_argument("--json", action="store_true", help="print items and findings as JSON")
     ap.add_argument("--min-severity", choices=["info", "warn", "high"], default="info")
+    ap.add_argument("--llm", action="store_true", help="also run the LLM checks (needs ANTHROPIC_API_KEY)")
     args = ap.parse_args(argv)
 
     boq = parse_file(args.file)
     keep = {"info": {"info", "warn", "high"}, "warn": {"warn", "high"}, "high": {"high"}}[args.min_severity]
-    findings = [f for f in run_checks(boq) if f.severity in keep]
+    findings = run_checks(boq)
+    if args.llm:
+        from boq.checks import sort_findings
+        from boq.checks.llm import LLMUnavailable, run_llm_checks
+        load_env()
+        try:
+            llm_findings, stats = asyncio.run(run_llm_checks(boq, findings))
+        except LLMUnavailable as exc:
+            sys.exit(str(exc))
+        print(f"LLM review: {stats['requests']} requests, {stats['kept']} findings kept, "
+              f"{stats['dropped']} dropped for missing evidence", file=sys.stderr)
+        findings = sort_findings(findings + llm_findings)
+    findings = [f for f in findings if f.severity in keep]
 
     if args.json:
         print(json.dumps({"boq": boq.model_dump(mode="json"),

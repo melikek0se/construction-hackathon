@@ -26,9 +26,11 @@ export interface Finding {
   explanation: string;
   action: "ask_client" | "add_surcharge" | "get_quote" | "note_for_claims" | "fix_typo";
   money_at_stake: string | null;
+  origin: "rule" | "llm";
 }
 
 export interface Analysis {
+  id: string;
   boq: { name: string; file: string; format: string; phase: string; items: Item[]; remarks: unknown[] };
   findings: Finding[];
 }
@@ -59,6 +61,10 @@ export async function analyzeUpload(file: File): Promise<Analysis> {
 
 export async function analyzeSample(path: string): Promise<Analysis> {
   return read(await fetch(`/api/samples/analyze?path=${encodeURIComponent(path)}`));
+}
+
+export async function runLlmReview(id: string): Promise<{ findings: Finding[] }> {
+  return read(await fetch(`/api/analyses/${id}/llm`, { method: "POST" }));
 }
 
 export async function listSamples(): Promise<Sample[]> {

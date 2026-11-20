@@ -26,6 +26,13 @@ def test_samples_are_listed_and_analysed():
     assert len(body["boq"]["items"]) == 274
 
 
+def test_uploaded_pdf_keeps_its_name():
+    pdf = D.parent.parent / "04_pdf_tiefbau_sonstige" / "LV-Schachtbauwerk.pdf"
+    with open(pdf, "rb") as fh:
+        body = client.post("/api/analyze", files={"file": (pdf.name, fh)}).json()
+    assert body["boq"]["name"] == "LV-Schachtbauwerk"  # not "upload": the name is part of the LLM cache key
+
+
 def test_errors_say_what_to_do():
     r = client.post("/api/analyze", files={"file": ("lv.xlsx", b"PK")})
     assert r.status_code == 415 and "GAEB" in r.json()["detail"]

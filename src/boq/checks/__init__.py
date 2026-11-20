@@ -6,6 +6,9 @@ from boq.model import BoQ, Finding
 _RANK = {"high": 0, "warn": 1, "info": 2}
 
 
-def run_checks(boq: BoQ) -> list[Finding]:
-    findings = check_items(boq) + check_companions(boq)
+def sort_findings(findings: list[Finding]) -> list[Finding]:
     return sorted(findings, key=lambda f: (_RANK[f.severity], -(f.money_at_stake or 0)))
+
+
+def run_checks(boq: BoQ) -> list[Finding]:
+    return sort_findings(check_items(boq) + check_companions(boq))

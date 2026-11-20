@@ -79,3 +79,13 @@ PyMuPDF is pinned below 1.26 (newer releases do not install on Intel Macs) and i
 hackathon, to be replaced or licensed for a product.
 Revisit if: a jury PDF is scanned or has a layout the rules miss — then add an LLM or a layout model as a
 fallback and score it with the same script before trusting it.
+
+## D-012 — LLM findings must quote the LV; unquoted findings are dropped in code
+Status: proposed · 2026-11-20
+
+The model returns structured findings with a verbatim German quote. `llm._validate` discards any finding whose
+quote is not in the item text or the preliminary remarks, or whose item number does not exist. This enforces "no
+evidence, no finding" (CLAUDE.md) mechanically instead of by prompt. Model `claude-opus-5-5` at effort `medium`
+for all requests (`BOQ_LLM_MODEL`, `BOQ_LLM_EFFORT` to change); the two-model split of `06-architecture.md` is
+not built — decide it from measured cost and quality after the first live runs.
+Revisit if: too many good findings are dropped because the model paraphrases — then loosen the match, not the rule.
