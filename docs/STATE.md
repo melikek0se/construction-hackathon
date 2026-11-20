@@ -9,7 +9,8 @@ Last updated: 2026-11-20 (evening, hackathon day 1)
 Upload → parse → rule findings → table works end to end for GAEB files: Python package `src/boq` (parsers, model,
 rule checks, missing-item check, CLI, FastAPI) and a React screen in `web/`. GAEB XML, GAEB 90 and PDF are
 parsed, the LLM checks run against the Claude API, and the findings can be exported as a risk report and a
-list of bidder questions. No prices yet.
+list of bidder questions. Excel LVs are imported, unit prices are suggested from the three priced bids (with
+very low coverage, see below), and a what-if view varies the total of a priced LV.
 
 ## Done
 
@@ -73,9 +74,36 @@ list of bidder questions. No prices yet.
   Seen in the browser: the top of the report page and the two buttons. Not done: printing to PDF, a read of
   the 34 German questions by someone who writes Bieterfragen for a living.
 
+- Price suggestions (`src/boq/prices.py`, `GET /api/analyses/{id}/prices`, item sheet "Price from past bids",
+  report section, CLI `--prices`). History: the three priced bids (656 items after dropping token prices under
+  1 EUR). A price is suggested only from items with the same unit, the same head word and the same nominal
+  size, at TF-IDF similarity ≥ 0.62; looser matches are shown as references, lump sums never get a price.
+  Back-test `scripts/eval_prices.py`, each project priced from the other two: **5 of 656 items get a price**
+  (median error 23 %, all inside the band). On unseen LVs: D 1 of 50, E 4 of 296. Three unlike projects are too
+  little history; the code is ready for more. When the item itself is left out but its own project stays in the
+  history, 310 of 682 get a price at 6 % median error — the number to expect once similar projects are in.
+- What-if (`src/boq/whatif.py`, `POST /api/analyses/{id}/whatif`, view tab "What-if"): change unit prices or
+  quantities of the items in a section and/or containing a word, leave alternative / contingency items out;
+  returns new total, per-section and per-item differences. Works on priced files only. The files carry no
+  labour / material split, so a change applies to the whole unit price, and the view says so.
+- Excel import (`src/boq/parsers/excel.py`, .xlsx and .xls): finds the header row by the usual German column
+  names, reads titles, items, position types, prices. Tried on four public LV templates (11–13 sample items
+  each; a fifth, a calculation sheet, has no LV in it); tests build their own workbooks in those layouts.
+- Companion check: "wie vor, jedoch …" items inherit what the previous item does (fixed a false Stop on
+  project C, where the control cable is laid by a "wie vor" item).
+
 ## In progress
 
-- LLM findings: verify a sample against the LV text, tune the prompt where they are weak, and decide model and
+- LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against
+  the LV text, quantities and remarks by reading, not by an engineer:
+  - 24 hold up on the facts they state (e.g. 3.2.540 lump sum "in Regie gemäß Pos. 6.1.10", which is the survey
+    item; 4.1.10 three inner pipes vs 2 x da 50; 3.2.260 bolt grades reversed against the remarks; 3.2.110 twelve
+    restrained joints for 524 m; 1.1.80 and 2.2.10 work announced without an item; 3.2.460 SN 8 vs 10 kN/m²).
+  - 1 looks wrong: 4.1.250 (6 + 3 wall seals "do not match" 3 core drillings) — the seals equal the duct and
+    cable entries of 4.1.270–4.1.300 (2 + 4 and 1 + 2).
+  - 11 are judgement calls that need an estimator: 2.1.50, 2.1.10, 2.3.40, 2.3.100, 3.1.80, 3.2.530, 4.1.80,
+    4.1.260 (cable diameter), 4.1.60, 5.3.30, 7.1.10.
+  Still open: an engineer's read of those 11 and of the 34 German bidder questions; prompt tuning; model and
   effort by cost per LV.
 
 - nothing
@@ -94,7 +122,7 @@ list of bidder questions. No prices yet.
 - PDF parser limits: needs a text layer (no OCR); a short text is only separated from the long text where it is
   bold or sits alone on the OZ line (project D prints neither, so its short text is the first description line);
   "*** Wiederholungsbeschreibung" notes printed above an item are not linked to it; one percentage item of bid B
-  (10.1.1) is missed. No Excel import.
+  (10.1.1) is missed.
 - `R-DIM-MISMATCH` can misfire when the long text names a second part with its own DN (seen once: project F,
   LV 14b, pipe DN 100 through a sleeve DN 200).
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
@@ -103,5 +131,8 @@ list of bidder questions. No prices yet.
 - Demo machine: do not let it sleep. On 2026-11-20 two commands "hung" for minutes; `pmset -g log` showed the
   laptop asleep both times (lid closed 22:13–23:01, maintenance sleep 23:03–23:08) with an LLM request and a test
   run in flight. Not a code fault. Keep it on power with the lid open, or start the servers under `caffeinate -i`.
-- No benchmark price source; none is freely available.
+- No usable benchmark price source. Tried the South Tyrol reference price list for civil works 2021 (public
+  XLS, 8,091 priced German-language items): as a price source for the three German bids it matches 8 of 656
+  items with a median error of 106 % (labour at half the German billing rate, some fittings 3–9 times higher).
+  Not wired in. The file is in `data/external/` (git-ignored, licence not stated).
 - ElevenLabs: nothing configured; German speech recognition quality untested.

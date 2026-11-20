@@ -17,7 +17,9 @@ from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
+from boq.prices import load_history, suggest_prices
 from boq.report import build_report, render_html, render_questions
+from boq.whatif import Scenario, what_if
 
 load_env()
 
@@ -68,7 +70,7 @@ async def analyze_upload(file: UploadFile):
     suffix = Path(name).suffix.lower()
     if suffix not in SUPPORTED:
         raise HTTPException(415, f"{suffix or 'This file type'} is not supported. "
-                                 f"Upload a GAEB file or a PDF: {', '.join(sorted(SUPPORTED))}.")
+                                 f"Upload a GAEB file, a PDF or an Excel file: {', '.join(sorted(SUPPORTED))}.")
     data = await file.read(MAX_BYTES + 1)
     if len(data) > MAX_BYTES:
         raise HTTPException(413, "File is larger than 30 MB.")
@@ -107,11 +109,34 @@ async def llm_review(analysis_id: str):
     return {"findings": [f.model_dump(mode="json") for f in findings], "stats": stats}
 
 
-def _report(analysis_id: str) -> dict:
+def _analysis(analysis_id: str) -> tuple[BoQ, list[Finding]]:
     if analysis_id not in _ANALYSES:
         raise HTTPException(404, "This analysis is no longer in memory. Upload the file again.")
-    boq, rule_findings = _ANALYSES[analysis_id]
-    return build_report(boq, sort_findings(rule_findings + _LLM_FINDINGS.get(analysis_id, [])))
+    return _ANALYSES[analysis_id]
+
+
+def _prices(boq: BoQ) -> dict | None:
+    """Price suggestions from the priced bids in dataset/; None for an LV that has prices already."""
+    if any(i.total is not None for i in boq.items):
+        return None
+    return suggest_prices(boq, load_history(DATASET))
+
+
+def _report(analysis_id: str) -> dict:
+    boq, rule_findings = _analysis(analysis_id)
+    return build_report(boq, sort_findings(rule_findings + _LLM_FINDINGS.get(analysis_id, [])), _prices(boq))
+
+
+@app.get("/api/analyses/{analysis_id}/prices")
+def prices(analysis_id: str):
+    """Unit-price suggestions from past bids, with sources; `null` when the LV is priced."""
+    return _prices(_analysis(analysis_id)[0])
+
+
+@app.post("/api/analyses/{analysis_id}/whatif")
+def whatif(analysis_id: str, scenario: Scenario):
+    """Total of a priced LV under changed unit prices, changed quantities or dropped optional items."""
+    return what_if(_analysis(analysis_id)[0], scenario)
 
 
 @app.get("/api/analyses/{analysis_id}/report")

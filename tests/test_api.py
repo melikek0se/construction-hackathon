@@ -34,7 +34,7 @@ def test_uploaded_pdf_keeps_its_name():
 
 
 def test_errors_say_what_to_do():
-    r = client.post("/api/analyze", files={"file": ("lv.xlsx", b"PK")})
+    r = client.post("/api/analyze", files={"file": ("lv.docx", b"PK")})
     assert r.status_code == 415 and "GAEB" in r.json()["detail"]
     r = client.post("/api/analyze", files={"file": ("lv.pdf", b"%PDF-1.4 broken")})
     assert r.status_code == 422

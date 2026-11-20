@@ -15,8 +15,9 @@ def sizes(text: str) -> set[str]:
 
 def _words(label: str) -> set[str]:
     """Distinctive words of a label, used to pair items that carry no size."""
-    return {w for w in re.findall(r"[a-zäöüß]{6,}", label.lower())
-            if not re.match(r"liefer|verleg|einbau|montier|herstell", w)}
+    # cut to a stem, so that "Steuerkabels" and "Steuerkabel" are the same thing
+    return {w[:8] for w in re.findall(r"[a-zäöüß]{6,}", label.lower())
+            if not re.match(r"liefer|verleg|einbau|montier|herstell|jedoch", w)}
 
 
 def _quote(item: Item) -> str:
@@ -96,9 +97,32 @@ def _qty_finding(rule: CompanionRule, size: str, supplied: list[Item], installed
     )
 
 
+_WIE_VOR = re.compile(r"^\s*wie\s+vor\b", re.I)
+
+
+def _resolved(items: list[Item]) -> list[Item]:
+    """Items with "wie vor, jedoch …" labels spelled out.
+
+    "wie vor, jedoch Steuerkabel" after "Verlegen der PE-Rohre" is a laying item; its own label does not
+    say so. The label of the last fully described item is appended without its nominal sizes: "wie vor,
+    jedoch DN 250" after "… DN 300 verlegen" is DN 250 only, and a cable laid "wie vor" is not a da 50 duct.
+    """
+    out, base = [], ""
+    for item in items:
+        if not _WIE_VOR.match(item.label):
+            base = item.label
+            out.append(item)
+        elif base:
+            inherited = _SIZE.sub(" ", base)  # "jedoch" names another thing: never inherit the size
+            out.append(item.model_copy(update={"short_text": f"{item.label} (wie vor: {' '.join(inherited.split())})"}))
+        else:
+            out.append(item)
+    return out
+
+
 def check_companions(boq: BoQ, rules: list[CompanionRule] = RULES) -> list[Finding]:
     findings = []
-    items = [i for i in boq.items if i.label]
+    items = _resolved([i for i in boq.items if i.label])
     for rule in rules:
         triggers = [i for i in items if rule.triggers(i)]
         if not triggers:

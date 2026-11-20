@@ -7,7 +7,8 @@ from boq.parsers.gaeb_xml import parse_gaeb_xml
 
 GAEB_XML = {".x83", ".x84", ".x86"}
 GAEB_90 = {".d83", ".d84", ".d86"}
-SUPPORTED = GAEB_XML | GAEB_90 | {".pdf"}
+EXCEL = {".xlsx", ".xls"}
+SUPPORTED = GAEB_XML | GAEB_90 | EXCEL | {".pdf"}
 
 
 def parse_file(path: str) -> BoQ:
@@ -19,4 +20,7 @@ def parse_file(path: str) -> BoQ:
     if ext == ".pdf":
         from boq.parsers.pdf import parse_pdf  # PyMuPDF is only needed for PDFs
         return parse_pdf(path)
-    raise ValueError(f"Unsupported file type: {ext} (GAEB XML, GAEB 90 and PDF)")
+    if ext in EXCEL:
+        from boq.parsers.excel import parse_excel
+        return parse_excel(path)
+    raise ValueError(f"Unsupported file type: {ext} (GAEB XML, GAEB 90, PDF and Excel)")

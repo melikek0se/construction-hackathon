@@ -28,7 +28,7 @@ export interface Remark {
 export interface BoQ {
   name: string;
   file: string;
-  format: "gaeb_xml" | "gaeb_90" | "pdf";
+  format: "gaeb_xml" | "gaeb_90" | "pdf" | "excel";
   phase: string;
   items: Item[];
   remarks: Remark[];
@@ -54,13 +54,69 @@ export interface Analysis {
   findings: Finding[];
 }
 
+/** One similar item of a past bid that a price suggestion rests on. */
+export interface PriceMatch {
+  project: string;
+  source: string; // "award 15.03.2023"
+  date: string;
+  file: string;
+  item_oz: string;
+  label: string;
+  qty: number | null;
+  unit: string;
+  unit_price: number;
+  similarity: number;
+  same_size: boolean | null;
+}
+
+export interface PriceSuggestion {
+  item_oz: string;
+  unit_price: number | null; // null = no reliable price
+  low: number | null;
+  high: number | null;
+  confidence: "high" | "medium" | "low" | "none";
+  reason: string;
+  value: number | null;
+  matches: PriceMatch[];
+}
+
+export interface Prices {
+  history: { items: number; projects: [string, string, string][]; excluded_project: string | null };
+  items: number;
+  with_price: number;
+  estimate: { mid: number; low: number; high: number } | null;
+  suggestions: PriceSuggestion[];
+}
+
+/** One change of a what-if scenario: unit prices or quantities of the items in a section and/or with a word. */
+export interface Adjustment {
+  kind: "price" | "quantity";
+  percent: number;
+  section: string | null;
+  keyword: string;
+}
+
+export interface WhatIfResult {
+  priced: boolean; // false: the LV has no prices, the other fields are absent
+  before: number;
+  after: number;
+  delta: number;
+  delta_percent: number;
+  changed_items: number;
+  adjustments: (Adjustment & { items: number; value: number })[];
+  quantity_beyond_10_percent: boolean;
+  sections: { key: string; title: string; before: number; after: number; delta: number }[];
+  top_items: { item_oz: string; label: string; before: number; after: number; delta: number; excluded: boolean }[];
+  optional_items: { item_oz: string; label: string; kind: string; total: number; excluded: boolean }[];
+}
+
 export interface Sample {
   path: string; // relative to dataset/, e.g. "01_gaeb_xml/…X83"
   name: string;
   bytes: number;
 }
 
-export const FORMAT_LABEL: Record<BoQ["format"], string> = { gaeb_xml: "GAEB XML", gaeb_90: "GAEB 90", pdf: "PDF" };
+export const FORMAT_LABEL: Record<BoQ["format"], string> = { gaeb_xml: "GAEB XML", gaeb_90: "GAEB 90", pdf: "PDF", excel: "Excel" };
 
 /** What a dataset file is, read off its extension: "GAEB XML · tender", "PDF". */
 export function sampleKind(name: string): string {

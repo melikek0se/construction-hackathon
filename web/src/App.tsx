@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { analyzeFile, listSamples, loadSample, runLlmReview } from "./api";
+import { analyzeFile, listSamples, loadPrices, loadSample, runLlmReview } from "./api";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, eur, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
 import { LvMap } from "./LvMap";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, sampleKind, type Analysis, type Finding, type Item, type Sample, type Severity } from "./types";
+import { WhatIfView } from "./WhatIf";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, sampleKind, type Analysis, type Finding, type Item, type Prices, type Sample, type Severity } from "./types";
 
-type View = "plan" | "table" | "remarks";
+type View = "plan" | "table" | "remarks" | "whatif";
 const VIEWS: [View, string][] = [
   ["plan", "LV map"],
   ["table", "Item table"],
   ["remarks", "Remarks"],
+  ["whatif", "What-if"],
 ];
 const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
@@ -59,7 +61,7 @@ export default function App() {
     if (!id) return;
     void run(id.split("/").pop() ?? id, () => loadSample(id)).then(() => {
       const v = params.get("view");
-      if (v === "table" || v === "remarks") setView(v);
+      if (v === "table" || v === "remarks" || v === "whatif") setView(v);
       const oz = params.get("item");
       if (oz) setSelection({ oz, finding: null });
     });
@@ -87,6 +89,23 @@ export default function App() {
     },
     [run],
   );
+
+  // Price suggestions arrive after the LV is on screen; the item sheet shows them when they are there.
+  const [prices, setPrices] = useState<Prices | null>(null);
+  const analysisId = analysis?.id;
+  useEffect(() => {
+    setPrices(null);
+    if (!analysisId) return;
+    let current = true;
+    loadPrices(analysisId)
+      .then((p) => current && setPrices(p))
+      .catch(() => undefined); // prices are an extra; the findings do not depend on them
+    return () => {
+      current = false;
+    };
+  }, [analysisId]);
+
+  const priceByOz = useMemo(() => new Map((prices?.suggestions ?? []).map((s) => [s.item_oz, s])), [prices]);
 
   const itemByOz = useMemo(() => {
     const m = new Map<string, Item>();
@@ -169,7 +188,7 @@ export default function App() {
         ref={fileInput}
         type="file"
         hidden
-        accept=".x83,.x84,.x86,.d83,.d84,.d86,.pdf"
+        accept=".x83,.x84,.x86,.d83,.d84,.d86,.pdf,.xlsx,.xls"
         onChange={(e) => {
           upload(e.target.files?.[0]);
           e.target.value = "";
@@ -367,6 +386,7 @@ export default function App() {
               />
             )}
             {view === "remarks" && <RemarksView analysis={analysis} />}
+            {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} />}
           </main>
 
           <aside className="right">
@@ -375,6 +395,7 @@ export default function App() {
                 analysis={analysis}
                 itemByOz={itemByOz}
                 findingsByOz={findingsByOz}
+                price={selection.oz ? priceByOz.get(selection.oz) : undefined}
                 selection={selection}
                 onSelect={setSelection}
                 onBack={() => setSelection(NONE)}

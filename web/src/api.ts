@@ -1,4 +1,4 @@
-import type { Analysis, Finding, Sample } from "./types";
+import type { Adjustment, Analysis, Finding, Prices, Sample, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -24,6 +24,22 @@ export async function analyzeFile(file: File): Promise<Analysis> {
   const form = new FormData();
   form.append("file", file);
   return read(await fetch("/api/analyze", { method: "POST", body: form }));
+}
+
+/** Unit-price suggestions from past bids; null when the LV has prices already. */
+export async function loadPrices(id: string): Promise<Prices | null> {
+  return read(await fetch(`/api/analyses/${id}/prices`));
+}
+
+/** Total of a priced LV under changed prices or quantities, or with optional items left out. */
+export async function runWhatIf(id: string, scenario: { adjustments: Adjustment[]; exclude: string[] }): Promise<WhatIfResult> {
+  return read(
+    await fetch(`/api/analyses/${id}/whatif`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(scenario),
+    }),
+  );
 }
 
 /** The LLM checks of an analysed LV. Seconds when cached, a few minutes otherwise. */

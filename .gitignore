@@ -25,6 +25,7 @@ dist/
 
 # Data: the dataset lives in dataset/ (committed); the original zip is redundant
 *.zip
+data/external/
 data/processed/
 data/cache/
 

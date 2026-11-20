@@ -129,6 +129,17 @@ start with many pages of contract forms before the LV begins.
   and the LLM prompt should explain them.
 - **Language is German throughout.** Technical German with heavy abbreviation (`i.L.`, `DN`, `lfm`, `psch`, `einschl.`).
 
+## Files from outside the dataset (not in the repository)
+
+Downloaded 2026-11-20 into `data/external/excel/` (git-ignored) to try the Excel import and a benchmark:
+
+- LV templates with sample items: `excelwelt.com/leistungsverzeichnis-vorlage/` (three .xlsx, 11–13 items, OZ /
+  Pos.-Art / Kurztext / Langtext / Menge / ME / Einheitspreis / Gesamtpreis), `excelvorlage.de/leistungsverzeichnis-2/`
+  (one sample row), `streit-software.de/vorlagen/leistungsverzeichnis-erstellen` (a calculation sheet, no LV).
+- Richtpreisverzeichnis Tiefbau 2021 of the Autonomous Province of Bolzano (XLS, German and Italian, 10,967
+  rows, 8,117 with a price): `oeffentliche-vertraege.provinz.bz.it/de/informationssystem-offentliche-vertraege/richtpreisverzeichnis-2021`.
+  Other wording (unit `Nr` for pieces) and another price level than the German bids; see STATE.md for the test.
+
 ## Not yet looked at in detail
 
 - `Abgabe LV.pdf` (submitted bid of project B) is priced, but **not identical to `StBALV23040.D84`/`.D86`**: item

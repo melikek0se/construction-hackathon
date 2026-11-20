@@ -47,7 +47,7 @@ class Remark(BaseModel):
 class BoQ(BaseModel):
     name: str = ""
     file: str
-    format: Literal["gaeb_xml", "gaeb_90", "pdf"]
+    format: Literal["gaeb_xml", "gaeb_90", "pdf", "excel"]
     phase: str = ""  # 83 tender, 84 bid, 86 award
     items: list[Item] = Field(default_factory=list)
     remarks: list[Remark] = Field(default_factory=list)

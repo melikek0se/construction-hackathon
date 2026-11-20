@@ -33,7 +33,8 @@ also carry unit price and total. Estimators work item by item and send bidder qu
 ## Capabilities and Constraints
 
 - Built: GAEB and PDF parsing, rule checks, missing-item check, LLM checks on the Claude API, API, web UI.
-  risk report and bidder-question export. Not built: prices, what-if, supplier inquiries.
+  risk report and bidder-question export, Excel import, price suggestions from past bids (few: three bids are
+  the whole history), what-if on priced LVs. Not built: supplier inquiries.
 - LV text stays German and is never translated in place; UI text is English.
 - Most findings carry no money amount yet (tender LVs are unpriced); the UI must not imply one.
 - The dataset is anonymised; tokens such as `[FIRMA_044]` replace names and are not errors.

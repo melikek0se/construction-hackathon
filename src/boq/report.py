@@ -85,7 +85,8 @@ def _questions(findings: list[Finding], by_oz: dict[str, Item]) -> list[dict]:
     return out
 
 
-def build_report(boq: BoQ, findings: list[Finding]) -> dict:
+def build_report(boq: BoQ, findings: list[Finding], prices: dict | None = None) -> dict:
+    """`prices` is the result of boq.prices.suggest_prices for an unpriced LV, if available."""
     by_oz: dict[str, Item] = {}
     for item in boq.items:
         by_oz.setdefault(item.oz, item)
@@ -154,10 +155,18 @@ def build_report(boq: BoQ, findings: list[Finding]) -> dict:
         "position_types": kind_rows,
         "change_orders": change_orders,
         "questions": _questions(findings, by_oz),
+        "prices": _price_part(prices, by_oz) if prices else None,
         "findings": [{**f.model_dump(mode="json"), "item_label": by_oz[f.item_oz].label if f.item_oz in by_oz else "",
                       "section": _section_of(by_oz[f.item_oz])[0] if f.item_oz in by_oz else "",
                       "mechanism": MECHANISMS[m][0] if (m := mechanism(f)) else None} for f in listed],
     }
+
+
+def _price_part(prices: dict, by_oz: dict[str, Item]) -> dict:
+    rows = [{**s, "label": by_oz[s["item_oz"]].label, "qty": float(by_oz[s["item_oz"]].qty or 0),
+             "unit": by_oz[s["item_oz"]].unit_raw} for s in prices["suggestions"] if s["unit_price"] is not None]
+    return {"history": prices["history"], "items": prices["items"], "with_price": prices["with_price"],
+            "estimate": prices["estimate"], "rows": sorted(rows, key=lambda r: -(r["value"] or 0))}
 
 
 def render_questions(report: dict) -> str:
@@ -273,6 +282,34 @@ def render_html(report: dict) -> str:
                    + "".join(f'<tr><td>{e(k["label"])}</td><td class="r">{k["items"]}</td>'
                              + (f'<td class="r">{_eur(k["value"])}</td>' if priced else '') + '</tr>'
                              for k in report["position_types"]) + '</table>')
+
+    p = report.get("prices")
+    if p:
+        projects = ", ".join(f"{name} ({source})" for name, source, _ in p["history"]["projects"])
+        out.append(f'<h2>Prices from past bids</h2><p class="lede">{p["with_price"]} of {p["items"]} items have a '
+                   f'similar item in the priced bids; the other {p["items"] - p["with_price"]} have no reliable price '
+                   f'and need a calculation or a supplier quote.</p>'
+                   f'<p class="note">History: {p["history"]["items"]} priced items from project {e(projects)}'
+                   + (f'; project {e(p["history"]["excluded_project"])} is this LV and is left out'
+                      if p["history"]["excluded_project"] else '')
+                   + '. A price is taken only from items with the same unit, the same head word and the same '
+                     'nominal size. Back-test on these bids (each priced from the other two): 5 suggestions, '
+                     'median error 23 %, all inside the band. The band is that wide on purpose.</p>')
+        if p["rows"]:
+            out.append('<table><tr><th>Item</th><th class="r">Quantity</th><th class="r">Unit price</th>'
+                       '<th class="r">Band</th><th>Taken from</th><th class="r">Value</th></tr>')
+            for r in p["rows"]:
+                m = r["matches"][0]
+                out.append(f'<tr><td><span class="num">{e(r["item_oz"])}</span> <span lang="de">{e(r["label"][:60])}</span></td>'
+                           f'<td class="r">{r["qty"]:g} {e(r["unit"])}</td><td class="r"><b>{_eur(r["unit_price"])}</b></td>'
+                           f'<td class="r">{_eur(r["low"])} to {_eur(r["high"])}</td>'
+                           f'<td>Project {e(m["project"])}, {e(m["source"])}, item {e(m["item_oz"])} '
+                           f'<span lang="de">{e(m["label"][:50])}</span> ({r["confidence"]} confidence)</td>'
+                           f'<td class="r">{_eur(r["value"])}</td></tr>')
+            est = p["estimate"]
+            out.append(f'</table><p class="note">These {p["with_price"]} items add up to {_eur(est["mid"])} '
+                       f'({_eur(est["low"])} to {_eur(est["high"])}). This is not a bid total: '
+                       f'{p["items"] - p["with_price"]} items are not in it.</p>')
 
     out.append('<h2>Change-order potential</h2>')
     if not report["change_orders"]:

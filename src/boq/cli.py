@@ -23,6 +23,7 @@ def main(argv=None):
     ap.add_argument("--llm", action="store_true", help="also run the LLM checks (needs ANTHROPIC_API_KEY)")
     ap.add_argument("--report", metavar="FILE.html", help="write the risk report (all findings, any severity)")
     ap.add_argument("--questions", metavar="FILE.txt", help="write the bidder questions (German)")
+    ap.add_argument("--prices", action="store_true", help="suggest unit prices from the priced bids in dataset/")
     args = ap.parse_args(argv)
 
     boq = parse_file(args.file)
@@ -39,9 +40,28 @@ def main(argv=None):
         print(f"LLM review: {stats['requests']} requests, {stats['kept']} findings kept, "
               f"{stats['dropped']} dropped for missing evidence", file=sys.stderr)
         findings = sort_findings(findings + llm_findings)
+    prices = None
+    if args.prices or args.report:
+        from pathlib import Path
+
+        from boq.prices import load_history, suggest_prices
+        if not any(i.total is not None for i in boq.items):
+            prices = suggest_prices(boq, load_history(Path(__file__).resolve().parents[2] / "dataset"))
+    if args.prices:
+        if prices is None:
+            print("This file has prices already; nothing to suggest.")
+        else:
+            labels = {i.oz: i.label for i in boq.items}
+            print(f"Prices from past bids: {prices['with_price']} of {prices['items']} items")
+            for s in prices["suggestions"]:
+                if s["unit_price"] is not None:
+                    m = s["matches"][0]
+                    print(f"  {s['item_oz']:10} {labels[s['item_oz']][:44]:44} {s['unit_price']:>10.2f} "
+                          f"({s['low']:.2f}-{s['high']:.2f}, {s['confidence']}) <- {m['project']} {m['item_oz']} {m['source']}")
+            print()
     if args.report or args.questions:
         from boq.report import build_report, render_html, render_questions
-        report = build_report(boq, findings)
+        report = build_report(boq, findings, prices)
         for path, text in ((args.report, render_html(report)), (args.questions, render_questions(report))):
             if path:
                 with open(path, "w", encoding="utf-8") as fh:

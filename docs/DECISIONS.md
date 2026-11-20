@@ -111,3 +111,22 @@ German quotes. Sections and items are ranked by risk points (5 / 2 / 1 per Stop 
 names the formula and shows money only where the file has prices, because tender LVs have none (PRODUCT.md,
 principle 4). The report is a server-rendered page printed to PDF from the browser — no PDF library.
 Revisit if: prices exist for unpriced LVs — then rank by money at stake instead.
+
+## D-015 — A price suggestion needs the same unit, head word and size; anything looser is a reference
+Status: proposed · 2026-11-20
+
+`src/boq/prices.py` matches lexically (TF-IDF, no embeddings API) and is strict on purpose: back-testing showed
+that loose matches are within 25 % of the real price about one time in three, and that hourly items share so
+much boilerplate that an excavator was priced as a foreman. Result: very few suggestions from three bids, all
+with sources and a band; "no reliable price" for the rest (D-005). Lump sums are never priced from history.
+Token prices under 1 EUR are kept out of the history. A project's own bid is not used to price its own tender.
+Revisit if: more priced bids are available — rerun `scripts/eval_prices.py` and relax only what the numbers allow.
+
+## D-016 — What-if changes whole unit prices, because the files have no cost split
+Status: proposed · 2026-11-20
+
+A "material price +10 %" scenario is expressed as "unit prices of items in section X / containing word Y +10 %".
+The architecture's labour / material / equipment split does not exist in any dataset file (02-dataset.md,
+finding 7), and inventing shares would put made-up numbers into a total. The view shows how many items and how
+much money each change touches.
+Revisit if: a file with a real unit-price breakdown (GAEB `UPBkdn` filled in) turns up.

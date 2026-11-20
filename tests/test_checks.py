@@ -62,6 +62,22 @@ def test_seeded_missing_item_is_caught(path, rule_id):
     assert len(after) > len(before)
 
 
+def test_wie_vor_items_inherit_what_the_previous_item_does():
+    """Project C: 'wie vor, jedoch Steuerkabel' follows 'Verlegen der PE-Rohre', so the cable is laid."""
+    pdf = XML.parent / "04_pdf_tiefbau_sonstige"
+    for name in ("Leistungsverzeichnis.pdf", "Angebot AN24-0305.pdf"):
+        findings = check_companions(parse_file(str(pdf / name)))
+        assert [f for f in findings if f.severity != "info"] == [], name
+    boq = _project_c()
+    boq.items += [_item("4.1.21", "Liefern eines Steuerkabels A2Y-F", "420", "m"),
+                  _item("4.1.61", "Verlegen der PE-Rohre 2 x da 50 im Rohrschatten", "2380", "m"),
+                  _item("4.1.71", "wie vor, jedoch Steuerkabel A2Y-F", "420", "m")]
+    boq.items = [i for i in boq.items if i.oz not in ("4.1.20", "4.1.70", "4.1.60")]
+    assert check_companions(boq) == []
+    boq.items = [i for i in boq.items if i.oz != "4.1.71"]  # now the cable really is not laid
+    assert [f.check_id for f in check_companions(boq)] == ["C-SUPPLY-INSTALL"]
+
+
 def _item(oz, label, qty, unit):
     return Item(oz=oz, short_text=label, qty=Decimal(qty), unit_raw=unit, unit=unit,
                 source=SourceRef(file="LV-Positionen.docx"))

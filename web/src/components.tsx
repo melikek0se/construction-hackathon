@@ -12,6 +12,7 @@ import {
   type Category,
   type Finding,
   type Item,
+  type PriceSuggestion,
   type Severity,
 } from "./types";
 
@@ -297,6 +298,7 @@ export function ItemSheet({
   analysis,
   itemByOz,
   findingsByOz,
+  price,
   selection,
   onSelect,
   onBack,
@@ -305,6 +307,7 @@ export function ItemSheet({
   analysis: Analysis;
   itemByOz: Map<string, Item>;
   findingsByOz: Map<string, Finding[]>;
+  price?: PriceSuggestion;
   selection: Selection;
   onSelect: (s: Selection) => void;
   onBack: () => void;
@@ -389,6 +392,8 @@ export function ItemSheet({
           </p>
         )}
 
+        {price && <PriceBlock price={price} />}
+
         <h3 className="lv-head">LV text, as issued</h3>
         <p className="lv-text" lang="de">
           <LvText text={item.long_text || item.short_text} marks={marks} />
@@ -401,6 +406,43 @@ export function ItemSheet({
         </p>
       </div>
     </div>
+  );
+}
+
+/** What past bids paid for similar items: a price with its band and sources, or the reason there is none. */
+function PriceBlock({ price }: { price: PriceSuggestion }) {
+  return (
+    <section className="price">
+      <h3 className="lv-head">Price from past bids</h3>
+      {price.unit_price !== null ? (
+        <p className="price-value">
+          <b className="num">{eur(String(price.unit_price))}</b>
+          <span>
+            per unit, {eur(String(price.low))} to {eur(String(price.high))} · {price.confidence} confidence
+          </span>
+        </p>
+      ) : (
+        <p className="price-none">No reliable price.</p>
+      )}
+      <p className="quiet">{price.reason}</p>
+      {price.matches.length > 0 && (
+        <ul className="price-sources">
+          {price.matches.map((m, i) => (
+            <li key={i}>
+              <b className="num">{eur(String(m.unit_price))}</b>
+              <span>
+                Project {m.project}, {m.source}, item {m.item_oz}
+                {m.qty !== null && `, ${qty(String(m.qty))} ${m.unit}`}
+                {m.same_size === false && ", other nominal size"}
+                <span className="price-label" lang="de">
+                  <LvText text={m.label} />
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
