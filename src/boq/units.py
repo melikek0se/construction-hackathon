@@ -10,10 +10,10 @@ _ALIASES = {
     "h": "h", "std": "h",
     "t": "t", "to": "t",
     "kg": "kg", "l": "l", "km": "km", "cm": "cm", "mm": "mm",
-    "d": "d", "tag": "d", "wo": "Wo", "mt": "Mt", "mon": "Mt", "jahr": "Jahr", "jr": "Jahr",
+    "d": "d", "tag": "d", "wo": "Wo", "mt": "Mt", "mon": "Mt", "jahr": "Jahr", "jahre": "Jahr", "jr": "Jahr",
     # time-based rental units: per piece / metre / m2 and week or day
     "stwo": "StWo", "mwo": "mWo", "m2wo": "m2Wo", "m2d": "m2d", "md": "md",
-    "kwh": "kWh", "%": "%",
+    "kwh": "kWh", "%": "%", "satz": "Satz", "set": "Satz", "paar": "Paar",
 }
 
 LUMP_SUM = "psch"

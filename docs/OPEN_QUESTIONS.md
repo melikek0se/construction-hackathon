@@ -29,8 +29,6 @@ in a bid, and is his experience from Germany or Turkey?
 
 ## Technical
 
-- **Q12. Does `HEM2301-2_Gesamt-LV.pdf` contain filled-in prices?** (`Abgabe LV.pdf` does, see Answered.)
-- **Q13. Is `HEM2301-2_Gesamt-LV.pdf` really the tender package of project A?** (Inferred from client and date.)
 - **Q14. Position flags `W`, `B`, `L` in GAEB 90 record 21** — confirm meaning (assumed Wahl-, Bedarfsposition, lump sum).
 - **Q15. ElevenLabs: German recognition quality for numbers, units and product codes; cost in credits per minute.**
 - **Q16. Does the Destatis GENESIS API need an account?** Only matters if we index old prices to today.
@@ -41,5 +39,8 @@ in a bid, and is his experience from Germany or Turkey?
   nine files (`src/boq/parsers`).
 - **Q12, first half** (2026-11-20): `Abgabe LV.pdf` has prices in its text layer, e.g. page 33: item 4.2.1
   "7,000 St 129,740 908,18". The earlier pattern search missed them because unit prices have three decimals.
+- **Q12, second half, and Q13** (2026-11-20): `HEM2301-2_Gesamt-LV.pdf` is the tender package of project A — the
+  PDF parser finds the same 159 items with identical quantities and units as `8209.003_…X83`. It has no prices
+  (empty `EP....` / `GP....` fields).
 - **Q7, partly** (2026-11-20): whatever the organisers meant, we use `LV-Positionen.docx` as the seed for the
   companion rules (D-009).

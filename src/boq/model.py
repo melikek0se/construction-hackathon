@@ -10,6 +10,7 @@ ItemKind = Literal["normal", "lump_sum", "contingency", "alternative", "hourly",
 class SourceRef(BaseModel):
     file: str
     line: int | None = None  # GAEB 90 line number of the item header
+    page: int | None = None  # PDF page of the item number
     xml_id: str | None = None  # GAEB XML Item ID
 
 
@@ -46,7 +47,7 @@ class Remark(BaseModel):
 class BoQ(BaseModel):
     name: str = ""
     file: str
-    format: Literal["gaeb_xml", "gaeb_90"]
+    format: Literal["gaeb_xml", "gaeb_90", "pdf"]
     phase: str = ""  # 83 tender, 84 bid, 86 award
     items: list[Item] = Field(default_factory=list)
     remarks: list[Remark] = Field(default_factory=list)

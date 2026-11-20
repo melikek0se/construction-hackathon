@@ -63,10 +63,11 @@ uv run uvicorn boq.api:app --reload    # API on :8000 (POST /api/analyze, GET /a
 cd web && npm install && npm run dev   # UI on :5173, proxies /api to :8000
 cd web && npm run build                # type-check + build; the API then serves web/dist at /
 uv run pytest -q                       # parsers, checks and API against dataset/
+uv run python scripts/eval_pdf_parser.py -v   # PDF parser score against the GAEB twins; run after touching pdf.py
 python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
 ```
 
-Code: `src/boq/parsers` (GAEB XML, GAEB 90) → `boq.model` → `src/boq/checks` (`rules.py` per item,
+Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF) → `boq.model` → `src/boq/checks` (`rules.py` per item,
 `companions.py` + `companion_rules.py` for missing items) → `src/boq/api.py` → `web/` (Vite + React, one screen:
 `web/src/App.tsx`).
 

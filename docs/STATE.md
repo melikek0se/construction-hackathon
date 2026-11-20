@@ -7,8 +7,8 @@ Last updated: 2026-11-20 (evening, hackathon day 1)
 ## Now
 
 Upload → parse → rule findings → table works end to end for GAEB files: Python package `src/boq` (parsers, model,
-rule checks, missing-item check, CLI, FastAPI) and a React screen in `web/`. No LLM checks, no PDF parser, no
-prices or report export yet.
+rule checks, missing-item check, CLI, FastAPI) and a React screen in `web/`. GAEB XML, GAEB 90 and PDF are
+parsed. No LLM checks, no prices or report export yet.
 
 ## Done
 
@@ -36,6 +36,12 @@ prices or report export yet.
 - Web UI (`web/`): drop zone, items table with finding marks and title rows, severity filters, search, findings
   list, item detail with evidence, explanation, action and long text
 
+- PDF parser (`src/boq/parsers/pdf.py`, PyMuPDF text layer, no LLM): works on positioned lines, finds the OZ
+  column, skips contract forms and page furniture. Scored against the GAEB twin of the same LV with
+  `scripts/eval_pdf_parser.py` (six pairs, 1,254 items): 2 items missed, 1 extra, quantity and unit 100 %, prices
+  100 % on offer C and 99.2 % on bid B (the two differences are real, see `02-dataset.md`), text 96–99 %.
+  All 34 PDFs parse; the 27 building-trade LVs of project F give 1,104 items (no ground truth for those).
+
 ## In progress
 
 - nothing
@@ -44,16 +50,20 @@ prices or report export yet.
 
 1. Decide team split, demo LV
 2. Risk report export and bidder-question list from the findings
-3. More companion rules for building trades (project F) once the PDF parser exists
+3. Companion rules for building trades (project F parses now; the rules still only know civil work)
 4. Money at stake for findings on unpriced LVs (needs the price history)
 5. LLM checks per title
 6. Risk score, change-order classification, report
-7. PDF parser · price suggestion + what-if · RFQ (email, then voice) — in parallel if people allow
+7. Price suggestion + what-if · RFQ (email, then voice) — in parallel if people allow
 
 ## Not built / known gaps
 
-- No PDF parser. Uploading a PDF answers "not supported yet". Project C has item texts only as PDF, so its companion rules are tested on
-  the item list of `LV-Positionen.docx`, not on the real LV.
+- PDF parser limits: needs a text layer (no OCR); a short text is only separated from the long text where it is
+  bold or sits alone on the OZ line (project D prints neither, so its short text is the first description line);
+  "*** Wiederholungsbeschreibung" notes printed above an item are not linked to it; one percentage item of bid B
+  (10.1.1) is missed. No Excel import.
+- `R-DIM-MISMATCH` can misfire when the long text names a second part with its own DN (seen once: project F,
+  LV 14b, pipe DN 100 through a sleeve DN 200).
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
   has one. They cover pipeline and civil work only.
 - X83 files do not mark alternative / contingency items the way the D86 does (B: 14 `W`, 4 `B` only in the D86).

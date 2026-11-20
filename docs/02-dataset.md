@@ -131,6 +131,13 @@ start with many pages of contract forms before the LV begins.
 
 ## Not yet looked at in detail
 
-- `Abgabe LV.pdf` and `HEM2301-2_Gesamt-LV.pdf`: no price columns found in the text layer (pattern search, not read page by page).
+- `Abgabe LV.pdf` (submitted bid of project B) is priced, but **not identical to `StBALV23040.D84`/`.D86`**: item
+  1.1.1 is 26,000.00 in the PDF and 16,000.00 in the GAEB files, item 1.1.12 is 1,233.33/m in the PDF and
+  6,000.00/m in the GAEB files; the PDF total is 835,804.22 EUR against 897,305.45 EUR. Which is the later
+  version is unknown. Item 10.1.1 exists only in the GAEB files.
+- Anonymiser artefact in `StBALV23040.D86`: the item number `08010003` was replaced by `TEL00009` (taken for a
+  phone number), so that item parses as `TE.L0.9`; the PDF has it as 8.1.3.
+- Project C, item 3.2.60 (found by `R-DIM-MISMATCH` on the PDF): short text "Muffenschutz aus Gummi DN 300",
+  long text "Muffenschutz aus Gummi DN 500".
 - Content of the long preliminary remarks (what risks they shift to the contractor).
 - Cross-trade overlaps inside project F.

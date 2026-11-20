@@ -10,12 +10,11 @@ from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
 
 from boq.checks import run_checks
-from boq.parsers import parse_file
+from boq.parsers import SUPPORTED, parse_file
 
 ROOT = Path(__file__).resolve().parents[2]
 DATASET = Path(os.environ.get("BOQ_DATASET_DIR", ROOT / "dataset"))
 WEB_DIST = ROOT / "web" / "dist"
-SUPPORTED = {".x83", ".x84", ".x86", ".d83", ".d84", ".d86"}
 MAX_BYTES = 30 * 1024 * 1024
 
 app = FastAPI(title="BoQ analysis")
@@ -25,10 +24,11 @@ def _analyze(path: Path, name: str) -> dict:
     try:
         boq = parse_file(str(path))
     except Exception as exc:  # malformed upload: report it, do not crash the server
-        raise HTTPException(422, f"Could not read {name} as a GAEB file: {exc}") from exc
+        raise HTTPException(422, f"Could not read {name}: {exc}") from exc
     boq.file = name
     if not boq.items:
-        raise HTTPException(422, f"{name} contains no items.")
+        raise HTTPException(422, f"No LV items found in {name}. PDFs need a text layer and a printed "
+                                 f"item list (item number, description, quantity, unit).")
     findings = run_checks(boq)
     return {"boq": boq.model_dump(mode="json"), "findings": [f.model_dump(mode="json") for f in findings]}
 
@@ -45,8 +45,8 @@ async def analyze_upload(file: UploadFile):
     name = Path(file.filename or "upload").name
     suffix = Path(name).suffix.lower()
     if suffix not in SUPPORTED:
-        raise HTTPException(415, f"{suffix or 'This file type'} is not supported yet. "
-                                 f"Upload a GAEB file: {', '.join(sorted(SUPPORTED))}.")
+        raise HTTPException(415, f"{suffix or 'This file type'} is not supported. "
+                                 f"Upload a GAEB file or a PDF: {', '.join(sorted(SUPPORTED))}.")
     data = await file.read(MAX_BYTES + 1)
     if len(data) > MAX_BYTES:
         raise HTTPException(413, "File is larger than 30 MB.")

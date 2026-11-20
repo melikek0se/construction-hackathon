@@ -96,7 +96,7 @@ function UploadButton({ onFile, label }: { onFile: (f: File) => void; label: str
         ref={input}
         type="file"
         hidden
-        accept=".x83,.x84,.x86,.d83,.d84,.d86"
+        accept=".x83,.x84,.x86,.d83,.d84,.d86,.pdf"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) onFile(file);
@@ -137,7 +137,7 @@ function Start(props: { samples: Sample[]; onFile: (f: File) => void; onSample: 
           <h1>Drop a Leistungsverzeichnis here</h1>
           <p>
             Every item is checked for contradictions, missing companion work and wording that moves risk to
-            the bidder. GAEB XML (X83, X84, X86) and GAEB 90 (D83, D84, D86).
+            the bidder. GAEB XML (X83, X84, X86), GAEB 90 (D83, D84, D86) or a PDF printout.
           </p>
         </div>
       </div>
@@ -354,6 +354,7 @@ function ItemDetail(props: { item: Item; findings: Finding[]; onBack: () => void
         {formatQty(item.qty)} {item.unit_raw}
         {item.up !== null && `, unit price ${formatMoney(item.up)} EUR, total ${formatMoney(item.total)} EUR`}
         {KIND_LABEL[item.kind] && `, ${KIND_LABEL[item.kind].toLowerCase()} item`}
+        {item.source.page !== null && `, page ${item.source.page}`}
       </p>
 
       {findings.length === 0 && <p className="quiet">The rule checks found nothing on this item.</p>}

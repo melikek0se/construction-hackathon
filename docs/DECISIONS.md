@@ -68,3 +68,14 @@ Status: proposed · 2026-11-20
 
 `01010001`, `0101   1` and ` 1 1  10` all become `1.1.1` / `1.1.10`. This is the form the PDFs print and the
 join key between files of the same project (tender X83 ↔ bid D84 ↔ award D86).
+
+## D-011 — PDFs are parsed from the text layer with rules; accuracy is a measured number
+Status: proposed · 2026-11-20
+
+`src/boq/parsers/pdf.py` uses PyMuPDF positions and no LLM: deterministic, about a second per LV, free, and it
+cannot invent an item. `scripts/eval_pdf_parser.py` scores it against the GAEB twin of the same LV (recall, extra
+items, quantity, unit, price, text similarity); `tests/test_pdf_parser.py` fails if a number drops.
+PyMuPDF is pinned below 1.26 (newer releases do not install on Intel Macs) and is AGPL-licensed — fine for the
+hackathon, to be replaced or licensed for a product.
+Revisit if: a jury PDF is scanned or has a layout the rules miss — then add an LLM or a layout model as a
+fallback and score it with the same script before trusting it.

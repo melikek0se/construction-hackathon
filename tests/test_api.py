@@ -20,15 +20,17 @@ def test_upload_returns_items_and_findings():
 
 def test_samples_are_listed_and_analysed():
     samples = client.get("/api/samples").json()
-    assert len(samples) == 9
+    assert len(samples) == 43  # 9 GAEB files and 34 PDFs
     priced = next(s for s in samples if s["name"] == "Angebot AN24-0305.D84")
     body = client.get("/api/samples/analyze", params={"path": priced["path"]}).json()
     assert len(body["boq"]["items"]) == 274
 
 
 def test_errors_say_what_to_do():
-    r = client.post("/api/analyze", files={"file": ("lv.pdf", b"%PDF-1.4")})
+    r = client.post("/api/analyze", files={"file": ("lv.xlsx", b"PK")})
     assert r.status_code == 415 and "GAEB" in r.json()["detail"]
+    r = client.post("/api/analyze", files={"file": ("lv.pdf", b"%PDF-1.4 broken")})
+    assert r.status_code == 422
     r = client.post("/api/analyze", files={"file": ("lv.x83", b"not xml")})
     assert r.status_code == 422
     assert client.get("/api/samples/analyze", params={"path": "../pyproject.toml"}).status_code == 404

@@ -12,6 +12,7 @@ export interface Item {
   refs: string[];
   up: string | null;
   total: string | null;
+  source: { file: string; line: number | null; page: number | null };
 }
 
 export interface Finding {
