@@ -58,7 +58,8 @@ Tests only where they protect the demo (parsers).
 
 ```bash
 uv sync                                # install (Python 3.12/3.13 via uv)
-uv run boq FILE                        # parse an LV, print rule findings; --json, --min-severity warn, --llm
+uv run boq FILE                        # parse an LV, print rule findings; --json, --min-severity warn, --llm,
+                                       #   --report out.html (risk report), --questions out.txt (Bieterfragen)
 uv run uvicorn boq.api:app --reload    # API on :8000 (POST /api/analyze, GET /api/samples)
 cd web && npm install && npm run dev   # UI on :5173, proxies /api to :8000
 cd web && npm run build                # type-check + build; the API then serves web/dist at /
@@ -68,7 +69,7 @@ python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdli
 ```
 
 Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF) → `boq.model` → `src/boq/checks` (`rules.py` per item,
-`companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/api.py` → `web/` (Vite + React, one screen:
+`companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/report.py` (risk report, bidder questions) → `src/boq/api.py` → `web/` (Vite + React, one screen:
 `web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`; `web/src/types.ts` mirrors
 `boq.model`). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
 

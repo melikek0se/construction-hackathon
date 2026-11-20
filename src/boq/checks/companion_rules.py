@@ -17,6 +17,7 @@ from boq.model import Item
 class CompanionRule:
     id: str
     name: str  # what is missing, used in the finding text
+    name_de: str  # the same in German, for the bidder question
     trigger: str
     companion: str
     why: str
@@ -56,6 +57,7 @@ RULES = [
     CompanionRule(
         id="C-SUPPLY-INSTALL",
         name="laying / installation item for the supplied pipe or cable",
+        name_de="das Verlegen bzw. den Einbau der gelieferten Rohre und Kabel",
         trigger=rf"({_PIPE}).*\bliefern\b|\bliefern\b.*({_PIPE})",
         exclude=rf"{_INSTALL}|markier|dokumentation",
         companion=rf"({_PIPE}).*({_INSTALL})|({_INSTALL}).*({_PIPE})|\bDN\s*\d+\s*verlegen",
@@ -70,6 +72,7 @@ RULES = [
     CompanionRule(
         id="C-PRESSURE-TEST",
         name="pressure test (Druckprüfung)",
+        name_de="die Druckprüfung der Druckrohrleitung",
         trigger=r"\bdruckrohr|druckleitung|muffendruckrohr",
         exclude=r"spülen|druckprüf|markier|zulage",
         companion=r"druckprüf|dichtheitsprüf|druckprobe",
@@ -80,6 +83,7 @@ RULES = [
     CompanionRule(
         id="C-DISINFECTION",
         name="flushing and disinfection of the drinking-water pipe",
+        name_de="das Spülen und Desinfizieren der Trinkwasserleitung",
         trigger=r"(druckrohr|rohr|leitung).*\b(TW|trinkwasser)\b|trinkwasser(leitung|ltg|rohr)",
         exclude=r"spülen|desinf|druckprüf|markier|zulage|garnitur",
         companion=r"desinf|\bspülen\b|rohrspülung",
@@ -89,6 +93,7 @@ RULES = [
     CompanionRule(
         id="C-TRENCH-BACKFILL",
         name="backfilling and compaction of the trench",
+        name_de="das Verfüllen und Verdichten des Rohrgrabens",
         trigger=r"graben\w*aushub|boden\s+graben|aushub.*graben",
         exclude=r"zulage|verfüll|wieder\s*ein|einbauen",
         companion=r"verfüll|wieder\s*einbau|\bboden\b.*einbauen.*verdicht",
@@ -98,6 +103,7 @@ RULES = [
     CompanionRule(
         id="C-TRENCH-SHORING",
         name="trench shoring (Verbau) or sloped excavation",
+        name_de="den Grabenverbau bzw. das Abböschen des Rohrgrabens",
         trigger=r"graben",
         exclude=r"zulage|verbau|geböscht",
         companion=r"verbau|geböscht|abböschen",
@@ -108,6 +114,7 @@ RULES = [
     CompanionRule(
         id="C-PIPE-BEDDING",
         name="pipe bedding (Rohrbettung / Einbettung)",
+        name_de="die Rohrbettung und Einbettung der Leitung",
         trigger=r"(druckrohr|rohre?\b.*(verlegen|graben)|DN\s*\d+\s*verlegen)",
         exclude=r"zulage|markier|spülen|druckprüf|schneiden|bettung",
         companion=r"bettung|rohrauflager|leitungszone|sandbett",
@@ -118,6 +125,7 @@ RULES = [
     CompanionRule(
         id="C-SURFACE-RESTORE",
         name="restoration of the asphalt surface",
+        name_de="die Wiederherstellung der Asphaltbefestigung",
         trigger=r"(asphalt|bitumin\w*|straßendecke|straßenaufbruch).*(schneiden|aufbruch|aufbrechen|abbrechen|fräsen)"
                 r"|asphaltaufbruch|straßenaufbruch",
         companion=r"asphalt(trag|deck|binder|beton)|\bTS\s+asphalt|\bAC\s*\d+|asphaltschicht.*herstellen|tragschicht.*asphalt",
@@ -129,6 +137,7 @@ RULES = [
     CompanionRule(
         id="C-TOPSOIL",
         name="re-spreading of topsoil (Oberboden auftragen)",
+        name_de="das Wiederauftragen des Oberbodens",
         trigger=r"oberboden\w*\s.*(abtragen|abtrag)|oberbodenabtrag",
         exclude=r"auftrag|andecken|zulage",
         companion=r"oberboden.*(auftragen|auftrag|andecken)|mutterboden.*(auftragen|andecken)",
@@ -138,6 +147,7 @@ RULES = [
     CompanionRule(
         id="C-SITE-CLEARANCE",
         name="site clearance (Baustelle räumen)",
+        name_de="das Räumen der Baustelle",
         trigger=r"baustelle\w*\s*(einrichten|herstellen)|baustelleneinrichtung(\s+herstellen)?\s*$",
         exclude=r"räum|vorhalten",
         companion=r"baustelle\w*.*räum|räumen der baustelle",
@@ -148,6 +158,7 @@ RULES = [
     CompanionRule(
         id="C-SHAFT-COVER",
         name="shaft cover (Schachtabdeckung)",
+        name_de="die Schachtabdeckung",
         trigger=r"^\s*(\w+schacht|schachtbauwerk)\b",
         exclude=r"abdeckung|rückbau|abbruch|hydrant|schachtung|suchschacht|zulage",
         companion=r"schachtabdeckung|abdeckung",

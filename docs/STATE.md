@@ -8,7 +8,8 @@ Last updated: 2026-11-20 (evening, hackathon day 1)
 
 Upload → parse → rule findings → table works end to end for GAEB files: Python package `src/boq` (parsers, model,
 rule checks, missing-item check, CLI, FastAPI) and a React screen in `web/`. GAEB XML, GAEB 90 and PDF are
-parsed, and the LLM checks run against the Claude API. No prices or report export yet.
+parsed, the LLM checks run against the Claude API, and the findings can be exported as a risk report and a
+list of bidder questions. No prices yet.
 
 ## Done
 
@@ -61,6 +62,17 @@ parsed, and the LLM checks run against the Claude API. No prices or report expor
   cache-write, 25k output tokens). No finding was dropped by the evidence filter in either run. The findings
   have been read but not verified one by one against the LVs.
 
+- Risk report and bidder questions (`src/boq/report.py`). Report: summary, what to do, risk per section and
+  per item (points: 5 per Stop, 2 per Caution, 1 per Note — a ranking, not money), item types, change-order
+  potential grouped by VOB/B §2 Abs. 3 / 5 / 6 / 7, bidder questions, all findings; values only where the file
+  has prices. Served as one printable page (`GET /api/analyses/{id}/report.html`, print to PDF from the
+  browser), as JSON (`…/report`) and the questions as German text (`…/bieterfragen.txt`); buttons in the top
+  band; CLI `--report`, `--questions`. Bidder questions are German: templates for rule findings, written by the
+  model for AI findings (`Finding.question_de`). The server keeps the AI findings of an analysis, so the report
+  includes them once the review has run. On project C (PDF, with AI review): 61 findings, 34 questions.
+  Seen in the browser: the top of the report page and the two buttons. Not done: printing to PDF, a read of
+  the 34 German questions by someone who writes Bieterfragen for a living.
+
 ## In progress
 
 - LLM findings: verify a sample against the LV text, tune the prompt where they are weak, and decide model and
@@ -71,11 +83,10 @@ parsed, and the LLM checks run against the Claude API. No prices or report expor
 ## Next (in order)
 
 1. Decide team split, demo LV
-2. Risk report export and bidder-question list from the findings
 3. Companion rules for building trades (project F parses now; the rules still only know civil work)
 4. Money at stake for findings on unpriced LVs (needs the price history)
 5. Verification and prompt tuning of the LLM findings (see In progress)
-6. Risk score, change-order classification, report
+6. Money at stake in the report for unpriced LVs (needs prices)
 7. Price suggestion + what-if · RFQ (email, then voice) — in parallel if people allow
 
 ## Not built / known gaps
@@ -89,5 +100,8 @@ parsed, and the LLM checks run against the Claude API. No prices or report expor
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
   has one. They cover pipeline and civil work only.
 - X83 files do not mark alternative / contingency items the way the D86 does (B: 14 `W`, 4 `B` only in the D86).
+- Demo machine: do not let it sleep. On 2026-11-20 two commands "hung" for minutes; `pmset -g log` showed the
+  laptop asleep both times (lid closed 22:13–23:01, maintenance sleep 23:03–23:08) with an LLM request and a test
+  run in flight. Not a code fault. Keep it on power with the lid open, or start the servers under `caffeinate -i`.
 - No benchmark price source; none is freely available.
 - ElevenLabs: nothing configured; German speech recognition quality untested.

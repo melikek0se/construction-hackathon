@@ -1602,3 +1602,14 @@ table.items {
     transition: none !important;
   }
 }
+
+/* A link that looks like a button (risk report, bidder questions). */
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+a.btn:hover {
+  background: #2d312e;
+}

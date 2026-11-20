@@ -22,9 +22,12 @@ class LLMUnavailable(RuntimeError):
 MODEL = os.environ.get("BOQ_LLM_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("BOQ_LLM_EFFORT", "medium")
 CACHE_DIR = Path(os.environ.get("BOQ_CACHE_DIR", Path(__file__).resolve().parents[3] / "data" / "cache")) / "llm"
-PROMPT_VERSION = "1"
+PROMPT_VERSION = "2"
 MAX_ITEMS_PER_REQUEST = 60
 CONCURRENCY = 4
+# One title takes well under a minute. The SDK default of 10 minutes would leave a request that lost its
+# connection (laptop went to sleep, network dropped) hanging that long before it is retried.
+REQUEST_TIMEOUT_S = 180.0
 
 CHECKS = {  # check name in the model's answer -> (check_id, category)
     "unclear_scope": ("L-UNCLEAR-SCOPE", "unclear_scope"),
@@ -51,8 +54,11 @@ SCHEMA = {
                     "evidence": {"type": "string", "description": "Verbatim German quote from the LV"},
                     "explanation": {"type": "string", "description": "English, two or three sentences"},
                     "action": {"type": "string", "enum": ACTIONS},
+                    "question_de": {"type": "string",
+                                    "description": "German bidder question for action ask_client, else empty"},
                 },
-                "required": ["item_oz", "check", "severity", "title", "evidence", "explanation", "action"],
+                "required": ["item_oz", "check", "severity", "title", "evidence", "explanation", "action",
+                             "question_de"],
                 "additionalProperties": False,
             },
         }
@@ -107,6 +113,11 @@ necessary).
 remarks, at most 250 characters, in German, without ellipses or your own words. Findings whose \
 evidence cannot be found in the document are discarded automatically.
 - title and explanation are in English; say what is wrong and what it can cost, concretely.
+- question_de: when the action is ask_client, the bidder question (Bieterfrage) exactly as the estimator \
+would send it to the client: German, formal and neutral, one or two sentences, naming what the LV says and \
+asking for the one decision or figure that is needed. It is sent together with the item number and the \
+quoted passage, so do not repeat those. No greeting, no reasoning about cost. For any other action leave \
+it empty.
 - severity: high if the estimator cannot price the item without an answer or the money at stake is \
 large; warn for a real risk they should price; info for something worth knowing.
 """
@@ -220,13 +231,14 @@ def _validate(raw: dict, by_oz: dict[str, Item], remarks: str) -> Finding | None
         item_oz=item.oz, category=category, check_id=check_id, title=raw["title"][:120],
         severity=raw["severity"], evidence=f"„{quote}“", explanation=raw["explanation"],
         action=raw["action"], origin="llm",
+        question_de=_squash(raw.get("question_de", "")) if raw["action"] == "ask_client" else "",
     )
 
 
 async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
                          client: anthropic.AsyncAnthropic | None = None) -> tuple[list[Finding], dict]:
     """Returns the findings and a small report: requests made, findings kept and dropped."""
-    client = client or anthropic.AsyncAnthropic()
+    client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
     context = _context(boq)
     tasks = [_task(boq, items, rule_findings) for items in _chunks(boq)]
     if not tasks:

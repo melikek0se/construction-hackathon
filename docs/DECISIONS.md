@@ -101,3 +101,13 @@ gets a picture (`ItemVisual.tsx`). Do not bring 3D back without being asked.
 The UI labels `high` / `warn` / `info` as Stop / Caution / Note (red circle, yellow triangle, blue square);
 backend values are unchanged. Fonts are self-hosted (`@fontsource`), so the demo does not need the internet.
 Revisit if: an LV has several thousand items — one mark per item will need grouping.
+
+## D-014 — Bidder questions are German; the risk report ranks by points, not by money
+Status: proposed · 2026-11-20
+
+Bieterfragen go to a German client, so `Finding.question_de` holds German text: fixed templates for rule findings,
+written by the model for AI findings (same request as the finding, prompt version 2). The report is English with
+German quotes. Sections and items are ranked by risk points (5 / 2 / 1 per Stop / Caution / Note); the report
+names the formula and shows money only where the file has prices, because tender LVs have none (PRODUCT.md,
+principle 4). The report is a server-rendered page printed to PDF from the browser — no PDF library.
+Revisit if: prices exist for unpriced LVs — then rank by money at stake instead.

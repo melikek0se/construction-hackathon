@@ -60,6 +60,9 @@ def _finding(rule: CompanionRule, triggers: list[Item], *, mentioned: Item | Non
         evidence=evidence,
         explanation=f"No item and no mention of {what} anywhere in the LV. {rule.why}",
         action="ask_client",
+        question_de=f"Für {rule.name_de}{f' (DN/da {size})' if size else ''} ist im Leistungsverzeichnis keine "
+                    f"Position enthalten. Ist diese Leistung in eine andere Position einzurechnen, oder wird "
+                    f"sie gesondert vergütet? Wir bitten um Angabe der Position bzw. um Ergänzung des LV.",
     )
 
 
@@ -88,6 +91,8 @@ def _qty_finding(rule: CompanionRule, size: str, supplied: list[Item], installed
                     f"installed. One of the quantities is wrong; the difference is either surplus material "
                     f"or a quantity overrun (VOB/B §2 Abs. 3).",
         action="ask_client",
+        question_de=f"Für DN/da {size} sind {q_sup.normalize():f} {u_sup} Lieferung, aber {q_ins.normalize():f} "
+                    f"{u_ins} Verlegung bzw. Einbau ausgeschrieben. Welche Menge ist zutreffend?",
     )
 
 

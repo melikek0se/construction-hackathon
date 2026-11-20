@@ -9,13 +9,15 @@ from collections import OrderedDict
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
-from boq.checks import run_checks
+from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
+from boq.report import build_report, render_html, render_questions
 
 load_env()
 
@@ -29,6 +31,7 @@ app = FastAPI(title="BoQ analysis")
 # Parsed LVs of this server process, so the LLM review does not need the file again. No database:
 # a restart forgets them and the user uploads again.
 _ANALYSES: OrderedDict[str, tuple[BoQ, list[Finding]]] = OrderedDict()
+_LLM_FINDINGS: dict[str, list[Finding]] = {}  # AI findings of an analysis, once the review has run
 _KEEP = 20
 
 
@@ -47,7 +50,7 @@ def _analyze(path: Path, name: str) -> dict:
     analysis_id = uuid.uuid4().hex
     _ANALYSES[analysis_id] = (boq, findings)
     while len(_ANALYSES) > _KEEP:
-        _ANALYSES.popitem(last=False)
+        _LLM_FINDINGS.pop(_ANALYSES.popitem(last=False)[0], None)
     return {"id": analysis_id, "boq": boq.model_dump(mode="json"),
             "findings": [f.model_dump(mode="json") for f in findings]}
 
@@ -100,7 +103,32 @@ async def llm_review(analysis_id: str):
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
         raise HTTPException(502, f"The LLM review failed: {exc}") from exc
+    _LLM_FINDINGS[analysis_id] = findings  # the report of this analysis now includes them
     return {"findings": [f.model_dump(mode="json") for f in findings], "stats": stats}
+
+
+def _report(analysis_id: str) -> dict:
+    if analysis_id not in _ANALYSES:
+        raise HTTPException(404, "This analysis is no longer in memory. Upload the file again.")
+    boq, rule_findings = _ANALYSES[analysis_id]
+    return build_report(boq, sort_findings(rule_findings + _LLM_FINDINGS.get(analysis_id, [])))
+
+
+@app.get("/api/analyses/{analysis_id}/report")
+def report_json(analysis_id: str):
+    return _report(analysis_id)
+
+
+@app.get("/api/analyses/{analysis_id}/report.html", response_class=HTMLResponse)
+def report_html(analysis_id: str):
+    """Printable risk report: findings so far, including the AI review if it has run."""
+    return render_html(_report(analysis_id))
+
+
+@app.get("/api/analyses/{analysis_id}/bieterfragen.txt", response_class=PlainTextResponse)
+def bidder_questions(analysis_id: str):
+    return PlainTextResponse(render_questions(_report(analysis_id)), media_type="text/plain; charset=utf-8",
+                             headers={"Content-Disposition": 'attachment; filename="bieterfragen.txt"'})
 
 
 if WEB_DIST.is_dir():  # production build of the frontend, if present

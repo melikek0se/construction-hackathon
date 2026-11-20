@@ -21,6 +21,8 @@ def main(argv=None):
     ap.add_argument("--json", action="store_true", help="print items and findings as JSON")
     ap.add_argument("--min-severity", choices=["info", "warn", "high"], default="info")
     ap.add_argument("--llm", action="store_true", help="also run the LLM checks (needs ANTHROPIC_API_KEY)")
+    ap.add_argument("--report", metavar="FILE.html", help="write the risk report (all findings, any severity)")
+    ap.add_argument("--questions", metavar="FILE.txt", help="write the bidder questions (German)")
     args = ap.parse_args(argv)
 
     boq = parse_file(args.file)
@@ -37,6 +39,14 @@ def main(argv=None):
         print(f"LLM review: {stats['requests']} requests, {stats['kept']} findings kept, "
               f"{stats['dropped']} dropped for missing evidence", file=sys.stderr)
         findings = sort_findings(findings + llm_findings)
+    if args.report or args.questions:
+        from boq.report import build_report, render_html, render_questions
+        report = build_report(boq, findings)
+        for path, text in ((args.report, render_html(report)), (args.questions, render_questions(report))):
+            if path:
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.write(text)
+                print(f"wrote {path}", file=sys.stderr)
     findings = [f for f in findings if f.severity in keep]
 
     if args.json:

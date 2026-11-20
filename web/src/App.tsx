@@ -191,6 +191,13 @@ export default function App() {
             </span>
           </div>
           <div className="actions">
+            {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
+            <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
+              Risk report
+            </a>
+            <a className="btn" href={`/api/analyses/${analysis.id}/bieterfragen.txt`} download>
+              Bidder questions
+            </a>
             {picker}
             <button className="btn" disabled={busy !== null} onClick={() => fileInput.current?.click()}>
               Upload LV

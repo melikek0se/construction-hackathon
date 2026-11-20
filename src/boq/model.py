@@ -64,4 +64,5 @@ class Finding(BaseModel):
     explanation: str  # why it matters to an estimator
     action: Literal["ask_client", "add_surcharge", "get_quote", "note_for_claims", "fix_typo"]
     money_at_stake: Decimal | None = None
+    question_de: str = ""  # bidder question (Bieterfrage) in German, ready to send; only for ask_client
     origin: Literal["rule", "llm"] = "rule"

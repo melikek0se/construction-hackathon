@@ -14,7 +14,7 @@ E = D.parent / "501-24-01_GAEB-XML_sas.x83"
 
 def answer(oz, evidence, check="unclear_scope"):
     return {"item_oz": oz, "check": check, "severity": "warn", "title": "t", "evidence": evidence,
-            "explanation": "e", "action": "ask_client"}
+            "explanation": "e", "action": "ask_client", "question_de": "Welche Ausführung ist gemeint?"}
 
 
 def run(boq, answers, monkeypatch):

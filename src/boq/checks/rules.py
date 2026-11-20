@@ -47,7 +47,8 @@ def _quantity(item: Item, boq: BoQ) -> Finding | None:
         return Finding(item_oz=item.oz, category="error", check_id="R-QTY-MISSING", severity="high",
                        title="Item has no quantity",
                        evidence=f"„{item.label[:90]}“", explanation="The item has no quantity.",
-                       action="ask_client")
+                       action="ask_client",
+                       question_de="Für diese Position ist keine Menge angegeben. Welche Menge ist anzusetzen?")
     if item.qty == 0:
         return Finding(
             item_oz=item.oz, category="quantity", check_id="R-QTY-ZERO", severity="warn",
@@ -68,7 +69,9 @@ def _unit(item: Item) -> Finding | None:
                    title="Unknown unit",
                    evidence=f"unit „{item.unit_raw}“ in „{item.label[:70]}“",
                    explanation="Unit is not a known unit of measure; check for a typo before pricing.",
-                   action="ask_client")
+                   action="ask_client",
+                   question_de=f"Die Abrechnungseinheit „{item.unit_raw}“ ist uns nicht geläufig. "
+                               f"Welche Einheit ist gemeint?")
 
 
 def _dimension(item: Item) -> Finding | None:
@@ -83,6 +86,8 @@ def _dimension(item: Item) -> Finding | None:
                     f"{', '.join(sorted(long, key=int))}. Likely a copied description; the two sizes "
                     f"differ in price, so the client has to say which one is meant.",
         action="ask_client",
+        question_de=f"Der Kurztext nennt DN {', '.join(sorted(short, key=int))}, der Langtext dagegen DN "
+                    f"{', '.join(sorted(long, key=int))}. Welche Nennweite ist auszuführen und zu kalkulieren?",
     )
 
 
@@ -97,6 +102,8 @@ def _reference(item: Item, known: set[str]) -> Finding | None:
         explanation="The description is 'as item …, but …' and the referenced item does not exist in "
                     "this LV, so the scope of this item is undefined.",
         action="ask_client",
+        question_de=f"Die Leistungsbeschreibung verweist auf Position {', '.join(broken)}, die im "
+                    f"Leistungsverzeichnis nicht enthalten ist. Auf welche Position bezieht sich der Verweis?",
     )
 
 
