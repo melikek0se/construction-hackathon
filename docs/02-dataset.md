@@ -29,11 +29,12 @@ Why this matters:
 
 ## Findings worth building on
 
-1. **Real change orders inside project A.** The award file has 197 items, the tender 159. The 38 extra items sit in a
-   new title `08` with texts such as *"Mehrkosten Armaturen für Ausführung VAG"* (extra cost for a different valve
-   make), *"Zulage Entsorgungskosten …"* (surcharge for disposal), and concrete pump models. That is a real example of
-   how an under-specified LV turns into extra items — a test case for change-order detection: could we have predicted
-   title 08 from the tender text alone?
+1. **Bidder-added optional items in project A.** The award file has 197 items, the tender 159. The 38 extra items sit
+   in a new title `08` with texts such as *"Mehrkosten Armaturen für Ausführung VAG"* (extra cost for a different valve
+   make), *"Zulage Entsorgungskosten …"* (disposal surcharge) and concrete pump models. They carry a unit price but
+   **quantity 0 and total 0**, so they are not in the 536,991.65 EUR. They are price offers for alternatives and
+   extras the bidder expected to matter — not executed change orders, but a real signal of where the tender was
+   under-specified (product make, disposal).
 2. **Speculative / token prices.** Offer C has 44 items under 1 EUR/unit (e.g. 0.05 EUR/m² × 30,230 m²); B has 22
    (e.g. 0.03 EUR per metre-week). Normal for "vorhalten" (keep on site) items, but also the signature of
    speculative pricing on quantities the bidder expects to change. Useful as an outlier check on a competitor's or
@@ -55,6 +56,19 @@ Why this matters:
 8. **Real hourly rates are in the priced bids** (Stundenlohnarbeiten items, unit `h`). Billing rates incl. all
    surcharges, 2023–2024: helper 80, skilled worker 82–85, foreman 85, engineer / project lead 100 EUR/h (A and B);
    C ranges 61.70–113.50 EUR/h for labour and machine-with-operator hours. A usable anchor for labour cost.
+
+9. **Real copy-paste contradictions exist.** Project A, item 05.01.4: short text "Edelstahl-Rohr DN 125", long text
+   "Edelstahlrohr DN 100 … 139,7 x 2,6 mm" (139.7 mm is DN 125; the neighbouring DN 100 item was copied). Item 05.03.1:
+   "Ausbaustück DN 65" with "Muttern A4, DN 100" in the long text, identical to the DN 100 item below it. Project B,
+   item 1.1.4: "DN100" in the short text, "DN 150" in the long text. A short-vs-long dimension check finds these.
+10. **Money is concentrated.** In offer C the 20 largest of 274 items make up 80.5 % of the total; in award A the top
+   20 of 197 make up 67 %. Reviewing by money at stake is justified by the data.
+11. **Related quantities are checkable.** Offer C: pipe delivered 1,451 m + 524 m = 1,975 m = pipe laid 1,975 m;
+   calibration 4,760 m = 2 × 2,380 m of twin duct. Consistent here — so a mismatch elsewhere is a real finding.
+12. **Risk wording is frequent.** Project E (296 items): "einzukalkulieren" in 58 items, "ca." in 77, 38 lump-sum
+   items. Example 02.03.0001: one lump sum "hardship surcharge for all road and civil items in all trades" for a soil
+   protection concept, described in ~4,000 characters. Example 02.03.0035: 10 m³ of search trenches for "pipes of
+   unknown or imprecise position", width "as needed".
 
 ## Formats
 
@@ -113,6 +127,6 @@ start with many pages of contract forms before the LV begins.
 
 ## Not yet looked at in detail
 
-- Whether `Abgabe LV.pdf` and `HEM2301-2_Gesamt-LV.pdf` contain filled-in prices in their LV part.
+- `Abgabe LV.pdf` and `HEM2301-2_Gesamt-LV.pdf`: no price columns found in the text layer (pattern search, not read page by page).
 - Content of the long preliminary remarks (what risks they shift to the contractor).
 - Cross-trade overlaps inside project F.

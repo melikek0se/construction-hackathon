@@ -94,8 +94,11 @@ codes and DN values, interruptions, the supplier asking a counter-question the i
   verified caller ID. A German +49 number requires business documents and its approval time is unknown — **do not
   count on one during the hackathon.** Calling a teammate's mobile from a non-German number is the realistic stretch.
 - Useful built-ins: voicemail detection, transfer to a human number, end-call tool.
-- **Cost**: listed at about 0.08 USD per extra agent minute plus plan-included minutes; telephony billed by Twilio.
-  How this maps to credits is *unverified* — check the account's usage page after the first test call.
+- **Cost** (verified at <https://elevenlabs.io/pricing/agents>): 0.08 USD per call minute beyond the plan's included
+  minutes (Free 15, Starter 75, Creator 275, Pro 1,238), LLM usage billed on top, telephony billed by Twilio.
+- **Packages**: Python `elevenlabs`, Node `@elevenlabs/elevenlabs-js`, browser `@elevenlabs/react`.
+- **German**: listed in the best accuracy tier for the Scribe speech-to-text model; not explicitly confirmed for the
+  realtime model — test with numbers, units and product codes before relying on it.
 
 Docs index: <https://elevenlabs.io/docs/eleven-agents/llms.txt> ·
 outbound call: <https://elevenlabs.io/docs/eleven-agents/api-reference/integrations/twilio/outbound-call> ·

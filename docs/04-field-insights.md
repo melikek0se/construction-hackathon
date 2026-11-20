@@ -102,8 +102,8 @@ our PDFs). So the tool should:
 - warn when a product is named **without** "oder gleichwertig" (single-source: price risk and, for public clients, a
   possible procurement violation → bidder question).
 
-Project A in the dataset shows the downside: the award contains extra items like "extra cost for valves in make VAG".
-A different make than assumed became a change order.
+Project A in the dataset shows this in practice: the bidder added 38 optional items with their own unit prices, among
+them "extra cost for valves in make VAG" — the product make was a price question the tender left open.
 
 ## 6. Sellers always ask which company you are
 

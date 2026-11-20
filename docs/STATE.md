@@ -37,6 +37,5 @@ Repository prepared; no application code yet. Next step is the team agreeing on 
 ## Not built / known gaps
 
 - No parser, backend, frontend, or tests exist.
-- PDFs `Abgabe LV.pdf` and `HEM2301-2_Gesamt-LV.pdf` not checked for filled-in prices.
 - No benchmark price source; none is freely available.
 - ElevenLabs: nothing configured; German speech recognition quality untested.

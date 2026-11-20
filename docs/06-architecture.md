@@ -116,5 +116,6 @@ Steps 6–8 can run in parallel with 3–5 once the model is fixed, if we have t
 - Parser: PDF-parsed items vs GAEB items of the same LV (projects A, B, D) — item count, quantity and unit match rate.
 - Checks: seed known defects into a clean LV (swap a unit, change a quantity ×10, delete the "laying" item, break a
   DN) and measure how many we catch. Cheap, and a strong slide.
-- Change orders: project A's 38 added award items as a qualitative test.
+- Under-specification: project A's 38 bidder-added optional items (product make, disposal) as a qualitative test.
+- Contradictions: the three real short-text vs long-text DN mismatches in the dataset must be found.
 - Prices: leave-one-project-out on the three priced bids (expect weak results; say so).

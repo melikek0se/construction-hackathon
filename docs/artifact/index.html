@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İnşaat Hackathonu Araştırma Özeti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one reading column like a site report; LV excerpts set in mono like the real printouts. */
+:root {
+  --bg: #eef1f3;
+  --surface: #ffffff;
+  --ink: #17222c;
+  --muted: #556472;
+  --line: #d3dae0;
+  --accent: #1b4f9c;
+  --accent-soft: #e3ecf8;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0d9;
+  --bad: #a3271f;
+  --bad-soft: #fbe6e3;
+  --good: #1f6b45;
+  --good-soft: #e1f2e8;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #11181e; --surface: #1a232b; --ink: #e6ecf1; --muted: #9babb8; --line: #2f3c47;
+    --accent: #8ab4f0; --accent-soft: #1d2f47;
+    --warn: #e6b45a; --warn-soft: #3a2e14;
+    --bad: #f09a92; --bad-soft: #3d1f1c;
+    --good: #7fd0a2; --good-soft: #173224;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #11181e; --surface: #1a232b; --ink: #e6ecf1; --muted: #9babb8; --line: #2f3c47;
+  --accent: #8ab4f0; --accent-soft: #1d2f47;
+  --warn: #e6b45a; --warn-soft: #3a2e14;
+  --bad: #f09a92; --bad-soft: #3d1f1c;
+  --good: #7fd0a2; --good-soft: #173224;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+}
+main { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; display: flex; flex-direction: column; gap: 56px; }
+header.top { display: flex; flex-direction: column; gap: 14px; border-bottom: 2px solid var(--ink); padding-bottom: 28px; }
+.kicker { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+h1 { font-family: var(--display); font-size: clamp(30px, 6vw, 44px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-size: 26px; line-height: 1.2; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--display); font-size: 18px; line-height: 1.3; margin: 0; }
+p { margin: 0; }
+section { display: flex; flex-direction: column; gap: 18px; }
+.lead { font-size: 20px; line-height: 1.5; }
+.num { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+strong { font-weight: 600; }
+.de { font-family: var(--mono); font-size: .92em; }
+
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.note { border: 1px solid var(--accent); background: var(--accent-soft); padding: 14px 18px; border-radius: 6px; }
+.note.warn { border-color: var(--warn); background: var(--warn-soft); }
+.note.bad { border-color: var(--bad); background: var(--bad-soft); }
+
+/* LV printout */
+.lv { font-family: var(--mono); font-size: 13.5px; line-height: 1.55; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow-x: auto; }
+.lv-inner { min-width: 520px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.lv-head, .lv-row { display: grid; grid-template-columns: 78px 1fr 110px 84px 84px; gap: 10px; }
+.lv-head { color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.lv-row .r, .lv-head .r { text-align: right; }
+.lv-long { margin-left: 88px; color: var(--muted); }
+mark { background: var(--warn-soft); color: var(--ink); padding: 2px 8px; border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+mark.bad { background: var(--bad-soft); }
+
+.terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.term { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.term b { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 500; }
+.term span { font-size: 15px; }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 560px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 13px; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.pill { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+.pill.good { background: var(--good-soft); color: var(--good); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.info { background: var(--accent-soft); color: var(--accent); }
+
+.finding { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.finding .tag::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--warn); margin-right: 8px; }
+.finding.bad .tag::before { background: var(--bad); }
+.finding .q { font-family: var(--mono); font-size: 13.5px; color: var(--muted); }
+.finding .tag { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+
+.bar { display: flex; height: 34px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); font-family: var(--mono); font-size: 13px; }
+.bar > div { display: flex; align-items: center; padding: 0 10px; white-space: nowrap; }
+.bar .a { background: var(--accent); color: var(--surface); }
+.bar .b { background: var(--surface); color: var(--ink); }
+.barlabel { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
+
+ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; counter-reset: s; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; }
+ol.steps li::before { content: counter(s); font-family: var(--mono); font-size: 14px; color: var(--accent); border: 1px solid var(--accent); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.src { font-size: 14px; color: var(--muted); }
+.src li { overflow-wrap: anywhere; }
+footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 20px; }
+@media (max-width: 480px) { body { font-size: 16px; } main { gap: 44px; padding-top: 28px; } }
+</style>
+</head>
+<body>
+<main>
+
+<header class="top">
+  <div class="kicker">Challenge A · Araştırma özeti · 20 Kasım 2026</div>
+  <h1>Bizden ne isteniyor, veride ne var, ne yapmalıyız</h1>
+  <p class="lead">Müteahhit ihaleye girmeden önce yüzlerce kalemlik bir iş listesini fiyatlandırır. Bizden bu listedeki hataları ve para kaybettirecek kalemleri bulan bir web uygulaması isteniyor.</p>
+</header>
+
+<section>
+  <span class="num">01</span>
+  <h2>Önce beş kelime</h2>
+  <p>Veri ve kurallar Almanca. Bu beş kelimeyi bilince gerisi anlaşılır hale geliyor.</p>
+  <div class="terms">
+    <div class="term"><b>Leistungsverzeichnis (LV)</b><span>İş kalemleri listesi. İşveren hazırlar, müteahhitler fiyat yazar. Hackathon buna "BoQ" diyor.</span></div>
+    <div class="term"><b>Position</b><span>Listedeki tek bir kalem: numara, açıklama, miktar, birim.</span></div>
+    <div class="term"><b>Einheitspreis (EP)</b><span>Birim fiyat. Müteahhidin her kaleme yazdığı fiyat. Toplam = birim fiyat × miktar.</span></div>
+    <div class="term"><b>Nachtrag</b><span>Sözleşmeden sonra çıkan ek iş ve ek para talebi. Hackathon buna "change order" diyor.</span></div>
+    <div class="term"><b>Kalkulator</b><span>Fiyatları hesaplayan kişi. Bizim kullanıcımız.</span></div>
+    <div class="term"><b>GAEB</b><span>LV'lerin dosya formatı. Excel gibi düşün, ama inşaat sektörüne özel.</span></div>
+  </div>
+  <p>Gerçek bir kalem şöyle görünüyor (veri setinden, boru hattı projesi):</p>
+  <div class="lv"><div class="lv-inner">
+    <div class="lv-head"><span>Pos-Nr.</span><span>Açıklama</span><span class="r">Miktar</span><span class="r">EP €</span><span class="r">Toplam €</span></div>
+    <div class="lv-row"><span>2.3.10</span><span>Strassendecke schneiden</span><span class="r">80,000 m</span><span class="r">6,80</span><span class="r">544,00</span></div>
+    <div class="lv-long">Yol kaplamasını kes. 80 metre, metresi 6,80 €.</div>
+    <div class="lv-row"><span>2.3.20</span><span>Strassenaufbruch bituminöser Oberbau</span><span class="r">4,000 m³</span><span class="r">78,00</span><span class="r">312,00</span></div>
+    <div class="lv-long">Asfaltı sök. 4 metreküp, metreküpü 78 €.</div>
+  </div></div>
+  <p>İşveren ilk üç sütunu verir. Son iki sütun boş gelir, müteahhit doldurur. Bu projede 274 kalem var ve toplam teklif 988.913,89 €.</p>
+</section>
+
+<section>
+  <span class="num">02</span>
+  <h2>Sorun ne</h2>
+  <p>Kalkülatörün birkaç günü var ve önünde onlarca sayfa Almanca teknik metin duruyor. İki yerde para kaybedilir:</p>
+  <ul>
+    <li><strong>Teklif vermeden önce.</strong> Bir kalem belirsiz, eksik ya da çelişkiliyse ve kimse fark etmezse, fiyat ya çok düşük yazılır (zarar) ya çok yüksek yazılır (ihale kaybedilir).</li>
+    <li><strong>İş başladıktan sonra.</strong> Listede olmayan ya da yanlış tarif edilmiş işler ortaya çıkar. Bunun parasını kimin ödeyeceği kavga konusu olur.</li>
+  </ul>
+  <div class="note"><strong>Hackathon'un öncelik sırası açık:</strong> önce dosyayı okumak, sonra hata bulmak (bunu "priority" diye işaretlemişler), sonra risk puanı ve ek iş ihtimali. Fiyat önermek "optional". Teslim edilecek şey: dosya yüklenen ve risk raporu veren bir web uygulaması, artı kalkülatörün gözünden bir sunum.</div>
+</section>
+
+<section>
+  <span class="num">03</span>
+  <h2>Bize verdikleri veri</h2>
+  <p>Zip'te 44 dosya var ama bunlar 44 ayrı liste değil. Altı projeye ait.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Proje</th><th>Ne işi</th><th>Kalem</th><th>Fiyat var mı</th></tr></thead>
+    <tbody>
+      <tr><td>A · Su tesisi makine işleri</td><td>Pompa, vana, boru montajı</td><td class="n">159</td><td><span class="pill good">Var</span> 536.991,65 €</td></tr>
+      <tr><td>B · Kuyu suyu hattı</td><td>Kazı ve boru hattı</td><td class="n">249</td><td><span class="pill good">Var</span> 897.305,45 €</td></tr>
+      <tr><td>C · Uzun su iletim hattı</td><td>Kazı ve boru hattı</td><td class="n">274</td><td><span class="pill good">Var</span> 988.913,89 €</td></tr>
+      <tr><td>D · Dere menfezi</td><td>Küçük altyapı işi</td><td class="n">50</td><td><span class="pill warn">Yok</span></td></tr>
+      <tr><td>E · Boru hattı ve yol işleri</td><td>Karışık altyapı</td><td class="n">296</td><td><span class="pill warn">Yok</span></td></tr>
+      <tr><td>F · Eğitim merkezi ve ofis binası</td><td>27 ayrı iş kolu: boya, fayans, elektrik, tesisat…</td><td class="n">≈400 sayfa PDF</td><td><span class="pill warn">Yok</span></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Üç projede gerçek teklif fiyatları var.</strong> Toplam 720 fiyatlı kalem. Hepsinde birim fiyat × miktar = toplam tutuyor, yani dosyaları doğru okuyabiliyoruz.</li>
+    <li><strong>Aynı liste hem GAEB hem PDF olarak var</strong> (A, B, D). PDF okuyucumuzu GAEB ile karşılaştırıp test edebiliriz.</li>
+    <li><strong>Hepsi Almanca ve anonimleştirilmiş.</strong> Firma ve kişi adları <span class="de">[FIRMA_044]</span> gibi etiketlerle değiştirilmiş. Araç bazı ürün adlarını da bozmuş.</li>
+    <li><strong>Olmayanlar:</strong> Excel dosyası, planlanan ve gerçekleşen maliyet karşılaştırması, "hatalı kalem örnekleri". Duyuruda sözü geçiyor ama zip'te yok. Organizatörlere sormak lazım.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">04</span>
+  <h2>Veride bulduğum gerçek sorunlar</h2>
+  <p>Bunlar uydurma örnek değil, onların dosyalarından çıktı. Uygulamamızın tam olarak bunları bulması gerekiyor. Sunumda bunları göstermek çok güçlü olur.</p>
+
+  <div class="finding bad">
+    <span class="tag">Çelişki · Proje A, kalem 05.01.4</span>
+    <h3>Başlık 125 diyor, açıklama 100 diyor</h3>
+    <p class="q">Kısa metin: Edelstahl-Rohr <mark class="bad">DN 125</mark><br>Uzun metin: Edelstahlrohr <mark class="bad">DN 100</mark>, bis PN 16 … 139,7 x 2,6 mm</p>
+    <p>DN borunun çapı. Bir üstteki kalem DN 100 borusu; açıklaması kopyalanmış ve çap düzeltilmemiş. Ölçü (139,7 mm) aslında DN 125'e ait. Hangisi geçerli? Farklı çap farklı fiyat demek. Aynı tür hata bu veri setinde üç yerde var.</p>
+  </div>
+
+  <div class="finding">
+    <span class="tag">Belirsiz kapsam · Proje E, kalem 02.03.0001</span>
+    <h3>Tek kalemde "tüm işler için zorluk zammı"</h3>
+    <p class="q">Erschwerniszulage <mark>zu allen Straßen- und Tiefbaupositionen in allen Gewerken</mark> … &nbsp; 1 psch</p>
+    <p>Toprak koruma kurallarının getirdiği tüm ek zahmet tek bir götürü fiyata sıkıştırılmış. Açıklama yaklaşık 4.000 karakter ve ne kadar iş çıkacağı belli değil. Müteahhit tek bir rakam yazacak ve tüm riski üstlenecek.</p>
+  </div>
+
+  <div class="finding">
+    <span class="tag">Şüpheli miktar · Proje E, kalem 02.03.0035</span>
+    <h3>Yeri bilinmeyen borular için 10 m³ kazı</h3>
+    <p class="q">… Sohlenbreite in m <mark>nach Bedarf</mark>, … Leitungen mit <mark>unbekannter, bzw. ungenauer Kenntnis der Lage</mark> &nbsp; 10 m³</p>
+    <p>"Genişlik ihtiyaca göre", "boruların yeri bilinmiyor" ve miktar sadece 10 m³. Gerçekte çok daha fazla çıkma ihtimali yüksek. Miktar %10'dan fazla saparsa Alman sözleşme kurallarına göre (VOB/B §2, madde 3) taraflar yeni birim fiyat isteyebilir. Bu hem risk hem fırsat.</p>
+  </div>
+
+  <div class="finding">
+    <span class="tag">Gizli maliyet · Proje D, kalem 02.0005</span>
+    <h3>"Ayrıca ödenmez, fiyata dahil edin"</h3>
+    <p class="q">Mehraushub für Schächte … <mark>wird nicht gesondert vergütet und ist einzurechnen</mark> &nbsp; 270 m³</p>
+    <p>Bacalar için gereken fazladan kazının parası ayrıca ödenmeyecek. Kalkülatör bunu fark etmezse o işi bedavaya yapar. Proje E'de "fiyata dahil edin" anlamına gelen ifade 296 kalemin 58'inde geçiyor.</p>
+  </div>
+
+  <div class="box">
+    <h3>Para birkaç kalemde toplanıyor</h3>
+    <p>Proje C'de 274 kalemin en büyük 20 tanesi toplam tutarın %80,5'ini oluşturuyor.</p>
+    <div class="bar" role="img" aria-label="En büyük 20 kalem toplamın yüzde 80,5'i, kalan 254 kalem yüzde 19,5'i">
+      <div class="a" style="width:80.5%">20 kalem · %80,5</div>
+      <div class="b" style="width:19.5%">254</div>
+    </div>
+    <div class="barlabel"><span>En büyük 20 kalem</span><span>Kalan 254 kalem · %19,5</span></div>
+    <p>Sonuç: 300 uyarı göstermek yerine, parası büyük olan kalemlerdeki sorunları en üste koymalıyız.</p>
+  </div>
+
+  <div class="note warn"><strong>Düzeltme.</strong> Önceki mesajımda "Proje A'da 38 gerçek ek iş kalemi var" demiştim. Tekrar bakınca bu kalemlerin miktarı 0 ve tutarı 0 çıktı. Yani bunlar gerçekleşmiş ek işler değil, müteahhidin teklifine eklediği isteğe bağlı fiyatlar (örneğin "başka marka vana kullanılırsa ek maliyet"). Yine de işe yarar bir işaret: ihalede marka konusu açık bırakılmış. Repodaki dokümanı düzelttim.</div>
+</section>
+
+<section>
+  <span class="num">05</span>
+  <h2>Abinin söyledikleri</h2>
+  <p>Yedisi de doğru. Çoğu fiyat tarafıyla ilgili, yani hackathon'un "optional" dediği kısım. Bu yüzden ana işin yerine geçmiyorlar, ama fiyat kısmını yaparsak nasıl yapacağımızı belirliyorlar.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Ne dedi</th><th>Doğru mu</th><th>Uygulamada ne olur</th></tr></thead>
+    <tbody>
+      <tr><td>Fiyata buffer koymak lazım</td><td><span class="pill good">Doğru</span></td><td>Herkese aynı yüzde yerine, fiyatı ne kadar az biliyorsak o kadar pay. Toplamı tek rakam değil aralık olarak gösteririz.</td></tr>
+      <tr><td>Fiyat satıcıdan email ya da telefonla alınır</td><td><span class="pill good">Doğru</span></td><td>Uygulama fiyat talebini kendi hazırlar. Sesli ajan fikri buradan çıkıyor.</td></tr>
+      <tr><td>Parça sayarken fire ve bozulma oranı</td><td><span class="pill warn">Doğru, yeri farklı</span></td><td>Almanya'da listedeki miktar işverenin verdiği, yerine takılan miktardır. Fire miktara eklenmez. Malzeme maliyetine ve sipariş miktarına eklenir.</td></tr>
+      <tr><td>Her kalemin verisi yok, hiçbir fiyat %100 güvenilir ve güncel değil</td><td><span class="pill good">En önemlisi</span></td><td>Her fiyatın yanında kaynağı, tarihi ve güven seviyesi yazar. Bilmiyorsak "fiyat yok" deriz, uydurmayız.</td></tr>
+      <tr><td>Fiyat yoksa önce satıcıya sor, olmazsa muadilini bul</td><td><span class="pill good">Doğru</span></td><td>Sıra: elimizdeki teklif → geçmiş projeler → satıcıya sor → muadil ürün → tahmin.</td></tr>
+      <tr><td>Fiyat isterken hep şirketi soruyorlar</td><td><span class="pill good">Doğru</span></td><td>Çünkü fiyat müşteriye göre değişir. Her talepte şirket adı, proje ve teslim yeri gider.</td></tr>
+      <tr><td>İşçi maliyeti hesaplanmalı</td><td><span class="pill good">Doğru</span></td><td>Birim fiyat = işçilik + malzeme + makine + diğer. Satıcının verdiği fiyat sadece malzemeyi kapsar.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Veride gerçek işçilik fiyatları da var: 2023–2024 tekliflerinde usta saati 82–85 €, yardımcı 80 €, mühendis 100 €.</p>
+  <div class="note"><strong>Abine sorulacak en önemli soru:</strong> tecrübesi Almanya'dan mı, Türkiye'den mi? Miktarı kimin belirlediği ve sözleşme kuralları ülkeye göre değişiyor. İkinci soru: telefonla alınan yaklaşık fiyat teklifte kullanılır mı, yoksa yazılı teklif mi beklenir?</div>
+</section>
+
+<section>
+  <span class="num">06</span>
+  <h2>Sesli ajan fikri</h2>
+  <p class="lead">Yapmaya değer, ama sunumun son sahnesi olarak. Ürünün kendisi olarak değil.</p>
+  <p>Nasıl çalışır:</p>
+  <ol class="steps">
+    <li><span>Uygulama fiyatını bilmediğimiz kalemleri listeler, parası büyük olanlar üstte.</span></li>
+    <li><span>Kullanıcı bir kalem ve bir tedarikçi seçip "fiyat iste" der.</span></li>
+    <li><span>Ajan arar. İlk cümlede yapay zekâ olduğunu, hangi şirket ve hangi proje için aradığını söyler.</span></li>
+    <li><span>Ürünü, miktarı ve teslim yerini söyler. Fiyatı, geçerlilik süresini ve teslim süresini sorar. Ürün yoksa muadilini sorar.</span></li>
+    <li><span>Aldığı fiyat ekrandaki tabloya canlı düşer. Teklif toplamındaki belirsizlik aralığı daralır.</span></li>
+  </ol>
+  <p>Maliyet: ElevenLabs'in fiyat sayfasına göre plana dahil dakikalar bitince dakikası 0,08 $, üstüne kullanılan dil modelinin ücreti eklenir. Hackathon için önemsiz bir tutar.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Lehine</th><th>Aleyhine</th></tr></thead>
+    <tbody>
+      <tr><td>Gerçek bir işi otomatikleştiriyor: kalkülatörler zaten tedarikçi arıyor.</td><td>Jüri asıl hata bulma kısmına bakacak. O zayıfsa telefon görüşmesi kurtarmaz.</td></tr>
+      <tr><td>Salonda başka kimsede olmayacak, akılda kalır.</td><td>Canlı ses demoları bozulabilir (gürültü, gecikme, internet).</td></tr>
+      <tr><td>ElevenLabs kredin var ve gereken her şey tek platformda.</td><td>Gerçek tedarikçi aramanın hukuki soruları var.</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Önerim:</strong></p>
+  <ul>
+    <li>Ana uygulama baştan sona çalışmadan buna başlamayın.</li>
+    <li>Bir kişi, yaklaşık 4 saat. Olmazsa önceden çekilmiş video gösterin.</li>
+    <li>Sahnede gerçek tedarikçi aramayın. Bir arkadaşınız tarayıcıdan tedarikçiyi oynasın. Telefon numarası gerekmez.</li>
+    <li>Önce aynı işi email ile yapın. Hem yedek olur hem aynı altyapıyı kullanır.</li>
+  </ul>
+  <div class="note warn"><strong>Jüri sorarsa:</strong> AB yapay zekâ yasası gereği ajan yapay zekâ olduğunu söylemek zorunda (Ağustos 2026'dan beri). Almanya'da izinsiz ses kaydı suç. Bizim cevabımız: ajan sadece şirketin zaten çalıştığı tedarikçileri arar, kendini tanıtır, kayıt almaz ve her zaman bir insanın geri aramasını teklif eder.</div>
+</section>
+
+<section>
+  <span class="num">07</span>
+  <h2>Ne yapmalıyız, hangi sırayla</h2>
+  <ol class="steps">
+    <li><span><strong>Dosyayı oku, kalemleri tabloda göster.</strong> Önce GAEB, çünkü okuması kesin. PDF sonra.</span></li>
+    <li><span><strong>Kesin kurallarla hata bul.</strong> Başlık ile açıklama çelişiyor mu, birim tutarlı mı, "ayrıca ödenmez" gibi riskli ifadeler var mı. Yapay zekâ gerektirmez, yanlış alarm vermez.</span></li>
+    <li><span><strong>Yapay zekâ ile zor olanları bul.</strong> Belirsiz tarif, eksik kalem, ön şartlarla çelişki.</span></li>
+    <li><span><strong>Sorunları paraya göre sırala, rapor üret.</strong> Her bulgu: hangi kalem, hangi cümle, neden önemli, ne yapmalı.</span></li>
+    <li><span><strong>Fiyat ve "ya şöyle olursa" hesabı.</strong> Üç gerçek tekliften geçmiş fiyat.</span></li>
+    <li><span><strong>Tedarikçiden fiyat isteme.</strong> Önce email, sonra sesli ajan.</span></li>
+  </ol>
+  <p>İlk dört adım puanlanan kısım. Son ikisi bizi diğerlerinden ayırır.</p>
+  <div class="note"><strong>Benzer ürünler var.</strong> Almanya'da BauAnalyst ve baugenic gibi şirketler yapay zekâ ile LV kontrolü satıyor. Jüri "bu zaten var" diyebilir. Bizim farkımız: sorunu bulmakla kalmayıp fiyat boşluğunu tedarikçiye sorarak kapatmak.</div>
+</section>
+
+<section>
+  <span class="num">08</span>
+  <h2>Neyi doğruladım, neyi doğrulayamadım</h2>
+  <p>İkinci turda, ilk turda emin olmadığım her iddiayı kaynağından kontrol ettirdim.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>İddia</th><th>Durum</th><th>Not</th></tr></thead>
+    <tbody>
+      <tr><td>Miktar %10'dan fazla saparsa yeni fiyat istenebilir; sözleşmede olmayan ek iş başlamadan önce bildirilmeli; götürü fiyat kural olarak değişmez</td><td><span class="pill good">Doğrulandı</span></td><td>VOB/B §2 metninden okundu.</td></tr>
+      <tr><td>İşveren işi "açık ve eksiksiz" tarif etmek zorunda, müteahhide olağan dışı risk yükleyemez, marka yazarsa "ya da muadili" demeli</td><td><span class="pill good">Doğrulandı</span></td><td>VOB/A §7. Kamu ihaleleri için geçerli.</td></tr>
+      <tr><td>Almanya'da kamu yol işlerinde sözleşme başına ortalama 2,5 ek iş anlaşması</td><td><span class="pill good">Doğrulandı</span></td><td>Sayıştay raporu (1995–1999, 2.988 sözleşme, 7.321 ek iş). Eski ama resmi. Sunumda kullanılabilir.</td></tr>
+      <tr><td>ElevenLabs fiyatı ve paket adları</td><td><span class="pill good">Doğrulandı</span></td><td>Python: <span class="de">elevenlabs</span>, tarayıcı: <span class="de">@elevenlabs/react</span>.</td></tr>
+      <tr><td>ElevenLabs Almancayı anlıyor</td><td><span class="pill warn">Kısmen</span></td><td>Konuşma tanıma modelinde Almanca en iyi doğruluk grubunda. Canlı görüşme modeli için açık bir liste bulunamadı. Denemek lazım.</td></tr>
+      <tr><td>Ücretsiz resmi fiyat endeksi (Destatis)</td><td><span class="pill warn">Kısmen</span></td><td>Var, ama hesap açmak gerekiyor. İnşaat fiyat endeksi üç ayda bir yayınlanıyor.</td></tr>
+      <tr><td>Tedarikçi teklifleri 2–4 hafta geçerli</td><td><span class="pill bad">Doğrulanamadı</span></td><td>Tekliflerin çoğunlukla "bağlayıcı değil" verildiği doğru. Süre için kaynak yok. Abine sor.</td></tr>
+      <tr><td>İş koluna göre fire oranları (%3–10 gibi)</td><td><span class="pill bad">Doğrulanamadı</span></td><td>Sadece forum ve rehber yazıları var. Uygulamada ayarlanabilir varsayım olmalı.</td></tr>
+      <tr><td>"10 tekliften 1'i kazanılır", "bir teklif X saat sürer"</td><td><span class="pill bad">Doğrulanamadı</span></td><td>Güvenilir kaynak yok. Sunumda rakam olarak söylemeyin.</td></tr>
+      <tr><td>Ücretsiz birim fiyat veritabanı</td><td><span class="pill bad">Yok</span></td><td>Hepsi ücretli. Elimizdeki tek fiyat kaynağı veri setindeki üç teklif.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="emin-olmadiklarimiz">
+  <span class="num">09</span>
+  <h2>Henüz bilmediklerimiz</h2>
+  <ul>
+    <li><strong>Jüri neye göre puan verecek?</strong> Kendi dosyalarıyla mı test edecekler, hangi formatta? Organizatörlere ilk sorulacak şey.</li>
+    <li><strong>Başka veri var mı?</strong> Özellikle "hatalı kalem örnekleri". Bizim için test seti olurdu.</li>
+    <li><strong>Takımda kim ne biliyor, ne kadar süre kaldı?</strong> Teknoloji seçimi ve sesli ajana vakit kalıp kalmayacağı buna bağlı.</li>
+    <li><strong>ElevenLabs Almanca rakamları ve ürün kodlarını ne kadar iyi anlıyor?</strong> Denemeden bilemeyiz.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">10</span>
+  <h2>Kaynaklar</h2>
+  <ul class="src" id="sources">
+    <li>Veri seti: repodaki <span class="de">data/raw/</span>. Rakamlar <span class="de">scripts/inspect_dataset.py</span> ile ve bu oturumda yazılan analizlerle çıkarıldı.</li>
+    <li>Alman sözleşme kuralları (VOB/B §2): <a href="https://dejure.org/gesetze/VOB-B/2.html">dejure.org/gesetze/VOB-B/2.html</a></li>
+    <li>Tarif kuralları (VOB/A §7): <a href="https://dejure.org/gesetze/VOB-A/7.html">dejure.org/gesetze/VOB-A/7.html</a></li>
+    <li>Ek iş istatistiği (Sayıştay verisi, Wanninger 2003): <a href="https://www.cemconsultants.de/downloads/Behinderungen-Nachtraege.pdf">cemconsultants.de/downloads/Behinderungen-Nachtraege.pdf</a></li>
+    <li>ElevenLabs fiyatları: <a href="https://elevenlabs.io/pricing/agents">elevenlabs.io/pricing/agents</a></li>
+    <li>Maliyet bileşenleri ve tipik oranlar: <a href="https://www.bauprofessor.de/gemeinkostenzuschlaege/">bauprofessor.de/gemeinkostenzuschlaege</a></li>
+    <li>ElevenLabs ajan dokümanları: <a href="https://elevenlabs.io/docs/eleven-agents/llms.txt">elevenlabs.io/docs/eleven-agents</a></li>
+    <li>AB yapay zekâ yasası madde 50: <a href="https://artificialintelligenceact.eu/article/50/">artificialintelligenceact.eu/article/50</a></li>
+    <li>Almanya'da ses kaydı (§201 StGB): <a href="https://www.gesetze-im-internet.de/stgb/__201.html">gesetze-im-internet.de/stgb/__201.html</a></li>
+  </ul>
+  <footer>Ayrıntılar repoda <span class="de">docs/</span> klasöründe. Bu sayfa hukuki tavsiye değildir.</footer>
+</section>
+
+</main>
+</body>
+</html>

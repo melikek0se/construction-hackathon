@@ -95,13 +95,15 @@ Make these configurable per trade.
 - **Indices:** Destatis GENESIS-Online has a free REST API. Construction price indices: tables 61261-0001 … -0012;
   producer price index by product: 61241-0004 (verify the current code)
   [V] <https://www.destatis.de/EN/Service/OpenData/api-webservice.html>. Use them to bring 2023/2024 prices from our
-  dataset to today. Whether the API needs a free account is unverified.
+  dataset to today. The API **requires an account** (username/password or token, POST only) [V]
+  <https://genesis.destatis.de/datenbank/online/docs/GENESIS-Webservices_Einfuehrung.pdf>. The construction price index
+  is quarterly, the producer price index monthly.
 - **Benchmarks:** BKI, sirAdos, STLB-Bau/DBD, baupreislexikon.de are all commercial. **No free unit-price dataset was
   found.** Our options: the three priced bids in the dataset, indices, bottom-up synthesis, supplier quotes.
 
 ## Where change orders come from
 
-VOB/B §2 (summaries are [U]; text at <https://dejure.org/gesetze/VOB-B/2.html>):
+VOB/B §2 [V — all rows checked against the text at <https://dejure.org/gesetze/VOB-B/2.html>]:
 
 | Rule | Trigger | What the tool looks for |
 |------|---------|-------------------------|
@@ -188,3 +190,16 @@ Sidoun, ORCA.
 Most are either risk-text checkers or price suggesters. **Risk check → explainable price with provenance → supplier
 inquiry that closes the price gap, in one flow** is where we can be different. Expect a judge to say "BauAnalyst does
 this" — have the answer ready.
+
+## Verification pass (2026-11-20, second round)
+
+- VOB/A §7 confirmed at <https://dejure.org/gesetze/VOB-A/7.html>: unambiguous and exhaustive (Abs. 1 Nr. 1), no
+  unusual risk (Nr. 3), contingency items generally not to be included (Nr. 4), product neutrality (Abs. 2).
+- **Still unverified — treat as configurable assumptions, do not put on slides:** supplier quote validity of
+  "2–4 weeks" (only "freibleibend" as standard clause is supported); waste percentages per trade (forums and guides
+  only); labour-hour values except masonry (ARH: 0.32–0.41 h/m² for 17.5 cm Planziegel wall,
+  <https://www.gima-ziegel.de/wp-content/uploads/Auszug_Handbuch_Richtzeit-Tabellen.pdf>).
+- **Pitch numbers.** Usable: Bundesrechnungshof data on federal road construction 1995–1999 — 2,988 contracts with
+  7,321 change-order agreements (about 2.5 per contract), 98 % commissioned only after execution (via Wanninger 2003,
+  <https://www.cemconsultants.de/downloads/Behinderungen-Nachtraege.pdf>). Not usable: bid hit rates ("1 in 10"),
+  hours per bid, average change-order volume as a share of contract sum — no reputable source found.
