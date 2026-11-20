@@ -52,3 +52,19 @@ Status: decided · 2026-11-20
 It is anonymised, 25 MB, and every teammate needs it. The original zip is redundant.
 We use the folder layout Utku committed (sorted by format); the flat `data/raw/` copy was removed.
 Revisit if: the organisers restrict redistribution and the repository is public (Q9).
+
+## D-009 — Missing items are found by deterministic companion rules first, the LLM second
+Status: proposed · 2026-11-20
+
+"Pipe supplied but not laid", "trench deeper than 1.25 m without shoring", "asphalt cut but not restored" are
+checked by explicit rules (`src/boq/checks/companion_rules.py`), seeded from `LV-Positionen.docx` and the standards
+behind them. A rule has three outcomes: companion item exists (silent), companion only mentioned inside another
+item's description (info: priced into that item), not mentioned anywhere (missing item). Follows D-004; the LLM
+check `L-MISSING-ITEM` stays for what no rule covers.
+Revisit if: rules produce false alarms on a jury file — then drop the rule, do not loosen the evidence requirement.
+
+## D-010 — Item numbers are stored dotted and without leading zeros
+Status: proposed · 2026-11-20
+
+`01010001`, `0101   1` and ` 1 1  10` all become `1.1.1` / `1.1.10`. This is the form the PDFs print and the
+join key between files of the same project (tender X83 ↔ bid D84 ↔ award D86).

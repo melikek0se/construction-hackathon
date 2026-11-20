@@ -57,10 +57,14 @@ Tests only where they protect the demo (parsers).
 ## Commands
 
 ```bash
-python3 scripts/inspect_dataset.py     # dataset inventory, priced totals, parser self-check (stdlib only)
+uv sync                                # install (Python 3.12/3.13 via uv)
+uv run boq FILE                        # parse a GAEB file, print rule findings; --json, --min-severity warn
+uv run pytest -q                       # parsers and checks against dataset/
+python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
 ```
 
-No app, dependencies or test suite exist yet. Add commands here as they appear.
+Code: `src/boq/parsers` (GAEB XML, GAEB 90) → `boq.model` → `src/boq/checks` (`rules.py` per item,
+`companions.py` + `companion_rules.py` for missing items). No web app yet.
 
 ## Conventions
 

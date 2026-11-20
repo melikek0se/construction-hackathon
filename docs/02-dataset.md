@@ -62,6 +62,9 @@ Why this matters:
    "Edelstahlrohr DN 100 … 139,7 x 2,6 mm" (139.7 mm is DN 125; the neighbouring DN 100 item was copied). Item 05.03.1:
    "Ausbaustück DN 65" with "Muttern A4, DN 100" in the long text, identical to the DN 100 item below it. Project B,
    item 1.1.4: "DN100" in the short text, "DN 150" in the long text. A short-vs-long dimension check finds these.
+   The check (`R-DIM-MISMATCH`) also found two more: A 5.1.46 "Losflansch DN 125" with "Losflansch, DN 100" in the
+   long text, and E 2.3.23, existing main "DN 150" in the short text and "GGG DN 300" in the long text. It does not
+   flag A 05.03.1, where the right DN also appears in the long text.
 10. **Money is concentrated.** In offer C the 20 largest of 274 items make up 80.5 % of the total; in award A the top
    20 of 197 make up 67 %. Reviewing by money at stake is justified by the data.
 11. **Related quantities are checkable.** Offer C: pipe delivered 1,451 m + 524 m = 1,975 m = pipe laid 1,975 m;
