@@ -69,7 +69,8 @@ python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdli
 
 Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF) → `boq.model` → `src/boq/checks` (`rules.py` per item,
 `companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/api.py` → `web/` (Vite + React, one screen:
-`web/src/App.tsx`).
+`web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`; `web/src/types.ts` mirrors
+`boq.model`). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
 
 ## Conventions
 

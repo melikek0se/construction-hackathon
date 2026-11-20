@@ -1,0 +1,521 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-20T23:00:00Z",
+  "title": "Design System: LV Check",
+  "extensions": {
+    "colorMeta": {
+      "signal-yellow": {
+        "role": "primary",
+        "displayName": "Signal Yellow",
+        "canonical": "#ffc400",
+        "tonalRamp": [
+          "#2e2300",
+          "#574300",
+          "#806300",
+          "#a98300",
+          "#d4a400",
+          "#ffc400",
+          "#ffd95c",
+          "#fff0bd"
+        ]
+      },
+      "yellow-ink": {
+        "role": "neutral",
+        "displayName": "Yellow Ink",
+        "canonical": "#3a2c00",
+        "tonalRamp": [
+          "#2e2300",
+          "#3a2c00",
+          "#574300",
+          "#806300",
+          "#a98300",
+          "#d4a400",
+          "#ffd95c",
+          "#fff0bd"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Site Black",
+        "canonical": "#121413",
+        "tonalRamp": [
+          "#121413",
+          "#2d312e",
+          "#3b403a",
+          "#676c65",
+          "#8b9087",
+          "#b4b9ac",
+          "#cdd0c7",
+          "#ecece6"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Secondary Ink",
+        "canonical": "#3b403a",
+        "tonalRamp": [
+          "#121413",
+          "#2d312e",
+          "#3b403a",
+          "#676c65",
+          "#8b9087",
+          "#b4b9ac",
+          "#cdd0c7",
+          "#ecece6"
+        ]
+      },
+      "ink-hover": {
+        "role": "neutral",
+        "displayName": "Hover Ink",
+        "canonical": "#2d312e",
+        "tonalRamp": [
+          "#121413",
+          "#2d312e",
+          "#3b403a",
+          "#676c65",
+          "#8b9087",
+          "#b4b9ac",
+          "#cdd0c7",
+          "#ecece6"
+        ]
+      },
+      "stop-red": {
+        "role": "secondary",
+        "displayName": "Stop Red",
+        "canonical": "#c4161c",
+        "tonalRamp": [
+          "#2e0507",
+          "#5a0a0d",
+          "#870f13",
+          "#c4161c",
+          "#dd4a4f",
+          "#e98286",
+          "#f3b5b7",
+          "#fbe4e5"
+        ]
+      },
+      "note-blue": {
+        "role": "tertiary",
+        "displayName": "Note Blue",
+        "canonical": "#0a5aa8",
+        "tonalRamp": [
+          "#03182d",
+          "#062f58",
+          "#084683",
+          "#0a5aa8",
+          "#3f82c4",
+          "#7daada",
+          "#b6d0eb",
+          "#e6f0f9"
+        ]
+      },
+      "plate": {
+        "role": "neutral",
+        "displayName": "Plate White",
+        "canonical": "#fcfcf9",
+        "tonalRamp": [
+          "#121413",
+          "#3b403a",
+          "#8b9087",
+          "#b4b9ac",
+          "#cdd0c7",
+          "#ecece6",
+          "#f5f5f1",
+          "#fcfcf9"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Concrete Ground",
+        "canonical": "#ecece6",
+        "tonalRamp": [
+          "#121413",
+          "#2d312e",
+          "#3b403a",
+          "#676c65",
+          "#8b9087",
+          "#b4b9ac",
+          "#cdd0c7",
+          "#ecece6"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Soft Rule",
+        "canonical": "#cdd0c7",
+        "tonalRamp": [
+          "#121413",
+          "#2d312e",
+          "#3b403a",
+          "#676c65",
+          "#8b9087",
+          "#b4b9ac",
+          "#cdd0c7",
+          "#ecece6"
+        ]
+      },
+      "concrete-mark": {
+        "role": "neutral",
+        "displayName": "Concrete Mark",
+        "canonical": "#b4b9ac",
+        "tonalRamp": [
+          "#121413",
+          "#2d312e",
+          "#3b403a",
+          "#676c65",
+          "#8b9087",
+          "#b4b9ac",
+          "#cdd0c7",
+          "#ecece6"
+        ]
+      },
+      "on-ink": {
+        "role": "neutral",
+        "displayName": "On Ink",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#121413",
+          "#3b403a",
+          "#8b9087",
+          "#cdd0c7",
+          "#d9dcd4",
+          "#ecece6",
+          "#fcfcf9",
+          "#ffffff"
+        ]
+      },
+      "on-ink-quiet": {
+        "role": "neutral",
+        "displayName": "On Ink Quiet",
+        "canonical": "#d9dcd4",
+        "tonalRamp": [
+          "#121413",
+          "#3b403a",
+          "#8b9087",
+          "#cdd0c7",
+          "#d9dcd4",
+          "#ecece6",
+          "#fcfcf9",
+          "#ffffff"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The landing statement only. Uppercase, 0.01em tracking, max 12ch, balanced."
+      },
+      "item-number": {
+        "displayName": "Item number",
+        "purpose": "The Ordnungszahl at the top of the item sheet; the same voice steps down to 32, 28, 26, 24, 22 and 18px wherever an item or section number appears. 64px below 900px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The verdict line: counts of Stops, Cautions and Notes; also the upload plate's call. Uppercase, 0.025em tracking. 32px below 900px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel headings; the same voice sets the product name in the band (30px) and the sign names on the landing (34px). Uppercase, 0.025em tracking."
+      },
+      "plate-title": {
+        "displayName": "Plate title",
+        "purpose": "The category heading in a finding plate's coloured header. Uppercase, 0.025em tracking."
+      },
+      "mark-number": {
+        "displayName": "Mark number",
+        "purpose": "The item number printed on a Stop or Caution block of the LV map."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Primary button label. Uppercase, 0.025em tracking."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base text at weight 500: explanations, captions, list reasons. Steps up to 18px in plates, table cells and the readout. Capped at 46 to 68ch depending on context."
+      },
+      "body-strong": {
+        "displayName": "Body strong",
+        "purpose": "German item and section titles and the quoted evidence line; 19 to 25px, 600 to 700."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "The one caption voice, in condensed capitals: plate field headings, table heads, the tally, the map key, item counts, dataset file kinds. Small identifier labels (tag 14px, check id 16px) use the same face at 0.05em."
+      }
+    },
+    "shadows": [
+      {
+        "name": "ring-active",
+        "value": "0 0 0 3px #121413",
+        "purpose": "Black ring around a section number tile when hovered or active. A keyline, not a shadow."
+      },
+      {
+        "name": "keyline-inset",
+        "value": "inset 0 0 0 2px #121413",
+        "purpose": "Inset black keyline on a yellow Caution block so it holds an edge on the grey ground."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The one easing curve; used for every state transition."
+      },
+      {
+        "name": "duration-state",
+        "value": "150ms",
+        "purpose": "Button fill and press, map block rise on hover."
+      },
+      {
+        "name": "duration-plate",
+        "value": "180ms",
+        "purpose": "The upload plate's hover movement."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition: none; animation: none",
+        "purpose": "All motion is removed under prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stack",
+        "value": "max-width: 900px",
+        "purpose": "Workspace stacks into a scrolling page; landing rows collapse to one column; gutters drop to 16px."
+      },
+      {
+        "name": "zoom-large",
+        "value": "min-width: 1700px",
+        "purpose": "body zoom 1.2 for large displays."
+      },
+      {
+        "name": "zoom-projector",
+        "value": "min-width: 2300px",
+        "purpose": "body zoom 1.5 for projectors."
+      }
+    ],
+    "keylines": [
+      {
+        "name": "plate",
+        "value": "3px solid #121413",
+        "purpose": "Sign plates, pane dividers, plate headers, table group rows, rows of the landing's sign plate."
+      },
+      {
+        "name": "control",
+        "value": "2px solid #121413",
+        "purpose": "Inputs, selects, toggles, segmented control, chips."
+      },
+      {
+        "name": "map-section",
+        "value": "2px solid #cdd0c7",
+        "purpose": "The line between two section rows of the LV map."
+      },
+      {
+        "name": "divider",
+        "value": "1.5px solid",
+        "purpose": "Internal dividers: Soft Rule colour between list and table rows, black inside a plate."
+      }
+    ],
+    "patterns": [
+      {
+        "name": "hazard-stripe",
+        "value": "repeating-linear-gradient(-45deg, #121413 0 14px, #ffc400 14px 28px)",
+        "purpose": "Applied as a border-image: 12px under the band, 6px under the busy strip (12px/24px period), 22px around the drop target (22px/44px period)."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled action, e.g. Upload LV. Black with condensed capitals.",
+      "html": "<button class=\"ds-btn\">Upload LV</button>",
+      "css": ".ds-btn { height: 40px; padding: 0 18px; border: 0; border-radius: 4px; background: var(--ink, #121413); color: #fff; font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 18px; font-weight: 600; letter-spacing: 0.025em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), transform 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn:hover { background: #2d312e; } .ds-btn:active { transform: translateY(1px); } .ds-btn:focus-visible { outline: 3px solid var(--blue, #0a5aa8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Search fields and selects share this frame: plate white, 2px black border.",
+      "html": "<input class=\"ds-input\" type=\"search\" placeholder=\"Item no. or text\" aria-label=\"Search findings\">",
+      "css": ".ds-input { height: 40px; width: 240px; padding: 0 12px; background: var(--plate, #fcfcf9); color: var(--ink, #121413); border: 2px solid var(--ink, #121413); border-radius: 4px; font-family: var(--text, 'Barlow', system-ui, sans-serif); font-size: 17px; font-weight: 500; } .ds-input::placeholder { color: var(--ink-2, #3b403a); } .ds-input:focus-visible { outline: 3px solid var(--blue, #0a5aa8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Band",
+      "kind": "nav",
+      "refersTo": "band",
+      "description": "The yellow header closed by the hazard stripe; product name, loaded LV, actions.",
+      "html": "<header class=\"ds-band\"><span class=\"ds-band-brand\">LV Check</span><div class=\"ds-band-doc\"><strong>Maschinentechnik - Anlagenbau</strong><span>Leistungsverzeichnis.X83 · Tender · no prices in this file</span></div></header>",
+      "css": ".ds-band { display: flex; align-items: center; gap: 28px; min-height: 72px; padding: 12px 24px 10px; background: var(--yellow, #ffc400); color: var(--ink, #121413); border-bottom: 12px solid; border-image: repeating-linear-gradient(-45deg, #121413 0 14px, #ffc400 14px 28px) 12; font-family: var(--text, 'Barlow', system-ui, sans-serif); } .ds-band-brand { font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 30px; font-weight: 700; letter-spacing: 0.025em; text-transform: uppercase; white-space: nowrap; } .ds-band-doc { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; } .ds-band-doc strong { font-size: 20px; font-weight: 700; } .ds-band-doc span { font-size: 17px; font-weight: 500; color: var(--yellow-ink, #3a2c00); }"
+    },
+    {
+      "name": "View Switch",
+      "kind": "nav",
+      "refersTo": "view-tab",
+      "description": "Segmented control between LV map, Item table and Remarks.",
+      "html": "<div class=\"ds-views\" role=\"tablist\"><button role=\"tab\" aria-selected=\"true\">LV map</button><button role=\"tab\" aria-selected=\"false\">Item table</button><button role=\"tab\" aria-selected=\"false\">Remarks</button></div>",
+      "css": ".ds-views { display: inline-flex; border: 2px solid var(--ink, #121413); border-radius: 4px; overflow: hidden; } .ds-views button { height: 38px; padding: 0 14px; border: 0; background: var(--plate, #fcfcf9); color: var(--ink, #121413); font-family: var(--text, 'Barlow', system-ui, sans-serif); font-size: 17px; font-weight: 600; white-space: nowrap; cursor: pointer; } .ds-views button + button { border-left: 2px solid var(--ink, #121413); } .ds-views button[aria-selected=\"true\"] { background: var(--ink, #121413); color: #fff; } .ds-views button:hover:not([aria-selected=\"true\"]) { background: var(--yellow, #ffc400); } .ds-views button:focus-visible { outline: 3px solid var(--blue, #0a5aa8); outline-offset: -5px; }"
+    },
+    {
+      "name": "Severity Signs",
+      "kind": "custom",
+      "refersTo": "severity-toggle",
+      "description": "Stop, Caution and Note as red circle, yellow triangle, blue square, shown in their filter toggles (one switched off).",
+      "html": "<div class=\"ds-sev\"><button class=\"ds-sev-toggle\" aria-pressed=\"true\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Stop\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#c4161c\"/><rect x=\"5\" y=\"9.75\" width=\"14\" height=\"4.5\" fill=\"#fff\"/></svg><span class=\"ds-sev-name\">Stop</span><span class=\"ds-sev-count\">2</span></button><button class=\"ds-sev-toggle\" aria-pressed=\"true\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Caution\"><path d=\"M12 2.6 22.6 21H1.4Z\" fill=\"#ffc400\" stroke=\"#121413\" stroke-width=\"1.7\" stroke-linejoin=\"round\"/><rect x=\"10.9\" y=\"9\" width=\"2.2\" height=\"6.2\" fill=\"#121413\"/><circle cx=\"12\" cy=\"17.8\" r=\"1.25\" fill=\"#121413\"/></svg><span class=\"ds-sev-name\">Caution</span><span class=\"ds-sev-count\">10</span></button><button class=\"ds-sev-toggle\" aria-pressed=\"false\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Note\"><rect x=\"1.5\" y=\"1.5\" width=\"21\" height=\"21\" rx=\"3\" fill=\"#0a5aa8\"/><circle cx=\"12\" cy=\"7.2\" r=\"1.6\" fill=\"#fff\"/><rect x=\"10.7\" y=\"10.4\" width=\"2.6\" height=\"8.4\" fill=\"#fff\"/></svg><span class=\"ds-sev-name\">Note</span><span class=\"ds-sev-count\">8</span></button></div>",
+      "css": ".ds-sev { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 480px; } .ds-sev-toggle { display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 10px; background: var(--plate, #fcfcf9); color: var(--ink, #121413); border: 2px solid var(--ink, #121413); border-radius: 4px; text-align: left; font-family: var(--text, 'Barlow', system-ui, sans-serif); font-size: 17px; cursor: pointer; } .ds-sev-toggle svg { flex: none; display: block; } .ds-sev-name { flex: 1; font-size: 18px; font-weight: 600; } .ds-sev-count { font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; } .ds-sev-toggle[aria-pressed=\"false\"] { border-style: dashed; border-color: var(--ink-2, #3b403a); color: var(--ink-2, #3b403a); } .ds-sev-toggle[aria-pressed=\"false\"] svg { filter: grayscale(1); opacity: 0.45; } .ds-sev-toggle[aria-pressed=\"false\"] .ds-sev-name { text-decoration: line-through; } .ds-sev-toggle:focus-visible { outline: 3px solid var(--blue, #0a5aa8); outline-offset: 2px; }"
+    },
+    {
+      "name": "LV Map Row",
+      "kind": "custom",
+      "refersTo": "mark-block-stop",
+      "description": "One section of the LV as a ruled strip: a number tile, the German title, counts in the caption voice, and one mark per item; flagged items are sign-coloured blocks, and a wider gap starts each sub-section.",
+      "html": "<div class=\"ds-row\"><div class=\"ds-row-head\"><span class=\"ds-row-no\">5</span><span class=\"ds-row-title\" lang=\"de\">Rohrleitungen</span><span class=\"ds-row-size\">78 items</span></div><div class=\"ds-strip\"><i class=\"ds-tick\"></i><i class=\"ds-tick\"></i><button class=\"ds-block ds-stop\">5.1.4</button><i class=\"ds-tick\"></i><i class=\"ds-tick\"></i><button class=\"ds-block ds-caution\">5.1.9</button><i class=\"ds-tick\"></i><button class=\"ds-block ds-note\" aria-label=\"Item 5.1.12, 1 finding\"></button><i class=\"ds-tick\"></i><i class=\"ds-tick\"></i><button class=\"ds-block ds-stop ds-selected\">5.1.46</button><i class=\"ds-tick\"></i><i class=\"ds-tick ds-lead\"></i><i class=\"ds-tick\"></i><i class=\"ds-tick\"></i><i class=\"ds-tick ds-lead\"></i><i class=\"ds-tick\"></i></div></div>",
+      "css": ".ds-row { font-family: var(--text, 'Barlow', system-ui, sans-serif); color: var(--ink, #121413); background: var(--ground, #ecece6); padding: 12px 12px 14px; border-top: 2px solid var(--rule, #cdd0c7); } .ds-row-head { display: flex; align-items: center; gap: 12px; } .ds-row-no { min-width: 44px; padding: 1px 8px 3px; background: var(--ink, #121413); color: #fff; border-radius: 4px; font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 32px; font-weight: 700; line-height: 1; text-align: center; font-variant-numeric: tabular-nums; } .ds-row-head:hover .ds-row-no { background: var(--yellow, #ffc400); color: var(--ink, #121413); box-shadow: 0 0 0 3px var(--ink, #121413); } .ds-row-title { flex: 1; font-size: 22px; font-weight: 700; line-height: 1.2; } .ds-row-size { font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 20px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2, #3b403a); } .ds-strip { display: flex; flex-wrap: wrap; align-items: stretch; gap: 3px; margin-top: 9px; padding-left: 56px; } .ds-tick, .ds-block { height: 36px; padding: 0; border: 0; border-radius: 2px; } .ds-tick { display: block; width: 8px; background: #b4b9ac; } .ds-lead { margin-left: 9px; } .ds-block { min-width: 22px; padding: 0 9px; font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 24px; font-weight: 700; line-height: 36px; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer; transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-stop { background: var(--red, #c4161c); color: #fff; } .ds-caution { background: var(--yellow, #ffc400); color: var(--ink, #121413); box-shadow: inset 0 0 0 2px var(--ink, #121413); } .ds-note { background: var(--blue, #0a5aa8); padding: 0; } .ds-block:hover { transform: translateY(-3px); } .ds-selected { outline: 4px solid var(--ink, #121413); outline-offset: 2px; } .ds-block:focus-visible { outline: 4px solid var(--blue, #0a5aa8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Sign Plate (Landing)",
+      "kind": "card",
+      "refersTo": "sign-plate",
+      "description": "The landing's plate that teaches the three signs before a file is loaded: sign, name in condensed capitals, one sentence on what it asks of the estimator.",
+      "html": "<ul class=\"ds-legend\" aria-label=\"What the three signs mean\"><li><svg width=\"56\" height=\"56\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Stop\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#c4161c\"/><rect x=\"5\" y=\"9.75\" width=\"14\" height=\"4.5\" fill=\"#fff\"/></svg><b>Stop</b><span>The LV contradicts itself or cannot be priced as written. Ask the client first.</span></li><li><svg width=\"56\" height=\"56\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Caution\"><path d=\"M12 2.6 22.6 21H1.4Z\" fill=\"#ffc400\" stroke=\"#121413\" stroke-width=\"1.7\" stroke-linejoin=\"round\"/><rect x=\"10.9\" y=\"9\" width=\"2.2\" height=\"6.2\" fill=\"#121413\"/><circle cx=\"12\" cy=\"17.8\" r=\"1.25\" fill=\"#121413\"/></svg><b>Caution</b><span>Scope or risk is pushed onto the bidder. Price it in or question it.</span></li><li><svg width=\"56\" height=\"56\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Note\"><rect x=\"1.5\" y=\"1.5\" width=\"21\" height=\"21\" rx=\"3\" fill=\"#0a5aa8\"/><circle cx=\"12\" cy=\"7.2\" r=\"1.6\" fill=\"#fff\"/><rect x=\"10.7\" y=\"10.4\" width=\"2.6\" height=\"8.4\" fill=\"#fff\"/></svg><b>Note</b><span>Wording worth knowing about before you sign. Keep it for later claims.</span></li></ul>",
+      "css": ".ds-legend { width: 480px; margin: 0; padding: 0; list-style: none; background: var(--plate, #fcfcf9); color: var(--ink, #121413); border: 3px solid var(--ink, #121413); border-radius: 8px; font-family: var(--text, 'Barlow', system-ui, sans-serif); font-size: 17px; font-weight: 500; line-height: 1.5; } .ds-legend li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 4px 16px; align-items: center; padding: 16px 20px; } .ds-legend li + li { border-top: 3px solid var(--ink, #121413); } .ds-legend svg { grid-row: span 2; display: block; } .ds-legend b { font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: 0.025em; text-transform: uppercase; } .ds-legend span { line-height: 1.35; color: var(--ink-2, #3b403a); }"
+    },
+    {
+      "name": "Finding Plate",
+      "kind": "card",
+      "refersTo": "sign-plate-header-stop",
+      "description": "One finding as a sign plate: coloured header with sign and category, quoted evidence, then fields headed in the caption voice.",
+      "html": "<section class=\"ds-plate\"><header><svg width=\"30\" height=\"30\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Stop\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#c4161c\"/><rect x=\"5\" y=\"9.75\" width=\"14\" height=\"4.5\" fill=\"#fff\"/></svg><h3>Error in the LV</h3><span class=\"ds-plate-id\">R-DIM-MISMATCH</span></header><p class=\"ds-plate-evidence\">short text „Losflansch DN 125, PN 10“ vs long text DN 100</p><dl><dt>Why it matters</dt><dd>The short text names DN 125, the long text only DN 100.</dd><dt>What to do</dt><dd class=\"ds-plate-action\">Send a bidder question</dd><dt>Money at stake</dt><dd class=\"ds-plate-quiet\">Not quantified: this file carries no prices</dd></dl></section>",
+      "css": ".ds-plate { width: 440px; background: var(--plate, #fcfcf9); color: var(--ink, #121413); border: 3px solid var(--ink, #121413); border-radius: 8px; overflow: hidden; font-family: var(--text, 'Barlow', system-ui, sans-serif); font-size: 17px; font-weight: 500; line-height: 1.5; } .ds-plate header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--red, #c4161c); color: #fff; border-bottom: 3px solid var(--ink, #121413); } .ds-plate header svg { flex: none; outline: 2px solid #fff; border-radius: 50%; } .ds-plate h3 { flex: 1; margin: 0; font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 28px; font-weight: 700; line-height: 1.05; letter-spacing: 0.025em; text-transform: uppercase; } .ds-plate-id { font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 16px; font-weight: 600; letter-spacing: 0.05em; white-space: nowrap; } .ds-plate-evidence { margin: 0; padding: 16px; font-size: 21px; font-weight: 600; line-height: 1.3; border-bottom: 1.5px solid var(--ink, #121413); } .ds-plate dl { margin: 0; padding: 14px 16px 18px; } .ds-plate dt { margin-top: 14px; font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 20px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; } .ds-plate dt:first-child { margin-top: 0; } .ds-plate dd { margin: 0; font-size: 18px; line-height: 1.45; } .ds-plate-action { font-weight: 600; } .ds-plate-quiet { color: var(--ink-2, #3b403a); }"
+    },
+    {
+      "name": "Finding Row",
+      "kind": "custom",
+      "refersTo": "finding-row-hover",
+      "description": "One flagged item in the findings list: sign, item number, German short text on up to two lines, categories. Yellow on hover.",
+      "html": "<button class=\"ds-finding\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" role=\"img\" aria-label=\"Caution\"><path d=\"M12 2.6 22.6 21H1.4Z\" fill=\"#ffc400\" stroke=\"#121413\" stroke-width=\"1.7\" stroke-linejoin=\"round\"/><rect x=\"10.9\" y=\"9\" width=\"2.2\" height=\"6.2\" fill=\"#121413\"/><circle cx=\"12\" cy=\"17.8\" r=\"1.25\" fill=\"#121413\"/></svg><span class=\"ds-finding-oz\">1.2.1</span><span class=\"ds-finding-text\"><span class=\"ds-finding-title\" lang=\"de\">Desinfektion der Gesamtanlage</span><span class=\"ds-finding-why\">Contract risk, Unclear scope</span></span></button>",
+      "css": ".ds-finding { display: grid; grid-template-columns: 28px 92px minmax(0, 1fr); align-items: center; gap: 14px; width: 480px; padding: 13px 22px; border: 0; border-bottom: 1.5px solid var(--rule, #cdd0c7); background: var(--plate, #fcfcf9); color: var(--ink, #121413); text-align: left; font-family: var(--text, 'Barlow', system-ui, sans-serif); cursor: pointer; } .ds-finding:hover { background: var(--yellow, #ffc400); } .ds-finding:focus-visible { outline: 3px solid var(--blue, #0a5aa8); outline-offset: -4px; } .ds-finding-oz { font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-finding-text { display: flex; flex-direction: column; min-width: 0; } .ds-finding-title { font-size: 19px; font-weight: 600; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; } .ds-finding-why { margin-top: 2px; font-size: 17px; font-weight: 500; color: var(--ink-2, #3b403a); } .ds-finding:hover .ds-finding-why { color: var(--yellow-ink, #3a2c00); }"
+    },
+    {
+      "name": "Readout Bar",
+      "kind": "custom",
+      "refersTo": "readout",
+      "description": "Black bar under the map that names the mark under the pointer; replaces tooltips.",
+      "html": "<p class=\"ds-readout\"><b>5.1.46</b><span class=\"ds-readout-text\" lang=\"de\">Losflansch DN 125, PN 10</span><span class=\"ds-readout-qty\">1 St</span></p>",
+      "css": ".ds-readout { display: flex; align-items: center; gap: 12px; height: 50px; width: 540px; margin: 0; padding: 0 14px; background: var(--ink, #121413); color: #fff; border-radius: 4px; white-space: nowrap; overflow: hidden; font-family: var(--text, 'Barlow', system-ui, sans-serif); font-size: 18px; } .ds-readout b { font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 26px; font-variant-numeric: tabular-nums; } .ds-readout-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 500; } .ds-readout-qty { color: var(--yellow, #ffc400); font-weight: 600; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Tags and Item Links",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Outline tag for an item's kind, the item-number link, and the yellow section filter chip.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-tag\">Optional item</span><button class=\"ds-oz-link\">5.1.4</button><button class=\"ds-section-chip\"><b>Section 5</b><span lang=\"de\">Rohrleitungen</span><span class=\"ds-clear\">Show all sections</span></button></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-family: var(--text, 'Barlow', system-ui, sans-serif); font-size: 17px; font-weight: 500; line-height: 1.5; color: var(--ink, #121413); } .ds-tag { display: inline-block; padding: 0 7px; border: 1.5px solid var(--ink, #121413); border-radius: 3px; font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 14px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; } .ds-oz-link { padding: 0 8px; border: 2px solid var(--ink, #121413); border-radius: 3px; background: var(--plate, #fcfcf9); color: var(--ink, #121413); font-family: var(--display, 'Barlow Condensed', 'Arial Narrow', sans-serif); font-size: 18px; font-weight: 700; cursor: pointer; } .ds-oz-link:hover { background: var(--yellow, #ffc400); } .ds-section-chip { display: flex; align-items: baseline; gap: 8px; padding: 7px 12px; background: var(--yellow, #ffc400); color: var(--ink, #121413); border: 2px solid var(--ink, #121413); border-radius: 4px; font: inherit; text-align: left; cursor: pointer; } .ds-clear { font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; } .ds-oz-link:focus-visible, .ds-section-chip:focus-visible { outline: 3px solid var(--blue, #0a5aa8); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Site Signboard",
+    "overview": "The interface is built from the materials of a German construction site's safety signage: a signal-yellow band closed by a yellow-and-black hazard stripe, black condensed capitals, white sign plates held by a black keyline, and concrete greys underneath. The bill of quantities (Leistungsverzeichnis, LV) is treated as a site that is still under construction, and every problem in it is posted the way a site posts a hazard: as a sign with a fixed shape, a fixed colour and a number large enough to read from across the yard.\n\nDensity is that of a working tool, not a brochure. The loaded screen is a fixed two-pane workspace with no page scroll: an LV map on the left (one row per section, one mark per item, in file order), and on the right a findings list that is replaced by an item sheet when something is selected. Type is large and heavy on purpose; the second audience is a jury reading a projector from a distance, so the base text is 17px at weight 500, most reading text is 18 to 25px, and the whole interface zooms on wide screens.\n\nThe system is flat and opaque. Nothing floats, blurs or glows; hierarchy comes from keyline weight, solid colour fields and the size of condensed numerals. German LV text is shown exactly as issued and never translated in place; interface text is English.",
+    "keyCharacteristics": [
+      "Signal yellow is a surface, not a highlight: the band, the landing page, hover and selection all use the same yellow.",
+      "Severity is three signs, Stop / Caution / Note, carried by shape and colour together: red circle, yellow triangle, blue square.",
+      "Item numbers (Ordnungszahlen) are the largest and heaviest thing in every view, always in tabular condensed numerals.",
+      "White plates with a black keyline hold content; the grey ground holds the map.",
+      "Flat, opaque, hard-edged. The only gradient is the hard-stop hazard stripe.",
+      "Built to be read from the back of a room: nothing below 14px, body at 17px and weight 500, captions in 20px condensed capitals, 1.2x and 1.5x zoom on large displays."
+    ],
+    "rules": [
+      {
+        "name": "The One Sign, One Colour Rule",
+        "body": "Red means Stop, yellow triangle means Caution, blue means Note. Red and blue never decorate; if a new surface needs an accent, it is Signal Yellow or Site Black.",
+        "section": "colors"
+      },
+      {
+        "name": "The Shape Carries It Too Rule",
+        "body": "Severity is never colour alone. Wherever a severity colour appears at small size, its sign shape (circle, triangle, square) appears with it, and the label Stop, Caution or Note is available in text.",
+        "section": "colors"
+      },
+      {
+        "name": "The Keyline on Yellow Rule",
+        "body": "Yellow has no edge against the grey ground or the white plate, so a yellow object placed on either always gets a black keyline: the Caution triangle is stroked (1.7 on a 24 unit grid), the Caution block carries a 2px inset keyline, the section chip a 2px border.",
+        "section": "colors"
+      },
+      {
+        "name": "The White Ring Rule",
+        "body": "A sign placed on a header of its own colour is outlined in white (2px), with the outline following the sign's shape.",
+        "section": "colors"
+      },
+      {
+        "name": "The Yellow Ink Rule",
+        "body": "Grey text is not allowed on yellow. Secondary text that lands on Signal Yellow, including on hover, switches to Yellow Ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Capitals Are Condensed Rule",
+        "body": "Uppercase belongs to Barlow Condensed only. Barlow text is always sentence case, including tabs, toggles and table group rows. A label that needs capitals is set in the condensed caption voice (600, 20px, 0.04em), never in capitalised Barlow.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tracked Capitals Rule",
+        "body": "Condensed capitals are never set tight: 0.025em on display-weight words, 0.04em on captions, 0.05em on the small identifier labels. Condensed numerals and the landing statement, which are large enough to hold their own spacing, take 0.01em.",
+        "section": "typography"
+      },
+      {
+        "name": "The Numbers Are Signs Rule",
+        "body": "An item or section number is always Barlow Condensed 700 with tabular numerals, and is never smaller than the text it identifies. Quantities and money in running text stay in Barlow, also tabular.",
+        "section": "typography"
+      },
+      {
+        "name": "The German Stays German Rule",
+        "body": "LV text keeps its original wording, carries lang=\"de\", and is never uppercased or truncated in the item sheet (it wraps; list rows clamp to two lines, single-line contexts such as the map row and the readout may ellipsise). Anonymisation tokens such as [FIRMA_044] are dimmed to Secondary Ink with a dotted underline, never styled as errors.",
+        "section": "typography"
+      },
+      {
+        "name": "The Where Before What Rule",
+        "body": "The map of the whole LV is the first thing a loaded file shows and is the way to navigate. Lists and tables are secondary views of the same items.",
+        "section": "layout"
+      },
+      {
+        "name": "The Whole Room Zoom Rule",
+        "body": "Large displays scale the entire interface (1.2x from 1700px, 1.5x from 2300px). Do not add wide-screen layouts that spread content out; make it bigger.",
+        "section": "layout"
+      },
+      {
+        "name": "The Keyline, Not Shadow Rule",
+        "body": "A surface is separated from its neighbour by a black line or a change of solid colour. If a new element seems to need a shadow, give it a keyline.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Stripe Means State Rule",
+        "body": "The yellow-black diagonal stripe appears only where the site itself is in a transitional state: under the band (the LV is under review), under the busy strip (analysis running, 6px), and around the full-screen drop target (22px). It is always hard-stopped at -45 degrees, and never a decorative divider between content blocks.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do put a problem's item number on the screen bigger and heavier than anything describing it; Barlow Condensed 700, tabular.",
+      "Do pair every severity colour with its sign shape and one of the three words Stop, Caution, Note.",
+      "Do give any yellow object on grey or white a black keyline (2px inset on blocks, 2px border on chips).",
+      "Do use Signal Yellow as the one hover and selection fill in the workspace, and switch grey secondary text to Yellow Ink (#3a2c00) when it lands on yellow.",
+      "Do separate surfaces with keylines in the three established weights: 3px plates and panes, 2px controls and map sections, 1.5px internal dividers.",
+      "Do set every caption, field heading and table head in the one caption voice: Barlow Condensed 600, 20px, 0.04em, uppercase.",
+      "Do keep German LV text verbatim, marked lang=\"de\", with anonymisation tokens dimmed and dotted-underlined.",
+      "Do say \"Not quantified\", \"no rule finding\" or \"no prices in this file\" in plain words where a number does not exist.",
+      "Do keep reading text at 17px and weight 500 or more and small print at 14px or more, and let the 1.2x and 1.5x body zoom handle large displays.",
+      "Do show focus with the 3px Note Blue outline on every interactive element, inset on full-width rows."
+    ],
+    "donts": [
+      "Don't use Stop Red or Note Blue for anything except their severity (and, for blue, the focus ring). No red buttons, no blue links at rest.",
+      "Don't invent a fourth severity colour or shape; a new state is expressed with ink, yellow, or a dashed keyline.",
+      "Don't use soft gradients, blur, translucency or resting shadows. The only gradient in the system is the hard-stop hazard stripe.",
+      "Don't use the hazard stripe as a decorative divider between content blocks; it marks the band, a busy state and the drop target.",
+      "Don't set Barlow (the text face) in capitals, or set long German text in Barlow Condensed capitals.",
+      "Don't set condensed capitals without tracking, or add a second caption style beside the 20px one.",
+      "Don't put Secondary Ink grey text on yellow.",
+      "Don't translate, uppercase or restyle LV text, and don't flag anonymisation tokens as errors.",
+      "Don't summarise the LV as stat tiles over a table; location on the map comes first.",
+      "Don't add a 3D or perspective view of the LV; one was built and rejected by the team as hard to read.",
+      "Don't show a money figure, a rank or a drawing without its source in the caption; leave it out when the file has no data for it.",
+      "Don't make marks on the map re-order or re-flow in response to filters; they change state in place."
+    ]
+  }
+}

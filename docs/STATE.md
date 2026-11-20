@@ -33,8 +33,16 @@ parsed, and the LLM checks run against the Claude API. No prices or report expor
 
 - FastAPI (`src/boq/api.py`): `POST /api/analyze` (upload), `GET /api/samples` and `/api/samples/analyze` (the
   nine GAEB files of the dataset, one click each)
-- Web UI (`web/`): drop zone, items table with finding marks and title rows, severity filters, search, findings
-  list, item detail with evidence, explanation, action and long text
+- Web UI (`web/`), second design (D-013; the first table-and-list screen was replaced). Yellow site-signage look
+  for a projector. Left: the LV map (`LvMap.tsx`), one named row per section, one mark per item, items with
+  findings as numbered blocks (Stop / Caution / Note); clicking a section filters the list. Right: findings
+  grouped per item, replaced by the item sheet on selection: a picture of the item (`ItemVisual.tsx`: the two
+  diameters of a DN contradiction to scale; value rank chart on priced files), evidence, reason, action, German
+  LV text. Also item table, preliminary remarks, upload / drag-and-drop / dataset picker (GAEB and PDF), and the
+  "Run AI review" button. Deep link: `?sample=<path>&view=table&item=5.1.4`. Design notes: `PRODUCT.md`,
+  `DESIGN.md`, `.impeccable/`.
+  Checked in Chrome through a script at 1440x900 (hover, click, severity toggle, section filter, a GAEB and a
+  PDF sample). Not checked: the AI review button against the live API from this UI; a person clicking through.
 
 - PDF parser (`src/boq/parsers/pdf.py`, PyMuPDF text layer, no LLM): works on positioned lines, finds the OZ
   column, skips contract forms and page furniture. Scored against the GAEB twin of the same LV with

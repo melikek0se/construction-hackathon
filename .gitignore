@@ -27,3 +27,7 @@ dist/
 *.zip
 data/processed/
 data/cache/
+
+# Design tooling: review screenshots and the hook cache are local
+.impeccable/review/
+.impeccable/hook.cache.json

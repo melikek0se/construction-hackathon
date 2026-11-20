@@ -1,428 +1,395 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { analyzeSample, analyzeUpload, listSamples, runLlmReview } from "./api";
-import type { Analysis, Finding, Item, Sample, Severity } from "./api";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { analyzeFile, listSamples, loadSample, runLlmReview } from "./api";
+import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
+import { LvText, eur, qty } from "./format";
+import { buildSections, weight, worst } from "./sections";
+import { LvMap } from "./LvMap";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, sampleKind, type Analysis, type Finding, type Item, type Sample, type Severity } from "./types";
 
-const SEVERITIES: Severity[] = ["high", "warn", "info"];
-const SEVERITY_LABEL: Record<Severity, string> = { high: "Clarify", warn: "Risk", info: "Note" };
-const ACTION_LABEL: Record<Finding["action"], string> = {
-  ask_client: "Ask the client before bidding",
-  add_surcharge: "Price the risk into the bid",
-  get_quote: "Get a supplier quote",
-  note_for_claims: "Keep for claim management",
-  fix_typo: "Correct the figure",
-};
-const KIND_LABEL: Record<Item["kind"], string> = {
-  normal: "",
-  lump_sum: "Lump sum",
-  contingency: "Contingency",
-  alternative: "Alternative",
-  hourly: "Hourly",
-  surcharge: "Surcharge",
-};
-const PHASE_LABEL: Record<string, string> = { "83": "Tender", "84": "Bid", "86": "Award" };
-
-const number = (digits: number) =>
-  new Intl.NumberFormat("de-DE", { minimumFractionDigits: digits, maximumFractionDigits: digits });
-const money = number(2);
-
-function formatQty(value: string | null): string {
-  if (value === null) return "";
-  const n = Number(value);
-  return Number.isInteger(n) ? number(0).format(n) : number(3).format(n);
-}
-
-function formatMoney(value: string | null): string {
-  return value === null ? "" : money.format(Number(value));
-}
+type View = "plan" | "table" | "remarks";
+const VIEWS: [View, string][] = [
+  ["plan", "LV map"],
+  ["table", "Item table"],
+  ["remarks", "Remarks"],
+];
+const ALL = new Set<Severity>(SEVERITIES);
+const NONE: Selection = { oz: null, finding: null };
 
 export default function App() {
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [samples, setSamples] = useState<Sample[]>([]);
-  const [busy, setBusy] = useState("");
-  const [error, setError] = useState("");
+  const [apiDown, setApiDown] = useState(false);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<View>("plan");
+  const [tableKey, setTableKey] = useState(0);
+  const [severities, setSeverities] = useState<Set<Severity>>(ALL);
+  const [section, setSection] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<Item | null>(null);
+  const [selection, setSelection] = useState<Selection>(NONE);
+  const [dragging, setDragging] = useState(false);
+  const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
+  const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    listSamples().then(setSamples).catch(() => setSamples([]));
+    listSamples().then(setSamples, () => setApiDown(true));
   }, []);
 
-  async function run(label: string, job: () => Promise<Analysis>) {
+  const run = useCallback(async (label: string, job: () => Promise<Analysis>) => {
     setBusy(label);
-    setError("");
+    setError(null);
     try {
       setAnalysis(await job());
+      setAi("idle");
+      setView("plan");
+      setSeverities(ALL);
+      setSection(null);
+      setSelection(NONE);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setBusy("");
+      setBusy(null);
+    }
+  }, []);
+
+  // ?sample=<folder>/<file>[&view=table|remarks][&item=5.1.4] reopens the same LV after a reload.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get("sample");
+    if (!id) return;
+    void run(id.split("/").pop() ?? id, () => loadSample(id)).then(() => {
+      const v = params.get("view");
+      if (v === "table" || v === "remarks") setView(v);
+      const oz = params.get("item");
+      if (oz) setSelection({ oz, finding: null });
+    });
+  }, [run]);
+
+  // The AI review adds findings to the same list; rule findings stay first within each severity.
+  async function review() {
+    if (!analysis || ai !== "idle") return;
+    setAi("running");
+    setError(null);
+    try {
+      const { findings } = await runLlmReview(analysis.id);
+      const added = findings.filter((f) => f.origin === "llm");
+      setAnalysis((a) => (a && a.id === analysis.id ? { ...a, findings: [...a.findings, ...added] } : a));
+      setAi("done");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setAi("idle");
     }
   }
 
-  const upload = (file: File) => run(file.name, () => analyzeUpload(file));
-  const openSample = (sample: Sample) => run(sample.name, () => analyzeSample(sample.path));
-
-  return (
-    <div className="app">
-      <header className="bar">
-        <button className="brand" onClick={() => setAnalysis(null)} title="Back to the start">
-          LV check
-        </button>
-        {analysis && <span className="bar-file">{analysis.boq.file}</span>}
-        <span className="bar-space" />
-        {busy && <span className="bar-busy">Reading {busy}…</span>}
-        <UploadButton onFile={upload} label={analysis ? "Check another LV" : "Choose a file"} />
-      </header>
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      {analysis ? (
-        <Workspace key={analysis.id} analysis={analysis} />
-      ) : (
-        <Start samples={samples} onFile={upload} onSample={openSample} busy={busy !== ""} />
-      )}
-    </div>
+  const upload = useCallback(
+    (file: File | undefined) => {
+      if (file) void run(file.name, () => analyzeFile(file));
+    },
+    [run],
   );
-}
 
-function UploadButton({ onFile, label }: { onFile: (f: File) => void; label: string }) {
-  const input = useRef<HTMLInputElement>(null);
+  const itemByOz = useMemo(() => {
+    const m = new Map<string, Item>();
+    for (const item of analysis?.boq.items ?? []) if (!m.has(item.oz)) m.set(item.oz, item);
+    return m;
+  }, [analysis]);
+
+  const findingsByOz = useMemo(() => {
+    const m = new Map<string, Finding[]>();
+    for (const f of analysis?.findings ?? []) {
+      if (f.item_oz === null) continue;
+      m.set(f.item_oz, [...(m.get(f.item_oz) ?? []), f]);
+    }
+    return m;
+  }, [analysis]);
+
+  const sections = useMemo(
+    () => (analysis ? buildSections(analysis.boq.items, analysis.findings) : []),
+    [analysis],
+  );
+
+  const stats = useMemo(() => {
+    if (!analysis) return null;
+    const counts: Record<Severity, number> = { high: 0, warn: 0, info: 0 };
+    for (const f of analysis.findings) counts[f.severity]++;
+    const totals = analysis.boq.items.flatMap((i) => (i.total === null ? [] : [Number(i.total)]));
+    const heaviest = [...sections].sort((a, b) => weight(b.counts) - weight(a.counts))[0];
+    return {
+      counts,
+      priced: totals.length > 0,
+      net: totals.reduce((a, b) => a + b, 0),
+      heaviest: heaviest && weight(heaviest.counts) > 0 ? heaviest : null,
+    };
+  }, [analysis, sections]);
+
+  const relatedOz = useMemo(() => {
+    const f = selection.finding !== null ? analysis?.findings[selection.finding] : null;
+    return new Set(f?.related_oz ?? []);
+  }, [analysis, selection]);
+
+  const open = selection.oz !== null || selection.finding !== null;
+
+  function showInTable(oz: string) {
+    setSelection({ oz, finding: null });
+    setView("table");
+    setTableKey((k) => k + 1); // remount so the table scrolls to the row
+  }
+
+  const picker = samples.length > 0 && (
+    <select
+      value=""
+      disabled={busy !== null}
+      onChange={(e) => {
+        const s = samples.find((x) => x.path === e.target.value);
+        if (s) void run(s.name, () => loadSample(s.path));
+      }}
+      aria-label="Open an LV from the dataset"
+    >
+      <option value="">Open from dataset</option>
+      {samples.map((s) => (
+        <option key={s.path} value={s.path}>
+          {s.name} ({sampleKind(s.name)})
+        </option>
+      ))}
+    </select>
+  );
+
   return (
-    <>
-      <button className="button" onClick={() => input.current?.click()}>
-        {label}
-      </button>
+    <div
+      className={`app${dragging ? " dragging" : ""}`}
+      onDragOver={(e) => (e.preventDefault(), setDragging(true))}
+      onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        upload(e.dataTransfer.files[0]);
+      }}
+    >
       <input
-        ref={input}
+        ref={fileInput}
         type="file"
         hidden
         accept=".x83,.x84,.x86,.d83,.d84,.d86,.pdf"
         onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onFile(file);
+          upload(e.target.files?.[0]);
           e.target.value = "";
         }}
       />
-    </>
-  );
-}
 
-function Start(props: { samples: Sample[]; onFile: (f: File) => void; onSample: (s: Sample) => void; busy: boolean }) {
-  const [over, setOver] = useState(false);
-  return (
-    <main className="start">
-      <div
-        className={"sheet drop" + (over ? " over" : "")}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setOver(true);
-        }}
-        onDragLeave={() => setOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setOver(false);
-          const file = e.dataTransfer.files[0];
-          if (file) props.onFile(file);
-        }}
-      >
-        <div className="sheet-head" aria-hidden="true">
-          <span>OZ</span>
-          <span>Leistungsbeschreibung</span>
-          <span>Menge</span>
-          <span>ME</span>
-          <span>EP</span>
-          <span>GP</span>
-        </div>
-        <div className="drop-body">
-          <h1>Drop a Leistungsverzeichnis here</h1>
-          <p>
-            Every item is checked for contradictions, missing companion work and wording that moves risk to
-            the bidder. GAEB XML (X83, X84, X86), GAEB 90 (D83, D84, D86) or a PDF printout.
-          </p>
-        </div>
-      </div>
-      {props.samples.length > 0 && (
-        <section className="samples">
-          <h2>Or open one from the challenge dataset</h2>
-          <ul>
-            {props.samples.map((s) => (
-              <li key={s.path}>
-                <button disabled={props.busy} onClick={() => props.onSample(s)}>
-                  <span className="sample-name">{s.name}</span>
-                  <span className="sample-meta">
-                    {s.path.split("/")[0].replace(/^\d+_/, "").replace(/_/g, " ")}, {Math.round(s.bytes / 1024)} kB
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </main>
-  );
-}
-
-function Workspace({ analysis }: { analysis: Analysis }) {
-  const { boq } = analysis;
-  const [aiFindings, setAiFindings] = useState<Finding[]>([]);
-  const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
-  const [aiError, setAiError] = useState("");
-  const findings = useMemo(() => {
-    const rank = { high: 0, warn: 1, info: 2 };
-    return [...analysis.findings, ...aiFindings].sort((a, b) => rank[a.severity] - rank[b.severity]);
-  }, [analysis.findings, aiFindings]);
-
-  async function review() {
-    setAi("running");
-    setAiError("");
-    try {
-      setAiFindings((await runLlmReview(analysis.id)).findings);
-      setAi("done");
-    } catch (e) {
-      setAiError(e instanceof Error ? e.message : String(e));
-      setAi("idle");
-    }
-  }
-  const [selected, setSelected] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [shown, setShown] = useState<Set<Severity>>(new Set(SEVERITIES));
-  const [flaggedOnly, setFlaggedOnly] = useState(false);
-
-  const byItem = useMemo(() => {
-    const map = new Map<string, Finding[]>();
-    for (const f of findings) {
-      if (!shown.has(f.severity) || f.item_oz === null) continue;
-      map.set(f.item_oz, [...(map.get(f.item_oz) ?? []), f]);
-    }
-    return map;
-  }, [findings, shown]);
-
-  const counts = useMemo(() => {
-    const c: Record<Severity, number> = { high: 0, warn: 0, info: 0 };
-    for (const f of findings) c[f.severity] += 1;
-    return c;
-  }, [findings]);
-
-  const visibleFindings = findings.filter((f) => shown.has(f.severity));
-  const needle = query.trim().toLowerCase();
-  const rows = boq.items.filter(
-    (i) =>
-      (!flaggedOnly || byItem.has(i.oz)) &&
-      (!needle || i.oz.startsWith(needle) || `${i.short_text} ${i.long_text}`.toLowerCase().includes(needle)),
-  );
-  const total = boq.items.reduce((sum, i) => sum + (i.total ? Number(i.total) : 0), 0);
-  const priced = boq.items.some((i) => i.total !== null);
-  const item = boq.items.find((i) => i.oz === selected) ?? null;
-
-  function toggle(severity: Severity) {
-    const next = new Set(shown);
-    if (next.has(severity)) next.delete(severity);
-    else next.add(severity);
-    setShown(next);
-  }
-
-  function select(oz: string | null) {
-    setSelected(oz);
-    if (oz) requestAnimationFrame(() => document.getElementById(`row-${oz}`)?.scrollIntoView({ block: "center" }));
-  }
-
-  return (
-    <main className="workspace">
-      <section className="summary">
-        <h1>{boq.name || boq.file}</h1>
-        <p>
-          {PHASE_LABEL[boq.phase] ?? "LV"} with {boq.items.length} items
-          {priced ? `, ${money.format(total)} EUR net` : ", no prices yet"}. {findings.length} findings
-          {ai === "done" ? `, ${aiFindings.length} of them from the AI review.` : " from the rule checks."}
-        </p>
-        {aiError && (
-          <p className="error inline" role="alert">
-            {aiError}
-          </p>
-        )}
-        <div className="filters">
-          {SEVERITIES.map((s) => (
-            <button key={s} className={`chip ${s}`} aria-pressed={shown.has(s)} onClick={() => toggle(s)}>
-              <span className={`mark ${s}`} />
-              {SEVERITY_LABEL[s]} <b>{counts[s]}</b>
-            </button>
-          ))}
-          <button className="chip ai" onClick={review} disabled={ai !== "idle"}>
-            {ai === "idle" ? "Run AI review" : ai === "running" ? "AI is reading the LV…" : "AI review done"}
-          </button>
-          <label className="check">
-            <input type="checkbox" checked={flaggedOnly} onChange={(e) => setFlaggedOnly(e.target.checked)} />
-            Only items with findings
-          </label>
-          <input
-            className="search"
-            type="search"
-            placeholder="Search item number or text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-      </section>
-
-      <div className="panes">
-        <div className="sheet table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th className="c-mark" aria-label="Findings" />
-                <th className="c-oz">OZ</th>
-                <th>Leistungsbeschreibung</th>
-                <th className="c-num">Menge</th>
-                <th className="c-unit">ME</th>
-                {priced && <th className="c-num">EP</th>}
-                {priced && <th className="c-num">GP</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((it, index) => {
-                const titles = newTitles(it, rows[index - 1]);
-                const marks = byItem.get(it.oz) ?? [];
-                return [
-                  ...titles.map((t) => (
-                    <tr key={`${it.oz}-t${t.depth}`} className="title-row">
-                      <td />
-                      <td colSpan={priced ? 6 : 4} style={{ paddingLeft: 12 + t.depth * 16 }}>
-                        {t.label}
-                      </td>
-                    </tr>
-                  )),
-                  <tr
-                    key={it.oz}
-                    id={`row-${it.oz}`}
-                    className={"item-row" + (it.oz === selected ? " selected" : "") + (marks[0] ? ` has-${marks[0].severity}` : "")}
-                    onClick={() => select(it.oz)}
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && select(it.oz)}
-                  >
-                    <td className="c-mark">
-                      {marks.slice(0, 4).map((f, i) => (
-                        <span key={i} className={`mark ${f.severity}`} title={f.title} />
-                      ))}
-                    </td>
-                    <td className="c-oz">{it.oz}</td>
-                    <td className="c-text">
-                      {it.short_text || it.long_text.split("\n")[0] || <i>no description in this file</i>}
-                      {KIND_LABEL[it.kind] && <span className="kind">{KIND_LABEL[it.kind]}</span>}
-                    </td>
-                    <td className="c-num">{formatQty(it.qty)}</td>
-                    <td className="c-unit">{it.unit_raw}</td>
-                    {priced && <td className="c-num">{formatMoney(it.up)}</td>}
-                    {priced && <td className="c-num">{formatMoney(it.total)}</td>}
-                  </tr>,
-                ];
-              })}
-            </tbody>
-          </table>
-          {rows.length === 0 && <p className="empty">No item matches. Clear the search or the filters.</p>}
-        </div>
-
-        <aside className="inspector">
-          {item ? (
-            <ItemDetail item={item} findings={byItem.get(item.oz) ?? []} onBack={() => select(null)} onOpen={select} />
-          ) : (
-            <FindingList findings={visibleFindings} onOpen={select} />
-          )}
-        </aside>
-      </div>
-    </main>
-  );
-}
-
-function newTitles(item: Item, previous: Item | undefined) {
-  const out: { depth: number; label: string }[] = [];
-  let changed = previous === undefined;
-  item.path.forEach((label, depth) => {
-    if (changed || previous!.path[depth] !== label) {
-      changed = true;
-      out.push({ depth, label });
-    }
-  });
-  return out;
-}
-
-function FindingList({ findings, onOpen }: { findings: Finding[]; onOpen: (oz: string) => void }) {
-  if (findings.length === 0) {
-    return <p className="empty">No findings with the selected filters.</p>;
-  }
-  return (
-    <>
-      <h2>Findings, most serious first</h2>
-      <ul className="finding-list">
-        {findings.map((f, i) => (
-          <li key={i}>
-            <button onClick={() => f.item_oz && onOpen(f.item_oz)}>
-              <span className={`mark ${f.severity}`} />
-              <span className="finding-oz">{f.item_oz ?? "LV"}</span>
-              <span className="finding-title">
-                {f.title || f.check_id}
-                {f.origin === "llm" && <span className="origin">AI</span>}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-
-function ItemDetail(props: { item: Item; findings: Finding[]; onBack: () => void; onOpen: (oz: string) => void }) {
-  const { item, findings } = props;
-  return (
-    <>
-      <button className="back" onClick={props.onBack}>
-        All findings
-      </button>
-      <p className="detail-path">{item.path.join(" / ")}</p>
-      <h2>
-        <span className="detail-oz">{item.oz}</span> {item.short_text}
-      </h2>
-      <p className="detail-facts">
-        {formatQty(item.qty)} {item.unit_raw}
-        {item.up !== null && `, unit price ${formatMoney(item.up)} EUR, total ${formatMoney(item.total)} EUR`}
-        {KIND_LABEL[item.kind] && `, ${KIND_LABEL[item.kind].toLowerCase()} item`}
-        {item.source.page !== null && `, page ${item.source.page}`}
-      </p>
-
-      {findings.length === 0 && <p className="quiet">The rule checks found nothing on this item.</p>}
-      {findings.map((f, i) => (
-        <article key={i} className={`finding ${f.severity}`}>
-          <h3>
-            <span className={`mark ${f.severity}`} />
+      <header className="band">
+        <span className="brand">LV Check</span>
+        {analysis && stats && (
+          <>
+          <div className="doc">
+            <strong>
+              <LvText text={analysis.boq.name || analysis.boq.file} />
+            </strong>
             <span>
-              {f.title || f.check_id}
-              {f.origin === "llm" && <span className="origin">AI</span>}
+              {analysis.boq.file} · {FORMAT_LABEL[analysis.boq.format]}
+              {PHASE_LABEL[analysis.boq.phase] ? ` · ${PHASE_LABEL[analysis.boq.phase]}` : ""} ·{" "}
+              {stats.priced ? `${eur(stats.net)} net` : "no prices in this file"}
             </span>
-          </h3>
-          <blockquote>{f.evidence}</blockquote>
-          <p>{f.explanation}</p>
-          <p className="finding-action">
-            {ACTION_LABEL[f.action]}
-            {f.money_at_stake !== null && `, ${formatMoney(f.money_at_stake)} EUR at stake`}
-          </p>
-          {f.related_oz.length > 0 && (
-            <p className="related">
-              Related items:{" "}
-              {f.related_oz.slice(0, 12).map((oz) => (
-                <button key={oz} onClick={() => props.onOpen(oz)}>
-                  {oz}
-                </button>
-              ))}
-            </p>
-          )}
-        </article>
-      ))}
+          </div>
+          <div className="actions">
+            {picker}
+            <button className="btn" disabled={busy !== null} onClick={() => fileInput.current?.click()}>
+              Upload LV
+            </button>
+          </div>
+          </>
+        )}
+      </header>
 
-      {item.long_text && (
-        <>
-          <h3 className="long-head">Langtext</h3>
-          <p className="long-text">{item.long_text}</p>
-        </>
+      {busy && (
+        <div className="notice busy" role="status">
+          Analysing {busy}
+        </div>
       )}
-    </>
+      {error && (
+        <div className="notice error" role="alert">
+          <span>{error}</span>
+          <button className="text-link" onClick={() => setError(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
+      {apiDown && !analysis && (
+        <div className="notice error" role="alert">
+          <span>
+            The analysis service is not answering. Start it with <code>uv run uvicorn boq.api:app --port 8000</code>,
+            then reload this page.
+          </span>
+        </div>
+      )}
+
+      {!analysis || !stats ? (
+        <main className="landing">
+          <div className="landing-inner">
+            <div className="hero">
+              <div>
+                <h1>See where an LV will hurt before you price it.</h1>
+                <p className="lede">
+                  Drop a Leistungsverzeichnis. It comes back as a map of every section and item, the problem items
+                  marked in place, each with its evidence and what to do about it.
+                </p>
+              </div>
+              <ul className="legend" aria-label="What the three signs mean">
+                <li>
+                  <Sign severity="high" size={56} />
+                  <b>Stop</b>
+                  <span>The LV contradicts itself or cannot be priced as written. Ask the client first.</span>
+                </li>
+                <li>
+                  <Sign severity="warn" size={56} />
+                  <b>Caution</b>
+                  <span>Scope or risk is pushed onto the bidder. Price it in or question it.</span>
+                </li>
+                <li>
+                  <Sign severity="info" size={56} />
+                  <b>Note</b>
+                  <span>Wording worth knowing about before you sign. Keep it for later claims.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pick">
+              <button className="drop" disabled={busy !== null} onClick={() => fileInput.current?.click()}>
+                <strong>Drop an LV, or choose one</strong>
+                <span>GAEB XML (.x83 .x84 .x86), GAEB 90 (.d83 .d84 .d86) or a PDF with a text layer.</span>
+              </button>
+              {samples.length > 0 && (
+                <div>
+                  <h2>Or open one of the dataset LVs</h2>
+                  <ul className="samples">
+                    {samples.map((s) => (
+                      <li key={s.path}>
+                        <button disabled={busy !== null} onClick={() => void run(s.name, () => loadSample(s.path))}>
+                          <span className="sample-name">{s.name}</span>
+                          <span className="sample-kind">{sampleKind(s.name)}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      ) : (
+        <div className="work">
+          <main className="left">
+            <div className="left-head">
+              <div className="verdict">
+                <h1>
+                  {analysis.findings.length === 0
+                    ? `No rule finding in ${analysis.boq.items.length} items`
+                    : SEVERITIES.filter((s) => stats.counts[s] > 0).map((s) => (
+                        <span key={s} className="count">
+                          <Sign severity={s} size={36} />
+                          {countLabel(stats.counts[s], s)}
+                        </span>
+                      ))}
+                </h1>
+                {analysis.findings.length > 0 && (
+                  <p>
+                    on {findingsByOz.size} of {analysis.boq.items.length} items
+                    {stats.heaviest && (
+                      <>
+                        . Heaviest section: <b>{stats.heaviest.key}</b>{" "}
+                        <span lang="de">
+                          <LvText text={stats.heaviest.title} />
+                        </span>
+                      </>
+                    )}
+                  </p>
+                )}
+              </div>
+              <div className="views" role="tablist" aria-label="View">
+                {VIEWS.map(([id, label]) => (
+                  <button key={id} role="tab" aria-selected={view === id} onClick={() => setView(id)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {view === "plan" && (
+              <>
+                <LvMap
+                  sections={sections}
+                  findingsByOz={findingsByOz}
+                  visible={severities}
+                  selectedOz={selection.oz}
+                  relatedOz={relatedOz}
+                  section={section}
+                  onSection={(key) => {
+                    setSection(key);
+                    setSelection(NONE);
+                  }}
+                  onSelect={(oz) => setSelection({ oz, finding: null })}
+                  onHover={setHovered}
+                />
+                <p className="readout" aria-live="off">
+                  {hovered ? (
+                    <>
+                      {worst(findingsByOz.get(hovered.oz)) && (
+                        <Sign severity={worst(findingsByOz.get(hovered.oz))!} size={22} />
+                      )}
+                      <b>{hovered.oz}</b>
+                      <span className="readout-text" lang="de">
+                        <LvText text={itemLabel(hovered)} />
+                      </span>
+                      <span className="readout-qty">
+                        {qty(hovered.qty)} {hovered.unit_raw || hovered.unit}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="hint">
+                      One row per section, one mark per item, in LV order. Point at a mark to read it, click to open it.
+                    </span>
+                  )}
+                </p>
+              </>
+            )}
+            {view === "table" && (
+              <ItemsView
+                key={tableKey}
+                analysis={analysis}
+                findingsByOz={findingsByOz}
+                selectedOz={selection.oz}
+                onSelect={(oz) => setSelection({ oz, finding: null })}
+              />
+            )}
+            {view === "remarks" && <RemarksView analysis={analysis} />}
+          </main>
+
+          <aside className="right">
+            {open ? (
+              <ItemSheet
+                analysis={analysis}
+                itemByOz={itemByOz}
+                findingsByOz={findingsByOz}
+                selection={selection}
+                onSelect={setSelection}
+                onBack={() => setSelection(NONE)}
+                onShowInTable={showInTable}
+              />
+            ) : (
+              <FindingsList
+                analysis={analysis}
+                itemByOz={itemByOz}
+                sections={sections}
+                severities={severities}
+                onSeverities={setSeverities}
+                section={section}
+                onSection={setSection}
+                onSelect={setSelection}
+                ai={ai}
+                onReview={() => void review()}
+              />
+            )}
+          </aside>
+        </div>
+      )}
+    </div>
   );
 }

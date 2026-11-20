@@ -89,3 +89,15 @@ evidence, no finding" (CLAUDE.md) mechanically instead of by prompt. Model `clau
 for all requests (`BOQ_LLM_MODEL`, `BOQ_LLM_EFFORT` to change); the two-model split of `06-architecture.md` is
 not built — decide it from measured cost and quality after the first live runs.
 Revisit if: too many good findings are dropped because the model paraphrases — then loosen the match, not the rule.
+
+## D-013 — UI: a flat map of the LV first; yellow site-signage look; Stop / Caution / Note
+Status: decided · 2026-11-20
+
+Three screens were tried on day 1. The table-and-list screen was rejected as unreadable. A 3D site plan was built
+next and rejected the same day: the yellow signage look was liked, the 3D could not be read. Kept: the yellow
+"under construction" look, sized for a projector. The loaded LV opens as a strip map (`web/src/LvMap.tsx`) — one
+named row per section, one mark per item, items with findings as numbered coloured blocks — and the selected item
+gets a picture (`ItemVisual.tsx`). Do not bring 3D back without being asked.
+The UI labels `high` / `warn` / `info` as Stop / Caution / Note (red circle, yellow triangle, blue square);
+backend values are unchanged. Fonts are self-hosted (`@fontsource`), so the demo does not need the internet.
+Revisit if: an LV has several thousand items — one mark per item will need grouping.

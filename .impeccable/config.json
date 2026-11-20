@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "web/src/styles.css"
+        ],
+        "createdAt": "2026-11-20T20:11:06.665Z",
+        "reason": "agent triage: .right border-left is the full-height divider between the plan pane and the findings pane, not an accent on a card; no card or list item in this file carries a side border"
+      }
+    ]
+  }
+}
