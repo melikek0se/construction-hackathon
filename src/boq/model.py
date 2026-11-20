@@ -57,6 +57,7 @@ class Finding(BaseModel):
     related_oz: list[str] = Field(default_factory=list)
     category: Literal["error", "unclear_scope", "quantity", "change_order", "contract_risk", "price"]
     check_id: str
+    title: str = ""  # one-line headline for the UI
     severity: Literal["info", "warn", "high"]
     evidence: str  # quoted text that triggered it
     explanation: str  # why it matters to an estimator

@@ -59,12 +59,16 @@ Tests only where they protect the demo (parsers).
 ```bash
 uv sync                                # install (Python 3.12/3.13 via uv)
 uv run boq FILE                        # parse a GAEB file, print rule findings; --json, --min-severity warn
-uv run pytest -q                       # parsers and checks against dataset/
+uv run uvicorn boq.api:app --reload    # API on :8000 (POST /api/analyze, GET /api/samples)
+cd web && npm install && npm run dev   # UI on :5173, proxies /api to :8000
+cd web && npm run build                # type-check + build; the API then serves web/dist at /
+uv run pytest -q                       # parsers, checks and API against dataset/
 python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
 ```
 
 Code: `src/boq/parsers` (GAEB XML, GAEB 90) → `boq.model` → `src/boq/checks` (`rules.py` per item,
-`companions.py` + `companion_rules.py` for missing items). No web app yet.
+`companions.py` + `companion_rules.py` for missing items) → `src/boq/api.py` → `web/` (Vite + React, one screen:
+`web/src/App.tsx`).
 
 ## Conventions
 

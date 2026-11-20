@@ -6,9 +6,9 @@ Last updated: 2026-11-20 (evening, hackathon day 1)
 
 ## Now
 
-Backend core exists as a Python package (`src/boq`) with a CLI: GAEB XML and GAEB 90 parsers, the normalised
-model, rule checks and the deterministic missing-item check. No web app, no LLM checks, no PDF parser yet.
-Next step is putting an API and the items/findings table in front of it.
+Upload → parse → rule findings → table works end to end for GAEB files: Python package `src/boq` (parsers, model,
+rule checks, missing-item check, CLI, FastAPI) and a React screen in `web/`. No LLM checks, no PDF parser, no
+prices or report export yet.
 
 ## Done
 
@@ -31,6 +31,11 @@ Next step is putting an API and the items/findings table in front of it.
 - Two contradictions found that were not known before: A 5.1.46 (DN 125 vs DN 100), E 2.3.23 (DN 150 vs DN 300)
 - `dataset/` regrouped into five format folders; the duplicate `data/raw/` removed
 
+- FastAPI (`src/boq/api.py`): `POST /api/analyze` (upload), `GET /api/samples` and `/api/samples/analyze` (the
+  nine GAEB files of the dataset, one click each)
+- Web UI (`web/`): drop zone, items table with finding marks and title rows, severity filters, search, findings
+  list, item detail with evidence, explanation, action and long text
+
 ## In progress
 
 - nothing
@@ -38,7 +43,7 @@ Next step is putting an API and the items/findings table in front of it.
 ## Next (in order)
 
 1. Decide team split, demo LV
-2. FastAPI upload endpoint + items/findings table in the browser (the CLI's `--json` output is the payload)
+2. Risk report export and bidder-question list from the findings
 3. More companion rules for building trades (project F) once the PDF parser exists
 4. Money at stake for findings on unpriced LVs (needs the price history)
 5. LLM checks per title
@@ -47,7 +52,7 @@ Next step is putting an API and the items/findings table in front of it.
 
 ## Not built / known gaps
 
-- No PDF parser, API or frontend. Project C has item texts only as PDF, so its companion rules are tested on
+- No PDF parser. Uploading a PDF answers "not supported yet". Project C has item texts only as PDF, so its companion rules are tested on
   the item list of `LV-Positionen.docx`, not on the real LV.
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
   has one. They cover pipeline and civil work only.

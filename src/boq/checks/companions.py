@@ -43,6 +43,7 @@ def _finding(rule: CompanionRule, triggers: list[Item], *, mentioned: Item | Non
             related_oz=[t.oz for t in triggers if t.oz != mentioned.oz],
             category="contract_risk",
             check_id=rule.id,
+            title=f"No separate item: {what}",
             severity="info",
             evidence=f"{_quote(mentioned)}: {_snippet(mentioned.long_text, rule.companion)}",
             explanation=f"No separate item for {what}. It is only mentioned inside the description of "
@@ -54,6 +55,7 @@ def _finding(rule: CompanionRule, triggers: list[Item], *, mentioned: Item | Non
         related_oz=[t.oz for t in triggers[1:]],
         category="change_order",
         check_id=rule.id,
+        title=f"Missing item: {what}",
         severity=rule.severity,
         evidence=evidence,
         explanation=f"No item and no mention of {what} anywhere in the LV. {rule.why}",
@@ -79,6 +81,7 @@ def _qty_finding(rule: CompanionRule, size: str, supplied: list[Item], installed
         related_oz=[i.oz for i in supplied[1:] + installed],
         category="quantity",
         check_id=rule.id + "-QTY",
+        title=f"Supplied and installed quantities differ (DN/da {size})",
         severity="warn",
         evidence="; ".join(f"{_quote(i)} {i.qty.normalize():f} {i.unit}" for i in (supplied + installed)[:4]),
         explanation=f"DN/da {size}: {q_sup.normalize():f} {u_sup} supplied but {q_ins.normalize():f} {u_ins} "

@@ -3,13 +3,21 @@ name = "boq"
 version = "0.1.0"
 description = "BoQ (Leistungsverzeichnis) parsing and rule checks"
 requires-python = ">=3.12,<3.14"
-dependencies = ["pydantic>=2.7"]
+dependencies = [
+    "fastapi>=0.165.0",
+    "pydantic>=2.7",
+    "python-multipart>=0.0.34",
+    "uvicorn[standard]>=0.54.0",
+]
 
 [project.scripts]
 boq = "boq.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8",
+]
 
 [build-system]
 requires = ["hatchling"]

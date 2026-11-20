@@ -33,6 +33,7 @@ def _arithmetic(item: Item) -> Finding | None:
         return None
     return Finding(
         item_oz=item.oz, category="error", check_id="R-ARITHMETIC", severity="high",
+        title="Total does not equal unit price × quantity",
         evidence=f"{item.qty.normalize():f} {item.unit_raw} × {item.up} = {expected:.2f}, stated total {item.total}",
         explanation="Unit price times quantity does not equal the item total.",
         action="fix_typo", money_at_stake=abs(expected - item.total),
@@ -44,11 +45,13 @@ def _quantity(item: Item, boq: BoQ) -> Finding | None:
         if boq.phase == "84" and not item.unit_raw:
             return None  # price-only bid file: quantities live in the tender file
         return Finding(item_oz=item.oz, category="error", check_id="R-QTY-MISSING", severity="high",
+                       title="Item has no quantity",
                        evidence=f"„{item.label[:90]}“", explanation="The item has no quantity.",
                        action="ask_client")
     if item.qty == 0:
         return Finding(
             item_oz=item.oz, category="quantity", check_id="R-QTY-ZERO", severity="warn",
+            title="Quantity is zero",
             evidence=f"„{item.label[:90]}“ — quantity 0 {item.unit_raw}",
             explanation="Quantity is zero, so the item is not in the total although it carries a description"
                         + (f" and a unit price of {item.up}" if item.up else "")
@@ -62,6 +65,7 @@ def _unit(item: Item) -> Finding | None:
     if item.unit or not item.unit_raw:
         return None
     return Finding(item_oz=item.oz, category="error", check_id="R-UNIT-UNKNOWN", severity="info",
+                   title="Unknown unit",
                    evidence=f"unit „{item.unit_raw}“ in „{item.label[:70]}“",
                    explanation="Unit is not a known unit of measure; check for a typo before pricing.",
                    action="ask_client")
@@ -73,6 +77,7 @@ def _dimension(item: Item) -> Finding | None:
         return None
     return Finding(
         item_oz=item.oz, category="error", check_id="R-DIM-MISMATCH", severity="high",
+        title="Short text and long text name different pipe sizes",
         evidence=f"short text „{item.short_text[:200]}“ vs long text DN {', DN '.join(sorted(long, key=int))}",
         explanation=f"The short text names DN {', '.join(sorted(short, key=int))}, the long text only DN "
                     f"{', '.join(sorted(long, key=int))}. Likely a copied description; the two sizes "
@@ -87,6 +92,7 @@ def _reference(item: Item, known: set[str]) -> Finding | None:
         return None
     return Finding(
         item_oz=item.oz, category="error", check_id="R-REF-BROKEN", severity="high",
+        title="Refers to an item that does not exist",
         evidence=f"„{item.label[:90]}“ refers to item {', '.join(broken)}",
         explanation="The description is 'as item …, but …' and the referenced item does not exist in "
                     "this LV, so the scope of this item is undefined.",
@@ -112,6 +118,7 @@ def _wording(item: Item) -> Finding | None:
         return None
     return Finding(
         item_oz=item.oz, category="contract_risk", check_id="R-WORDING",
+        title="Wording shifts cost or scope to the bidder",
         severity="warn" if len(hits) > 1 or item.kind == "lump_sum" else "info",
         evidence=" | ".join(f"…{quote}…" for _, quote in hits if quote),
         explanation="Wording that shifts cost or scope risk to the contractor: "
@@ -125,6 +132,7 @@ def _lump_sum(item: Item) -> Finding | None:
         return None
     return Finding(
         item_oz=item.oz, category="unclear_scope", check_id="R-LUMP-SUM-SCOPE", severity="warn",
+        title="Large scope behind one lump sum",
         evidence=f"„{item.label[:90]}“ — 1 {item.unit_raw}, description of {len(item.long_text)} characters",
         explanation="A large scope is paid as one lump sum. Under VOB/B §2 Abs. 7 the price stays fixed "
                     "when quantities change, so every unstated quantity in this text is the bidder's risk.",
