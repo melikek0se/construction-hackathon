@@ -95,4 +95,5 @@ def test_api_project_from_dataset_folder_and_single_lv():
     assert client.get("/api/projects/sample", params={"folder": "../x"}).status_code == 404
     with open(F / "LV_18_Estrich.pdf", "rb") as a, open(F / "LV_20_Bodenbelagsarbeiten.pdf", "rb") as b:
         r = client.post("/api/projects", files=[("files", ("LV_18_Estrich.pdf", a)), ("files", ("LV_20_Bodenbelagsarbeiten.pdf", b))])
-    assert r.status_code == 200 and [row["name"] for row in r.json()["lvs"]] == ["18 Estrich", "20 Bodenbelagsarbeiten"]
+    opened = client.get(f"/api/catalog/{r.json()['id']}/project").json()  # creating analyses nothing: opening does
+    assert r.status_code == 200 and [row["name"] for row in opened["lvs"]] == ["18 Estrich", "20 Bodenbelagsarbeiten"]

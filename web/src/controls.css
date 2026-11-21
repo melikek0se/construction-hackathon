@@ -335,9 +335,3 @@ input[type="search"]::-webkit-search-cancel-button {
   cursor: pointer;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sel,
-  input[type="checkbox"] {
-    transition: none;
-  }
-}

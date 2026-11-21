@@ -208,7 +208,6 @@ export function TradeGraph(props: {
     const arrows: { edge: ProjectEdge; group: THREE.Group; name: THREE.Sprite; ink: THREE.MeshBasicMaterial }[] = [];
     const captions: THREE.Sprite[] = [];
     const disposables: { dispose: () => void }[] = [];
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const slabGeometry = new THREE.BoxGeometry(W, H, D);
     const outline = new THREE.EdgesGeometry(slabGeometry);
     const lineMaterial = new THREE.LineBasicMaterial({ color: INK, transparent: true });
@@ -232,10 +231,8 @@ export function TradeGraph(props: {
         slabs.set(node.id, { mesh, top, rest: [side, front], home: position.y });
         disposables.push(side, top, front.map!, front);
         bounds.expandByObject(mesh);
-        if (!still) {
-          mesh.userData.delay = Math.max(0, storey) * 130 + (storey < 0 ? 500 : 0);
-          mesh.visible = false;
-        }
+        mesh.userData.delay = Math.max(0, storey) * 130 + (storey < 0 ? 500 : 0);
+        mesh.visible = false;
       }
 
       // the slab everything stands on, with site tape along its front
@@ -302,7 +299,7 @@ export function TradeGraph(props: {
         const name = caption(edgeText(edge), "#ffc400", "#121413", 40);
         name.position.copy(curve.getPoint(0.5));
         group.add(name);
-        group.visible = still;
+        group.visible = false;
         scene.add(group);
         arrows.push({ edge, group, name, ink });
         disposables.push(shaft.geometry, head.geometry, ink, name.material.map!, name.material);
@@ -349,7 +346,7 @@ export function TradeGraph(props: {
 
     let chosen: string | null = null;
     let hovered: string | null = null;
-    let ready = still;
+    let ready = false;
     const paint = () => {
       const focus = hovered ?? chosen;
       const near = new Set<string>(focus ? [focus] : []);

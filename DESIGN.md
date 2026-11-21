@@ -373,7 +373,7 @@ tenders on a yellow chip, ink while the schedule is open; absent while there is 
 - **Back link** in the item sheet: a chevron and capitals, no outline; hover pale yellow.
 - **Text link:** 600, 1px underline with 3px offset.
 - **Focus:** 2px ink outline, 2px offset, everywhere.
-- Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; `prefers-reduced-motion` removes all transitions.
+- Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; the system's "reduce motion" setting is not read (D-036).
 - The larger motions are the loading tapes (520ms pull-in, then a steady run along the tape) and the opening
   of the app: full yellow with the name on it in very large letters (Barlow Condensed 700, `min(34vw, 62vh)`,
   ink) and two tapes across it while the projects are fetched; the name fades (280ms), then each tape runs on through on its
@@ -434,7 +434,7 @@ A 1px `line-2` outline, white, 12px padding: index plate and name; the LV as a s
 bar with one vertical line per flagged item at its place in the LV, red and yellow 3px, blue 2px) with the
 sign counts and the item count; what is open at this stage as a short list (a severity sign, or a 7px ink
 square; a hollow square for "nothing open"); the net total in the figure style where a priced file exists;
-the files behind a disclosure (open one, correct its step, add files, delete); for the first three stages a
+no file list (files, their steps and deleting are in the project's settings); for the first three stages a
 stage select. Hover: ink outline, pale yellow. While its files are being read a card has a hazard tape
 across it; the tape is wiped off to the right when the numbers arrive.
 
@@ -506,12 +506,19 @@ from each side, crossing a little off level (-5 and 4 degrees). A tape is 46px h
 stripe 9px along both edges, a 1px ink line outside. Along it runs what is being read, in Barlow Condensed
 17px 600 capitals at 0.14em, the two tapes running in opposite directions. The tapes block the page until the
 work is done and vanish without an exit. This is the one place where the stripe moves and where an animation
-is more than a colour change; `prefers-reduced-motion` leaves the tapes in place, still.
+is more than a colour change.
 During the AI review the tapes sit 90px higher and a board stands under them: a white plate with a 1px ink
 border, 560px wide at most. It says what is being done at that moment: a heading in Barlow Condensed 17px
 capitals with "n of m sections read" beside it, a 6px ink meter, the section being read, and the six kinds of
 finding in two columns, each with its count so far (a count above zero on yellow). All six are looked for at
 once in every section, so they are listed together and never as steps.
+
+### Project settings
+Opened from "Settings" at the right of the band (white with an ink line, a two-slider sign before the word).
+The same sign on two posts as the new-project dialog, titled "Project settings": files with their step and
+"Remove" at the left, name, stage and the tender's dates at the right, "Delete project" and "Done" in the
+foot. No confirm step: every change is kept at once, and the foot says so. Taking something away is two
+clicks on the same control ("Remove" turns into "Remove for good?", red).
 
 ### Gate (the way from one page to another)
 Pages change behind the shutter, never in the open, and the band is the shutter: in the opening the yellow
@@ -531,9 +538,9 @@ page), what stands in it comes in from its own side: the group on the right (`.a
 everything else from the left, 48px and a fade, 520ms with `--ease`. It is one rule on the band's children
 (`band-in-left` / `band-in-right` in `styles.css`), so whatever is put into the band later gets it without
 more CSS. The brand comes in from the left with them after the opening, where its name stood large on the
-yellow until then, and stays put otherwise. It also runs with "reduce motion" set.
+yellow until then, and stays put otherwise.
 Easing for the shutter `cubic-bezier(0.7, 0, 0.25, 1)`, for what rises `--ease`. Polier stays in front of
-it. With "reduce motion" all of it still runs (D-033).
+it.
 
 ### Trade diagram (project view)
 The one three-dimensional drawing (D-018): each trade LV is a lettered slab, standing one storey above the last

@@ -171,14 +171,42 @@ def _zero_group(zeros: list[Finding], by_oz: dict[str, Item]) -> Finding:
     )
 
 
-def check_items(boq: BoQ) -> list[Finding]:
-    known = {i.oz for i in boq.items}
-    findings, zeros = [], []
-    for item in boq.items:
-        for f in (_arithmetic(item), _quantity(item, boq), _unit(item), _dimension(item),
-                  _reference(item, known), _wording(item), _lump_sum(item)):
-            if f:
-                (zeros if f.check_id == "R-QTY-ZERO" else findings).append(f)
+def _each(boq: BoQ, rule) -> list[Finding]:
+    return [f for item in boq.items if (f := rule(item))]
+
+
+# One function per check, each over the whole LV. boq.pipeline lists them as its steps; nothing else calls
+# the rules one by one.
+
+def arithmetic(boq: BoQ) -> list[Finding]:
+    return _each(boq, _arithmetic)
+
+
+def quantities(boq: BoQ) -> list[Finding]:
+    """Missing and zero quantities; more than three zero items are one finding, not a list of them."""
+    found = _each(boq, lambda item: _quantity(item, boq))
+    zeros = [f for f in found if f.check_id == "R-QTY-ZERO"]
     if len(zeros) > 3:
         zeros = [_zero_group(zeros, {i.oz: i for i in boq.items})]
-    return findings + zeros
+    return [f for f in found if f.check_id != "R-QTY-ZERO"] + zeros
+
+
+def units(boq: BoQ) -> list[Finding]:
+    return _each(boq, _unit)
+
+
+def dimensions(boq: BoQ) -> list[Finding]:
+    return _each(boq, _dimension)
+
+
+def references(boq: BoQ) -> list[Finding]:
+    known = {i.oz for i in boq.items}
+    return _each(boq, lambda item: _reference(item, known))
+
+
+def wording(boq: BoQ) -> list[Finding]:
+    return _each(boq, _wording)
+
+
+def lump_sums(boq: BoQ) -> list[Finding]:
+    return _each(boq, _lump_sum)

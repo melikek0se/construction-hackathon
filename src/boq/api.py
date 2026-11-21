@@ -21,7 +21,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import catalog, chat, db, mail, retrieve
+from boq import catalog, chat, db, mail, pipeline, retrieve, runs
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -194,9 +194,23 @@ def _project_id(analysis_id: str) -> str | None:
 
 
 def _llm_findings(analysis_id: str) -> list[Finding]:
+    return _reviewed(analysis_id) or []
+
+
+def _reviewed(analysis_id: str) -> list[Finding] | None:
+    """The AI findings of an analysis; None if no review has run on it."""
     with db.engine().connect() as conn:
         raw = conn.execute(select(db.analyses.c.llm_findings).where(db.analyses.c.id == analysis_id)).scalar()
-    return [Finding.model_validate(f) for f in raw or []]
+    return None if raw is None else [Finding.model_validate(f) for f in raw]
+
+
+def _from_run(analysis_id: str, project_id: str, doc_id: int) -> list[Finding] | None:
+    """What the project's pipeline run found in this document with the AI review, put onto the analysis the
+    file was just opened as; None if no run has reviewed it (yet)."""
+    found = runs.llm_findings(project_id, doc_id)
+    if found is not None:
+        _keep_llm_findings(analysis_id, found)
+    return found
 
 
 def _keep_llm_findings(analysis_id: str, findings: list[Finding]) -> None:
@@ -205,9 +219,10 @@ def _keep_llm_findings(analysis_id: str, findings: list[Finding]) -> None:
                      .values(llm_findings=[f.model_dump(mode="json") for f in findings]))
 
 
-def _dump(analysis_id: str, boq: BoQ, findings: list[Finding]) -> dict:
+def _dump(analysis_id: str, boq: BoQ, findings: list[Finding], reviewed: bool = False) -> dict:
     return {"id": analysis_id, "boq": boq.model_dump(mode="json"),
             "findings": [f.model_dump(mode="json") for f in findings],
+            "reviewed": reviewed,  # the AI review has run on it: its findings are among these
             # pages can be shown (GET …/source.pdf, …/marks): the PDF itself if it is kept, pages drawn by
             # the app for a file that has none. A PDF from a temporary upload is gone, so it has neither.
             "pdf": analysis_id in _SOURCES or boq.format != "pdf",
@@ -270,8 +285,9 @@ def _parse_kept(files: list[tuple[Path, str]]) -> tuple[list[BoQ], dict[int, Pat
 
 
 def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None,
-             project_id: str | None = None) -> dict:
-    """Analyse each LV on its own, then what the LVs expect from each other."""
+             project_id: str | None = None, docs: dict[int, int] | None = None) -> dict:
+    """Analyse each LV on its own, then what the LVs expect from each other. `docs`: the document each LV
+    is, by `id()` of its BoQ, so what the project's pipeline run found in it with the AI review is added."""
     lvs, rows = {}, []
     for boq in boqs:
         label = lv_name(boq)
@@ -280,6 +296,8 @@ def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None,
         analysis_id, findings = _store(boq, (sources or {}).get(id(boq)))
         if project_id:
             _set_project(analysis_id, project_id)
+            if docs and id(boq) in docs:
+                findings = findings + (_from_run(analysis_id, project_id, docs[id(boq)]) or [])
         lvs[label] = boq
         rows.append({"name": label, "file": boq.file, "analysis_id": analysis_id, "items": len(boq.items),
                      "counts": {s: sum(f.severity == s for f in findings) for s in ("high", "warn", "info")}})
@@ -314,7 +332,8 @@ async def analyze_upload(file: UploadFile):
 def get_analysis(analysis_id: str):
     """An LV analysed earlier, e.g. one LV of a project."""
     boq, findings = _analysis(analysis_id)
-    return _dump(analysis_id, boq, sort_findings(findings + _llm_findings(analysis_id)))
+    reviewed = _reviewed(analysis_id)
+    return _dump(analysis_id, boq, sort_findings(findings + (reviewed or [])), reviewed is not None)
 
 
 async def _read_uploads(files: list[UploadFile]) -> tuple[list[tuple[int, str, bytes, BoQ]], list[dict], list[dict]]:
@@ -351,17 +370,7 @@ async def _read_uploads(files: list[UploadFile]) -> tuple[list[tuple[int, str, b
 _shared, _versions, _same_lv = intake_rules.shared, intake_rules.versions, intake_rules.same_lv
 
 
-def _one_per_lv(boqs: list[BoQ]) -> list[BoQ]:
-    """One file per LV for the comparison between LVs: the GAEB tender where there is one. A tender and
-    its own print-out are not two trades; an LV that repeats part of another is (see _same_lv)."""
-    def rank(boq: BoQ) -> tuple[bool, bool]:  # a tender before a bid, a GAEB file before its print-out
-        return boq.phase == "83", boq.format != "pdf"
-
-    picked: dict[int, BoQ] = {}
-    for boq, group in zip(boqs, _same_lv(boqs, whole=True)):
-        if group not in picked or rank(boq) > rank(picked[group]):
-            picked[group] = boq
-    return list(picked.values())
+_one_per_lv = intake_rules.one_per_lv
 
 
 @app.post("/api/intake")
@@ -439,10 +448,9 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
         found = intake_rules.identity(new)
         title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
         project_id = catalog.save_project(title, stored, kind, number=found["number"], plan=plan)
-    if kind == "trades":
-        # where the uploads are now; by position, not by name: trade LVs often share a file name
-        sources = {id(b): _doc_path(f) for b, f in zip(boqs, _catalog(project_id)["files"]) if _is_pdf(f)}
-        return {"id": project_id, "kind": kind, **_project(title, _one_per_lv(boqs), sources, project_id)}
+    # Nothing is analysed here: the pipeline runs on the project in the background (boq.runs) and the pages
+    # show how far it is.
+    runs.autostart(project_id, "files added" if existing else "project created")
     return {"id": project_id, "kind": kind, "name": title}
 
 
@@ -523,7 +531,8 @@ def open_project_file(project_id: str, index: int):
     if shown:
         _PRINT_OUT[analysis_id] = shown[1:]
     _set_project(analysis_id, project_id)
-    return _dump(analysis_id, boq, findings)
+    reviewed = _from_run(analysis_id, project_id, doc["id"])
+    return _dump(analysis_id, boq, sort_findings(findings + (reviewed or [])), reviewed is not None)
 
 
 @app.delete("/api/catalog/{project_id}/files/{index}")
@@ -570,7 +579,31 @@ def open_project(project_id: str):
         raise HTTPException(409, f"{project['name']} is one LV in several versions; open one of its files.")
     boqs = [_parse_doc(f) for f in project["files"]]
     sources = {id(b): _doc_path(f) for b, f in zip(boqs, project["files"]) if _is_pdf(f)}
-    return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources, project_id)}
+    docs = {id(b): f["id"] for b, f in zip(boqs, project["files"])}
+    return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources, project_id, docs)}
+
+
+# ---------------------------------------------------------------- the pipeline and its runs
+
+@app.get("/api/pipeline")
+def pipeline_steps():
+    """Every check the pipeline runs, in order (boq.pipeline): id, title, deterministic or agentic, per
+    document or per project, and what it looks for."""
+    return pipeline.describe()
+
+
+@app.get("/api/runs")
+def list_runs(project: str | None = None):
+    """The latest pipeline runs, newest first, of one project or of all: status, and one row per step and
+    document with what it found. Asked again and again by the pages while a run is going."""
+    return runs.list_runs(project)
+
+
+@app.post("/api/catalog/{project_id}/runs")
+def start_run(project_id: str):
+    """Run the pipeline on a project again, in the background."""
+    _catalog(project_id)
+    return runs.start(project_id, "started by hand")
 
 
 PLAN_DATES = ("questions_due", "due", "opening", "sent", "binding_until", "exec_start", "exec_end")

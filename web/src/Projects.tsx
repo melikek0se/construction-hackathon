@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { Sign } from "./components";
 import { DateField, Select } from "./controls";
 import { eur } from "./format";
-import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type DateKind, type FoundDate, type Intake, type IntakeFile, type Plan, type ProjectDoc, type ProjectSummary, type Severity, type TenderDate } from "./types";
+import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type DateKind, type FoundDate, type Intake, type IntakeFile, type Plan, type ProjectSummary, type Run, type Severity, type TenderDate } from "./types";
 import "./home.css";
 
 /* The projects page: the running tenders on a schedule (their dates and nothing else), and under it
@@ -10,11 +10,11 @@ import "./home.css";
    opens the schedule at them). */
 
 /* A tender's files belong to one of three steps (the GAEB exchange phases 83, 84, 86). */
-const STEPS = ["tender", "bid", "award"] as const;
-type Step = (typeof STEPS)[number]; // the same three as `Step` in types.ts
-const STEP_LABEL: Record<Step, string> = { tender: "Tender", bid: "Bid", award: "Award" };
+export const STEPS = ["tender", "bid", "award"] as const;
+export type Step = (typeof STEPS)[number]; // the same three as `Step` in types.ts
+export const STEP_LABEL: Record<Step, string> = { tender: "Tender", bid: "Bid", award: "Award" };
 
-function stepOf(role: string): Step {
+export function stepOf(role: string): Step {
   if (role === "award") return "award";
   return ["bid", "submitted bid", "offer"].includes(role) ? "bid" : "tender";
 }
@@ -22,8 +22,8 @@ function stepOf(role: string): Step {
 /* The stages a tender moves through on the contractor's side. The last two follow from the files (a bid or
    an award is there); the first three are the estimator's own and are set on the card. */
 const STAGES = ["check", "questions", "pricing", "submitted", "award"] as const;
-type Stage = (typeof STAGES)[number];
-const STAGE_LABEL: Record<Stage, string> = { check: "Check", questions: "Questions", pricing: "Pricing", submitted: "Submitted", award: "Award" };
+export type Stage = (typeof STAGES)[number];
+export const STAGE_LABEL: Record<Stage, string> = { check: "Check", questions: "Questions", pricing: "Pricing", submitted: "Submitted", award: "Award" };
 const STAGE_EMPTY: Record<Stage, string> = {
   check: "No new tender. Drop its files anywhere on the page.",
   questions: "No tender has questions out.",
@@ -32,7 +32,7 @@ const STAGE_EMPTY: Record<Stage, string> = {
   award: "No award yet.",
 };
 
-function stageOf(p: CatalogProject): Stage {
+export function stageOf(p: CatalogProject): Stage {
   const steps = p.files.map((f) => stepOf(f.role));
   if (steps.includes("award")) return "award";
   if (steps.includes("bid")) return "submitted";
@@ -85,7 +85,7 @@ const DATE_LABEL: Record<DateKind, string> = {
 const DATE_ORDER = Object.keys(DATE_LABEL) as DateKind[];
 /* The dates a tender is planned by, in the order it runs. "Tender sent" is a fact about the past and is
    only shown. `hint`: where the day stands when the files do not state it. */
-const PLANNED: { kind: TenderDate; label: string; hint: string }[] = [
+export const PLANNED: { kind: TenderDate; label: string; hint: string }[] = [
   { kind: "questions_due", label: "Questions until", hint: "Set by the client, often in the cover letter." },
   { kind: "due", label: "Submission deadline", hint: "It stands on the tender notice." },
   { kind: "opening", label: "Bid opening", hint: "Usually the moment the deadline ends." },
@@ -93,15 +93,15 @@ const PLANNED: { kind: TenderDate; label: string; hint: string }[] = [
   { kind: "exec_start", label: "Work starts", hint: "In the contract terms or the schedule." },
   { kind: "exec_end", label: "Work done by", hint: "In the contract terms or the schedule." },
 ];
-const dmy = (iso: string) => iso.split("-").reverse().join(".");
+export const dmy = (iso: string) => iso.split("-").reverse().join(".");
 
 // an approximate date names a month ("Ende Juni 2026"); the day kept for it is not shown
 const dayText = (d: FoundDate) => (d.approx ? `${d.date.slice(5, 7)}.${d.date.slice(0, 4)}` : `${d.date.split("-").reverse().join(".")}${d.time ? `, ${d.time}` : ""}`);
 /** Where a date was read, with the words it was read from: the evidence behind it. */
-const readFrom = (d: FoundDate) => `${d.sources.map((s) => `${s.file}, ${s.where}`).join("; ")}: "${[d.label, d.text].filter(Boolean).join(" ")}"`;
+export const readFrom = (d: FoundDate) => `${d.sources.map((s) => `${s.file}, ${s.where}`).join("; ")}: "${[d.label, d.text].filter(Boolean).join(" ")}"`;
 
 /** The dates the files give without doubt: one day per kind, not an approximate one (as `plan_of` in dates.py). */
-function planOf(dates: FoundDate[]): Pick<Plan, TenderDate> {
+export function planOf(dates: FoundDate[]): Pick<Plan, TenderDate> {
   const one = (kind: DateKind) => {
     const days = [...new Set(dates.filter((d) => d.kind === kind && !d.approx).map((d) => d.date))];
     return days.length === 1 ? days[0] : undefined;
@@ -276,7 +276,7 @@ function ticks(start: Date): { day: Date; label: string; sub?: string; strong?: 
 }
 
 /** The dates a tender is planned by: what was set on the project, else what its files state without doubt. */
-function datesOf(p: CatalogProject, s: ProjectSummary | "failed" | undefined): Plan {
+export function datesOf(p: CatalogProject, s: ProjectSummary | "failed" | undefined): Plan {
   const read = s && s !== "failed" ? planOf(s.dates ?? []) : {};
   const out: Plan = { ...p.plan };
   for (const [k, v] of Object.entries(read) as [TenderDate, string | undefined][]) if (v && !out[k]) out[k] = v;
@@ -738,25 +738,21 @@ function openItems(p: CatalogProject, s: ProjectSummary, stage: Stage): { sign?:
 function Card({
   p,
   s,
+  run,
   stage,
   busy,
   onOpen,
-  onChooseFiles,
   onDropFiles,
-  onDelete,
-  onSetStep,
   onChange,
   onDates,
 }: {
   p: CatalogProject;
   s: ProjectSummary | "failed" | undefined;
+  run: Run | undefined; // the pipeline run going on this project, if one is
   stage: Stage;
   busy: boolean;
   onOpen: (p: CatalogProject, file?: number) => void;
-  onChooseFiles: (target: string) => void;
   onDropFiles: (files: FileList, target: string) => void;
-  onDelete: (p: CatalogProject) => void;
-  onSetStep: (p: CatalogProject, index: number, step: Step) => void;
   onChange: (p: CatalogProject, change: Change) => void;
   onDates: (p: CatalogProject) => void;
 }) {
@@ -764,7 +760,6 @@ function Card({
   // A card whose files are still being read is closed off with tape; the tape is pulled once its numbers
   // are there. A card that arrives with its numbers was never taped and just stands there.
   const taped = useRef(!ready);
-  const [doomed, setDoomed] = useState(false); // Delete was clicked once
   const [over, setOver] = useState(false);
   const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -826,6 +821,12 @@ function Card({
 
       {!ready && <p className="card-wait">{s === "failed" ? "The files could not be read." : "Reading the files"}</p>}
       {strip}
+      {run && (
+        <p className="card-run" title="The pipeline is running on this project in the background">
+          Checking {run.finished_steps}/{run.total}
+          <span>{run.steps.find((r) => r.status === "running")?.title ?? "waiting"}</span>
+        </p>
+      )}
       {ready && open.length > 0 && (
         <ul className="open-list">
           {open.map((o, i) => (
@@ -842,51 +843,6 @@ function Card({
           <b className="num">{eur(s.net)}</b>
         </p>
       )}
-
-      <details className="card-files" onClick={stop}>
-        <summary>
-          {p.files.length} file{p.files.length > 1 ? "s" : ""}
-          <small>{STEPS.filter((step) => p.files.some((f) => stepOf(f.role) === step)).map((step) => STEP_LABEL[step].toLowerCase()).join(", ")}</small>
-        </summary>
-        <ul>
-          {p.files.map((f, index) => {
-            const doc: ProjectDoc | undefined = ready ? s.docs.find((d) => d.index === index) : undefined;
-            return (
-              <li key={index}>
-                <button className="file-open" disabled={busy} title={`Open ${f.name}`} onClick={() => onOpen(p, index)}>
-                  <b>{f.format}</b>
-                  <span>{doc?.title || f.name}</span>
-                </button>
-                {/* the step was read from the file (D-028); this is where a wrong one is put right */}
-                <Select
-                  value={stepOf(f.role)}
-                  options={STEPS.map((step) => ({ value: step, label: STEP_LABEL[step] }))}
-                  disabled={busy}
-                  aria-label={`Step of ${f.name}`}
-                  onChange={(step) => onSetStep(p, index, step)}
-                />
-              </li>
-            );
-          })}
-        </ul>
-        <p className="card-actions">
-        <button className="btn-ghost small" disabled={busy} title="Add a later version or another LV to this tender" onClick={() => onChooseFiles(p.id)}>
-            Add files
-          </button>
-          {/* two clicks: the first arms the button, the second deletes the project and its files */}
-          <button
-            className={`btn-ghost small${doomed ? " armed" : ""}`}
-            disabled={busy}
-            onClick={() => {
-              if (doomed) onDelete(p);
-              setDoomed(!doomed);
-            }}
-            onBlur={() => setDoomed(false)}
-          >
-            {doomed ? "Delete for good?" : "Delete"}
-          </button>
-        </p>
-      </details>
 
       {(stage === "check" || stage === "questions" || stage === "pricing") && (
         <label className="stage-move" onClick={stop}>
@@ -1050,7 +1006,6 @@ function NewProjectDialog({
                 files.map((f, i) => (
                   <li key={i} className="reading">
                     <span className="np-name">{f.name}</span>
-                    <span className="np-why">being read{files.length > 1 ? " together with the others" : ""}</span>
                   </li>
                 ))}
               {rows.map((f, i) => {
@@ -1178,13 +1133,13 @@ function NewProjectDialog({
       )}
 
       {!waiting && (
-        <footer className={busy ? "busy" : undefined}>
+        <footer className={busy || !info ? "busy" : undefined}>
           {error && !busy ? (
             <span className="np-error" role="alert">
               {error}
             </span>
           ) : (
-            <span>{busy ? "Keeping the files and checking every item" : "Nothing is kept until you confirm."}</span>
+            <span>{busy ? "Keeping the files; the checks then run in the background" : !info ? `Reading ${files.length === 1 ? "the file" : `${files.length} files`}` : "Nothing is kept until you confirm."}</span>
           )}
           <button className="btn-ghost" onClick={onCancel} disabled={busy}>
             Discard
@@ -1203,6 +1158,7 @@ function NewProjectDialog({
 export function ProjectsPage({
   projects,
   summaries,
+  runs,
   busy,
   pending,
   error,
@@ -1213,14 +1169,13 @@ export function ProjectsPage({
   onRemoveFile,
   onConfirm,
   onCancel,
-  onDelete,
-  onSetStep,
   onChange,
   scheduleOpen,
   onShowSchedule,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
+  runs: Run[]; // the pipeline runs: a card whose project is being checked says so
   busy: boolean;
   pending: Pending | null;
   error: string | null; // shown in the dialog while it is open: it covers the notice bar
@@ -1231,8 +1186,6 @@ export function ProjectsPage({
   onRemoveFile: (file: File) => void;
   onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: Partial<Record<TenderDate, string>>) => void;
   onCancel: () => void;
-  onDelete: (project: CatalogProject) => void;
-  onSetStep: (project: CatalogProject, index: number, step: Step) => void;
   onChange: (project: CatalogProject, change: Change) => void;
   scheduleOpen: boolean; // opened and closed from the band
   onShowSchedule: () => void;
@@ -1300,13 +1253,11 @@ export function ProjectsPage({
                     key={p.id}
                     p={p}
                     s={summaries[p.id]}
+                    run={runs.find((r) => r.active && r.project_id === p.id)}
                     stage={stage}
                     busy={busy}
                     onOpen={onOpen}
-                    onChooseFiles={onChooseFiles}
                     onDropFiles={onDropFiles}
-                    onDelete={onDelete}
-                    onSetStep={onSetStep}
                     onChange={onChange}
                     onDates={(p) => {
                       setFocus({ id: p.id, n: (focus?.n ?? 0) + 1 });

@@ -50,7 +50,7 @@ def test_uploaded_project_is_kept_listed_and_renamed():
     picked = [folder / "LV_18_Estrich.pdf", folder / "LV_07_Teppichboden.pdf"]
     files = [("files", (p.name, p.read_bytes())) for p in picked]
     created = client.post("/api/projects", files=files, data={"name": "Test building"}).json()
-    assert created["name"] == "Test building" and len(created["lvs"]) == 2
+    assert created["name"] == "Test building" and created["kind"] == "trades"
     listed = client.get("/api/catalog").json()
     assert listed[0]["id"] == created["id"] and listed[0]["source"] == "upload"
     assert [f["name"] for f in listed[0]["files"]] == [p.name for p in picked]
@@ -115,9 +115,10 @@ def test_versions_of_one_lv_are_not_two_trades():
     e = DATASET / "01_gaeb_xml" / "501-24-01_GAEB-XML_sas.x83"
     files = [("files", (p.name, p.read_bytes())) for p in (d_pdf, d, e)]
     created = client.post("/api/projects", files=files).json()
-    assert created["kind"] == "trades" and len(created["lvs"]) == 2  # D once, E once
-    assert created["lvs"][0]["file"] == d.name  # the tender stands for the LV, not its print-out
-    assert len(client.get(f"/api/catalog/{created['id']}/project").json()["lvs"]) == 2
+    assert created["kind"] == "trades"
+    opened = client.get(f"/api/catalog/{created['id']}/project").json()
+    assert len(opened["lvs"]) == 2  # D once, E once
+    assert opened["lvs"][0]["file"] == d.name  # the tender stands for the LV, not its print-out
 
 
 
@@ -138,7 +139,7 @@ def test_lvs_of_a_created_project_keep_their_pdf():
     files = [("files", (p.name, p.read_bytes())) for p in (folder / "LV_18_Estrich.pdf", folder / "LV_07_Teppichboden.pdf")]
     created = client.post("/api/projects", files=files).json()
     reopened = client.get(f"/api/catalog/{created['id']}/project").json()
-    for project in (created, reopened):
+    for project in (reopened,):  # creating a project analyses nothing itself: the pipeline run does
         for lv in project["lvs"]:
             assert client.get(f"/api/analyses/{lv['analysis_id']}").json()["pdf"] is True
             assert client.get(f"/api/analyses/{lv['analysis_id']}/source.pdf").content[:5] == b"%PDF-"
@@ -152,7 +153,7 @@ def test_two_uploaded_lvs_of_the_same_file_name_keep_their_own_pdf():
     originals = [(folder / "LV_18_Estrich.pdf").read_bytes(), (folder / "LV_07_Teppichboden.pdf").read_bytes()]
     created = client.post("/api/projects", files=[("files", ("LV.pdf", data)) for data in originals]).json()
     reopened = client.get(f"/api/catalog/{created['id']}/project").json()
-    for project in (created, reopened):
+    for project in (reopened,):  # creating a project analyses nothing itself: the pipeline run does
         served = [client.get(f"/api/analyses/{lv['analysis_id']}/source.pdf").content for lv in project["lvs"]]
         assert sorted(served, key=len) == sorted(originals, key=len)
 

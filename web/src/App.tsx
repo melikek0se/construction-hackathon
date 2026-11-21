@@ -4,6 +4,8 @@ import {
   changeProject,
   createProject,
   intakeFiles,
+  listRuns,
+  startRun,
   listCatalog,
   loadAnalysis,
   loadPrices,
@@ -11,13 +13,15 @@ import {
   openCatalogFile,
   openCatalogProject,
   renameProject,
-  deleteProject,
+  deleteProject, removeProjectFile,
   setFileStep,
   runLlmReview,
   getQuestions,
 } from "./api";
 import { HardHatIcon, Opening, ProjectsPage, ScheduleSwitch } from "./Projects";
 import { Mascot } from "./Mascot";
+import { ProjectSettings } from "./Settings";
+import { RunsDialog, RunsSwitch } from "./Runs";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
@@ -31,7 +35,7 @@ import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
 import { QuestionsView } from "./Questions";
 import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type Route } from "./router";
-import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState } from "./types";
+import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions";
 const VIEWS: [View, string][] = [
@@ -72,6 +76,7 @@ export default function App() {
   // Files that were dropped or chosen and are waiting for a decision: what they are, and where they go.
   // With no files yet the dialog is open and asks for them.
   const [pending, setPending] = useState<{ files: File[]; info: Intake | null; target: string | null } | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false); // the settings of the open project, a dialog
   const addTarget = useRef<string | null>(null);
   const [apiDown, setApiDown] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -194,6 +199,63 @@ export default function App() {
     return list;
   }, []);
 
+  // The pipeline runs in the background on the server (src/boq/runs.py): asked every second while one is
+  // going, now and then otherwise (a run can be started from another window).
+  const [runs, setRuns] = useState<Run[]>([]);
+  const [runsOpen, setRunsOpen] = useState(false);
+  const [startingRun, setStartingRun] = useState(false);
+  const refreshRuns = useCallback(() => listRuns().then(setRuns, () => undefined), []);
+  const running = runs.some((r) => r.active);
+  useEffect(() => {
+    void refreshRuns();
+    const t = window.setInterval(() => void refreshRuns(), running ? 1000 : 10000);
+    return () => window.clearInterval(t);
+  }, [running, refreshRuns]);
+  const runsHere = useMemo(() => runs.filter((r) => r.project_id === current?.project.id), [runs, current]);
+
+  const reviewingHere = runsHere.some(
+    (r) => r.active && r.steps.some((s) => s.kind === "agentic" && s.doc === current?.file && (s.status === "queued" || s.status === "running")),
+  );
+
+  async function runAgain(projectId: string) {
+    setStartingRun(true);
+    try {
+      await startRun(projectId);
+      await refreshRuns();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setStartingRun(false);
+    }
+  }
+
+  // A run that ends while its project is on the page: what it found is put onto the page without moving
+  // it (the selection, the view and the place in the list stay). Its AI findings come with the file.
+  const wasRunning = useRef(new Set<string>());
+  const pageNow = useRef({ current, analysis, project, busy, ai });
+  pageNow.current = { current, analysis, project, busy, ai };
+  useEffect(() => {
+    const ended = runs.filter((r) => !r.active && wasRunning.current.has(r.id));
+    wasRunning.current = new Set(runs.filter((r) => r.active).map((r) => r.id));
+    const page = pageNow.current;
+    const here = page.current && ended.find((r) => r.project_id === page.current!.project.id);
+    if (!here || !page.current || page.busy !== null || page.ai === "running") return;
+    const { project: p, file } = page.current;
+    if (page.analysis && !page.project) {
+      const shown = page.analysis.id;
+      void openCatalogFile(p.id, file).then(
+        (opened) => {
+          if (pageNow.current.analysis?.id !== shown) return; // the user has moved on meanwhile
+          setAnalysis(opened);
+          if (opened.reviewed) setAi("done");
+        },
+        () => undefined,
+      );
+    } else if (page.project && !page.analysis) {
+      void openCatalogProject(p.id).then((opened) => pageNow.current.project && !pageNow.current.analysis && setProject(opened), () => undefined);
+    }
+  }, [runs]);
+
   // The opening: full yellow with barrier tape until the projects are there (and for at least a moment,
   // so it does not flicker), then the yellow rolls up like a shutter and the page stands. A link straight into a
   // project skips it. "entering" lasts while the rows of the page are still being uncovered.
@@ -271,7 +333,7 @@ export default function App() {
       await covered;
       setAnalysis(opened);
       setPassage(null); // a passage belongs to the file it was clicked for; cite() sets it again after this
-      setAi("idle");
+      setAi(opened.reviewed ? "done" : "idle"); // the project's pipeline run may have reviewed it already
       setView("plan");
       setSeverities(ALL);
       setSection(null);
@@ -528,6 +590,7 @@ export default function App() {
       asked.current.delete(id); // its numbers have changed
       setSummaries(({ [id]: _old, ...rest }) => rest);
       const saved = (await refreshCatalog()).find((p) => p.id === id);
+      void refreshRuns(); // the server has started the pipeline on it
       setPending(null);
       setBusy(null);
       if (saved) openProject(saved);
@@ -544,6 +607,32 @@ export default function App() {
       asked.current.delete(p.id);
       setSummaries(({ [p.id]: _old, ...rest }) => rest);
       await refreshCatalog();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  // A file taken out of the open project (its settings). What is on the page is read again where it
+  // changed: the building without that LV, another version when the open one went.
+  async function removeFile(index: number) {
+    if (!current) return;
+    const { project: p, file } = current;
+    setError(null);
+    try {
+      const left = await removeProjectFile(p.id, index);
+      asked.current.delete(p.id);
+      setSummaries(({ [p.id]: _old, ...rest }) => rest);
+      void refreshCatalog();
+      if (left.kind === "trades") {
+        setCurrent({ project: left, file: 0 });
+        void runProject(left.name, () => openCatalogProject(left.id));
+        return;
+      }
+      const now = index < file ? file - 1 : Math.min(file, left.files.length - 1);
+      if (project || index === file) {
+        setProject(null);
+        openProject(left, now, true);
+      } else setCurrent({ project: left, file: now });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -574,6 +663,14 @@ export default function App() {
       void refreshCatalog();
     }
   }
+
+  // The open project as the catalogue has it now: a step or a date changed in its settings shows at once.
+  useEffect(() => {
+    setCurrent((c) => {
+      const fresh = c && catalog.find((x) => x.id === c.project.id);
+      return c && fresh && fresh !== c.project ? { ...c, project: fresh } : c;
+    });
+  }, [catalog]);
 
   async function rename(name: string) {
     if (!current || !name.trim() || name.trim() === current.project.name) return;
@@ -718,6 +815,7 @@ export default function App() {
         )}
         {!project && (!analysis || !stats) && catalog.length > 0 && (
           <div className="actions">
+            <RunsSwitch runs={runs} onOpen={() => setRunsOpen(true)} />
             <ScheduleSwitch projects={catalog} summaries={summaries} open={scheduleOpen} onToggle={() => setScheduleOpen(!scheduleOpen)} />
           </div>
         )}
@@ -738,6 +836,17 @@ export default function App() {
                 <strong lang="de">{project.name}</strong>
               )}
             </div>
+            <div className="actions">
+              {current && <RunsSwitch runs={runsHere} onOpen={() => setRunsOpen(true)} />}
+              {current && (
+                <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
+                  <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+                    <path d="M1 3.5h12M1 10.5h12M4 1.5v4M10 8.5v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" />
+                  </svg>
+                  Settings
+                </button>
+              )}
+            </div>
           </>
         )}
         {analysis && stats && (
@@ -755,6 +864,15 @@ export default function App() {
               <button className="btn" onClick={() => setView("questions")}>
                 Bidder questions
               </button>
+              {current && <RunsSwitch runs={runsHere} onOpen={() => setRunsOpen(true)} />}
+              {current && (
+                <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
+                  <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+                    <path d="M1 3.5h12M1 10.5h12M4 1.5v4M10 8.5v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" />
+                  </svg>
+                  Settings
+                </button>
+              )}
             </div>
           </>
         )}
@@ -779,6 +897,40 @@ export default function App() {
 
       {(intro === "loading" || intro === "opening") && <Opening phase={intro} />}
       {/* while the new-project dialog is open it says itself that it is working */}
+      {settingsOpen && current && (
+        <ProjectSettings
+          project={current.project}
+          summary={summaries[current.project.id]}
+          openFile={analysis && !project ? current.file : null}
+          busy={busy !== null}
+          error={error}
+          onClose={() => (setSettingsOpen(false), setError(null))}
+          onRename={(name) => void rename(name)}
+          onChange={(change) => void changePlan(current.project, change)}
+          onSetStep={(index, step) => void moveFile(current.project, index, step)}
+          onRemoveFile={(index) => void removeFile(index)}
+          onAddFiles={() => {
+            setSettingsOpen(false);
+            addTarget.current = current.project.id;
+            fileInput.current?.click();
+          }}
+          onDelete={() => {
+            const doomed = current.project;
+            setSettingsOpen(false);
+            closeAll();
+            void removeProject(doomed);
+          }}
+        />
+      )}
+      {runsOpen && (
+        <RunsDialog
+          runs={current ? runsHere : runs}
+          project={current ? { id: current.project.id, name: current.project.name } : null}
+          starting={startingRun}
+          onStart={current ? () => void runAgain(current.project.id) : null}
+          onClose={() => setRunsOpen(false)}
+        />
+      )}
       {gate && <Gate {...gate} />}
       {busy && !pending && !gate && <LoadingTapes what={busy} />}
       {/* the AI review reads every section with Claude: seconds when cached, a minute or two otherwise;
@@ -826,6 +978,7 @@ export default function App() {
           scheduleOpen={scheduleOpen}
           onShowSchedule={() => setScheduleOpen(true)}
           summaries={summaries}
+          runs={runs}
           busy={busy !== null}
           pending={pending}
           error={error}
@@ -846,8 +999,6 @@ export default function App() {
           onConfirm={(name, target, roles, dates) => void confirmIntake(name, target, roles, dates)}
           onRemoveFile={dropPendingFile}
           onCancel={() => (setPending(null), setError(null))}
-          onDelete={(p) => void removeProject(p)}
-          onSetStep={(p, index, step) => void moveFile(p, index, step)}
         />
       ) : (
         <div className="work">
@@ -1005,7 +1156,8 @@ export default function App() {
                 onSelect={setSelection}
                 page={fpage}
                 onPage={setFpage}
-                ai={ai}
+                // the project's pipeline run is reviewing this file: the button waits for it instead of asking twice
+                ai={ai === "idle" && reviewingHere ? "running" : ai}
                 onReview={() => void review()}
               />
             )}
@@ -1016,7 +1168,7 @@ export default function App() {
       )}
       {/* Polier, the agent, lives in the bottom-right corner (not wired to anything yet) */}
       <div className="agent-dock">
-        <Mascot size={112} free />
+        <Mascot size={134} free />
       </div>
     </div>
   );

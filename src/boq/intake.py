@@ -73,6 +73,19 @@ def same_lv(boqs: list[BoQ], whole: bool = False) -> list[int]:
 
 # ---------------------------------------------------------------- which tender
 
+def one_per_lv(boqs: list[BoQ]) -> list[BoQ]:
+    """One file per LV for the comparison between LVs: the GAEB tender where there is one. A tender and
+    its own print-out are not two trades; an LV that repeats part of another is (see same_lv)."""
+    def rank(boq: BoQ) -> tuple[bool, bool]:  # a tender before a bid, a GAEB file before its print-out
+        return boq.phase == "83", boq.format != "pdf"
+
+    picked: dict[int, BoQ] = {}
+    for boq, group in zip(boqs, same_lv(boqs, whole=True)):
+        if group not in picked or rank(boq) > rank(picked[group]):
+            picked[group] = boq
+    return list(picked.values())
+
+
 def _real(text: str) -> bool:
     """Says something once the anonymisation tokens are taken out."""
     return len(re.findall(r"[^\W\d_]", _TOKEN.sub("", text))) >= 3

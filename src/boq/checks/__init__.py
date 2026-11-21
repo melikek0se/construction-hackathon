@@ -1,6 +1,4 @@
-"""Rule-based checks (D-004). LLM checks come later and add to the same Finding list."""
-from boq.checks.companions import check_companions
-from boq.checks.rules import check_items
+"""The checks. Which of them run, and in what order, is said in one place: boq.pipeline."""
 from boq.model import BoQ, Finding
 
 _RANK = {"high": 0, "warn": 1, "info": 2}
@@ -11,4 +9,7 @@ def sort_findings(findings: list[Finding]) -> list[Finding]:
 
 
 def run_checks(boq: BoQ) -> list[Finding]:
-    return sort_findings(check_items(boq) + check_companions(boq))
+    """Every deterministic check of the pipeline on one LV (no model, no network)."""
+    from boq import pipeline  # here, not at the top: the pipeline imports the check modules of this package
+
+    return sort_findings(pipeline.deterministic(boq))

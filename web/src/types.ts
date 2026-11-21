@@ -55,6 +55,7 @@ export interface Analysis {
   pdf: boolean; // pages can be shown (PdfView): the PDF itself, or pages the server drew from the LV
   pdf_generated: boolean; // the LV came without a PDF (GAEB, Excel): the pages are drawn by the app
   pdf_file: string | null; // the pages are another file's: the client's print-out of this LV in the project
+  reviewed: boolean; // the AI review has run on it (by hand, or by the project's pipeline run)
 }
 
 /** Where one finding stands on a PDF page; rectangles in PDF points from the top left of the page. */
@@ -421,4 +422,36 @@ export interface QuestionsState {
   questions: BidderQuestion[];
   mails: QuestionMail[];
   account: string | null; // the address the app can send from; null: drafts only
+}
+
+/** One step of a pipeline run on one document (or on the project): a row of the run's record. */
+export interface RunStep {
+  step: string; // the step's id in src/boq/pipeline.py; "READ" for reading the file
+  title: string;
+  kind: "deterministic" | "agentic";
+  scope: "document" | "project";
+  doc: number | null; // index of the file in the project; null for a step about the whole project
+  file: string | null;
+  status: "queued" | "running" | "done" | "skipped" | "failed" | "interrupted";
+  detail: string; // what it is doing, what it read, why it was skipped, or the error
+  counts: Record<Severity, number> | null; // what it found, once done
+  ms: number | null;
+}
+
+/** A run of the pipeline on a project, in the background (src/boq/runs.py). */
+export interface Run {
+  id: string;
+  project_id: string;
+  project: string; // its name when the run started
+  trigger: string; // "project created", "files added", "started by hand"
+  status: "queued" | "running" | "done" | "failed" | "interrupted";
+  active: boolean; // queued or running
+  created: string;
+  started: string | null;
+  finished: string | null;
+  error: string | null;
+  steps: RunStep[];
+  total: number;
+  finished_steps: number;
+  counts: Record<Severity, number>;
 }

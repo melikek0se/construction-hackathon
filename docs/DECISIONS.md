@@ -519,3 +519,44 @@ Status: decided · 2026-11-21 (the user asked for routing and pagination, built 
 Revisit if: the client's tender platform, not e-mail, is where questions must go; or replies should arrive
 without pasting.
 
+## D-036 — The app does not read the system's "reduce motion" setting
+
+**Decided** 2026-11-21 (Atahan).
+
+- Every animation always runs. All `prefers-reduced-motion` rules in the CSS and the checks in
+  `TradeGraph.tsx` and `Mascot.tsx` are removed. This replaces the per-animation exceptions of D-029 and
+  D-033 and the mascot's.
+- Why: the demo machine has the setting on, and with it the progress signs (the tape running along the
+  footer of the new-project dialog, the loading tapes) stood still and looked like a hang.
+- Cost, known: people who set "reduce motion" for health reasons get the full motion. Accepted for the
+  prototype.
+
+Revisit if: this becomes a product.
+
+## D-037 — The checks are one pipeline in one file, run in the background when a project is created
+
+**Decided** 2026-11-21 (Atahan).
+
+- `src/boq/pipeline.py` is the one place that says what is checked: a list of steps, each naming a function
+  of another module, its kind (deterministic or agentic) and its scope (a document or the project). A new
+  check is a function plus one `Step` there; the run, its record and the pages take it from the list.
+  `run_checks` (opening a file, the projects page, the CLI) runs the deterministic document steps of the
+  same list, so there is no second list of rules.
+- Creating a project or adding files starts a run (`src/boq/runs.py`) in a thread of the server; the
+  request returns at once and analyses nothing itself. Per document: read, every deterministic step; then
+  the agentic steps on one file per LV (the versions of an LV are not paid for twice); then the steps across
+  the LVs of a building.
+- Every step of every document is a row of the run's record (table `runs`): waiting, running with what it
+  is doing, done with what it found and how long it took, skipped with the reason, failed with the error.
+  A failing step does not end the run.
+- The run's AI findings are kept with it per document and put onto the file when it is opened, so the LV
+  page shows them without "Run AI review". The button stays for files no run has reviewed.
+- Cost, known: every new project is reviewed by Claude without being asked (project of 296 items: 116 s,
+  39 findings). Answers are cached, so a second run is free. A building of 27 LVs is 27 reviews, three at
+  a time.
+- The runs live in the server process (one worker, as the review's progress): after a restart a run that
+  was going is shown as interrupted and can be started again by hand.
+
+Revisit if: the server gets more than one worker (a job queue then), or the review of every upload costs
+too much (then agentic steps on request only).
+

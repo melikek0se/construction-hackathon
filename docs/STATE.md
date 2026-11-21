@@ -14,6 +14,25 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 ## Done
 
+- Pipeline and background runs (2026-11-21, D-037): `src/boq/pipeline.py` lists every check as a step (7 rule
+  steps, 10 missing-item steps, the AI review, the comparison between LVs); `src/boq/runs.py` runs them in a
+  thread when a project is created or gets files and keeps a record per step and document (table `runs`).
+  API: `GET /api/pipeline`, `GET /api/runs`, `POST /api/catalog/{id}/runs`; a file opened from a project
+  carries the AI findings of its latest run (`reviewed` in the answer). UI (`web/src/Runs.tsx`, `runs.css`):
+  a "Pipeline" switch in the band on the projects page (all runs) and on a project (its runs), counting the
+  steps while a run is going; a dialog with each run, its documents and every step with result, detail and
+  time; a line on the card of a project being checked; "Run again" on a project. A run that ends while its
+  project is open puts its findings onto the page without moving it.
+  Checked: `tests/test_runs.py` (record, skipped and failed steps, findings on the opened file, two trade
+  LVs compared) and one real run through the dev API on an uploaded project (296 items, 19 steps, AI review
+  116 s, 39 findings, then on the opened file). A project created through the API was then followed in headless Chrome at 1440 wide (248 items,
+  run started by itself, AI review 102 s, 31 findings): switch counting and card line on the projects page,
+  the dialog with the running step, the LV page taking the findings when the run ended (7 → 38) without a
+  reload, no console error. While a run reviews the open file, "Run AI review" waits for it (added after
+  that walk, type-checked only). Not checked: a run on a building of many LVs; two runs at once; a person
+  clicking through.
+  `POST /api/projects` no longer returns the analysed LVs of a building (`lvs`), only id, kind and name.
+
 - Dataset (`dataset/`) analysed → `02-dataset.md`
 - `scripts/inspect_dataset.py`: inventory of all GAEB files, totals of the three priced bids verified
   (`EP × Qty = GP` holds for all 720 priced items)
@@ -334,10 +353,23 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 - Name and mascot (D-030): the app is **Polier**; a 3D head in a hard hat (`web/src/Mascot.tsx`) living in the
   bottom-right corner of every page (follows the pointer, glances around at rest, leans in, hops on click,
-  bounces on a file drag), not wired to anything; app icon and band logo: a hard hat in profile. Checked by driving the pointer
+  bounces on a file drag; every 30 to 70 seconds it turns three quarters away (cheeks to one side, face free), shows two big round cheeks and bounces them up
+  and down together (long on the way up, piled flat at the bottom) while looking back over its shoulder (lids half down, a blush, one wink), about 4.6 s, also on the event `polier` with detail `moon` and when "popo" is typed anywhere on the page; a strip, as a pole dance at full size (the free mascot's canvas is three times its box, up
+  and to the left, so it can leave its corner: a scaffold tube drops in, two round hands in yellow gloves appear for the strip only, it holds on and sways, swings round it
+  twice with an arm out, climbs hand over hand, tips upside down and spirals down, bounces its cheeks against
+  the tube with two slaps, blows a kiss with hearts, tips the hat; about 12 s); a split (back to you, the two hands take hold of the cheeks, squeeze and pull
+  them apart like a hinge (joined at the top of the cleft, open below), an "x" between them, they snap shut and wobble; about 4.7 s) on the event detail `split` or when
+  "split" is typed only on the event detail `strip` or when
+  "strip" is typed; seen in
+  headless Chrome on the dev stack 2026-11-21), not wired to anything; app icon and band logo: a hard hat in profile. Checked by driving the pointer
   with puppeteer in Chrome at 1440 wide on the dev stack (follow, near, over, idle glances, hop all seen).
   Not checked: a person using it, the file-drag bounce, the
   production build, the PDF view's "Drawn by LV Check" and the auth realm still carry the old name.
+  Drawn 1.2 times larger since 2026-11-21 (134px box, was 112).
+
+- Sideways overflow (2026-11-21): what slides into the band or the page from the side widened the page for a
+  moment (28px, a horizontal scrollbar at the bottom); `.app` now has `overflow-x: clip`. Measured per frame in
+  headless Chrome at 1440 wide: 28px before, 0 after, on the projects page, into a project and back.
 
 - New-project dialog (2026-11-21): files can be added to the ones waiting (button or drop; the same file is
   not taken twice) and taken out again; name, dates and corrected steps stay while the set is read again; a
@@ -346,6 +378,16 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   name and deadline, project opens with both versions, card and schedule row show name and date, PDFs alone
   (bid by heading, bid guessed, tender), add files from a card, a .docx alone. Not checked: real drag and
   drop with the mouse, a person clicking through.
+  Many files: the file list scrolls under its heading, the fields scroll on their own, header and footer stay
+  (same for project settings; under 1180 px wide the body scrolls as one column). Checked only on a mock
+  dialog with these layout rules and 40 rows in Chrome, not in the running app.
+  The dialog was taller than the screen from 1700 px wide: `body` is zoomed there and `100vh` is not, so
+  its `max-height` came out 1.15 to 1.4 times the viewport. `body` now carries `--zoom` beside `zoom`
+  (styles.css) and the dialog divides its vh/vw lengths by it. Anything else sized in vh/vw inside the
+  zoomed body needs the same.
+  While files are read the rows are ghosts (name only, pale) and the footer's edge carries the running tape,
+  as it does while the project is kept. "Reduce motion" is no longer read anywhere (D-036). Type-checked,
+  not looked at in a browser.
 
 - Own form controls (2026-11-21): `web/src/controls.tsx` (`Select`, `DateField`) replace every native
   `<select>` and `type="date"` (stage and step on a card, "Goes into" and both dates in the new-project
@@ -436,6 +478,23 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   the display face (no file line under it; the file name is its tooltip), at the right only the actions (Risk report, Bidder questions). "All
   projects" and "Back to project" are gone from the actions. Seen in headless Chrome at 1440 and 900 wide
   on a versions project; the project view and an LV inside a building not seen.
+
+- **Project settings** (2026-11-21, on the user's word): a "Settings" button at the right of the band of an
+  open LV or project opens a dialog (`web/src/Settings.tsx`, the new-project dialog's sign): the name, the
+  stage, every date of the tender (the six planned ones and "Bid sent"; under each whether it was set here
+  or read from the files, and from where), the files with their step, "Remove" per file (two clicks; not
+  the only file), "Add files" (leaves for the projects page and its add-files dialog), "Delete project"
+  (two clicks; the page closes behind the shutter). Every change is kept at once, through the endpoints the
+  projects page already used; new on the client only `removeProjectFile` (`DELETE /api/catalog/{id}/files/{n}`).
+  The open page follows: a removed open version reopens another, the band and versions bar take the new
+  name and steps. A date the files state cannot be taken out, only overruled: cleared, the field shows the
+  files' day again. Tried in headless Chrome on a throwaway project of two files: rename, step, remove the
+  open file, delete. Not tried: setting and clearing a date in the dialog, a building of trade LVs, "Add files".
+
+- **Cards without their file list** (2026-11-21, on the user's word): the "n files" fold on a card of the
+  projects page is gone (files with their step, "Add files", "Delete"). All of it is in the project's
+  settings now; a single file of a project is opened from the versions bar of its LV page. Dropping files
+  onto a card still adds them.
 
 ## In progress
 

@@ -1,0 +1,387 @@
+/* The pipeline runs: the switch in the band and the record in a dialog (Runs.tsx). The dialog is the sign
+   of home.css (.new-project.settings); here is only what stands on it. */
+
+.runs-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.runs-switch b {
+  font-weight: 700;
+}
+
+/* a run is going: the tape runs along the lower edge of the button */
+.band .btn.plain.runs-switch.going {
+  position: relative;
+  background: var(--yellow);
+}
+
+.band .btn.plain.runs-switch.going:hover {
+  background: var(--ink);
+}
+
+.runs-switch.going::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  height: 4px;
+  background: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) repeat-x;
+  background-size: 22.63px 100%;
+  animation: hazard-run 600ms linear infinite;
+}
+
+.runs.new-project {
+  width: min(980px, calc(100vw / var(--zoom, 1) - 48px));
+}
+
+.runs-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.runs-empty {
+  max-width: 62ch;
+  padding: 28px 16px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.runs-empty b {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ one run */
+
+.run {
+  border-bottom: 2px solid var(--ink);
+}
+
+.run:last-child {
+  border-bottom: 0;
+}
+
+.run summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.run summary::-webkit-details-marker {
+  display: none;
+}
+
+.run > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 12px 16px;
+}
+
+.run > summary:hover,
+.run-group > summary:hover {
+  background: var(--hover);
+}
+
+.run-head b {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.run-head small {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.run-status {
+  padding: 2px 8px;
+  border: 1px solid var(--ink);
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.run-status.is-running,
+.run-status.is-queued {
+  background: var(--yellow);
+}
+
+.run-status.is-done {
+  background: var(--ink);
+  color: #fff;
+}
+
+.run-status.is-failed,
+.run-status.is-interrupted {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.run-progress {
+  font-size: 12.5px;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.run-counts {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.run-counts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.run-none {
+  font-size: 12.5px;
+  color: var(--dim);
+}
+
+.run-bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  background: var(--rule);
+}
+
+.run-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  /* the bar is full width and cut back from the right: no layout while it grows, and the stripes keep their size */
+  transition: clip-path 400ms var(--ease);
+}
+
+.run.is-running .run-bar i {
+  background: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) repeat-x;
+  background-size: 22.63px 100%;
+  animation: hazard-run 600ms linear infinite;
+}
+
+.run-now {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.run-now.err {
+  color: var(--red);
+  font-weight: 600;
+  white-space: normal;
+}
+
+/* ------------------------------------------------------------------ a document of a run, and its steps */
+
+.run-group {
+  border-top: 1px solid var(--rule);
+}
+
+.run-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 16px 7px 28px;
+  background: var(--tint);
+  font-size: 13px;
+}
+
+.run-group > summary::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 8px;
+  margin-left: -14px;
+  background: var(--ink);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transition: rotate 120ms var(--ease);
+}
+
+.run-group[open] > summary::before {
+  rotate: 90deg;
+}
+
+.run-group > summary b {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.run-group.going > summary {
+  background: var(--hover);
+}
+
+.run-flag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--red);
+}
+
+.run-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.run-step {
+  display: grid;
+  grid-template-columns: 12px 38px minmax(0, 1.2fr) minmax(0, 1fr) 52px;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 16px 5px 28px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+}
+
+.run-step.is-queued,
+.run-step.is-skipped,
+.run-step.is-interrupted {
+  color: var(--dim);
+}
+
+.run-step.is-running {
+  background: var(--hover);
+}
+
+/* the state of a step: an empty square waits, a yellow one runs, an ink one is done, a red one failed,
+   a struck one was skipped */
+.run-mark {
+  align-self: center;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--line-2);
+}
+
+.is-running > .run-mark {
+  border-color: var(--ink);
+  background: var(--yellow);
+  animation: run-blink 900ms steps(2, jump-none) infinite;
+}
+
+.is-done > .run-mark {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.is-failed > .run-mark {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+.is-skipped > .run-mark {
+  background: linear-gradient(to top right, transparent 44%, var(--dim) 44% 56%, transparent 56%);
+}
+
+@keyframes run-blink {
+  to {
+    background: #fff;
+  }
+}
+
+.run-kind {
+  justify-self: start;
+  padding: 0 5px;
+  border: 1px solid currentColor;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.run-kind.agentic {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--yellow);
+}
+
+.run-title code {
+  margin-left: 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.run-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  min-width: 0;
+}
+
+.run-detail {
+  font-size: 12.5px;
+  color: var(--mute);
+  overflow-wrap: anywhere;
+}
+
+.is-failed .run-detail {
+  color: var(--red);
+}
+
+.run-ms {
+  justify-self: end;
+  font-size: 11.5px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+/* a card of the projects page whose project is being checked */
+.card-run {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px 9px;
+  background: var(--yellow);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.card-run span {
+  flex: 1;
+  min-width: 0;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-run::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) repeat-x;
+  background-size: 22.63px 100%;
+  animation: hazard-run 600ms linear infinite;
+}

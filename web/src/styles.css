@@ -212,6 +212,7 @@ input[type="search"]::placeholder {
 
 .app {
   height: 100%;
+  overflow-x: clip; /* what slides into the band or the page from the side must not widen the page */
   display: flex;
   flex-direction: column;
 }
@@ -1636,12 +1637,14 @@ table.items {
 /* Projector and large displays: the whole interface grows with the screen, not only the plan. */
 @media (min-width: 1700px) {
   body {
+    --zoom: 1.2; /* for lengths in vh and vw: those are not zoomed, the box they size is */
     zoom: 1.2;
   }
 }
 
 @media (min-width: 2300px) {
   body {
+    --zoom: 1.5; /* for lengths in vh and vw: those are not zoomed, the box they size is */
     zoom: 1.5;
   }
 }
@@ -1768,14 +1771,6 @@ table.items {
 
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
-  }
-}
 
 /* A link that looks like a button (risk report, bidder questions). */
 a.btn {
@@ -3128,12 +3123,14 @@ button.flow-plate:hover {
 /* large displays: the interface no longer needs to be blown up as much */
 @media (min-width: 1700px) {
   body {
+    --zoom: 1.15; /* for lengths in vh and vw: those are not zoomed, the box they size is */
     zoom: 1.15;
   }
 }
 
 @media (min-width: 2300px) {
   body {
+    --zoom: 1.4; /* for lengths in vh and vw: those are not zoomed, the box they size is */
     zoom: 1.4;
   }
 }
@@ -3355,18 +3352,6 @@ button.flow-plate:hover {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tape,
-  .tape-run,
-  .tapes,
-  .review-board {
-    animation: none !important;
-  }
-
-  .review-meter i {
-    transition: none;
-  }
-}
 
 
 /* Polier, the agent (Mascot.tsx): a dark tile the head leans out of */
@@ -3390,9 +3375,11 @@ button.flow-plate:hover {
   background: none;
   cursor: pointer;
 }
+/* its canvas is a stage larger than the box, placed by Mascot.tsx (up and to the left of the corner) */
 .mascot.free canvas {
-  position: relative;
   z-index: 1;
+  width: auto;
+  height: auto;
 }
 .mascot.free::after {
   content: "";
@@ -3404,6 +3391,7 @@ button.flow-plate:hover {
   border-radius: 50%;
   background: radial-gradient(closest-side, rgba(18, 20, 19, 0.32), transparent);
   transform: scale(calc(1 - var(--lift, 0) * 1.2));
+  opacity: var(--shade, 1); /* gone while it is away from its corner (the strip): the scene draws its own */
 }
 
 /* Polier lives in the bottom-right corner: it rises in once, then stays */
@@ -3422,7 +3410,6 @@ button.flow-plate:hover {
     transform: none;
   }
 }
-/* runs with reduce motion set too: a demo exception, as the mascot itself (Mascot.tsx) */
 
 /* ------------------------------------------------------------------ the gate */
 
@@ -3769,59 +3756,22 @@ button.flow-plate:hover {
   z-index: 70;
 }
 
-/* "Reduce motion": the shutter, its lettering and the page setting itself up each run once and are kept, as
-   the opening is (D-029); without them the page would change behind a shutter that never moved (D-033). The
-   tape on the shutter keeps running too: it is the only sign that something is being read. */
-@media (prefers-reduced-motion: reduce) {
-  .gate.is-closing .gate-sheet {
-    animation: gate-down 520ms var(--gate-ease) both !important;
-  }
-  .gate.dir-out.is-closing .gate-sheet {
-    animation-duration: 380ms !important;
-  }
-  .gate.is-opening .gate-sheet {
-    animation: gate-up 780ms var(--gate-ease) both !important;
-  }
-  .gate.is-held.is-closing .gate-sheet {
-    animation: none !important;
-  }
-  .app:is(.entering, .arriving, .home.gated:not(.covering)) .band > :not(.brand),
-  .app:is(.entering, .home.gated:not(.covering)) .band > .brand {
-    animation: band-in-left 520ms var(--ease) var(--band-delay, 80ms) backwards !important;
-  }
-  .app:is(.entering, .arriving, .home.gated:not(.covering)) .band > .actions {
-    animation-name: band-in-right !important;
-  }
-  .gate .gate-sign > * {
-    animation: gate-rise 520ms var(--ease) backwards !important;
-  }
-  .gate .gate-sign > :nth-child(1) { animation-delay: 240ms !important; }
-  .gate .gate-sign > :nth-child(2) { animation-delay: 300ms !important; }
-  .gate .gate-sign > :nth-child(3) { animation-delay: 360ms !important; }
-  .gate .gate-sign > :nth-child(4) { animation-delay: 420ms !important; }
-  .gate .gate-sign > :nth-child(5) { animation-delay: 480ms !important; }
-  .gate .gate-strip .fingerprint {
-    animation: gate-strip 700ms cubic-bezier(0.65, 0, 0.2, 1) 520ms backwards !important;
-  }
-  .gate .tape {
-    animation: tape-from-right 560ms var(--ease) 420ms backwards !important;
-  }
-  .gate .tape .tape-run {
-    animation: tape-run 26s linear infinite !important;
-  }
-  .app.arriving .versions > * {
-    animation: arrive 560ms var(--ease) 120ms backwards !important;
-  }
-  .app.arriving .work .left > :first-child {
-    animation: arrive 560ms var(--ease) 140ms backwards !important;
-  }
-  .app.arriving .work .left > :nth-child(n + 2) {
-    animation: arrive 560ms var(--ease) 220ms backwards !important;
-  }
-  .app.arriving .map .row {
-    animation: arrive 480ms var(--ease) calc(240ms + var(--n, 8) * 45ms) backwards !important;
-  }
-  .app.arriving .work .right {
-    animation: arrive-side 560ms var(--ease) 280ms backwards !important;
-  }
+
+/* a sign before the word on a button of the band (Settings) */
+.band .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* the quiet button of the band: white with an ink line, as the links beside it */
+.band .btn.plain {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.band .btn.plain:hover {
+  background: var(--ink);
+  color: #fff;
 }

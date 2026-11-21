@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Sample, WhatIfResult, TenderDate } from "./types";
+import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, WhatIfResult, TenderDate } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -98,6 +98,11 @@ export async function setFileStep(id: string, index: number, step: string): Prom
       body: JSON.stringify({ step }),
     }),
   );
+}
+
+/** Take one file out of a project. The project's only file cannot go; the answer is the project as it is then. */
+export async function removeProjectFile(id: string, index: number): Promise<CatalogProject> {
+  return read(await fetch(`/api/catalog/${id}/files/${index}`, { method: "DELETE" }));
 }
 
 export async function deleteProject(id: string): Promise<void> {
@@ -211,4 +216,14 @@ export async function discardMail(mailId: string): Promise<void> {
 /** The client's reply, pasted in: read against the questions of the message. */
 export async function readReply(mailId: string, text: string): Promise<QuestionMail & { dropped: number }> {
   return read(await fetch(`/api/mails/${mailId}/reply`, json("POST", { text })));
+}
+
+/** The latest pipeline runs of all projects, newest first, each with the record of its steps. */
+export async function listRuns(): Promise<Run[]> {
+  return read(await fetch("/api/runs"));
+}
+
+/** Runs the pipeline on a project again, in the background. */
+export async function startRun(projectId: string): Promise<Run> {
+  return read(await fetch(`/api/catalog/${projectId}/runs`, { method: "POST" }));
 }

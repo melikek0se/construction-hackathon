@@ -78,6 +78,19 @@ mails = Table(
     Column("answers", JSON),  # the reply read against the items: per key a status and the passage of the reply
 )
 
+# A run of the pipeline (boq.pipeline) on a project, in the background (boq.runs). `state` is the record the
+# pages show: status, and one row per step and document with what it found. `results` holds what the run
+# worked out and a later request needs: the AI findings per document.
+runs = Table(
+    "runs", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("project_id", String(32), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
+    Column("created", DateTime(timezone=True), nullable=False, index=True),
+    Column("status", String(16), nullable=False),  # queued, running, done, failed
+    Column("state", JSON, nullable=False),
+    Column("results", JSON),
+)
+
 llm_cache = Table(
     "llm_cache", metadata,
     Column("key", String(64), primary_key=True),
