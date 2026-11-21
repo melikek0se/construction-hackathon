@@ -344,6 +344,17 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   Not read: contract milestones (B: "Dokumentation BA01 bis 30.10.2023"), calendar weeks, scanned PDFs,
   a label and its date on two lines of running text in GAEB 90. A date cleared in the dialog comes back
   from the files on create; it is taken out on the schedule.
+  Revised (2026-11-21): the dialog has one date field per date a tender is planned by (questions until,
+  submission, bid opening, binding until, work starts, work done by), each filled from the files once they
+  are read and re-filled when files are added, with the quoted source under it; a day the user set stays.
+  "Tender sent" is shown as a fact. The fields are there when files are added to a project too (its own
+  dates first; a different day in the added files is named under the field). The plan keeps `opening`,
+  `exec_start`, `exec_end`; `POST /api/projects` takes `dates` (JSON, "" takes a day out, which replaces
+  the caveat above). The card lists the project's dates: read ones with their file, hand-set ones as such,
+  a read day the project does not use as "not used". Walked through in headless Chrome at 1440 wide with
+  A's English copies: X83 alone (six empty fields), plus the package PDF (five filled), create (plan kept).
+  Not seen in a browser: the fields when adding to a project, a hand-set date on a card, narrow widths.
+  The schedule still draws only questions, submission, sent and binding.
 
 ## In progress
 

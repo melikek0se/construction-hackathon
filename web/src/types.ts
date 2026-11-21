@@ -190,7 +190,13 @@ export interface Plan {
   questions_due?: string; // last day for bidder questions
   sent?: string; // the day the bid went out
   binding_until?: string; // end of the binding period (Bindefrist)
+  opening?: string; // the bids are opened (Eröffnungstermin)
+  exec_start?: string; // the work starts
+  exec_end?: string; // the work has to be finished
 }
+
+/** The dates of a tender that its files can state and the new-project dialog asks for. */
+export type TenderDate = "questions_due" | "due" | "opening" | "binding_until" | "exec_start" | "exec_end";
 
 export interface CatalogProject {
   id: string;
@@ -245,7 +251,7 @@ export interface Intake {
   files: IntakeFile[];
   left_out: { name: string; reason: string }[]; // dropped files that are not LVs
   dates: FoundDate[]; // the tender's dates as the files state them, files that are no LV included
-  plan: Pick<Plan, "due" | "questions_due" | "binding_until">; // the ones the files give without doubt
+  plan: Pick<Plan, TenderDate>; // the ones the files give without doubt
 }
 
 export interface ProjectSummary {

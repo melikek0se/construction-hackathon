@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, ReviewProgress, Sample, WhatIfResult } from "./types";
+import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, ReviewProgress, Sample, WhatIfResult, TenderDate } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -62,15 +62,14 @@ export async function createProject(
   name?: string,
   addTo?: string | null,
   roles?: (string | null)[],
-  dates?: { due?: string; questions_due?: string }, // the tender's dates, for a new project
+  dates?: Partial<Record<TenderDate, string>>, // the tender's dates, for a new project; "" takes one out
 ): Promise<{ id: string }> {
   const form = new FormData();
   for (const file of files) form.append("files", file);
   if (name) form.append("name", name);
   if (addTo) form.append("project", addTo);
   if (roles?.some((r) => r !== null)) form.append("roles", JSON.stringify(roles));
-  if (dates?.due) form.append("due", dates.due);
-  if (dates?.questions_due) form.append("questions_due", dates.questions_due);
+  if (dates && Object.keys(dates).length > 0) form.append("dates", JSON.stringify(dates));
   return read(await fetch("/api/projects", { method: "POST", body: form }));
 }
 

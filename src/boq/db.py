@@ -28,7 +28,8 @@ projects = Table(
     Column("source", String(16), nullable=False),  # "upload" or "demo" (seeded from dataset/)
     Column("created", DateTime(timezone=True), nullable=False),
     Column("summary", JSON),  # the projects-page numbers, worked out once; cleared when files change
-    # where the tender stands and its dates, set by the user: stage, due, questions_due, sent, binding_until
+    # where the tender stands and its dates, read from the files or set by the user: stage, questions_due, due,
+    # opening, sent, binding_until, exec_start, exec_end
     Column("plan", JSON),
 )
 

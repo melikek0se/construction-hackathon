@@ -302,5 +302,6 @@ def plan_of(dates: list[dict]) -> dict:
         return days.pop() if len(days) == 1 else None
 
     plan = {"due": one("due") or one("opening"), "questions_due": one("questions_due"),
-            "binding_until": one("binding_until")}
+            "opening": one("opening"), "binding_until": one("binding_until"),
+            "exec_start": one("exec_start"), "exec_end": one("exec_end")}
     return {k: v for k, v in plan.items() if v}

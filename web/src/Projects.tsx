@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Sign } from "./components";
 import { DateField, Select } from "./controls";
 import { eur } from "./format";
-import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type DateKind, type FoundDate, type Intake, type IntakeFile, type Plan, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
+import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type DateKind, type FoundDate, type Intake, type IntakeFile, type Plan, type ProjectDoc, type ProjectSummary, type Severity, type TenderDate } from "./types";
 import "./home.css";
 
 /* The projects page: the running tenders on a schedule (their dates and nothing else), and under it
@@ -81,7 +81,18 @@ const DATE_LABEL: Record<DateKind, string> = {
   exec_start: "Work starts",
   exec_end: "Work done by",
 };
-const PLANNED = ["due", "questions_due", "binding_until"] as const;
+const DATE_ORDER = Object.keys(DATE_LABEL) as DateKind[];
+/* The dates a tender is planned by, in the order it runs. "Tender sent" is a fact about the past and is
+   only shown. `hint`: where the day stands when the files do not state it. */
+const PLANNED: { kind: TenderDate; label: string; hint: string }[] = [
+  { kind: "questions_due", label: "Questions until", hint: "Set by the client, often in the cover letter." },
+  { kind: "due", label: "Submission deadline", hint: "It stands on the tender notice." },
+  { kind: "opening", label: "Bid opening", hint: "Usually the moment the deadline ends." },
+  { kind: "binding_until", label: "Binding until", hint: "How long the bid holds (Bindefrist)." },
+  { kind: "exec_start", label: "Work starts", hint: "In the contract terms or the schedule." },
+  { kind: "exec_end", label: "Work done by", hint: "In the contract terms or the schedule." },
+];
+const dmy = (iso: string) => iso.split("-").reverse().join(".");
 
 // an approximate date names a month ("Ende Juni 2026"); the day kept for it is not shown
 const dayText = (d: FoundDate) => (d.approx ? `${d.date.slice(5, 7)}.${d.date.slice(0, 4)}` : `${d.date.split("-").reverse().join(".")}${d.time ? `, ${d.time}` : ""}`);
@@ -89,24 +100,37 @@ const dayText = (d: FoundDate) => (d.approx ? `${d.date.slice(5, 7)}.${d.date.sl
 const readFrom = (d: FoundDate) => `${d.sources.map((s) => `${s.file}, ${s.where}`).join("; ")}: "${[d.label, d.text].filter(Boolean).join(" ")}"`;
 
 /** The dates the files give without doubt: one day per kind, not an approximate one (as `plan_of` in dates.py). */
-function planOf(dates: FoundDate[]): Pick<Plan, (typeof PLANNED)[number]> {
+function planOf(dates: FoundDate[]): Pick<Plan, TenderDate> {
   const one = (kind: DateKind) => {
     const days = [...new Set(dates.filter((d) => d.kind === kind && !d.approx).map((d) => d.date))];
     return days.length === 1 ? days[0] : undefined;
   };
-  return { due: one("due") ?? one("opening"), questions_due: one("questions_due"), binding_until: one("binding_until") };
+  return {
+    due: one("due") ?? one("opening"),
+    questions_due: one("questions_due"),
+    opening: one("opening"),
+    binding_until: one("binding_until"),
+    exec_start: one("exec_start"),
+    exec_end: one("exec_end"),
+  };
 }
 
-/** The tender's dates as its files state them, each with its evidence on hover; the ones a project is
- *  planned by are taken over with one click where the project has another day or none. */
-function FoundDates({ dates, plan, disabled, onTake }: { dates: FoundDate[]; plan?: Plan; disabled?: boolean; onTake?: (change: Change) => void }) {
-  if (dates.length === 0) return null;
+/** A tender's dates on its card: the ones it is planned by, and what its files state, each with its
+ *  evidence on hover. A day the files state and the project does not have is taken over with one click. */
+function FoundDates({ dates, plan, disabled, onTake }: { dates: FoundDate[]; plan: Plan; disabled?: boolean; onTake?: (change: Change) => void }) {
   const read = planOf(dates);
-  const open = plan ? PLANNED.filter((k) => read[k] && read[k] !== plan[k]) : [];
+  const open = PLANNED.map((f) => f.kind).filter((k) => read[k] && read[k] !== plan[k]);
+  // a day of the project that no file states: entered by hand
+  const byHand = PLANNED.filter((f) => plan[f.kind] && !dates.some((d) => d.kind === f.kind && d.date === plan[f.kind]));
+  if (dates.length === 0 && byHand.length === 0) return null;
+  const rows = [
+    ...dates.map((d) => ({ kind: d.kind as DateKind, day: d.date, found: d as FoundDate | null })),
+    ...byHand.map((f) => ({ kind: f.kind as DateKind, day: plan[f.kind]!, found: null })),
+  ].sort((a, b) => DATE_ORDER.indexOf(a.kind) - DATE_ORDER.indexOf(b.kind) || a.day.localeCompare(b.day));
   return (
     <div className="found-dates" onClick={(e) => e.stopPropagation()}>
       <p>
-        <span>Dates in the files</span>
+        <span>Dates</span>
         {onTake && open.length > 0 && (
           <button className="btn-ghost small" disabled={disabled} title="Plan this tender by the dates its files state" onClick={() => onTake(Object.fromEntries(open.map((k) => [k, read[k]])))}>
             Use these
@@ -114,16 +138,19 @@ function FoundDates({ dates, plan, disabled, onTake }: { dates: FoundDate[]; pla
         )}
       </p>
       <dl>
-        {dates.map((d) => (
-          <div key={d.kind + d.date} title={`Read from ${readFrom(d)}`}>
-            <dt>{DATE_LABEL[d.kind]}</dt>
-            <dd className="num">{dayText(d)}</dd>
-            <dd className="src" lang="de">
-              {d.sources[0].file}, {d.sources[0].where}
-              {d.sources.length > 1 ? ` +${d.sources.length - 1}` : ""}
-            </dd>
-          </div>
-        ))}
+        {rows.map(({ kind, day, found }) => {
+          // the files state another day than the one the project is planned by
+          const other = found && kind !== "sent_out" && plan[kind] && plan[kind] !== day;
+          return (
+            <div key={kind + day} className={other ? "other" : undefined} title={found ? `Read from ${readFrom(found)}` : "Entered by hand"}>
+              <dt>{DATE_LABEL[kind]}</dt>
+              <dd className="num">{found ? dayText(found) : dmy(day)}</dd>
+              <dd className="src" lang={found ? "de" : undefined}>
+                {found ? `${other ? "not used: " : ""}${found.sources[0].file}, ${found.sources[0].where}${found.sources.length > 1 ? ` +${found.sources.length - 1}` : ""}` : "entered by hand"}
+              </dd>
+            </div>
+          );
+        })}
       </dl>
     </div>
   );
@@ -587,7 +614,7 @@ function NewProjectDialog({
   onFiles: (files: FileList, target: string | null) => void;
   onChoose: (target: string | null) => void;
   onRemoveFile: (file: File) => void;
-  onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) => void;
+  onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: Partial<Record<TenderDate, string>>) => void;
   onCancel: () => void;
 }) {
   const { info, files } = pending;
@@ -596,8 +623,7 @@ function NewProjectDialog({
   const [name, setName] = useState<string | null>(null); // null: as read from the files
   const [target, setTarget] = useState<string | null | undefined>(pending.target ?? undefined); // undefined: as suggested
   const [steps, setSteps] = useState(() => new Map<File, Step>()); // the user's corrections, by file
-  const [due, setDue] = useState<string | null>(null); // null: as read from the files
-  const [questionsDue, setQuestionsDue] = useState<string | null>(null);
+  const [days, setDays] = useState<Partial<Record<TenderDate, string>>>({}); // the dates the user set; the others are as read from the files
   const [over, setOver] = useState(false);
 
   useEffect(() => {
@@ -613,19 +639,29 @@ function NewProjectDialog({
   const toCheck = rows.filter((f) => !f.certain && !steps.has(fileOf(f))).length;
   const into = projects.find((p) => p.id === targetNow);
   const waiting = files.length === 0;
-  const dueNow = due ?? info?.plan.due ?? "";
-  const questionsNow = questionsDue ?? info?.plan.questions_due ?? "";
-  // the evidence under a date field: where the day in it was read, as long as it is still that day
-  const source = (value: string, ...kinds: DateKind[]) => {
-    const d = value && info?.dates.find((f) => kinds.includes(f.kind) && f.date === value);
-    return d ? `read from ${readFrom(d)}` : null;
+  // what the user set, else what the project already has, else what the files state
+  const dayNow = (kind: TenderDate) => days[kind] ?? into?.plan[kind] ?? info?.plan[kind] ?? "";
+  /** What stands under a date field: where the day in it was read, as long as it is still that day; a day
+   *  the files state but that was not filled in (approximate, or two different days); else where to look. */
+  const under = (kind: TenderDate, hint: string): { text: string; de?: boolean } => {
+    const stated = info?.dates.filter((f) => f.kind === kind || (kind === "due" && f.kind === "opening")) ?? [];
+    const here = dayNow(kind) && stated.find((f) => f.date === dayNow(kind) && !f.approx);
+    if (here) return { text: `read from ${readFrom(here)}`, de: true };
+    const own = stated.filter((f) => f.kind === kind);
+    const added = own.filter((f) => !f.approx && f.date !== dayNow(kind));
+    if (into && dayNow(kind) && added.length > 0)
+      return { text: `The added files say ${added.map(dayText).join(" and ")}: ${readFrom(added[0])}`, de: true };
+    if (own.length > 0 && !info?.plan[kind])
+      return { text: `The files say ${own.map((f) => (f.approx ? "end of " : "") + dayText(f)).join(" and ")}${own.some((f) => f.approx) ? ", no exact day" : ""}: ${readFrom(own[0])}`, de: true };
+    return { text: info ? `Not stated in these files. ${hint}` : " " };
   };
+  const issued = info?.dates.find((f) => f.kind === "sent_out");
 
   function confirm() {
     if (!info) return;
     const roles: (string | null)[] = files.map(() => null);
     for (const f of info.files) if (stepNow(f) !== f.step) roles[f.index] = stepNow(f);
-    onConfirm(nameNow.trim(), targetNow, roles, targetNow ? {} : { due: dueNow || undefined, questions_due: questionsNow || undefined });
+    onConfirm(nameNow.trim(), targetNow, roles, Object.fromEntries(PLANNED.map((f) => [f.kind, dayNow(f.kind)])));
   }
 
   return (
@@ -782,21 +818,40 @@ function NewProjectDialog({
                     <small>read from the files</small>
                   </p>
                 )}
-                <label>
-                  <span>Submission deadline</span>
-                  <DateField label="Submission deadline" value={dueNow} onChange={setDue} disabled={!info || busy} />
-                  <small lang={source(dueNow, "due", "opening") ? "de" : undefined}>{source(dueNow, "due", "opening") ?? "Not stated in these files. It stands on the tender notice."}</small>
-                </label>
-                <label>
-                  <span>Questions until</span>
-                  <DateField label="Questions until" value={questionsNow} max={dueNow || undefined} onChange={setQuestionsDue} disabled={!info || busy} />
-                  <small lang={source(questionsNow, "questions_due") ? "de" : undefined}>{source(questionsNow, "questions_due") ?? "Not stated in these files. Both can be entered later."}</small>
-                </label>
-                {info && info.dates.length > 0 && (
-                  <div className="wide">
-                    <FoundDates dates={info.dates} />
-                  </div>
+              </>
+            )}
+            {/* the dates are asked for also when files are added: a later file can state a new deadline */}
+            {(
+              <>
+                {issued && (
+                  <p className="np-fact wide" title={`Read from ${readFrom(issued)}`}>
+                    <span>Tender sent</span>
+                    <b>{dayText(issued)}</b>
+                    <small lang="de">
+                      read from {issued.sources[0].file}, {issued.sources[0].where}
+                    </small>
+                  </p>
                 )}
+                {/* every date a tender is planned by: filled in from the files once they are read, and the
+                    user's to change; a day the user set stays when files are added */}
+                {PLANNED.map(({ kind, label, hint }) => {
+                  const note = under(kind, hint);
+                  return (
+                    <label key={kind} className={dayNow(kind) && note.de ? "np-read" : undefined}>
+                      <span>{label}</span>
+                      <DateField
+                        label={label}
+                        value={dayNow(kind)}
+                        max={kind === "questions_due" ? dayNow("due") || undefined : undefined}
+                        onChange={(v) => setDays({ ...days, [kind]: v })}
+                        disabled={!info || busy}
+                      />
+                      <small lang={note.de ? "de" : undefined} title={note.text}>
+                        {note.text}
+                      </small>
+                    </label>
+                  );
+                })}
               </>
             )}
           </section>
@@ -854,7 +909,7 @@ export function ProjectsPage({
   onChooseFiles: (target: string | null) => void;
   onDropFiles: (files: FileList, target: string | null) => void;
   onRemoveFile: (file: File) => void;
-  onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) => void;
+  onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: Partial<Record<TenderDate, string>>) => void;
   onCancel: () => void;
   onDelete: (project: CatalogProject) => void;
   onSetStep: (project: CatalogProject, index: number, step: Step) => void;

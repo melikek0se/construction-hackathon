@@ -1520,3 +1520,17 @@
   color: var(--dim);
   text-overflow: ellipsis;
 }
+
+.found-dates dl > .other dd,
+.found-dates dl > .other dt {
+  font-weight: 400;
+  color: var(--dim);
+}
+
+/* a date field's evidence: the quoted line it was read from, kept to three lines (all of it on hover) */
+.np-fields label > small[title] {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}

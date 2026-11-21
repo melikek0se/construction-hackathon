@@ -375,7 +375,7 @@ async def intake(files: list[UploadFile], project: str | None = Form(None)):
 @app.post("/api/projects")
 async def create_project(files: list[UploadFile], name: str | None = Form(None), project: str | None = Form(None),
                          roles: str | None = Form(None), due: str | None = Form(None),
-                         questions_due: str | None = Form(None)):
+                         questions_due: str | None = Form(None), dates: str | None = Form(None)):
     """Keep files as a new project, or add them to an existing one.
 
     One LV in several versions and several trade LVs are both projects; which it is follows from the
@@ -383,10 +383,18 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     file is (tender, bid, award) is read from the files as in the intake; `roles`, a JSON list with one
     entry per uploaded file (null = as read), is what the user corrected there. `due` and `questions_due`
     (YYYY-MM-DD) are the tender's dates. Left out, they are taken from the files where these state them
-    (boq.dates), as the end of the binding period always is. Files added to a project fill only the
-    dates it does not have yet.
+    (boq.dates). `dates`, a JSON object, says all of a new tender's dates at once (any of PLAN_DATES): what
+    it names is kept as said, "" meaning none, also where the files state a day. Files added to a project
+    fill only the dates it does not have yet, unless `dates` says otherwise.
     """
-    said_dates = {k: v for k, v in (("due", due), ("questions_due", questions_due)) if v}
+    try:
+        said_dates = json.loads(dates) if dates else {}
+    except ValueError:
+        raise HTTPException(422, "dates must be a JSON object.") from None
+    if not isinstance(said_dates, dict) or any(k not in PLAN_DATES or not isinstance(v, str | None)
+                                               for k, v in said_dates.items()):
+        raise HTTPException(422, f"dates is an object with any of: {', '.join(PLAN_DATES)}.")
+    said_dates |= {k: v for k, v in (("due", due), ("questions_due", questions_due)) if v}
     uploads, _, dates = await _read_uploads(files)
     plan = {k: v for k, v in {**tender_dates.plan_of(dates), **_plan(said_dates)}.items() if v}
     new = [boq for _, _, _, boq in uploads]
@@ -404,8 +412,10 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     if existing:
         catalog.add_files(project, stored, kind)
         project_id, title = project, existing["name"]
-        if missing := {k: v for k, v in tender_dates.plan_of(dates).items() if not existing["plan"].get(k)}:
-            catalog.set_plan(project, missing)
+        # the files fill the dates the project lacks; what the dialog says is kept as said
+        missing = {k: v for k, v in tender_dates.plan_of(dates).items() if not existing["plan"].get(k)}
+        if changes := {**missing, **_plan(said_dates)}:
+            catalog.set_plan(project, changes)
     else:
         found = intake_rules.identity(new)
         title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
@@ -544,7 +554,7 @@ def open_project(project_id: str):
     return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources, project_id)}
 
 
-PLAN_DATES = ("due", "questions_due", "sent", "binding_until")
+PLAN_DATES = ("questions_due", "due", "opening", "sent", "binding_until", "exec_start", "exec_end")
 PLAN_STAGES = ("check", "questions", "pricing")  # submitted and award follow from the files
 
 
@@ -573,6 +583,9 @@ class ProjectChange(BaseModel):
     questions_due: str | None = None  # last day for bidder questions
     sent: str | None = None  # the day the bid went out
     binding_until: str | None = None  # end of the binding period (Bindefrist)
+    opening: str | None = None  # the bids are opened (Eröffnungstermin)
+    exec_start: str | None = None  # the work starts
+    exec_end: str | None = None  # the work has to be finished
 
 
 @app.patch("/api/catalog/{project_id}")

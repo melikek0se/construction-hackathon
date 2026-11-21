@@ -1,6 +1,7 @@
 """The tender's dates, read from the files (boq.dates): every date found by hand in the dataset, nothing
 else, and the wordings other tenders use."""
 import io
+import json
 import zipfile
 
 from fastapi.testclient import TestClient
@@ -81,7 +82,7 @@ def test_wordings_of_other_tenders():
 def test_two_days_for_one_deadline_are_left_to_the_user():
     found = dates.merge(dates.read("Angebotsfrist: 21.03.2025\nAngebotsfrist: 28.03.2025\nBindefrist 30.04.2025".encode(), "a.txt"))
     assert dates.plan_of(found) == {"binding_until": "2025-04-30"}
-    assert dates.plan_of(dates.merge(dates.read(b"Submission 21.03.2025", "a.txt"))) == {"due": "2025-03-21"}
+    assert dates.plan_of(dates.merge(dates.read(b"Submission 21.03.2025", "a.txt"))) == {"due": "2025-03-21", "opening": "2025-03-21"}
 
 
 def _docx(*paragraphs: str) -> bytes:
@@ -99,18 +100,24 @@ def test_intake_reads_the_dates_also_from_a_file_that_is_no_lv():
     files = [("files", (lv.name, lv.read_bytes())), ("files", ("Anschreiben.docx", letter))]
     body = client.post("/api/intake", files=files).json()
     assert [f["name"] for f in body["left_out"]] == ["Anschreiben.docx"]
-    assert body["plan"] == {"due": "2026-12-12", "binding_until": "2027-01-15"}
+    assert body["plan"] == {"due": "2026-12-12", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}  # the LV's own
     due = next(d for d in body["dates"] if d["kind"] == "due")
     assert due["time"] == "10:00" and due["sources"] == [{"file": "Anschreiben.docx", "where": "document text"}]
 
     # kept as read when the dates are left out; what the user says wins
     created = client.post("/api/projects", files=files).json()
     plan = client.get("/api/catalog").json()[0]["plan"]
-    assert plan == {"due": "2026-12-12", "binding_until": "2027-01-15"}
+    assert plan == {"due": "2026-12-12", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}
     client.delete(f"/api/catalog/{created['id']}")
+    # the dialog says every date at once: a day it changed, one it added, and one it took out ("")
+    said = {"due": "2026-12-11", "exec_start": "2027-02-01", "binding_until": ""}
+    created = client.post("/api/projects", files=files, data={"dates": json.dumps(said)}).json()
+    assert client.get("/api/catalog").json()[0]["plan"] == {"due": "2026-12-11", "exec_start": "2027-02-01", "exec_end": "2025-11-28"}
+    client.delete(f"/api/catalog/{created['id']}")
+    assert client.post("/api/projects", files=files, data={"dates": '{"deadline": "2026-12-11"}'}).status_code == 422
     created = client.post("/api/projects", files=files, data={"due": "2026-12-10", "questions_due": "2026-12-01"}).json()
     assert client.get("/api/catalog").json()[0]["plan"] == {
-        "due": "2026-12-10", "questions_due": "2026-12-01", "binding_until": "2027-01-15"}
+        "due": "2026-12-10", "questions_due": "2026-12-01", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}
     client.delete(f"/api/catalog/{created['id']}")
 
 
@@ -121,7 +128,12 @@ def test_files_added_to_a_project_fill_only_the_dates_it_lacks():
     files = [("files", (lv.name, lv.read_bytes())), ("files", ("Anschreiben.docx", letter))]
     assert client.post("/api/projects", files=files, data={"project": "D"}).status_code == 200
     plan = next(p for p in client.get("/api/catalog").json() if p["id"] == "D")["plan"]
-    assert plan == {"due": "2026-12-01", "binding_until": "2027-01-15"}
+    assert plan == {"due": "2026-12-01", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}
+    # the dialog shows these dates when files are added, and what it sends is kept: a moved deadline, one taken out
+    said = {"due": "2026-12-12", "binding_until": ""}
+    client.post("/api/projects", files=files[1:] + files[:1], data={"project": "D", "dates": json.dumps(said)})
+    plan = next(p for p in client.get("/api/catalog").json() if p["id"] == "D")["plan"]
+    assert plan == {"due": "2026-12-12", "exec_end": "2025-11-28"}
 
 
 def test_the_summary_of_a_project_carries_the_dates_of_its_files():

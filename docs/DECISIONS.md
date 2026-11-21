@@ -412,5 +412,7 @@ A date without a label is left out. No LLM: the result has to be the same every 
   deadline when only it is named.
 - A question deadline is never derived from the submission date. If none is stated the field stays empty.
 - What the user sets wins: files fill only empty dates; on a card the read dates are offered, not applied.
+- The new-project dialog asks for every date a tender is planned by (questions, submission, opening,
+  binding, work start, work end), pre-filled from the files; "tender sent" is a past fact and only shown.
 - Files that are no LV (cover letter) are read for dates and still left out as LVs.
 

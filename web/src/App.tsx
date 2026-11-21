@@ -27,7 +27,7 @@ import "./chat.css";
 import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity } from "./types";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf";
 const VIEWS: [View, string][] = [
@@ -279,7 +279,7 @@ export default function App() {
     [readPending],
   );
 
-  async function confirmIntake(name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) {
+  async function confirmIntake(name: string, target: string | null, roles: (string | null)[], dates: Partial<Record<TenderDate, string>>) {
     if (!pending) return;
     setBusy(target ? "the added files" : name || "the new project");
     setError(null);
