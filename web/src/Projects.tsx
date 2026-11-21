@@ -805,15 +805,6 @@ export function ProjectsPage({
   onSetStep: (project: CatalogProject, index: number, step: Step) => void;
   onChange: (project: CatalogProject, change: Change) => void;
 }) {
-  const today = startOfDay(new Date());
-  const upcoming = projects
-    .flatMap((p) => {
-      const next = nextDate(p, today);
-      return next ? [{ p, ...next }] : [];
-    })
-    .sort((a, b) => a.days - b.days);
-  const thisWeek = upcoming.filter((u) => u.days <= 7).length;
-
   return (
     <main className="register">
       {/* the schedule runs the full width of the window, straight under the band */}
@@ -837,28 +828,7 @@ export function ProjectsPage({
 
       <section className="board-wrap" aria-label="Tenders by stage">
         <header className="board-head">
-          <div>
-            <h1>Projects</h1>
-            <p>
-              {projects.length === 0 ? (
-                "No tender yet."
-              ) : (
-                <>
-                  {projects.length} tender{projects.length > 1 ? "s" : ""}
-                  {upcoming.length > 0 && (
-                    <>
-                      {" · "}
-                      <b>
-                        {thisWeek} date{thisWeek === 1 ? "" : "s"} this week
-                      </b>
-                      {" · next: "}
-                      {upcoming[0].what} for <span lang="de">{upcoming[0].p.name}</span>, {wd(upcoming[0].day)}
-                    </>
-                  )}
-                </>
-              )}
-            </p>
-          </div>
+          <h1>Projects</h1>
           <div className="register-new">
             <span>Drop the files of a tender anywhere, or</span>
             <button className="btn-new" disabled={busy || pending !== null} onClick={onNew}>
