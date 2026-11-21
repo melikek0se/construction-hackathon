@@ -373,7 +373,7 @@ tenders on a yellow chip, ink while the schedule is open; absent while there is 
 - **Back link** in the item sheet: a chevron and capitals, no outline; hover pale yellow.
 - **Text link:** 600, 1px underline with 3px offset.
 - **Focus:** 2px ink outline, 2px offset, everywhere.
-- Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; the system's "reduce motion" setting is not read (D-036).
+- Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; the system's "reduce motion" setting is not read (D-038).
 - The larger motions are the loading tapes (520ms pull-in, then a steady run along the tape) and the opening
   of the app: full yellow with the name on it in very large letters (Barlow Condensed 700, `min(34vw, 62vh)`,
   ink) and two tapes across it while the projects are fetched; the name fades (280ms), then each tape runs on through on its

@@ -292,7 +292,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   the test project was deleted again).
   Not done: the one-hour cache was not waited out (a second question after more than five minutes); an
   answer with "found: false" still shows its nearest passages under the label "Not in the project
-  documents", which reads oddly when the answer is "no LV contains this"; no chat on the list of projects.
+  documents", which reads oddly when the answer is "no LV contains this". (The list of projects has a chat since D-036.)
 
 - Database and deploy (2026-11-21, D-026, `docs/08-deploy.md`): projects, documents (file bytes), analyses and
   the LLM cache in one database (`src/boq/db.py`; Postgres via `DATABASE_URL`, SQLite `data/boq.db` locally).
@@ -361,15 +361,35 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   them apart like a hinge (joined at the top of the cleft, open below), an "x" between them, they snap shut and wobble; about 4.7 s) on the event detail `split` or when
   "split" is typed only on the event detail `strip` or when
   "strip" is typed; seen in
-  headless Chrome on the dev stack 2026-11-21), not wired to anything; app icon and band logo: a hard hat in profile. Checked by driving the pointer
+  headless Chrome on the dev stack 2026-11-21), since D-036 the way into the chat; app icon and band logo: a hard hat in profile. Checked by driving the pointer
   with puppeteer in Chrome at 1440 wide on the dev stack (follow, near, over, idle glances, hop all seen).
   Not checked: a person using it, the file-drag bounce, the
   production build, the PDF view's "Drawn by LV Check" and the auth realm still carry the old name.
   Drawn 1.2 times larger since 2026-11-21 (134px box, was 112).
 
+- Mascot, cheeks (2026-11-21): no longer two spheres set on the body but the body's own surface swelling out
+  (`shapeCheeks` in `Mascot.tsx` moves the sphere's vertices each frame while it has its back to you), so the
+  outer edges run into the body without a line and the only line is the cleft. Seen in headless Chrome frames
+  for the turn-around and the split; the pole dance not shot again since.
+
 - Sideways overflow (2026-11-21): what slides into the band or the page from the side widened the page for a
   moment (28px, a horizontal scrollbar at the bottom); `.app` now has `overflow-x: clip`. Measured per frame in
   headless Chrome at 1440 wide: 28px before, 0 after, on the projects page, into a project and back.
+
+- Polier answers (2026-11-21, D-036; `web/src/Agent.tsx`, `POST /api/catalog/chat`, `chat.overview_answer`):
+  a click on the head opens a chat panel above it (Esc or × closes it). In a project or an LV: that
+  project's conversation; the "Ask the project" tab of the right pane is gone (LV workspace and project
+  overview), Polier is the only place to ask. On the list of projects: all projects at
+  once, answered from their overview lines (stage, dates, files, rule findings, net totals), each answer
+  citing project and line, a click opens the project; or one project picked in the panel. Conversations are
+  kept in the browser as before. Polier bounces on a question and hops on the answer.
+  Live in Chrome through a script at 1440 wide on the Docker stack: project D picked on the list, a question
+  answered in 9 s, its passage opened the LV with the quote marked on the PDF and the panel still open;
+  four questions about all projects (most stops, priced bids and totals in Turkish, next deadline, roof
+  drains) in 4–7 s and 0.03–0.04 USD each, figures as on the cards, the roof-drain one sent to project F;
+  a cited line opened D and F; the conversation was there again after a reload. `tests/test_chat.py` (+3).
+  Not checked: a person clicking through, widths under 500px, the production build in a browser, a
+  catalogue of many projects (the overview is sent whole: about 5k tokens for the six).
 
 - New-project dialog (2026-11-21): files can be added to the ones waiting (button or drop; the same file is
   not taken twice) and taken out again; name, dates and corrected steps stay while the set is read again; a
@@ -386,7 +406,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   (styles.css) and the dialog divides its vh/vw lengths by it. Anything else sized in vh/vw inside the
   zoomed body needs the same.
   While files are read the rows are ghosts (name only, pale) and the footer's edge carries the running tape,
-  as it does while the project is kept. "Reduce motion" is no longer read anywhere (D-036). Type-checked,
+  as it does while the project is kept. "Reduce motion" is no longer read anywhere (D-038). Type-checked,
   not looked at in a browser.
 
 - Own form controls (2026-11-21): `web/src/controls.tsx` (`Select`, `DateField`) replace every native

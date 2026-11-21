@@ -340,6 +340,9 @@ export interface ChatCitation {
   quote: string;
   index: number | null; // which file of the project (catalog order); null outside a project
   here: boolean; // the file that is open
+  // an answer about all projects rests on lines of their overview instead: the project, and the line as `quote`
+  project?: string;
+  project_name?: string;
 }
 
 export interface ChatAnswer {
@@ -349,7 +352,7 @@ export interface ChatAnswer {
   citations: ChatCitation[];
   dropped: number; // passages the model named that are not in the documents
   documents: string[]; // the files of the project the answer could draw on
-  scope: "search" | "all"; // read the passages a search found, or every document
+  scope: "search" | "all" | "overview"; // read the passages a search found, every document, or the overview of all projects
   passages: number; // how many passages (items, pieces of remarks) the model read
   files: number; // from how many files
   cost_usd: number | null; // what this answer cost at list prices; null for a model without a known price

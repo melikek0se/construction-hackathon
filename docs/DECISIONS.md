@@ -519,19 +519,27 @@ Status: decided · 2026-11-21 (the user asked for routing and pagination, built 
 Revisit if: the client's tender platform, not e-mail, is where questions must go; or replies should arrive
 without pasting.
 
-## D-036 — The app does not read the system's "reduce motion" setting
+## D-036 — A click on Polier opens the chat; on the list of projects it answers about all tenders from their overview
 
-**Decided** 2026-11-21 (Atahan).
+Decided 2026-11-21 with Utku (he chose: first the existing chat from the avatar, then all projects; no
+free chatbot).
 
-- Every animation always runs. All `prefers-reduced-motion` rules in the CSS and the checks in
-  `TradeGraph.tsx` and `Mascot.tsx` are removed. This replaces the per-animation exceptions of D-029 and
-  D-033 and the mascot's.
-- Why: the demo machine has the setting on, and with it the progress signs (the tape running along the
-  footer of the new-project dialog, the loading tapes) stood still and looked like a hang.
-- Cost, known: people who set "reduce motion" for health reasons get the full motion. Accepted for the
-  prototype.
+- Polier (bottom right) opens a panel above it (`web/src/Agent.tsx`). Inside a project or an LV it is that
+  project's conversation (D-025, D-027). A passage clicked in the panel opens the item on the PDF and
+  leaves the right pane alone. The "Ask the project" tab of the right pane (LV workspace and project
+  overview) was taken out the same day: one place to ask, and the right pane is the findings again.
+- On the list of projects the panel is about all projects at once (`POST /api/catalog/chat`,
+  `chat.overview_answer`): the model reads one block of fact lines per project (stage, dates with their
+  source, files, rule findings, net total: what the projects page shows) and nothing else. Each statement
+  cites a project and one of its lines; a line that is not there word for word is dropped, as passages are.
+  A click on a line opens the project. "One project" in the panel's head asks a single project's documents
+  without opening it.
+- The overview holds no LV text. A question about items or wording is answered "ask inside the project",
+  not from all documents of all projects: that would cost a whole-project read per project.
+- No free chatbot: general knowledge (VOB, usual prices) stays out, as in D-025.
 
-Revisit if: this becomes a product.
+Revisit if: questions across the documents of several projects are wanted (needs one search index over
+all projects), or the AI findings should count in the overview (it has rule findings only).
 
 ## D-037 — The checks are one pipeline in one file, run in the background when a project is created
 
@@ -559,4 +567,18 @@ Revisit if: this becomes a product.
 
 Revisit if: the server gets more than one worker (a job queue then), or the review of every upload costs
 too much (then agentic steps on request only).
+
+## D-038 — The app does not read the system's "reduce motion" setting
+
+**Decided** 2026-11-21 (Atahan).
+
+- Every animation always runs. All `prefers-reduced-motion` rules in the CSS and the checks in
+  `TradeGraph.tsx` and `Mascot.tsx` are removed. This replaces the per-animation exceptions of D-029 and
+  D-033 and the mascot's.
+- Why: the demo machine has the setting on, and with it the progress signs (the tape running along the
+  footer of the new-project dialog, the loading tapes) stood still and looked like a hang.
+- Cost, known: people who set "reduce motion" for health reasons get the full motion. Accepted for the
+  prototype.
+
+Revisit if: this becomes a product.
 

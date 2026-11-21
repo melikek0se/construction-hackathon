@@ -8,7 +8,7 @@
    - click: it crouches, hops, lands with a squash; files dragged over the page: it bounces, excited
    - blinks at random, sometimes twice, and on big gaze shifts
    - now and then it turns its back, in a three-quarter turn (the cheeks to one side, the face free on the other), shows two
-     big round cheeks and bounces them up and down together (long on the way up, piled flat and wide at the
+     big round cheeks (the body itself swelling out, so the only line is the cleft between them) and bounces them up and down together (long on the way up, piled flat and wide at the
      bottom), looking
      back at you over its shoulder (the eyes slide round the head) with lowered lids, a blush and a wink, then
      turns to the front again
@@ -24,7 +24,7 @@
    Typing "popo" anywhere on the page does the turn-around at once, typing "strip" the strip, typing "split"
    the split: it turns its back, the two hands take hold of the cheeks, squeeze, and pull them apart (hinged at the top of the
    cleft: still joined there, open below), and there is an "x" between them; then they let go, the cheeks snap shut and wobble, and it turns round again.
-   The system's "reduce motion" setting is not read anywhere in the app (D-036); `calm` below is the slow
+   The system's "reduce motion" setting is not read anywhere in the app (D-038); `calm` below is the slow
    variant (only follows and blinks), kept switched off. */
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -67,7 +67,8 @@ function buildRig() {
   const rig = new THREE.Group(); // hop and squash
   const head = new THREE.Group(); // turns
   rig.add(head);
-  head.add(new THREE.Mesh(new THREE.SphereGeometry(1, 96, 64), matte(0xf2f1ec)));
+  const body = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 96), matte(0xf2f1ec));
+  head.add(body);
 
   // eyes on a pivot at the head's centre: turning the pivot slides them over the surface
   const eyePivot = new THREE.Group();
@@ -99,19 +100,51 @@ function buildRig() {
     eyePivot.add(b);
   }
 
-  // two round cheeks low on the back, grown only while it has its back to you (see the frame loop)
-  const cheeks = new THREE.Group();
-  const cheekGeo = new THREE.SphereGeometry(0.56, 48, 32);
-  const cheekMat = matte(0xf2f1ec);
-  const cheekPair: THREE.Mesh[] = [];
-  for (const x of [-0.31, 0.31]) {
-    const c = new THREE.Mesh(cheekGeo, cheekMat);
-    c.position.set(x, CHEEK_Y, -0.58);
-    cheeks.add(c);
-    cheekPair.push(c);
-  }
-  cheeks.scale.setScalar(0.001);
-  head.add(cheeks);
+  // The cheeks are not separate pieces: the body itself swells into two mounds low on its back (`shapeCheeks`),
+  // so their outer edges run into the body without a line and the only line is the cleft between them.
+  const pos = body.geometry.attributes.position as THREE.BufferAttribute;
+  const nor = body.geometry.attributes.normal as THREE.BufferAttribute;
+  const base = Float32Array.from(pos.array as Float32Array);
+  let shaped = false;
+  /** Swells the back of the body into the two cheeks. Each cheek is an ellipse on the back (centre `cx`,`cy`,
+      half-widths `wx`,`wy`, turned by `turn` about its own centre, mirrored for the other side) raised by `amp`
+      with a soft rim; where the two meet, the higher one wins, which leaves the cleft. */
+  const shapeCheeks = (amp: number, cx: number, cy: number, wx: number, wy: number, turn: number) => {
+    if (amp < 0.002) {
+      if (!shaped) return;
+      (pos.array as Float32Array).set(base);
+      (nor.array as Float32Array).set(base); // a unit sphere: the normal is the position
+      shaped = false;
+      pos.needsUpdate = nor.needsUpdate = true;
+      return;
+    }
+    const cos = Math.cos(turn), sin = Math.sin(turn);
+    const out = pos.array as Float32Array;
+    const moved = new Uint8Array(pos.count);
+    for (let i = 0; i < pos.count; i++) {
+      const x = base[i * 3], y = base[i * 3 + 1], z = base[i * 3 + 2];
+      let f = 0;
+      if (z < 0) {
+        for (const side of [-1, 1]) {
+          const rx = (x - side * cx) * side, ry = y - cy; // mirrored: the left cheek is worked out as the right one
+          const u = (rx * cos + ry * sin) / wx, v = (-rx * sin + ry * cos) / wy;
+          const q = Math.hypot(u, v);
+          if (q < 1) f = Math.max(f, 1 - THREE.MathUtils.smootherstep(q, 0.3, 1));
+        }
+        f *= THREE.MathUtils.smoothstep(-z, 0, 0.3);
+      }
+      const r = 1 + amp * f;
+      out[i * 3] = x * r; out[i * 3 + 1] = y * r; out[i * 3 + 2] = z * r;
+      if (f > 1e-4) moved[i] = 1;
+    }
+    pos.needsUpdate = true;
+    body.geometry.computeVertexNormals();
+    // off the cheeks the body is the plain sphere: its own normals there, so no seam shows
+    const n = nor.array as Float32Array;
+    for (let i = 0; i < pos.count; i++) if (!moved[i]) { n[i * 3] = base[i * 3]; n[i * 3 + 1] = base[i * 3 + 1]; n[i * 3 + 2] = base[i * 3 + 2]; }
+    nor.needsUpdate = true;
+    shaped = true;
+  };
   // the "x" between them, on the body, covered until the cheeks are pulled apart (the split)
   const cross = new THREE.Group();
   const ink = matte(0x161816);
@@ -145,7 +178,7 @@ function buildRig() {
   hat.position.set(0, 0.34, -0.04);
   hat.rotation.set(-0.16, 0, 0.08);
   head.add(hat);
-  return { rig, head, eyePivot, eyes, hat, cheeks, cheekPair, blush, cross };
+  return { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross };
 }
 
 /** A damped spring: moves `v` towards `to`, overshooting a little. */
@@ -208,7 +241,7 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       root.scale.setScalar(0.92);
       root.rotation.z = -0.08;
     }
-    const { rig, head, eyePivot, eyes, hat, cheeks, cheekPair, blush, cross } = buildRig();
+    const { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross } = buildRig();
     root.add(rig);
 
     const calm = false as boolean;
@@ -286,7 +319,8 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
     let stripT = -1, flirt = 0;
     // the split: S says when the hands take hold, pull, let go, and when it turns back
     const S = { grab: 0.75, pull: 1.45, release: 3.5, away: 3.9, end: 4.7 };
-    const SPLIT_YAW = 2.9, SPLIT_EYES = -2.1, CHEEK_X = 0.31, HINGE = 0.45, OPEN = 0.8;
+    const SPLIT_YAW = 2.9, SPLIT_EYES = -2.1, CHEEK_X = 0.36, HINGE = 0.45, OPEN = 0.8, CHEEK_W = 0.56, CHEEK_UP = 0.5;
+    let cheekX = CHEEK_X, cheekY = CHEEK_Y; // where the right cheek's centre is now, for the hands
     let splitT = -1;
     const tmp = new THREE.Vector3();
     let moonIn = rand(18, 40), moonT = -1;
@@ -426,16 +460,20 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       eyePitch += (clamp((tp - hp) * 0.6, -0.15, 0.15) - eyePitch) * Math.min(1, dt * 22);
       head.rotation.set(hp - wig * 0.035, hy + spin, hr + flip);
       // both cheeks go up and down together: stretched long on the way up, piled flat and wide at the bottom
-      cheeks.scale.setScalar(Math.max(0.001, turned));
       cross.visible = apart > 0.02;
-      for (const [i, c] of cheekPair.entries()) {
+      {
         // pulled apart they open like a hinge at the top of the cleft: joined there, apart below
-        const side = i ? 1 : -1, a = apart * OPEN;
-        c.position.x = side * (CHEEK_X * Math.cos(a) + HINGE * Math.sin(a));
-        c.position.y = CHEEK_Y + HINGE - HINGE * Math.cos(a) + CHEEK_X * Math.sin(a) + wig * 0.14 - piled * 0.05;
-        c.rotation.z = side * a;
-        // squeezed where the hand holds it
-        c.scale.set(1 - rising * 0.1 + piled * 0.2 + jig * 0.12 - grip * 0.1 - apart * 0.08, 1 + rising * 0.22 - piled * 0.26 - jig * 0.12 + grip * 0.05 + apart * 0.1, 1 - rising * 0.06 + piled * 0.14 + jig * 0.1 - grip * 0.08);
+        const a = apart * OPEN;
+        cheekX = CHEEK_X * Math.cos(a) + HINGE * Math.sin(a);
+        cheekY = CHEEK_Y + HINGE - HINGE * Math.cos(a) + CHEEK_X * Math.sin(a) + wig * 0.14 - piled * 0.05;
+        shapeCheeks(
+          turned * CHEEK_UP * (1 - rising * 0.1 + piled * 0.22 + jig * 0.2 - grip * 0.12),
+          cheekX,
+          cheekY,
+          CHEEK_W * (1 - rising * 0.1 + piled * 0.2 + jig * 0.12 - grip * 0.1 - apart * 0.14),
+          CHEEK_W * (1 + rising * 0.22 - piled * 0.26 - jig * 0.12 + grip * 0.05 + apart * 0.1),
+          a,
+        );
       }
       blush.opacity = Math.max(turned * 0.6, flirt * 0.6);
       eyePivot.rotation.set(eyePitch, eyeYaw, 0);
@@ -513,8 +551,9 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
         head.updateMatrix();
         rig.updateMatrix();
         const hold = (side: number): V3 => {
-          const c = cheekPair[side > 0 ? 1 : 0].position;
-          tmp.set(c.x + side * (0.36 - grip * 0.07), c.y - 0.05, -0.58 - 0.45 + grip * 0.09).applyMatrix4(head.matrix).applyMatrix4(rig.matrix);
+          const x = side * Math.min(0.9, cheekX + 0.3 - grip * 0.05), y = cheekY - 0.03;
+          const out = 1 + CHEEK_UP * 0.75 - grip * 0.1; // on the mound, pressed into it while holding
+          tmp.set(x * out, y * out, -Math.sqrt(Math.max(0.04, 1 - x * x - y * y)) * out).applyMatrix4(head.matrix).applyMatrix4(rig.matrix);
           return [tmp.x, tmp.y, tmp.z];
         };
         L = mix(L, hold(1), reach);
