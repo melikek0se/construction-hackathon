@@ -170,7 +170,7 @@ export interface CatalogProject {
   trade: string;
   note: string;
   kind: "versions" | "trades";
-  source: "dataset" | "saved";
+  source: "demo" | "upload"; // demo: seeded from the challenge dataset; both can be changed
   created: string | null;
   files: { name: string; role: string; format: string }[];
 }

@@ -598,12 +598,24 @@ input[type="search"]::placeholder {
   gap: 4px;
 }
 
-.add-files {
+.reg-actions {
   justify-self: start;
-  height: 26px;
+  display: flex;
+  gap: 6px;
   margin-top: 9px;
+}
+
+.add-files {
+  height: 26px;
   padding: 0 9px;
   font-size: 10.5px;
+}
+
+.add-files.armed,
+.add-files.armed:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--yellow);
 }
 
 .file-chip {

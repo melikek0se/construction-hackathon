@@ -72,6 +72,11 @@ export async function renameProject(id: string, name: string): Promise<CatalogPr
   );
 }
 
+export async function deleteProject(id: string): Promise<void> {
+  const res = await fetch(`/api/catalog/${id}`, { method: "DELETE" });
+  if (!res.ok) await read(res); // read() turns the error body into a message
+}
+
 /** An LV the server analysed earlier, e.g. one LV of a project. */
 export async function loadAnalysis(id: string): Promise<Analysis> {
   return read(await fetch(`/api/analyses/${id}`));

@@ -1,4 +1,4 @@
-"""Projects page: the dataset mapping, the summaries, and projects created by upload."""
+"""Projects page: the demo projects seeded from the dataset, the summaries, and projects created by upload."""
 from pathlib import Path
 
 import pytest
@@ -22,7 +22,8 @@ def test_catalog_lists_the_six_dataset_projects():
     by_id = {p["id"]: p for p in projects}
     assert by_id["F"]["kind"] == "trades" and len(by_id["F"]["files"]) == 27
     assert [f["role"] for f in by_id["B"]["files"]] == ["tender", "tender", "bid", "award", "submitted bid"]
-    assert all("path" not in f for p in projects for f in p["files"])  # no file-system paths leave the server
+    assert all(p["source"] == "demo" for p in projects)
+    assert all("data" not in f for p in projects for f in p["files"])  # file bytes are not listed
 
 
 def test_summary_counts_one_version_and_finds_the_net_total():
@@ -51,12 +52,13 @@ def test_uploaded_project_is_kept_listed_and_renamed():
     created = client.post("/api/projects", files=files, data={"name": "Test building"}).json()
     assert created["name"] == "Test building" and len(created["lvs"]) == 2
     listed = client.get("/api/catalog").json()
-    assert listed[0]["id"] == created["id"] and listed[0]["source"] == "saved"
+    assert listed[0]["id"] == created["id"] and listed[0]["source"] == "upload"
     assert [f["name"] for f in listed[0]["files"]] == [p.name for p in picked]
     reopened = client.get(f"/api/catalog/{created['id']}/project").json()
     assert len(reopened["lvs"]) == 2
     assert client.patch(f"/api/catalog/{created['id']}", json={"name": "Renamed"}).json()["name"] == "Renamed"
-    assert client.patch("/api/catalog/A", json={"name": "x"}).status_code == 409
+    assert client.patch("/api/catalog/A", json={"name": "Renamed demo"}).json()["name"] == "Renamed demo"
+    assert client.patch("/api/catalog/Z", json={"name": "x"}).status_code == 404
 
 
 def test_intake_says_what_the_files_are():
@@ -68,7 +70,7 @@ def test_intake_says_what_the_files_are():
     assert [f["role"] for f in body["files"]] == ["tender", "award", "tender"]
     assert [f["lv"] for f in body["files"]] == [0, 0, 1] and body["lvs"] == 2  # tender and award are one LV
     assert body["name"] == "Maschinentechnik - Anlagenbau"
-    assert client.get("/api/catalog").json()[0]["source"] == "dataset"  # an intake keeps nothing
+    assert client.get("/api/catalog").json()[0]["source"] == "demo"  # an intake keeps nothing
 
 
 def test_one_file_is_a_project_and_takes_a_later_version():
@@ -82,8 +84,27 @@ def test_one_file_is_a_project_and_takes_a_later_version():
     saved = client.get("/api/catalog").json()[0]
     assert [f["role"] for f in saved["files"]] == ["tender", "award"]
     assert client.get(f"/api/catalog/{saved['id']}/summary").json()["net"] == pytest.approx(536991.65)
-    refused = client.post("/api/projects", files=[("files", (award.name, award.read_bytes()))], data={"project": "A"})
-    assert refused.status_code == 409  # dataset projects are a fixed mapping
+
+
+def test_files_are_added_to_and_removed_from_any_project_and_projects_deleted():
+    pdf = DATASET / "04_pdf_tiefbau_sonstige" / "LV-Ausdruck-[PROJEKT_004].pdf"
+    added = client.post("/api/projects", files=[("files", (pdf.name, pdf.read_bytes()))], data={"project": "D"})
+    assert added.json()["kind"] == "versions"  # the print-out of D's tender is a version, not another LV
+    d = next(p for p in client.get("/api/catalog").json() if p["id"] == "D")
+    assert [f["name"] for f in d["files"]][-1] == pdf.name and len(d["files"]) == 3
+    assert len(client.get("/api/catalog/D/summary").json()["docs"]) == 3  # the kept summary was cleared
+    left = client.delete("/api/catalog/D/files/2").json()
+    assert len(left["files"]) == 2
+    assert client.delete("/api/catalog/E/files/0").status_code == 409  # E's only file
+    assert client.delete("/api/catalog/D").status_code == 204
+    assert client.get("/api/catalog/D/summary").status_code == 404
+    assert "D" not in [p["id"] for p in client.get("/api/catalog").json()]
+
+
+def test_analyses_survive_a_restart():
+    body = client.get("/api/catalog/D/files/0").json()
+    api._RECENT.clear()  # what a restart forgets
+    assert client.get(f"/api/analyses/{body['id']}").json()["findings"] == body["findings"]
 
 
 def test_versions_of_one_lv_are_not_two_trades():

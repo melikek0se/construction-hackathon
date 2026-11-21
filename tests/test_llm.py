@@ -59,8 +59,7 @@ def test_requests_share_one_context_and_cover_every_item(monkeypatch):
     assert "2.3.23: Short text and long text name different pipe sizes" in reviewed  # rule finding passed on
 
 
-def test_answers_are_cached_on_disk(monkeypatch, tmp_path):
-    monkeypatch.setattr(llm, "CACHE_DIR", tmp_path)
+def test_answers_are_cached():
 
     class Block:
         type, text = "text", '{"findings": []}'
@@ -78,7 +77,7 @@ def test_answers_are_cached_on_disk(monkeypatch, tmp_path):
     client = type("C", (), {"beta": type("B", (), {"messages": Messages()})()})()
     assert asyncio.run(llm._ask(client, "ctx", "task")) == []
     assert asyncio.run(llm._ask(client, "ctx", "task")) == []
-    assert Messages.calls == 1 and len(list(tmp_path.iterdir())) == 1
+    assert Messages.calls == 1
 
 
 def test_api_reports_missing_credentials(monkeypatch):

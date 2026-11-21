@@ -1,0 +1,32 @@
+# The production setup on one laptop: the same image as on Render, Postgres 17 as on Neon.
+#   docker compose up --build      → http://localhost:8080 (password: see BOQ_PASSWORD below)
+# For hot reload instead, run only the database (docker compose up db) and use uv/npm as usual; .env then
+# needs DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boq
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: boq
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d boq"]
+      interval: 2s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db: {condition: service_healthy}
+    env_file: [.env]  # ANTHROPIC_API_KEY, ELEVENLABS_*; the lines below win over it
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
+      BOQ_SEED_DEMO: "1"
+      BOQ_PASSWORD: ${BOQ_PASSWORD:-demo}
+    ports: ["8080:8000"]
+    volumes:
+      - ./data/cache:/app/data/cache:ro  # old LLM answers, copied into the database at the first start
+
+volumes:
+  pgdata:

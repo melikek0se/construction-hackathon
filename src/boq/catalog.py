@@ -1,21 +1,19 @@
-"""The projects the app knows: the six of the dataset, mapped by hand, and the ones users create.
+"""Projects and their documents, kept in the database (boq.db).
 
 A project is either one LV in several versions (tender, bid, award, PDF print-out) or several trade LVs of
-one building. The dataset mapping follows docs/02-dataset.md; it is a fixed list because file names do not
-say which project a file belongs to. Created projects keep their files in data/projects/<id>/ with a
-meta.json beside them: no database, a folder per project.
+one building. Every project is uploaded the same way; the six projects of the challenge dataset are put in by
+`seed_demo` (uv run boq-seed), from the hand-made mapping below, since file names do not say which project a
+file belongs to (docs/02-dataset.md). After seeding they are ordinary projects: files can be added and removed.
 """
-import json
-import os
-import re
+import hashlib
 import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-STORE = Path(os.environ.get("BOQ_PROJECTS_DIR", ROOT / "data" / "projects"))
+from sqlalchemy import delete, func, insert, select, update
 
-# role: what this file is within the project. The first file is the one a project opens with.
+from boq import db
+
+# The dataset projects for seeding. role: what the file is within the project; the first file opens it.
 DATASET_PROJECTS = [
     {"id": "A", "number": "8209.003", "name": "Maschinentechnik – Anlagenbau", "trade": "Mechanical / plant",
      "note": "Water utility plant engineering, tender of 28.02.2024.", "kind": "versions",
@@ -49,101 +47,128 @@ DATASET_PROJECTS = [
 ]
 
 
-def _file(path: Path, role: str) -> dict:
-    ext = path.suffix.lower()
-    fmt = "PDF" if ext == ".pdf" else "Excel" if ext in (".xlsx", ".xls") else \
+def file_format(name: str) -> str:
+    ext = Path(name).suffix.lower()
+    return "PDF" if ext == ".pdf" else "Excel" if ext in (".xlsx", ".xls") else \
         "GAEB XML" if ext.startswith(".x") else "GAEB 90"
-    return {"name": path.name, "role": role, "format": fmt, "path": path}
 
 
-def dataset_projects(dataset: Path) -> list[dict]:
-    out = []
-    for p in DATASET_PROJECTS:
-        if "folder" in p:
-            paths = sorted(q for q in (dataset / p["folder"]).glob("LV_*") if q.is_file())
-            files = [_file(q, "trade LV") for q in paths]
-        else:
-            files = [_file(dataset / rel, role) for rel, role in p["files"] if (dataset / rel).is_file()]
-        if files:
-            out.append({**{k: p[k] for k in ("id", "number", "name", "trade", "note", "kind")},
-                        "source": "dataset", "created": None, "files": files})
-    return out
+def _project(row, files: list) -> dict:
+    return {"id": row.id, "number": row.number, "name": row.name, "trade": row.trade, "note": row.note,
+            "kind": row.kind, "source": row.source, "created": row.created.isoformat(timespec="seconds"),
+            "files": [{"id": f.id, "name": f.name, "role": f.role, "format": f.format} for f in files]}
 
 
-def saved_projects() -> list[dict]:
-    out = []
-    for meta in sorted(STORE.glob("*/meta.json")):
-        try:
-            m = json.loads(meta.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue  # a half-written folder must not take the list down
-        files = [_file(meta.parent / "files" / f["stored"], f["role"]) | {"name": f["name"]} for f in m["files"]]
-        files = [f for f in files if f["path"].is_file()]
-        if files:
-            out.append({"id": m["id"], "number": "", "name": m["name"], "trade": "", "note": "",
-                        "kind": m["kind"], "source": "saved", "created": m["created"], "files": files})
-    return sorted(out, key=lambda p: p["created"], reverse=True)
+_DOC_COLUMNS = (db.documents.c.id, db.documents.c.project_id, db.documents.c.name, db.documents.c.role,
+                db.documents.c.format)
 
 
-def all_projects(dataset: Path) -> list[dict]:
-    return saved_projects() + dataset_projects(dataset)
+def all_projects() -> list[dict]:
+    """Uploaded projects newest first, then the demo projects in dataset order (A..F)."""
+    with db.engine().connect() as conn:
+        rows = conn.execute(select(db.projects).order_by(db.projects.c.created.desc())).all()
+        docs = conn.execute(select(*_DOC_COLUMNS).order_by(db.documents.c.position)).all()
+    by_project: dict[str, list] = {}
+    for d in docs:
+        by_project.setdefault(d.project_id, []).append(d)
+    rows.sort(key=lambda r: (r.source == "demo", r.id if r.source == "demo" else ""))
+    return [_project(r, by_project.get(r.id, [])) for r in rows]
 
 
-def find(dataset: Path, project_id: str) -> dict | None:
-    return next((p for p in all_projects(dataset) if p["id"] == project_id), None)
+def find(project_id: str) -> dict | None:
+    with db.engine().connect() as conn:
+        row = conn.execute(select(db.projects).where(db.projects.c.id == project_id)).first()
+        if row is None:
+            return None
+        docs = conn.execute(select(*_DOC_COLUMNS).where(db.documents.c.project_id == project_id)
+                            .order_by(db.documents.c.position)).all()
+    return _project(row, docs)
 
 
-def _store_files(folder: Path, start: int, uploads: list[tuple[str, bytes, str]]) -> list[dict]:
-    files = []
-    for n, (original, data, role) in enumerate(uploads, start):
-        stored = f"{n:02d}{Path(original).suffix.lower()}"  # never trust an uploaded name as a path
-        (folder / stored).write_bytes(data)
-        files.append({"name": original, "stored": stored, "role": role})
-    return files
+def file_bytes(doc_id: int) -> bytes:
+    with db.engine().connect() as conn:
+        return conn.execute(select(db.documents.c.data).where(db.documents.c.id == doc_id)).scalar_one()
 
 
-def save_project(name: str, uploads: list[tuple[str, bytes, str]], kind: str) -> str:
-    """Keep the files of a new project: (file name, bytes, role) each. Returns its id."""
-    project_id = uuid.uuid4().hex[:12]
-    folder = STORE / project_id / "files"
-    folder.mkdir(parents=True)
-    meta = {"id": project_id, "name": name, "kind": kind,
-            "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "files": _store_files(folder, 0, uploads)}
-    (STORE / project_id / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+def _add_documents(conn, project_id: str, uploads: list[tuple[str, bytes, str]]) -> None:
+    start = conn.execute(select(func.coalesce(func.max(db.documents.c.position) + 1, 0))
+                         .where(db.documents.c.project_id == project_id)).scalar_one()
+    for n, (name, data, role) in enumerate(uploads, start):
+        conn.execute(insert(db.documents).values(
+            project_id=project_id, position=n, name=Path(name).name, role=role, format=file_format(name),
+            data=data, size=len(data), sha256=hashlib.sha256(data).hexdigest(), created=db.now()))
+
+
+def save_project(name: str, uploads: list[tuple[str, bytes, str]], kind: str, *, project_id: str | None = None,
+                 source: str = "upload", number: str = "", trade: str = "", note: str = "") -> str:
+    """Keep a new project with its files: (file name, bytes, role) each. Returns its id."""
+    project_id = project_id or uuid.uuid4().hex[:12]
+    with db.engine().begin() as conn:
+        conn.execute(insert(db.projects).values(id=project_id, name=name, number=number, trade=trade, note=note,
+                                                kind=kind, source=source, created=db.now()))
+        _add_documents(conn, project_id, uploads)
     return project_id
 
 
-def _meta(project_id: str) -> Path | None:
-    if not re.fullmatch(r"[0-9a-f]{12}", project_id):
-        return None
-    meta = STORE / project_id / "meta.json"
-    return meta if meta.is_file() else None
-
-
 def add_files(project_id: str, uploads: list[tuple[str, bytes, str]], kind: str) -> bool:
-    """Add files to a created project. Dataset projects are a fixed mapping and take none."""
-    meta = _meta(project_id)
-    if meta is None:
-        return False
-    m = json.loads(meta.read_text(encoding="utf-8"))
-    m["files"] += _store_files(meta.parent / "files", len(m["files"]), uploads)
-    m["kind"] = kind
-    meta.write_text(json.dumps(m, ensure_ascii=False, indent=1), encoding="utf-8")
-    return True
+    with db.engine().begin() as conn:
+        done = conn.execute(update(db.projects).where(db.projects.c.id == project_id)
+                            .values(kind=kind, summary=None)).rowcount
+        if done:
+            _add_documents(conn, project_id, uploads)
+    return bool(done)
+
+
+def remove_file(project_id: str, doc_id: int) -> bool:
+    with db.engine().begin() as conn:
+        done = conn.execute(delete(db.documents).where(db.documents.c.id == doc_id,
+                                                       db.documents.c.project_id == project_id)).rowcount
+        if done:
+            conn.execute(update(db.projects).where(db.projects.c.id == project_id).values(summary=None))
+    return bool(done)
+
+
+def set_kind(project_id: str, kind: str) -> None:
+    with db.engine().begin() as conn:
+        conn.execute(update(db.projects).where(db.projects.c.id == project_id).values(kind=kind))
+
+
+def remove_project(project_id: str) -> bool:
+    with db.engine().begin() as conn:
+        conn.execute(delete(db.documents).where(db.documents.c.project_id == project_id))
+        return bool(conn.execute(delete(db.projects).where(db.projects.c.id == project_id)).rowcount)
 
 
 def rename(project_id: str, name: str) -> bool:
-    """Rename a created project. Dataset projects keep their names."""
-    meta = _meta(project_id)
-    if meta is None:
-        return False
-    m = json.loads(meta.read_text(encoding="utf-8"))
-    m["name"] = name
-    meta.write_text(json.dumps(m, ensure_ascii=False, indent=1), encoding="utf-8")
-    return True
+    with db.engine().begin() as conn:
+        return bool(conn.execute(update(db.projects).where(db.projects.c.id == project_id)
+                                 .values(name=name)).rowcount)
 
 
-def public(project: dict) -> dict:
-    """A project as the API returns it: no file-system paths."""
-    return {**project, "files": [{k: v for k, v in f.items() if k != "path"} for f in project["files"]]}
+def summary(project_id: str) -> dict | None:
+    with db.engine().connect() as conn:
+        return conn.execute(select(db.projects.c.summary).where(db.projects.c.id == project_id)).scalar()
+
+
+def keep_summary(project_id: str, value: dict) -> None:
+    with db.engine().begin() as conn:
+        conn.execute(update(db.projects).where(db.projects.c.id == project_id).values(summary=value))
+
+
+def seed_demo(dataset: Path) -> list[str]:
+    """Put the dataset projects that are not there yet into the database. Returns the ids added."""
+    known = {p["id"] for p in all_projects()}
+    added = []
+    for p in DATASET_PROJECTS:
+        if p["id"] in known:
+            continue
+        if "folder" in p:
+            paths = [(q, "trade LV") for q in sorted((dataset / p["folder"]).glob("LV_*")) if q.is_file()]
+        else:
+            paths = [(dataset / rel, role) for rel, role in p["files"] if (dataset / rel).is_file()]
+        if not paths:
+            continue
+        save_project(p["name"], [(q.name, q.read_bytes(), role) for q, role in paths], p["kind"],
+                     project_id=p["id"], source="demo", number=p["number"], trade=p["trade"], note=p["note"])
+        added.append(p["id"])
+    return added

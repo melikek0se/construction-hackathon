@@ -35,3 +35,7 @@ data/cache/
 
 # Projects created in the app (uploaded files)
 data/projects/
+
+# Local database (projects, documents, analyses, LLM cache); production uses DATABASE_URL
+data/boq.db
+data/boq.db-*

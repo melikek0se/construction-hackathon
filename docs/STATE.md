@@ -2,7 +2,7 @@
 
 **Update this file whenever something is finished, started or dropped.** Keep it short; history lives in git.
 
-Last updated: 2026-11-21 (hackathon day 2)
+Last updated: 2026-11-21 (hackathon day 2, database + deploy prep)
 
 ## Now
 
@@ -160,6 +160,18 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   (`review.py`, 157 corrections applied); see "Completeness check" in `dataset/en/README.md`. Not app input: the
   sample list and `inspect_dataset.py` skip the folder. Side fix: GAEB 90 encoding detection now takes `m³` in
   cp850 into account (`encoding_of` in `parsers/gaeb90.py`), which a file without umlauts needs.
+
+- Database and deploy (2026-11-21, D-023, `docs/08-deploy.md`): projects, documents (file bytes), analyses and
+  the LLM cache in one database (`src/boq/db.py`; Postgres via `DATABASE_URL`, SQLite `data/boq.db` locally).
+  Dataset projects seeded by `uv run boq-seed`, then ordinary: files can be added to and removed from any
+  project, projects deleted (two-click Delete on the projects page; file removal is API only:
+  `DELETE /api/catalog/{id}/files/{index}`). Analyses and AI findings survive a restart. `Dockerfile` (one image,
+  React build inside), `BOQ_PASSWORD` basic auth, `GET /api/health`. Checked: 111 tests; the image against a
+  Postgres 17 container (seed, upload, restart keeps the project, 401 without password); server memory peaks
+  at about 170 MB with project F opened. `docker-compose.yml` runs the same setup locally (image + Postgres,
+  :8080, password `demo`, seeds itself); an AI review on project D was cached in Postgres and answered from
+  it after a restart in 0.03 s (the old disk-cache answers did not match the current prompts: 4 real requests). Not checked: the new Delete button clicked in a browser; a real
+  deploy (needs the team's accounts).
 
 ## In progress
 

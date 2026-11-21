@@ -1,5 +1,5 @@
 """LLM checks: what the rules cannot see (unclear scope, contradictions, missing work, risk shifted
-to the bidder). One request per title, run in parallel, results cached on disk.
+to the bidder). One request per title, run in parallel, results cached in the database.
 
 Every finding must quote the LV verbatim. A quote that is not in the item text (or the preliminary
 remarks) is dropped here, so the model cannot report something the document does not say.
@@ -12,7 +12,9 @@ import re
 from pathlib import Path
 
 import anthropic
+from sqlalchemy import insert, select
 
+from boq import db
 from boq.model import BoQ, Finding, Item
 
 
@@ -24,7 +26,8 @@ _NO_CREDENTIALS = (anthropic.CredentialsError, anthropic.AuthenticationError, an
 
 MODEL = os.environ.get("BOQ_LLM_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("BOQ_LLM_EFFORT", "medium")
-CACHE_DIR = Path(os.environ.get("BOQ_CACHE_DIR", Path(__file__).resolve().parents[3] / "data" / "cache")) / "llm"
+# answers of earlier versions were files in data/cache/llm/<key>.json; boq-seed copies them into the database
+LEGACY_CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "cache" / "llm"
 PROMPT_VERSION = "2"
 MAX_ITEMS_PER_REQUEST = 60
 CONCURRENCY = 4
@@ -185,12 +188,12 @@ def _task(boq: BoQ, items: list[Item], known: list[Finding]) -> str:
 async def _ask(client: anthropic.AsyncAnthropic, context: str, task: str, usage: dict | None = None) -> list[dict]:
     """One request, or the cached answer for exactly this model, prompt and text.
 
-    Token counts of real requests are added to `usage`; answers from the disk cache cost nothing.
+    Token counts of real requests are added to `usage`; answers from the cache (database) cost nothing.
     """
     key = hashlib.sha256("\x00".join([MODEL, EFFORT, PROMPT_VERSION, SYSTEM, context, task]).encode()).hexdigest()
-    cached = CACHE_DIR / f"{key}.json"
-    if cached.exists():
-        return json.loads(cached.read_text(encoding="utf-8"))
+    hit = cache_get(key)
+    if hit is not None:
+        return hit
     response = await client.beta.messages.create(
         model=MODEL,
         max_tokens=16000,
@@ -216,9 +219,19 @@ async def _ask(client: anthropic.AsyncAnthropic, context: str, task: str, usage:
         raise RuntimeError(f"LLM review stopped with {response.stop_reason}")
     text = next(b.text for b in response.content if b.type == "text")
     findings = json.loads(text)["findings"]
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cached.write_text(json.dumps(findings, ensure_ascii=False), encoding="utf-8")
+    cache_put(key, findings)
     return findings
+
+
+def cache_get(key: str) -> list[dict] | None:
+    with db.engine().connect() as conn:
+        return conn.execute(select(db.llm_cache.c.value).where(db.llm_cache.c.key == key)).scalar()
+
+
+def cache_put(key: str, findings: list[dict]) -> None:
+    with db.engine().begin() as conn:
+        if conn.execute(select(db.llm_cache.c.key).where(db.llm_cache.c.key == key)).first() is None:
+            conn.execute(insert(db.llm_cache).values(key=key, value=findings, created=db.now()))
 
 
 def _validate(raw: dict, by_oz: dict[str, Item], remarks: str) -> Finding | None:

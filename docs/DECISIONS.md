@@ -155,7 +155,7 @@ only its arrows, solid and named after the linking work.
 Revisit if: a project has far more than about 30 trades or more than 4 per storey row — the stack gets deep.
 
 ## D-019 — Projects page; dataset projects mapped by hand; created projects kept as folders, no database
-Status: decided · 2026-11-21
+Status: superseded by D-023 (storage); the projects page and the hand mapping stand · 2026-11-21
 
 The app opens on a list of projects instead of a list of files. A project is either one LV in several versions
 (tender, bid, award, print-out: dataset projects A–E) or the trade LVs of one building (F). Which dataset file
@@ -209,3 +209,20 @@ LLM prompts key on German wording, so an English LV would give few or wrong find
 The copy is produced by `scripts/translate/` (extract → translate by subagents → validate → rebuild → verify);
 intermediate files are in `data/processed/translation/`.
 Revisit if: the app should analyse English LVs — that needs English rule vocabulary, not this copy.
+
+## D-023 — A database for projects, documents, analyses and the LLM cache; dataset projects are seeded
+Status: decided · 2026-11-21 (replaces the storage part of D-019)
+
+For a live deployment the app keeps everything in one database (`src/boq/db.py`, SQLAlchemy Core): projects,
+their documents with the file bytes, analyses (rule and AI findings) and the LLM answer cache. `DATABASE_URL`
+selects it: Postgres in production, a SQLite file `data/boq.db` when unset. File bytes go into the database
+too (LVs are small: the whole dataset is 25 MB), so the server keeps nothing on disk and runs on any free host.
+The six dataset projects are no longer a special case at run time: `uv run boq-seed` puts them in as ordinary
+projects (`source = "demo"`, ids A–F) from the mapping in `catalog.py`, and copies the old `data/cache/llm/`
+answers; after that every project takes added files, renames and deletes. `BOQ_SEED_DEMO=1` seeds an empty
+database at start for hosts without a shell. Analyses survive restarts (newest 2,000 kept). Tables are created
+on first use, no migrations: a schema change means a new database. `BOQ_PASSWORD` puts HTTP basic auth in
+front of everything but `/api/health`, since the URL is public and the AI review spends API credit.
+Revisit if: several users or companies need their own projects (accounts), or files outgrow the database
+(then object storage, e.g. Cloudflare R2).
+

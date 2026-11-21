@@ -41,3 +41,17 @@ def test_errors_say_what_to_do():
     r = client.post("/api/analyze", files={"file": ("lv.x83", b"not xml")})
     assert r.status_code == 422
     assert client.get("/api/samples/analyze", params={"path": "../pyproject.toml"}).status_code == 404
+
+
+def test_password_gate(monkeypatch):
+    import base64
+
+    from boq import api
+
+    monkeypatch.setattr(api, "PASSWORD", "s3cret")
+    gated = TestClient(api.app)
+    assert gated.get("/api/catalog").status_code == 401
+    assert gated.get("/api/health").status_code == 200  # the host's health check needs no password
+    token = base64.b64encode(b"anyone:s3cret").decode()
+    assert gated.get("/api/catalog", headers={"Authorization": f"Basic {token}"}).status_code == 200
+    assert gated.get("/api/catalog", headers={"Authorization": "Basic !!"}).status_code == 401

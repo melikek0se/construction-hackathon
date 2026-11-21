@@ -2,20 +2,24 @@
 
     uv run uvicorn boq.api:app --reload --port 8000
 """
+import base64
 import os
+import secrets
 import tempfile
 import uuid
-from datetime import datetime
 from collections import OrderedDict
+from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 
-from fastapi import FastAPI, Form, HTTPException, UploadFile
+from fastapi import FastAPI, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel
+from sqlalchemy import delete, insert, select, update
 
-from boq import catalog
+from boq import catalog, db
 from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
@@ -24,6 +28,7 @@ from boq.parsers import SUPPORTED, parse_file
 from boq.prices import load_history, suggest_prices
 from boq.project import analyse_project, lv_name
 from boq.report import build_report, render_html, render_questions
+from boq.seed import seed
 from boq.whatif import Scenario, what_if
 
 load_env()
@@ -33,13 +38,45 @@ DATASET = Path(os.environ.get("BOQ_DATASET_DIR", ROOT / "dataset"))
 WEB_DIST = ROOT / "web" / "dist"
 MAX_BYTES = 30 * 1024 * 1024
 
-app = FastAPI(title="BoQ analysis")
 
-# Parsed LVs of this server process, so the LLM review does not need the file again. No database:
-# a restart forgets them and the user uploads again.
-_ANALYSES: OrderedDict[str, tuple[BoQ, list[Finding]]] = OrderedDict()
-_LLM_FINDINGS: dict[str, list[Finding]] = {}  # AI findings of an analysis, once the review has run
-_KEEP = 120  # a project of thirty trade LVs must stay openable LV by LV
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    db.engine()  # create the tables, and fail at start rather than on the first request
+    if os.environ.get("BOQ_SEED_DEMO") and not catalog.all_projects():
+        seed(DATASET)  # a fresh database on a host without a shell: put the demo projects in
+    yield
+
+
+app = FastAPI(title="BoQ analysis", lifespan=lifespan)
+
+# A public URL without accounts: anyone who finds it could run the AI review on our API key. With
+# BOQ_PASSWORD set, every request needs it (HTTP basic auth, any user name); the browser asks once.
+PASSWORD = os.environ.get("BOQ_PASSWORD", "")
+
+
+@app.middleware("http")
+async def password_gate(request: Request, call_next):
+    if PASSWORD and request.url.path != "/api/health":
+        scheme, _, encoded = request.headers.get("authorization", "").partition(" ")
+        try:
+            given = base64.b64decode(encoded).decode().partition(":")[2] if scheme.lower() == "basic" else ""
+        except ValueError:
+            given = ""
+        if not secrets.compare_digest(given.encode(), PASSWORD.encode()):
+            return Response("Password required.", 401, {"WWW-Authenticate": 'Basic realm="LV Check"'})
+    return await call_next(request)
+
+
+@app.get("/api/health")
+def health():
+    return {"ok": True}
+
+# Analysed LVs are kept in the database (table analyses), so the LLM review, the report and the prices can
+# refer to one by id across restarts and server instances. The newest few stay in memory as well.
+_RECENT: OrderedDict[str, tuple[BoQ, list[Finding]]] = OrderedDict()
+_RECENT_SIZE = 60
+_KEEP = 2000  # analyses kept in the database; older ones are dropped
 
 
 def _parse(path: Path, name: str) -> BoQ:
@@ -57,13 +94,44 @@ def _parse(path: Path, name: str) -> BoQ:
     return boq
 
 
+def _parse_bytes(data: bytes, name: str) -> BoQ:
+    """Parse file contents (an upload, or a document from the database); the parsers read from a path."""
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / f"upload{Path(name).suffix.lower()}"
+        path.write_bytes(data)
+        return _parse(path, name)
+
+
+def _parse_doc(doc: dict) -> BoQ:
+    return _parse_bytes(catalog.file_bytes(doc["id"]), doc["name"])
+
+
+def _remember(analysis_id: str, boq: BoQ, findings: list[Finding]) -> None:
+    _RECENT[analysis_id] = (boq, findings)
+    _RECENT.move_to_end(analysis_id)
+    while len(_RECENT) > _RECENT_SIZE:
+        _RECENT.popitem(last=False)
+
+
 def _store(boq: BoQ) -> tuple[str, list[Finding]]:
     findings = run_checks(boq)
     analysis_id = uuid.uuid4().hex
-    _ANALYSES[analysis_id] = (boq, findings)
-    while len(_ANALYSES) > _KEEP:
-        _LLM_FINDINGS.pop(_ANALYSES.popitem(last=False)[0], None)
+    with db.engine().begin() as conn:
+        conn.execute(insert(db.analyses).values(
+            id=analysis_id, created=db.now(), boq=boq.model_dump(mode="json"),
+            findings=[f.model_dump(mode="json") for f in findings]))
+        oldest = select(db.analyses.c.created).order_by(db.analyses.c.created.desc()).offset(_KEEP).limit(1)
+        cutoff = conn.execute(oldest).scalar()
+        if cutoff is not None:
+            conn.execute(delete(db.analyses).where(db.analyses.c.created <= cutoff))
+    _remember(analysis_id, boq, findings)
     return analysis_id, findings
+
+
+def _llm_findings(analysis_id: str) -> list[Finding]:
+    with db.engine().connect() as conn:
+        raw = conn.execute(select(db.analyses.c.llm_findings).where(db.analyses.c.id == analysis_id)).scalar()
+    return [Finding.model_validate(f) for f in raw or []]
 
 
 def _dump(analysis_id: str, boq: BoQ, findings: list[Finding]) -> dict:
@@ -110,17 +178,16 @@ async def analyze_upload(file: UploadFile):
     data = await file.read(MAX_BYTES + 1)
     if len(data) > MAX_BYTES:
         raise HTTPException(413, "File is larger than 30 MB.")
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / f"upload{suffix}"
-        path.write_bytes(data)
-        return _analyze(path, name)
+    boq = _parse_bytes(data, name)
+    analysis_id, findings = _store(boq)
+    return _dump(analysis_id, boq, findings)
 
 
 @app.get("/api/analyses/{analysis_id}")
 def get_analysis(analysis_id: str):
-    """An LV analysed earlier in this server process, e.g. one LV of a project."""
+    """An LV analysed earlier, e.g. one LV of a project."""
     boq, findings = _analysis(analysis_id)
-    return _dump(analysis_id, boq, sort_findings(findings + _LLM_FINDINGS.get(analysis_id, [])))
+    return _dump(analysis_id, boq, sort_findings(findings + _llm_findings(analysis_id)))
 
 
 ROLE = {"83": "tender", "84": "bid", "86": "award"}  # GAEB exchange phase -> what the file is in a tender
@@ -129,19 +196,16 @@ ROLE = {"83": "tender", "84": "bid", "86": "award"}  # GAEB exchange phase -> wh
 async def _read_uploads(files: list[UploadFile]) -> list[tuple[str, bytes, BoQ]]:
     """Every uploaded file parsed. Nothing is kept unless all of them can be read."""
     out = []
-    with tempfile.TemporaryDirectory() as tmp:
-        for n, file in enumerate(files):
-            filename = Path(file.filename or f"upload{n}").name
-            suffix = Path(filename).suffix.lower()
-            if suffix not in SUPPORTED:
-                raise HTTPException(415, f"{filename}: {suffix or 'this file type'} is not supported. "
-                                         f"Use GAEB, PDF or Excel: {', '.join(sorted(SUPPORTED))}.")
-            data = await file.read(MAX_BYTES + 1)
-            if len(data) > MAX_BYTES:
-                raise HTTPException(413, f"{filename} is larger than 30 MB.")
-            path = Path(tmp) / f"upload{n}{suffix}"
-            path.write_bytes(data)
-            out.append((filename, data, _parse(path, filename)))
+    for n, file in enumerate(files):
+        filename = Path(file.filename or f"upload{n}").name
+        suffix = Path(filename).suffix.lower()
+        if suffix not in SUPPORTED:
+            raise HTTPException(415, f"{filename}: {suffix or 'this file type'} is not supported. "
+                                     f"Use GAEB, PDF or Excel: {', '.join(sorted(SUPPORTED))}.")
+        data = await file.read(MAX_BYTES + 1)
+        if len(data) > MAX_BYTES:
+            raise HTTPException(413, f"{filename} is larger than 30 MB.")
+        out.append((filename, data, _parse_bytes(data, filename)))
     return out
 
 
@@ -215,7 +279,7 @@ async def intake(files: list[UploadFile]):
 
 @app.post("/api/projects")
 async def create_project(files: list[UploadFile], name: str | None = Form(None), project: str | None = Form(None)):
-    """Keep files as a project (data/projects/<id>/), or add them to a project created earlier.
+    """Keep files as a new project, or add them to an existing one.
 
     One LV in several versions and several trade LVs are both projects; which it is follows from the
     item numbers of the files. Several LVs are also analysed against each other, as before.
@@ -225,9 +289,7 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     boqs = [boq for _, _, boq in uploads]
     if project:
         existing = _catalog(project)
-        if existing["source"] != "saved":
-            raise HTTPException(409, f"{existing['name']} is a dataset project; files cannot be added to it.")
-        boqs = [_parse(f["path"], f["name"]) for f in existing["files"]] + boqs
+        boqs = [_parse_doc(f) for f in existing["files"]] + boqs
         kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
         catalog.add_files(project, stored, kind)
         project_id, title = project, existing["name"]
@@ -236,7 +298,6 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
         named = [b.name for b in boqs if b.name and b.name != Path(b.file).stem]
         title = (name or "").strip()[:80] or (named[0][:80] if named else f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}")
         project_id = catalog.save_project(title, stored, kind)
-    _SUMMARIES.pop(project_id, None)
     if kind == "trades":
         return {"id": project_id, "kind": kind, **_project(title, _one_per_lv(boqs))}
     return {"id": project_id, "kind": kind, "name": title}
@@ -244,11 +305,8 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
 
 # ---------------------------------------------------------------- projects page
 
-_SUMMARIES: dict[str, dict] = {}  # per project: items and findings, worked out once per server process
-
-
 def _catalog(project_id: str) -> dict:
-    project = catalog.find(DATASET, project_id)
+    project = catalog.find(project_id)
     if project is None:
         raise HTTPException(404, f"No project {project_id}.")
     return project
@@ -256,21 +314,22 @@ def _catalog(project_id: str) -> dict:
 
 @app.get("/api/catalog")
 def list_catalog():
-    """Every project the app knows: created ones first, then the six of the dataset."""
-    return [catalog.public(p) for p in catalog.all_projects(DATASET)]
+    """Every project: uploaded ones newest first, then the demo projects."""
+    return catalog.all_projects()
 
 
 @app.get("/api/catalog/{project_id}/summary")
 def catalog_summary(project_id: str):
     """Items and rule findings of a project and of each of its documents, for the projects page.
-    Parses every file, so it is asked for per project and remembered."""
+    Parses every file, so it is asked for per project and kept with the project until its files change."""
     project = _catalog(project_id)
-    if project_id not in _SUMMARIES:
+    kept = catalog.summary(project_id)
+    if kept is None:
         rank = {"info": 1, "warn": 2, "high": 3}
         docs, net, net_from = [], None, None
         for index, f in enumerate(project["files"]):
             try:
-                boq = _parse(f["path"], f["name"])
+                boq = _parse_doc(f)
             except HTTPException as exc:  # one unreadable document must not hide the others
                 docs.append({"index": index, "name": f["name"], "role": f["role"], "format": f["format"],
                              "title": "", "items": 0, "counts": None, "marks": "", "error": str(exc.detail)})
@@ -291,11 +350,11 @@ def catalog_summary(project_id: str):
         # trade LVs all count.
         counted = [d for d in docs if d["counts"]]
         counted = counted if project["kind"] == "trades" else counted[:1]
-        _SUMMARIES[project_id] = {
-            "lvs": len(counted), "items": sum(d["items"] for d in counted),
-            "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
-            "net": net, "net_from": net_from, "docs": docs}
-    return _SUMMARIES[project_id]
+        kept = {"lvs": len(counted), "items": sum(d["items"] for d in counted),
+                "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
+                "net": net, "net_from": net_from, "docs": docs}
+        catalog.keep_summary(project_id, kept)
+    return kept
 
 
 @app.get("/api/catalog/{project_id}/files/{index}")
@@ -304,7 +363,29 @@ def open_project_file(project_id: str, index: int):
     files = _catalog(project_id)["files"]
     if not 0 <= index < len(files):
         raise HTTPException(404, f"Project {project_id} has no file {index}.")
-    return _analyze(files[index]["path"], files[index]["name"])
+    boq = _parse_doc(files[index])
+    analysis_id, findings = _store(boq)
+    return _dump(analysis_id, boq, findings)
+
+
+@app.delete("/api/catalog/{project_id}/files/{index}")
+def remove_project_file(project_id: str, index: int):
+    """Take one file out of a project. The last file cannot go: delete the project instead."""
+    files = _catalog(project_id)["files"]
+    if not 0 <= index < len(files):
+        raise HTTPException(404, f"Project {project_id} has no file {index}.")
+    if len(files) == 1:
+        raise HTTPException(409, "This is the project's only file; delete the project instead.")
+    catalog.remove_file(project_id, files[index]["id"])
+    rest = [_parse_doc(f) for i, f in enumerate(files) if i != index]
+    catalog.set_kind(project_id, "trades" if len(set(_same_lv(rest))) > 1 else "versions")
+    return _catalog(project_id)
+
+
+@app.delete("/api/catalog/{project_id}", status_code=204)
+def remove_project(project_id: str):
+    if not catalog.remove_project(project_id):
+        raise HTTPException(404, f"No project {project_id}.")
 
 
 @app.get("/api/catalog/{project_id}/project")
@@ -313,7 +394,7 @@ def open_project(project_id: str):
     project = _catalog(project_id)
     if project["kind"] != "trades":
         raise HTTPException(409, f"{project['name']} is one LV in several versions; open one of its files.")
-    boqs = [_parse(f["path"], f["name"]) for f in project["files"]]
+    boqs = [_parse_doc(f) for f in project["files"]]
     return {"id": project_id, **_project(project["name"], _one_per_lv(boqs))}
 
 
@@ -327,8 +408,8 @@ def rename_project(project_id: str, body: Rename):
     if not name:
         raise HTTPException(422, "A project needs a name.")
     if not catalog.rename(project_id, name):
-        raise HTTPException(409, "Only projects created here can be renamed; dataset projects keep their names.")
-    return catalog.public(_catalog(project_id))
+        raise HTTPException(404, f"No project {project_id}.")
+    return _catalog(project_id)
 
 
 def _sample_projects() -> dict[str, list[Path]]:
@@ -369,23 +450,30 @@ def analyze_sample(path: str):
 @app.post("/api/analyses/{analysis_id}/llm")
 async def llm_review(analysis_id: str):
     """Run the LLM checks on an analysed LV. Takes from seconds (cached) to a few minutes."""
-    if analysis_id not in _ANALYSES:
-        raise HTTPException(404, "This analysis is no longer in memory. Upload the file again.")
-    boq, rule_findings = _ANALYSES[analysis_id]
+    boq, rule_findings = _analysis(analysis_id)
     try:
         findings, stats = await run_llm_checks(boq, rule_findings)
     except LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
         raise HTTPException(502, f"The LLM review failed: {exc}") from exc
-    _LLM_FINDINGS[analysis_id] = findings  # the report of this analysis now includes them
+    with db.engine().begin() as conn:  # the report of this analysis now includes them
+        conn.execute(update(db.analyses).where(db.analyses.c.id == analysis_id)
+                     .values(llm_findings=[f.model_dump(mode="json") for f in findings]))
     return {"findings": [f.model_dump(mode="json") for f in findings], "stats": stats}
 
 
 def _analysis(analysis_id: str) -> tuple[BoQ, list[Finding]]:
-    if analysis_id not in _ANALYSES:
-        raise HTTPException(404, "This analysis is no longer in memory. Upload the file again.")
-    return _ANALYSES[analysis_id]
+    if analysis_id in _RECENT:
+        return _RECENT[analysis_id]
+    with db.engine().connect() as conn:
+        row = conn.execute(select(db.analyses.c.boq, db.analyses.c.findings)
+                           .where(db.analyses.c.id == analysis_id)).first()
+    if row is None:
+        raise HTTPException(404, "This analysis is no longer kept. Open the file again.")
+    boq, findings = BoQ.model_validate(row.boq), [Finding.model_validate(f) for f in row.findings]
+    _remember(analysis_id, boq, findings)
+    return boq, findings
 
 
 def _prices(boq: BoQ) -> dict | None:
@@ -397,7 +485,7 @@ def _prices(boq: BoQ) -> dict | None:
 
 def _report(analysis_id: str) -> dict:
     boq, rule_findings = _analysis(analysis_id)
-    return build_report(boq, sort_findings(rule_findings + _LLM_FINDINGS.get(analysis_id, [])), _prices(boq))
+    return build_report(boq, sort_findings(rule_findings + _llm_findings(analysis_id)), _prices(boq))
 
 
 @app.get("/api/analyses/{analysis_id}/prices")

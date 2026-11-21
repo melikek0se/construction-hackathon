@@ -10,6 +10,7 @@ import {
   openCatalogFile,
   openCatalogProject,
   renameProject,
+  deleteProject,
   runLlmReview,
 } from "./api";
 import { CraneIcon, ProjectsPage } from "./Projects";
@@ -213,6 +214,18 @@ export default function App() {
     }
   }
 
+  async function removeProject(p: CatalogProject) {
+    setError(null);
+    try {
+      await deleteProject(p.id);
+      asked.current.delete(p.id);
+      setSummaries(({ [p.id]: _old, ...rest }) => rest);
+      await refreshCatalog();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
   async function rename(name: string) {
     if (!current || !name.trim() || name.trim() === current.project.name) return;
     try {
@@ -321,7 +334,7 @@ export default function App() {
         {project && !analysis && (
           <>
             <div className="doc">
-              {current?.project.source === "saved" ? (
+              {current ? (
                 <input
                   key={current.project.name}
                   className="doc-name"
@@ -435,6 +448,7 @@ export default function App() {
           onDropFiles={upload}
           onConfirm={(name, target) => void confirmIntake(name, target)}
           onCancel={() => setPending(null)}
+          onDelete={(p) => void removeProject(p)}
         />
       ) : (
         <div className="work">

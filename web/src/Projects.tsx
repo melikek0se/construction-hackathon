@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type React from "react";
 import { Sign } from "./components";
 import { eur } from "./format";
 import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Intake, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
@@ -210,7 +209,6 @@ function IntakePanel({
   onCancel: () => void;
 }) {
   const { info, files } = pending;
-  const saved = projects.filter((p) => p.source === "saved");
   const [name, setName] = useState("");
   const [target, setTarget] = useState<string | null>(pending.target);
   useEffect(() => setName(info?.name ?? ""), [info]);
@@ -256,7 +254,7 @@ function IntakePanel({
           <span>Goes into</span>
           <select value={target ?? ""} onChange={(e) => setTarget(e.target.value || null)} disabled={!info || busy}>
             <option value="">A new project</option>
-            {saved.map((p) => (
+            {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
@@ -296,6 +294,7 @@ export function ProjectsPage({
   onDropFiles,
   onConfirm,
   onCancel,
+  onDelete,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
@@ -306,7 +305,9 @@ export function ProjectsPage({
   onDropFiles: (files: FileList, target: string | null) => void;
   onConfirm: (name: string, target: string | null) => void;
   onCancel: () => void;
+  onDelete: (project: CatalogProject) => void;
 }) {
+  const [doomed, setDoomed] = useState<string | null>(null); // the project whose Delete was clicked once
   const [over, setOver] = useState<string | null>(null); // the project row files are being dragged onto
   const known = projects.flatMap((p) => {
     const s = summaries[p.id];
@@ -380,20 +381,18 @@ export function ProjectsPage({
               className={`register-row${over === p.id ? " over" : ""}`}
               onClick={() => !busy && onOpen(p)}
               onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && !busy && onOpen(p)}
-              {...(p.source === "saved" && {
-                // later files of a running tender are dropped onto its row
-                onDragOver: (e: React.DragEvent) => (e.preventDefault(), e.stopPropagation(), setOver(p.id)),
-                onDragLeave: () => setOver(null),
-                onDrop: (e: React.DragEvent) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setOver(null);
-                  onDropFiles(e.dataTransfer.files, p.id);
-                },
-              })}
+              // later files of a running tender are dropped onto its row
+              onDragOver={(e) => (e.preventDefault(), e.stopPropagation(), setOver(p.id))}
+              onDragLeave={() => setOver(null)}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setOver(null);
+                onDropFiles(e.dataTransfer.files, p.id);
+              }}
             >
               <span role="cell" className="reg-id">
-                {p.source === "saved" ? "+" : p.id}
+                {p.source === "upload" ? "+" : p.id}
               </span>
               <span role="cell" className="reg-name">
                 <b lang="de">{p.name}</b>
@@ -417,7 +416,7 @@ export function ProjectsPage({
                     </span>
                   </span>
                 )}
-                {p.source === "saved" && (
+                <span className="reg-actions">
                   <button
                     className="btn-ghost add-files"
                     disabled={busy}
@@ -426,7 +425,20 @@ export function ProjectsPage({
                   >
                     Add files
                   </button>
-                )}
+                  {/* two clicks: the first arms the button, the second deletes the project and its files */}
+                  <button
+                    className={`btn-ghost add-files${doomed === p.id ? " armed" : ""}`}
+                    disabled={busy}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (doomed === p.id) onDelete(p);
+                      setDoomed(doomed === p.id ? null : p.id);
+                    }}
+                    onBlur={() => setDoomed((d) => (d === p.id ? null : d))}
+                  >
+                    {doomed === p.id ? "Delete for good?" : "Delete"}
+                  </button>
+                </span>
               </span>
               {ready ? (
                 <>

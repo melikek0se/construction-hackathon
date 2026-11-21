@@ -19,6 +19,7 @@ Read when relevant:
 - `docs/05-voice-agent.md` — supplier-call voice agent (ElevenLabs): concept, API plan, legal
 - `docs/06-architecture.md` — proposed stack, data model, build order
 - `docs/07-user-flows.md` — projects, LVs and versions: researched flows, what is built, what is not
+- `docs/08-deploy.md` — free hosting options (researched 2026-11-21), the chosen setup, deploy steps
 
 ## Keeping state
 
@@ -62,6 +63,7 @@ uv sync                                # install (Python 3.12/3.13 via uv)
 uv run boq FILE                        # parse an LV, print rule findings; --json, --min-severity warn, --llm,
                                        #   --report out.html (risk report), --questions out.txt (Bieterfragen),
                                        #   --prices (unit prices from the priced bids)
+uv run boq-seed                        # put the six dataset projects (and old LLM answers) into the database
 uv run uvicorn boq.api:app --reload    # API on :8000 (POST /api/analyze, GET /api/samples)
 cd web && npm install && npm run dev   # UI on :5173, proxies /api to :8000
 cd web && npm run build                # type-check + build; the API then serves web/dist at /
@@ -69,14 +71,17 @@ uv run pytest -q                       # parsers, checks and API against dataset
 uv run python scripts/eval_pdf_parser.py -v   # PDF parser score against the GAEB twins; run after touching pdf.py
 uv run python scripts/eval_prices.py -v       # back-test of the price suggestions; run after touching prices.py
 python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
+docker compose up --build             # production setup locally: same image + Postgres 17, :8080, password "demo"
+docker compose up db                   # only Postgres, for hot reload; .env: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boq
 ```
 
 Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src/boq/checks` (`rules.py` per item,
 `companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/report.py` (risk report, bidder questions), `src/boq/prices.py` (price suggestions), `src/boq/whatif.py`,
-`src/boq/project.py` (several trade LVs: interfaces, dependency graph, cross-LV findings) → `src/boq/api.py` → `web/` (Vite + React, one screen:
+`src/boq/project.py` (several trade LVs: interfaces, dependency graph, cross-LV findings) → `src/boq/api.py`
+(storage in `src/boq/db.py`: projects, documents, analyses, LLM cache; `DATABASE_URL`, SQLite by default) → `web/` (Vite + React, one screen:
 `web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`; `web/src/types.ts` mirrors
-`boq.model`). The projects page lists `src/boq/catalog.py` (dataset projects mapped by hand, created ones in
-`data/projects/`). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
+`boq.model`). The projects page lists `src/boq/catalog.py` (projects in the database; the dataset ones seeded from
+its hand mapping). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
 
 ## Conventions
 
