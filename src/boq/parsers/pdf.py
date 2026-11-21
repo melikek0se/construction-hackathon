@@ -97,6 +97,7 @@ class Entry:
     label_bold: bool
     page: int
     inline: Qty | None = None  # quantity on the OZ line itself
+    y: float = 0.0  # centre of the OZ line on its page
     lines: list[Line] = field(default_factory=list)
 
 
@@ -184,7 +185,7 @@ def _entries(body: list[Line], oz_x: float) -> tuple[list[Entry], list[Line]]:
                 label_spans = [s for s in l.spans if s[0] > l.x + 1]
                 cur = Entry(oz=norm_oz(first.split(".")), label=rest, page=l.page,
                             label_bold=bool(label_spans) and all(b for _, _, b in label_spans),
-                            inline=_qty(rest) if _OZ.match(first) else None)
+                            inline=_qty(rest) if _OZ.match(first) else None, y=l.y)
                 if cur.inline:
                     cur.label = ""
                 entries.append(cur)
@@ -205,7 +206,7 @@ def _item(e: Entry, qty: Qty, text_lines: list[Line], path: list[str], file: str
     label = e.label if e.label and not e.label.startswith("***") else ""
     if label:
         lines = lines[1:]
-    e = Entry(e.oz, label, e.label_bold and bool(label), e.page)
+    e = Entry(e.oz, label, e.label_bold and bool(label), e.page, y=e.y)
     short = [e.label] if e.label else []
     rest = lines
     if e.label_bold or not e.label:  # a bold short text may wrap onto the next lines
@@ -225,7 +226,7 @@ def _item(e: Entry, qty: Qty, text_lines: list[Line], path: list[str], file: str
         unit_raw=qty.unit, unit=normalise_unit(qty.unit),
         up=qty.prices[0] if len(qty.prices) == 2 or (qty.prices and qty.unit_price_only) else None,
         total=qty.prices[-1] if qty.prices and not qty.unit_price_only else None,
-        source=SourceRef(file=file, page=e.page),
+        source=SourceRef(file=file, page=e.page, y=round(e.y, 1)),
     )
     item.refs = find_refs(item.text)
     for m in _BEZUG.finditer(markers):

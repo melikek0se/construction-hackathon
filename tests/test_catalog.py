@@ -128,3 +128,59 @@ def test_trade_lvs_that_restart_their_numbering_are_not_versions():
                for f in project["findings"])
     assert any(f["check_id"] == "P-SAME-SCOPE" and f["lvs"] == ["01 Fertigteiltreppen", "00 Roh und Erdauarbeiten"]
                for f in project["findings"])
+
+
+def test_lvs_of_a_created_project_keep_their_pdf():
+    """The PDF view needs the file behind an LV: both when the project is created and when it is reopened."""
+    folder = DATASET / "03_pdf_hochbau_projekt"
+    files = [("files", (p.name, p.read_bytes())) for p in (folder / "LV_18_Estrich.pdf", folder / "LV_07_Teppichboden.pdf")]
+    created = client.post("/api/projects", files=files).json()
+    reopened = client.get(f"/api/catalog/{created['id']}/project").json()
+    for project in (created, reopened):
+        for lv in project["lvs"]:
+            assert client.get(f"/api/analyses/{lv['analysis_id']}").json()["pdf"] is True
+            assert client.get(f"/api/analyses/{lv['analysis_id']}/source.pdf").content[:5] == b"%PDF-"
+    one = client.get(f"/api/catalog/{created['id']}/files/0").json()
+    assert one["pdf"] is True
+
+
+def test_two_uploaded_lvs_of_the_same_file_name_keep_their_own_pdf():
+    """Trade LVs are often all called Leistungsverzeichnis.pdf: each must show its own pages."""
+    folder = DATASET / "03_pdf_hochbau_projekt"
+    originals = [(folder / "LV_18_Estrich.pdf").read_bytes(), (folder / "LV_07_Teppichboden.pdf").read_bytes()]
+    created = client.post("/api/projects", files=[("files", ("LV.pdf", data)) for data in originals]).json()
+    reopened = client.get(f"/api/catalog/{created['id']}/project").json()
+    for project in (created, reopened):
+        served = [client.get(f"/api/analyses/{lv['analysis_id']}/source.pdf").content for lv in project["lvs"]]
+        assert sorted(served, key=len) == sorted(originals, key=len)
+
+
+def test_a_gaeb_file_is_shown_on_the_clients_print_out_when_the_project_has_one():
+    """Project A: the X83 tender and its PDF package. Findings of the X83 are marked on the client's pages."""
+    body = client.get("/api/catalog/A/files/0").json()
+    assert body["boq"]["format"] == "gaeb_xml"
+    assert body["pdf"] is True and body["pdf_generated"] is False and body["pdf_file"] == "HEM2301-2_Gesamt-LV.pdf"
+    original = (DATASET / "04_pdf_tiefbau_sonstige" / "HEM2301-2_Gesamt-LV.pdf").read_bytes()
+    assert client.get(f"/api/analyses/{body['id']}/source.pdf").content == original
+    marks = client.get(f"/api/analyses/{body['id']}/marks").json()
+    assert set(marks["items"]) == {i["oz"] for i in body["boq"]["items"]}
+    placed = [m for f, m in zip(body["findings"], marks["marks"]) if f["item_oz"]]
+    assert placed and all(m["located"] != "none" for m in placed)
+    dn = next(m for m in marks["marks"] if m["oz"] == "5.1.46" and m["key"].startswith("R-DIM-MISMATCH"))
+    assert dn["located"] == "quote"
+
+
+def test_a_priced_file_prefers_the_priced_print_out_and_an_excerpt_is_no_print_out():
+    bid = client.get("/api/catalog/C/files/2").json()  # D84 offer: tender PDF, an excerpt, and the offer PDF
+    assert bid["pdf_file"] == "Angebot AN24-0305.pdf" and bid["pdf_generated"] is False
+    award = client.get("/api/catalog/B/files/3").json()  # D86 award: the submitted bid carries prices too
+    assert award["pdf_file"] == "Abgabe LV.pdf"
+    tender = client.get("/api/catalog/B/files/0").json()
+    assert tender["pdf_file"] == "Leistungsverzeichnis_leer.pdf"
+
+
+def test_without_a_print_out_the_pages_are_drawn_and_a_pdf_shows_itself():
+    alone = client.get("/api/catalog/E/files/0").json()
+    assert alone["pdf"] is True and alone["pdf_generated"] is True and alone["pdf_file"] is None
+    itself = client.get("/api/catalog/C/files/0").json()
+    assert itself["pdf"] is True and itself["pdf_generated"] is False and itself["pdf_file"] is None

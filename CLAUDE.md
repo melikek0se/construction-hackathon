@@ -79,7 +79,9 @@ Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src
 `companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/report.py` (risk report, bidder questions), `src/boq/prices.py` (price suggestions), `src/boq/whatif.py`,
 `src/boq/project.py` (several trade LVs: interfaces, dependency graph, cross-LV findings) → `src/boq/api.py`
 (storage in `src/boq/db.py`: projects, documents, analyses, LLM cache; `DATABASE_URL`, SQLite by default) → `web/` (Vite + React, one screen:
-`web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`; `web/src/types.ts` mirrors
+`web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`, the original PDF pages with
+findings marked on them in `PdfView.tsx`, positions from `src/boq/pdfmarks.py`, pages for LVs without a PDF
+drawn by `src/boq/lvpages.py`; `web/src/types.ts` mirrors
 `boq.model`). The projects page lists `src/boq/catalog.py` (projects in the database; the dataset ones seeded from
 its hand mapping). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
 

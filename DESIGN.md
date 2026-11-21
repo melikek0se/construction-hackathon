@@ -454,7 +454,7 @@ A bar under the band: red with white text, 13px 500, for an error and for the se
 used for loading.
 
 ### Loading tapes (signature)
-While files are being read the page is veiled in white (78 %) and two barrier tapes are pulled across it, one
+While files are being read, and while the AI review runs, the page is veiled in white (78 %) and two barrier tapes are pulled across it, one
 from each side, crossing a little off level (-5 and 4 degrees). A tape is 46px high: signal yellow, the hazard
 stripe 9px along both edges, a 1px ink line outside. Along it runs what is being read, in Barlow Condensed
 17px 600 capitals at 0.14em, the two tapes running in opposite directions. The tapes block the page until the

@@ -1,0 +1,345 @@
+/* PDF view: the client's pages, findings marked on them, notes in the margin (PdfView.tsx). */
+
+.pdfview {
+  position: relative; /* pages are scrolled to by their offset inside it */
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 20px 40px;
+  background: var(--tint);
+}
+
+.pdf-tools {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 -20px 16px;
+  padding: 8px 20px;
+  background: var(--tint);
+  border-bottom: 1px solid var(--rule);
+}
+
+.pdf-tools .hint {
+  color: var(--mute);
+  font-size: 13px;
+}
+
+.pdf-zoom {
+  flex: none;
+  display: flex;
+}
+
+.pdf-zoom button {
+  padding: 3px 9px;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  color: var(--ink-2);
+  font: 600 12px var(--text);
+  cursor: pointer;
+}
+
+.pdf-zoom button + button {
+  border-left: 0;
+}
+
+.pdf-zoom button[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--yellow);
+}
+
+.pdf-zoom button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.pdf-status {
+  padding: 24px;
+  color: var(--mute);
+}
+
+.pdf-unplaced {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pdf-unplaced h3 {
+  flex: 0 0 100%;
+  margin: 0;
+  font: 600 13px var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.pdf-unplaced .pdf-note {
+  position: static;
+  width: 250px;
+}
+
+.pdf-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: max-content;
+  margin-bottom: 16px;
+}
+
+.pdf-page {
+  position: relative;
+  flex: none;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  box-shadow: 0 1px 0 var(--line-2);
+}
+
+.pdf-page.over-mark,
+.pdf-page.over-mark .textLayer :is(span, br) {
+  cursor: pointer;
+}
+
+.pdf-sheet {
+  position: absolute;
+  inset: 0;
+  --user-unit: 1;
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+}
+
+.pdf-sheet canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pdf-pageno {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  z-index: 3;
+  font: 500 11px var(--text);
+  color: var(--dim);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* marks: drawn over the canvas and the (transparent) text layer, never in the pointer's way */
+.pdf-marks {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pdf-mark {
+  position: absolute;
+  border-radius: 2px;
+  mix-blend-mode: multiply;
+  transition: box-shadow 0.15s var(--ease);
+}
+
+.pdf-mark.high {
+  --mark: var(--red);
+  background: rgb(196 22 28 / 0.22);
+}
+
+.pdf-mark.warn {
+  --mark: #b88a00;
+  background: rgb(255 196 0 / 0.42);
+}
+
+.pdf-mark.info {
+  --mark: var(--blue);
+  background: rgb(10 90 168 / 0.18);
+}
+
+.pdf-mark.bar {
+  background: var(--mark);
+  border-radius: 0;
+  mix-blend-mode: normal;
+}
+
+.pdf-mark.hot {
+  box-shadow: 0 0 0 2px var(--mark);
+}
+
+/* notes */
+.pdf-notes {
+  /* stays at the right edge when a zoomed page is wider than the view, so notes never scroll out of reach */
+  position: sticky;
+  right: 0;
+  z-index: 4;
+  flex: none;
+  align-self: stretch;
+}
+
+.pdf-note {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  grid-template-rows: auto 1fr;
+  column-gap: 7px;
+  align-content: start;
+  padding: 5px 8px 5px 7px;
+  border: 1px solid var(--line-2);
+  border-left: 4px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.pdf-note.high {
+  border-left-color: var(--red);
+}
+
+.pdf-note.warn {
+  border-left-color: var(--yellow);
+}
+
+.pdf-note.info {
+  border-left-color: var(--blue);
+}
+
+.pdf-note .sign {
+  grid-row: 1 / span 2;
+  margin-top: 2px;
+}
+
+.pdf-note-head {
+  font: 600 12px var(--display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-note-head b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.pdf-note-head em {
+  font-style: normal;
+  color: var(--mute);
+}
+
+.pdf-note-text {
+  font-size: 12.5px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-note:hover,
+.pdf-note.hot {
+  background: var(--hover);
+  border-color: var(--ink);
+}
+
+.pdf-note.selected {
+  background: var(--yellow);
+  border-color: var(--ink);
+}
+
+.pdf-note:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* The text layer of pdf.js: transparent text laid exactly over the drawn page, so it can be selected.
+   Rules taken from pdfjs-dist/web/pdf_viewer.css (Apache-2.0), reduced to what a read-only page needs. */
+.pdf-sheet .textLayer {
+  color-scheme: only light;
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  text-align: initial;
+  line-height: 1;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 1;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+
+.pdf-sheet .textLayer :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text;
+}
+
+.pdf-sheet .textLayer > :not(.markedContent),
+.pdf-sheet .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+.pdf-sheet .textLayer .markedContent {
+  display: contents;
+}
+
+.pdf-sheet .textLayer ::selection {
+  background: rgb(18 20 19 / 0.28);
+  color: transparent;
+}
+
+.pdf-sheet .textLayer br::selection {
+  background: transparent;
+}
+
+/* covers the layer while a selection is being dragged, so the white between lines does not hand the
+   selection to text elsewhere (see watchTextLayer in PdfView.tsx) */
+.pdf-sheet .textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+
+.pdf-sheet .textLayer.selecting .endOfContent {
+  top: 0;
+}
+
+/* only the page's own text can be selected: not the notes, the page number or the tool row */
+.pdf-tools,
+.pdf-notes,
+.pdf-unplaced,
+.pdf-marks {
+  user-select: none;
+}
+
+.pdf-zoom output {
+  align-self: center;
+  margin-right: 8px;
+  font: 600 12px var(--text);
+  color: var(--ink-2);
+}

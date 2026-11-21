@@ -11,6 +11,7 @@ class SourceRef(BaseModel):
     file: str
     line: int | None = None  # GAEB 90 line number of the item header
     page: int | None = None  # PDF page of the item number
+    y: float | None = None  # PDF: centre of the item-number line, in points from the top of that page
     xml_id: str | None = None  # GAEB XML Item ID
 
 

@@ -43,3 +43,10 @@ def test_building_trade_lv_with_position_types():
     kinds = {i.oz: i.kind for i in boq.items}
     assert len(boq.items) == 36 and kinds["2"] == "alternative"
     assert not any(i.short_text.startswith("***") for i in boq.items)
+
+
+def test_items_keep_the_position_of_their_number_line():
+    boq = parse_file(str(PDF / "Leistungsverzeichnis.pdf"))
+    assert all(i.source.page and i.source.y is not None for i in boq.items)
+    order = [(i.source.page, i.source.y) for i in boq.items]
+    assert order == sorted(order)  # items stand in reading order

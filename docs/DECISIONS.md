@@ -155,7 +155,7 @@ only its arrows, solid and named after the linking work.
 Revisit if: a project has far more than about 30 trades or more than 4 per storey row — the stack gets deep.
 
 ## D-019 — Projects page; dataset projects mapped by hand; created projects kept as folders, no database
-Status: superseded by D-023 (storage); the projects page and the hand mapping stand · 2026-11-21
+Status: superseded by D-024 (storage); the projects page and the hand mapping stand · 2026-11-21
 
 The app opens on a list of projects instead of a list of files. A project is either one LV in several versions
 (tender, bid, award, print-out: dataset projects A–E) or the trade LVs of one building (F). Which dataset file
@@ -210,7 +210,45 @@ The copy is produced by `scripts/translate/` (extract → translate by subagents
 intermediate files are in `data/processed/translation/`.
 Revisit if: the app should analyse English LVs — that needs English rule vocabulary, not this copy.
 
-## D-023 — A database for projects, documents, analyses and the LLM cache; dataset projects are seeded
+## D-023 — PDF view: pdf.js in the browser, finding positions from the server
+Status: decided · 2026-11-21
+
+An LV opened from a PDF can be read on its original pages (`web/src/PdfView.tsx`, tab "PDF"): pdf.js draws the
+page and a text layer over it, findings are marked on their quoted evidence with a note in the margin. Chosen
+over page images rendered by the server because Utku wants the text selectable, now and as the basis for the
+estimator's own notes on a selected passage. Positions come from the server (`src/boq/pdfmarks.py`, PyMuPDF),
+in PDF points from the top left of the page: the quote is searched only inside the item's own stretch (number
+line to next number line), then in the pages before the first item; not found means the item's number line is
+marked, never another place. The server keeps the path of an analysed file only when the file stays on disk
+(dataset, created projects), so a temporary upload has no PDF view.
+Marks are matched to the browser's findings by `check | item | evidence`, not by list position: after an AI
+review the two lists are in different orders.
+Order agreed for what follows: (2) the estimator's own notes, valid / not valid, tagging a colleague for
+review; (3) retrieval (GraphRAG) for fact-checking. Design: `docs/superpowers/specs/2026-11-21-pdf-view-design.md`.
+Revisit if: GAEB-only LVs should get pages too (render the LV to a page ourselves — then positions are known
+exactly), or scanned PDFs must be shown (needs OCR).
+
+## D-024 — An LV without a PDF gets pages drawn by the app
+Status: decided · 2026-11-21
+
+GAEB and Excel files have no pages, and most tender files in the dataset are GAEB. For the PDF view the server
+draws the LV as a plain A4 print-out (`src/boq/lvpages.py`, PyMuPDF): titles, item number, short and long text,
+quantity and unit, prices where the file has them, remarks, in LV order. The text is the file's text; the
+layout is ours, and every page and the view say that it is not the client's print-out. Because the app lays
+the pages out it knows where each item stands, so marks need no guessing about item positions; the quote is
+still searched inside the item's stretch as on a real PDF. Drawn on first use, kept in `data/processed/pages/`
+for the life of the analysis. Chosen over an HTML "paper" view because the PDF view, its marks, text selection
+and later the user's notes then work on every LV in one way.
+A PDF that was uploaded on its own and not kept still has no pages; a "word" over 400 characters (project E
+carries an image as text) is named, not printed.
+Where the project holds the client's print-out of the same LV, that is shown instead (`_print_out` in
+`api.py`): a PDF among the project's other files with at least 70 % of the LV's items (number, unit, quantity),
+a priced one for a priced file. The findings stay those of the opened file, marked on the print-out's pages; the
+view names both files. Known cost: items the print-out lacks (project A's award has 38 more than the tender
+package) have no place there, and their findings are listed above the pages.
+Revisit if: such items matter in the demo — then draw the pages for that file after all.
+
+## D-024 — A database for projects, documents, analyses and the LLM cache; dataset projects are seeded
 Status: decided · 2026-11-21 (replaces the storage part of D-019)
 
 For a live deployment the app keeps everything in one database (`src/boq/db.py`, SQLAlchemy Core): projects,
@@ -225,4 +263,6 @@ on first use, no migrations: a schema change means a new database. `BOQ_PASSWORD
 front of everything but `/api/health`, since the URL is public and the AI review spends API credit.
 Revisit if: several users or companies need their own projects (accounts), or files outgrow the database
 (then object storage, e.g. Cloudflare R2).
-
+Merged with the PDF view (D-023) the same day: that view reads pages from a file, so a project document is
+written out on demand to `data/processed/pages/docs/` (`_doc_path` in `api.py`); which PDF belongs to which
+analysis is kept in memory only, so after a restart a kept PDF is shown again once its file is reopened.

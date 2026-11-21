@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from boq import catalog, db
+from boq import api, catalog, db
 
 DATASET = Path(__file__).parent.parent / "dataset"
 
@@ -20,9 +20,10 @@ def seeded_db(tmp_path_factory) -> Path:
 
 
 @pytest.fixture(autouse=True)
-def database(seeded_db, tmp_path):
+def database(seeded_db, tmp_path, monkeypatch):
     """Every test works on its own copy, so tests never touch the real database (data/boq.db) and a project
-    created in one test does not show up in another."""
+    created in one test does not show up in another. Pages drawn for the PDF view go to a temporary folder."""
+    monkeypatch.setattr(api, "PAGES", tmp_path / "pages")
     copy = tmp_path / "boq.db"
     shutil.copy(seeded_db, copy)
     db.use(f"sqlite:///{copy}")

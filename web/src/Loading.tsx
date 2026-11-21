@@ -14,11 +14,14 @@ function Tape({ text, side }: { text: string; side: "left" | "right" }) {
   );
 }
 
-export function LoadingTapes({ what }: { what: string }) {
+/** `doing` is the work ("Reading the files", "AI review"), `what` the thing it is done to. */
+export function LoadingTapes({ doing = "Reading the files", what }: { doing?: string; what: string }) {
   return (
     <div className="tapes" role="status" aria-live="polite">
-      <span className="visually-hidden">Reading {what}</span>
-      <Tape side="left" text="Reading the files" />
+      <span className="visually-hidden">
+        {doing}: {what}
+      </span>
+      <Tape side="left" text={doing} />
       <Tape side="right" text={what} />
     </div>
   );

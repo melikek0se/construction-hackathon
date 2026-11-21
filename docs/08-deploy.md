@@ -9,7 +9,7 @@ were not checked against each vendor's own pricing page. Check before relying on
   of memory with project F opened (measured locally and in Docker).
 - Requests up to about 90 s: the AI review of a large LV (project C: 90 s). Hosts that cut requests at 30–60 s
   (serverless functions, e.g. Vercel) do not fit.
-- A Postgres database (`DATABASE_URL`). The server keeps nothing on disk (D-023), so the host needs no volume.
+- A Postgres database (`DATABASE_URL`). The server keeps nothing it needs on disk (D-024), so the host needs no volume; the PDF view writes project documents and drawn pages to `data/processed/pages/` as a cache it can rebuild.
 - A public HTTPS URL, which the ElevenLabs webhooks will need as well.
 
 ## Options

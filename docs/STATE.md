@@ -2,7 +2,7 @@
 
 **Update this file whenever something is finished, started or dropped.** Keep it short; history lives in git.
 
-Last updated: 2026-11-21 (hackathon day 2, database + deploy prep)
+Last updated: 2026-11-21 (hackathon day 2, PDF view merged with the database and deploy work)
 
 ## Now
 
@@ -161,7 +161,52 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   sample list and `inspect_dataset.py` skip the folder. Side fix: GAEB 90 encoding detection now takes `m³` in
   cp850 into account (`encoding_of` in `parsers/gaeb90.py`), which a file without umlauts needs.
 
-- Database and deploy (2026-11-21, D-023, `docs/08-deploy.md`): projects, documents (file bytes), analyses and
+- PDF view (D-023; `src/boq/pdfmarks.py`, `GET /api/analyses/{id}/source.pdf`, `/marks`, `web/src/PdfView.tsx`,
+  `pdfjs-dist`): tab "PDF" for an LV opened from a PDF that stays on disk (dataset, created projects). The
+  original pages with selectable text; each finding marked on its quoted evidence in its severity colour, a
+  note in the margin level with it; a click on a mark or note opens the item sheet, an item picked elsewhere
+  scrolls the PDF to it (`&view=pdf&item=…`); zoom 100–200 % keeps the place, notes stay at the right edge.
+  A quote is searched only inside the item's own stretch (whole, else its longest run of at least four
+  words), else the item's number line gets a bar; only findings without an item are looked for in the
+  preliminary remarks. Rule findings on all 34 dataset PDFs: 79 of 89 on the quote, 10 on the item line, none
+  lost, slowest file 0.3 s; project C with the AI review: 61 findings, 56 on the quote, 5 on the item line.
+  Marks are kept per analysis until its findings change.
+  Seen in Chrome by script (1792x976, 1440x900, 1000x800) on project C: pages and marks, hover and click on a
+  mark, click on a note, text selected through the text layer, deep link to 5.3.100 (page 61), zoom 150 and
+  200 % (marks stay on the text, canvas redrawn sharp), "Run AI review" from this view (cached answers: 36
+  notes added, each opens its own item, the view stays where it was scrolled to), a finding picked in the list
+  scrolls the PDF; LV 00 of project F opened from the project view (68 pages, 10 notes); no tab on a GAEB
+  file. An independent review found five faults, all fixed with tests: two uploaded LVs of the same file name
+  showed one PDF, an item finding could be marked in the remarks, slow marks for quotes that are not on the
+  page, the view jumping back to the selection after a review, the PDF left open.
+  Not seen: a hand on the mouse (dragging a selection, wheel zoom), phone widths, an AI review that is not
+  cached. Known limits: a quote that runs over a page break is marked on its first page only; an item's
+  stretch includes a section heading that follows it; with a repeated item number the first place is used;
+  pointing at a mark redraws all rows (fine at 71 pages, untested on much longer files).
+
+- Pages for LVs without a PDF (D-024; `src/boq/lvpages.py`): a GAEB or Excel LV is drawn as a plain A4
+  print-out (titles, item number, short and long text, quantity, unit, prices, remarks), so the PDF tab exists
+  for every LV except a PDF uploaded on its own. Every page says it is drawn by the app, not the client's
+  print-out. Rule findings on the nine GAEB files: 110 on the quote, 17 on the item line, none lost; the
+  largest (project E, 296 items) is 170 pages and takes 1.2 s to draw.
+  Seen in Chrome by script: project A's X83 as drawn pages (61 pages, 20 notes, deep link to 5.1.46 on its
+  mark); project C's D84 offer (28 pages with EP / GP; it carries no texts, so drawn pages are numbers only);
+  an item without findings picked in the item table scrolls the PDF to its line. An Excel LV (three items,
+  built as in the tests) was uploaded to the running server and its page looked at as an image.
+- The client's print-out instead of drawn pages (D-024): a GAEB file opened from a project is shown on the
+  project's PDF of the same LV when there is one (A → `HEM2301-2_Gesamt-LV.pdf`, B tender →
+  `Leistungsverzeichnis_leer.pdf`, B bid and award → `Abgabe LV.pdf`, C offer → `Angebot AN24-0305.pdf`,
+  D → `LV-Ausdruck-[PROJEKT_004].pdf`; E has none and is drawn). All items of the GAEB file have a place on
+  the print-out except in A's award (159 of 197) and B's bid / award (248 of 249); rule findings: 59 on the
+  quote, 19 on the item line, 1 without a place. Seen in Chrome: project A, 5.1.46 marked on page 104 of 136
+  of the client's package. Only for files opened from the projects page, not for the `?sample=` link or for
+  the LVs of a trades project.
+- PDF view, after Utku tried it by hand: Ctrl / Cmd + wheel and a trackpad pinch zoom the pages (50–400 %,
+  around the pointer); selecting text no longer jumps to unrelated text (the end-of-content guard of pdf.js's
+  own viewer, `watchTextLayer` in `PdfView.tsx`); notes and tool row cannot be selected. Checked by script
+  (wheel events, a programmatic selection); a real drag with the mouse is for Utku to confirm.
+
+- Database and deploy (2026-11-21, D-024, `docs/08-deploy.md`): projects, documents (file bytes), analyses and
   the LLM cache in one database (`src/boq/db.py`; Postgres via `DATABASE_URL`, SQLite `data/boq.db` locally).
   Dataset projects seeded by `uv run boq-seed`, then ordinary: files can be added to and removed from any
   project, projects deleted (two-click Delete on the projects page; file removal is API only:
@@ -192,6 +237,10 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 ## Next (in order)
 
 1. Decide team split, demo LV
+2. PDF view, next steps agreed with Utku: (a) the estimator's own notes on a line or a selected passage,
+   marking a finding valid / not valid, tagging a colleague who is notified to review; (b) a chat beside the
+   document that answers from all files of the project (asked for by Utku on 2026-11-21, not designed yet);
+   (c) retrieval (GraphRAG) for fact-checking findings
 3. Projects: trade vocabulary and interface wording beyond project F; quantity checks between trades
    (screed area against floor coverings); decide in-memory graph vs Neo4j
 4. Money at stake for findings on unpriced LVs (needs the price history)
