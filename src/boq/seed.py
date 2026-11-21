@@ -2,8 +2,8 @@
 
     uv run boq-seed            # into whatever DATABASE_URL points to (SQLite data/boq.db when unset)
 
-Safe to run again: projects already there and cached answers already there are left alone. The server does the
-same at start when BOQ_SEED_DEMO is set and the database has no project yet (docker compose, Render).
+Safe to run again: projects already there and cached answers already there are left alone. Only ever run on
+purpose: a new database starts empty, and the server never seeds by itself.
 """
 import json
 import os

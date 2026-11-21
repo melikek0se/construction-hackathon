@@ -32,7 +32,6 @@ from boq.pdfmarks import locate
 from boq.prices import load_history, suggest_prices
 from boq.project import analyse_project, lv_name
 from boq.report import build_report, render_html, render_questions
-from boq.seed import seed
 from boq.whatif import Scenario, what_if
 
 load_env()
@@ -47,9 +46,7 @@ PAGES = ROOT / "data" / "processed" / "pages"  # pages drawn for LVs that came w
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    db.engine()  # create the tables, and fail at start rather than on the first request
-    if os.environ.get("BOQ_SEED_DEMO") and not catalog.all_projects():
-        seed(DATASET)  # a fresh database on a host without a shell: put the demo projects in
+    db.engine()  # create the tables, and fail at start rather than on the first request; nothing is seeded
     yield
 
 

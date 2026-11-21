@@ -38,24 +38,25 @@ file bytes to Cloudflare R2 (10 GB free) and keep only keys in `documents`.
 
 ## Locally, the same setup
 
-`docker compose up --build` runs the image Render builds, against Postgres 17 (in place of Neon), on
-http://localhost:8080 with password `demo`. At its first start it seeds the demo projects and the LLM answers
-from `data/cache/llm/`. Data stays in the `pgdata` volume; `docker compose down -v` wipes it.
-For hot reload: `docker compose up db`, put `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boq`
-in `.env`, then `uv run uvicorn boq.api:app --reload` and `npm run dev` as before.
-Production differs only in the environment variables: `DATABASE_URL` points to Neon, `BOQ_PASSWORD` is a real one.
+- `docker compose up --watch`: the dev environment (`--watch` also rebuilds when `pyproject.toml` / `uv.lock`
+  change and restarts the UI when `web/package-lock.json` changes). Postgres 17 (in place of Neon), the API with auto-reload (`src/`
+  mounted, `dev` stage of the Dockerfile) on :8000, Vite with hot reload on http://localhost:5173.
+- `docker compose --profile prod up --build`: the `prod` image, the one Render builds, on http://localhost:8080
+  with password `demo`.
+
+Both use the same database (volume `pgdata`; `docker compose down -v` wipes it). It starts empty: nothing is
+put in automatically. The six dataset projects go in only on request: `docker compose exec api boq-seed`. Production differs only in its environment variables:
+`DATABASE_URL` points to Neon, and `BOQ_PASSWORD` is a real password.
 
 ## Steps
 
 1. **Neon**: create a project in region *Frankfurt (eu-central-1)*. Copy the **direct** connection string
    (not the `-pooler` one: psycopg prepares statements, which PgBouncer in transaction mode can break).
-2. **Seed**: set `BOQ_SEED_DEMO=1` on Render; the first start fills the empty database with the six demo
-   projects. To carry over the cached LLM answers too (they are not in git), run once from a laptop:
-   `DATABASE_URL='postgresql://…' uv run boq-seed`. Copying the answers from the local compose database instead:
-   `docker compose exec db pg_dump -U postgres -t llm_cache --data-only boq | psql 'postgresql://…'`.
+2. The database starts empty. To show the six dataset projects, put them in on purpose:
+   `DATABASE_URL='postgresql://…' uv run boq-seed` (also copies the LLM answers in `data/cache/llm/`).
 3. **Render**: New → Web Service → connect the GitHub repo (needs access to `melikek0se/construction-hackathon`)
    → runtime *Docker*, instance *Free*, region *Frankfurt*, health check path `/api/health`.
-   Environment: `DATABASE_URL`, `BOQ_SEED_DEMO=1`, `ANTHROPIC_API_KEY`, `BOQ_PASSWORD` (anyone with the link could otherwise
+   Environment: `DATABASE_URL`, `ANTHROPIC_API_KEY`, `BOQ_PASSWORD` (anyone with the link could otherwise
    spend API credit on the AI review), later `ELEVENLABS_API_KEY` / `ELEVENLABS_AGENT_ID`.
 4. Every push to `main` deploys again. The first build takes a few minutes (Node build + Python install).
 

@@ -274,8 +274,8 @@ selects it: Postgres in production, a SQLite file `data/boq.db` when unset. File
 too (LVs are small: the whole dataset is 25 MB), so the server keeps nothing on disk and runs on any free host.
 The six dataset projects are no longer a special case at run time: `uv run boq-seed` puts them in as ordinary
 projects (`source = "demo"`, ids A–F) from the mapping in `catalog.py`, and copies the old `data/cache/llm/`
-answers; after that every project takes added files, renames and deletes. `BOQ_SEED_DEMO=1` seeds an empty
-database at start for hosts without a shell. Analyses survive restarts (newest 2,000 kept). Tables are created
+answers; after that every project takes added files, renames and deletes. Nothing is seeded automatically: a new
+database starts empty (user's call, 2026-11-21; a `BOQ_SEED_DEMO` start-up seed existed briefly and was removed). Analyses survive restarts (newest 2,000 kept). Tables are created
 on first use, no migrations: a schema change means a new database. `BOQ_PASSWORD` puts HTTP basic auth in
 front of everything but `/api/health`, since the URL is public and the AI review spends API credit.
 Revisit if: several users or companies need their own projects (accounts), or files outgrow the database

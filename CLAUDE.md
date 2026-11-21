@@ -64,16 +64,16 @@ uv run boq FILE                        # parse an LV, print rule findings; --jso
                                        #   --report out.html (risk report), --questions out.txt (Bieterfragen),
                                        #   --prices (unit prices from the priced bids)
 uv run boq-seed                        # put the six dataset projects (and old LLM answers) into the database
-uv run uvicorn boq.api:app --reload    # API on :8000 (POST /api/analyze, GET /api/samples)
-cd web && npm install && npm run dev   # UI on :5173, proxies /api to :8000
+docker compose up --watch              # dev: UI :5173 (hot reload), API :8000 (auto-reload), Postgres :5432; new deps rebuild
+docker compose --profile prod up --build  # the production image locally (as on Render): :8080, password "demo"
+uv run uvicorn boq.api:app --reload    # API without Docker (SQLite, or DATABASE_URL from .env)
+cd web && npm install && npm run dev   # UI without Docker, proxies /api to :8000
 cd web && npm run build                # type-check + build; the API then serves web/dist at /
 uv run pytest -q                       # parsers, checks and API against dataset/
 uv run python scripts/eval_pdf_parser.py -v   # PDF parser score against the GAEB twins; run after touching pdf.py
 uv run python scripts/eval_prices.py -v       # back-test of the price suggestions; run after touching prices.py
-python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
-docker compose up --build             # production setup locally: same image + Postgres 17, :8080, password "demo"
 uv run python scripts/eval_intake.py -v       # intake (project name, step per file) against the hand mapping; run after touching intake.py or a parser
-docker compose up db                   # only Postgres, for hot reload; .env: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boq
+python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
 ```
 
 Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src/boq/checks` (`rules.py` per item,

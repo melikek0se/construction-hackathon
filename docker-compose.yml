@@ -1,7 +1,10 @@
-# The production setup on one laptop: the same image as on Render, Postgres 17 as on Neon.
-#   docker compose up --build      → http://localhost:8080 (password: see BOQ_PASSWORD below)
-# For hot reload instead, run only the database (docker compose up db) and use uv/npm as usual; .env then
-# needs DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boq
+# Dev environment in one command:
+#   docker compose up --watch    → UI http://localhost:5173 (hot reload), API :8000 (auto-reload), Postgres :5432
+#                                  (--watch adds: new Python or npm packages are picked up without a restart)
+# The production image on this laptop (what Render runs, Postgres in place of Neon):
+#   docker compose --profile prod up --build   → http://localhost:8080, password "demo"
+# Both use the same database (volume pgdata; `docker compose down -v` wipes it). It starts empty; the six
+# dataset projects go in only on request: docker compose exec api boq-seed
 services:
   db:
     image: postgres:17-alpine
@@ -15,18 +18,50 @@ services:
       interval: 2s
       retries: 20
 
-  app:
-    build: .
+  api:
+    build: {context: ., target: dev}
     depends_on:
       db: {condition: service_healthy}
     env_file: [.env]  # ANTHROPIC_API_KEY, ELEVENLABS_*; the lines below win over it
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
-      BOQ_SEED_DEMO: "1"
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./dataset:/app/dataset:ro
+      - ./data:/app/data  # pages drawn for the PDF view; data/cache/llm for boq-seed
+    ports: ["${API_PORT:-8000}:8000"]
+    develop:  # code reloads through the mounts above; a new dependency rebuilds the image
+      watch:
+        - {action: rebuild, path: pyproject.toml}
+        - {action: rebuild, path: uv.lock}
+
+  web:
+    image: node:22-slim
+    working_dir: /web
+    environment:
+      API_URL: http://api:8000  # vite.config.ts sends /api there
+    volumes:
+      - ./web:/web
+      - web_modules:/web/node_modules  # Linux packages, kept apart from the Mac's web/node_modules
+    command: sh -c "npm ci --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 5173 --strictPort"
+    depends_on: [api]
+    ports: ["${WEB_PORT:-5173}:5173"]
+    develop:  # a new npm package: restart, which runs npm ci again
+      watch:
+        - {action: restart, path: web/package-lock.json}
+
+  app:
+    profiles: [prod]
+    build: {context: ., target: prod}
+    depends_on:
+      db: {condition: service_healthy}
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
       BOQ_PASSWORD: ${BOQ_PASSWORD:-demo}
     ports: ["8080:8000"]
-    volumes:
-      - ./data/cache:/app/data/cache:ro  # old LLM answers, copied into the database at the first start
 
 volumes:
   pgdata:
+  web_modules:

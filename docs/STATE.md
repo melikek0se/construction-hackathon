@@ -249,8 +249,9 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   `DELETE /api/catalog/{id}/files/{index}`). Analyses and AI findings survive a restart. `Dockerfile` (one image,
   React build inside), `BOQ_PASSWORD` basic auth, `GET /api/health`. Checked: 111 tests; the image against a
   Postgres 17 container (seed, upload, restart keeps the project, 401 without password); server memory peaks
-  at about 170 MB with project F opened. `docker-compose.yml` runs the same setup locally (image + Postgres,
-  :8080, password `demo`, seeds itself); an AI review on project D was cached in Postgres and answered from
+  at about 170 MB with project F opened. `docker compose up` is the whole dev environment (Postgres, API with
+  auto-reload, Vite with hot reload; both reloads checked in the containers), `--profile prod` the production
+  image on :8080 (password `demo`); an AI review on project D was cached in Postgres and answered from
   it after a restart in 0.03 s (the old disk-cache answers did not match the current prompts: 4 real requests). Not checked: the new Delete button clicked in a browser; a real
   deploy (needs the team's accounts).
 - Chat cost (D-027; `src/boq/retrieve.py`): the chat no longer sends the whole project with each question.
