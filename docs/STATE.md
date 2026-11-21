@@ -155,8 +155,15 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   bold or sits alone on the OZ line (project D prints neither, so its short text is the first description line);
   "*** Wiederholungsbeschreibung" notes printed above an item are not linked to it; one percentage item of bid B
   (10.1.1) is missed.
-- `R-DIM-MISMATCH` can misfire when the long text names a second part with its own DN (seen once: project F,
-  LV 14b, pipe DN 100 through a sleeve DN 200).
+- Check review (2026-11-21), fixed: a sleeve or core-drilling size in the long text ("Futterrohr DN 200" around a
+  DN 100 pipe, LV 14b item 48) no longer counts as a DN contradiction; more than three zero quantities in one LV
+  are one finding (award A had 38 separate warnings); "soweit nicht separat ausgeschrieben, sind …
+  einzukalkulieren" is reported (the guard for "soweit … nicht gesondert vergütet" swallowed it); a site set-up
+  that says "wieder abbauen" has its clearance (LV 09 warned "missing"); companion sizes read "Da 125"; units
+  "pauschal", "Stunden", "Wochen", "Monat(e)", "Tage" are known. Still open: companion rules run on the label,
+  so an LV printed without a separate short text (project D as PDF) gives different missing-item results than
+  its GAEB twin. AI review: a failed title (refusal, max tokens, network) is skipped and listed in
+  `stats.failures`; the review fails only if every title fails. The UI does not show `failures` yet.
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
   has one. They cover pipeline and civil work only.
 - Parser review (2026-11-21), fixed: GAEB 90 read the W / B flags of column 21 (repeat / reference description)

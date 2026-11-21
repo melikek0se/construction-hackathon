@@ -5,7 +5,7 @@ from decimal import Decimal
 from boq.checks.companion_rules import RULES, CompanionRule
 from boq.model import BoQ, Finding, Item
 
-_SIZE = re.compile(r"\b(?:DN\s*/\s*OD|DN|OD|DA|da)\s*=?\s*(\d{2,4})\b")
+_SIZE = re.compile(r"\b(?:DN\s*/\s*OD|DN|OD|DA|Da|da)\s*=?\s*(\d{2,4})\b")
 
 
 def sizes(text: str) -> set[str]:

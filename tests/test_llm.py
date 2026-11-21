@@ -94,3 +94,31 @@ def test_api_reports_missing_credentials(monkeypatch):
     r = client.post(f"/api/analyses/{analysis['id']}/llm")
     assert r.status_code == 503 and "credentials" in r.json()["detail"]
     assert client.post("/api/analyses/unknown/llm").status_code == 404
+
+
+def test_one_failed_title_does_not_lose_the_others(monkeypatch):
+    """A refusal or max-tokens stop on one title used to fail the whole review."""
+    boq = parse_file(str(D))
+    calls = []
+
+    async def flaky_ask(client, context, task, usage=None):
+        calls.append(task)
+        if len(calls) == 1:  # the first request, the one that writes the prompt cache
+            raise RuntimeError("LLM review stopped with max_tokens")
+        return [answer("2.5", "Aushub mit Verbau oder geböscht")] if '<item oz="2.5"' in task else []
+
+    monkeypatch.setattr(llm, "_ask", flaky_ask)
+    findings, stats = asyncio.run(llm.run_llm_checks(boq, run_checks(boq), client=object()))
+    assert stats["requests"] == len(calls) > 2 and stats["failed"] == 1
+    assert "max_tokens" in stats["failures"][0] and stats["failures"][0].startswith("items ")
+    assert [f.item_oz for f in findings] == ["2.5"]
+
+
+def test_review_fails_when_every_title_fails(monkeypatch):
+    async def broken_ask(client, context, task, usage=None):
+        raise RuntimeError("overloaded")
+
+    monkeypatch.setattr(llm, "_ask", broken_ask)
+    boq = parse_file(str(D))
+    with pytest.raises(RuntimeError, match="every request failed"):
+        asyncio.run(llm.run_llm_checks(boq, run_checks(boq), client=object()))

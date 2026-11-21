@@ -10,6 +10,7 @@ from boq.checks.companion_rules import RULES
 from boq.checks.companions import check_companions
 from boq.model import BoQ, Item, SourceRef
 from boq.parsers import parse_file
+from boq.units import normalise_unit
 
 XML = Path(__file__).parent.parent / "dataset" / "01_gaeb_xml"
 A, B = XML / "8209.003_Leistungsverzeichnis_leer.X83", XML / "[NUMMER_001]_leer.X83"
@@ -132,3 +133,46 @@ def test_broken_reference():
     assert found(run_checks(boq), "R-REF-BROKEN") == set()
     boq.items = [i for i in boq.items if i.oz != "3.2.4"]
     assert "3.2.5" in found(run_checks(boq), "R-REF-BROKEN")
+
+
+def _lv(*items, phase="83"):
+    return BoQ(file="t.x83", format="gaeb_xml", phase=phase, items=[
+        Item(oz=oz, short_text=short, long_text=long, qty=Decimal(qty), unit_raw=unit,
+             unit=normalise_unit(unit), source=SourceRef(file="t.x83"))
+        for oz, short, long, qty, unit in items])
+
+
+def test_sleeve_size_in_the_long_text_is_no_contradiction():
+    """LV 14b item 48: wall duct for a DN 100 pipe, core drilling with a fibre-cement sleeve DN 200."""
+    duct = ("1.1", "Außenwand-Rohrdurchführung DN 100",
+            "für 1 Medienrohr mit Außendurchmesser 105-115 mm,\nbestehend aus:\nSpezialfaserzement-Futterrohr DN 200,", 1, "St")
+    pipe = ("1.2", "Edelstahl-Rohr DN 125", "Edelstahlrohr DN 100, 139,7 x 2,6 mm", 10, "m")
+    assert found(run_checks(_lv(duct, pipe)), "R-DIM-MISMATCH") == {"1.2"}
+
+
+def test_many_zero_quantities_are_one_finding():
+    zeros = [(f"8.1.{n}", f"Angebot Fabrikat {n}", "", 0, "St") for n in range(1, 7)]
+    one = [("1.1", "Pumpe", "", 0, "St")]
+    grouped = [f for f in run_checks(_lv(*zeros)) if f.check_id == "R-QTY-ZERO"]
+    assert len(grouped) == 1 and grouped[0].item_oz == "8.1.1" and len(grouped[0].related_oz) == 5
+    assert grouped[0].title.startswith("6 items")
+    assert found(run_checks(_lv(*one)), "R-QTY-ZERO") == {"1.1"}
+
+
+def test_unless_listed_separately_price_it_in_is_a_risk_shift():
+    """Project E 3.6.8: "soweit nicht separat ausgeschrieben sind einzukalkulieren" was skipped by the guard
+    meant for "soweit … nicht gesondert vergütet wird"."""
+    shift = ("1.1", "Inbetriebnahme", "Prüfungen soweit nicht separat ausgeschrieben sind einzukalkulieren.", 1, "psch")
+    opposite = ("1.2", "Geräte", "Geräte vorhalten, soweit der Einsatz nicht gesondert vergütet wird.", 1, "psch")
+    assert found(run_checks(_lv(shift, opposite)), "R-WORDING") == {"1.1"}
+
+
+def test_site_set_up_that_includes_dismantling_has_its_clearance():
+    """LV 09 item 9.2.0: "Baustelle einrichten, vorhalten und wieder abbauen" — not a missing clearance."""
+    setup = ("9.2.0", "Baustelleneinrichtung", "Baustelle einrichten, vorhalten und wieder abbauen.", 1, "pau")
+    (f,) = [f for f in check_companions(_lv(setup)) if f.check_id == "C-SITE-CLEARANCE"]
+    assert f.severity == "info" and f.title.startswith("No separate item")
+
+
+def test_unit_spellings_written_out():
+    assert [normalise_unit(u) for u in ("pauschal", "Stunden", "Wochen", "Monat", "Tage")] == ["psch", "h", "Wo", "Mt", "d"]

@@ -149,8 +149,8 @@ RULES = [
         name="site clearance (Baustelle räumen)",
         name_de="das Räumen der Baustelle",
         trigger=r"baustelle\w*\s*(einrichten|herstellen)|baustelleneinrichtung(\s+herstellen)?\s*$",
-        exclude=r"räum|vorhalten",
-        companion=r"baustelle\w*.*räum|räumen der baustelle",
+        exclude=r"räum|vorhalten|abbau",
+        companion=r"baustelle\w*.*(räum|abbau|rückbau)|räumen der baustelle|(wieder|zurück)\s*(abbauen|abbau)",
         why="Site set-up is paid but clearance is not. Clearance then has to be priced into the "
             "set-up item, which shifts cash flow and is easy to forget.",
         source="LV-Positionen.docx: 1.1.10 Baustelleneinrichtung / 1.1.30 Baustelle räumen",

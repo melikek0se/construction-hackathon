@@ -19,6 +19,9 @@ from boq.model import BoQ, Finding, Item
 class LLMUnavailable(RuntimeError):
     """No working Claude API credentials."""
 
+
+_NO_CREDENTIALS = (anthropic.CredentialsError, anthropic.AuthenticationError, anthropic.PermissionDeniedError)
+
 MODEL = os.environ.get("BOQ_LLM_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("BOQ_LLM_EFFORT", "medium")
 CACHE_DIR = Path(os.environ.get("BOQ_CACHE_DIR", Path(__file__).resolve().parents[3] / "data" / "cache")) / "llm"
@@ -240,24 +243,37 @@ async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
     """Returns the findings and a small report: requests made, findings kept and dropped."""
     client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
     context = _context(boq)
-    tasks = [_task(boq, items, rule_findings) for items in _chunks(boq)]
+    tasks = [_task(boq, items, rule_findings) for items in _chunks(boq)]  # one per chunk, same order
     if not tasks:
         return [], {"requests": 0, "kept": 0, "dropped": 0}
     limit = asyncio.Semaphore(CONCURRENCY)
     usage = dict.fromkeys(["api_requests", "input_tokens", "cache_write_tokens", "cache_read_tokens",
                            "output_tokens"], 0)
 
-    async def ask(task: str) -> list[dict]:
-        async with limit:
-            return await _ask(client, context, task, usage)
+    chunks = _chunks(boq)
+    failures: list[str] = []
+
+    async def ask(n: int) -> list[dict]:
+        """One title. A title that fails (refusal, max tokens, network) is reported and skipped, so the
+        findings of the other titles still arrive; missing credentials end the whole review."""
+        try:
+            async with limit:
+                return await _ask(client, context, tasks[n], usage)
+        except _NO_CREDENTIALS:
+            raise
+        except Exception as exc:
+            failures.append(f"items {chunks[n][0].oz}–{chunks[n][-1].oz}: {exc}")
+            return []
 
     try:
-        first = await ask(tasks[0])  # writes the prompt cache that the parallel requests then read
-        rest = await asyncio.gather(*(ask(t) for t in tasks[1:]))
-    except (anthropic.CredentialsError, anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
+        first = await ask(0)  # writes the prompt cache that the parallel requests then read
+        rest = await asyncio.gather(*(ask(n) for n in range(1, len(tasks))))
+    except _NO_CREDENTIALS as exc:
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
+    if len(failures) == len(tasks):
+        raise RuntimeError(f"every request failed; first: {failures[0]}")
     by_oz = {i.oz: i for i in boq.items}
     remarks = _squash(" ".join(r.text for r in boq.remarks))
     raw = [f for answer in [first, *rest] for f in answer]
@@ -268,4 +284,4 @@ async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
         if first is not f and f.item_oz != first.item_oz and f.item_oz not in first.related_oz:
             first.related_oz.append(f.item_oz)
     return list(findings.values()), {"requests": len(tasks), "kept": len(findings), "dropped": len(raw) - len(valid),
-                                     "model": MODEL, **usage}
+                                     "failed": len(failures), "failures": failures, "model": MODEL, **usage}
