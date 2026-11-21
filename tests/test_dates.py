@@ -131,3 +131,19 @@ def test_the_summary_of_a_project_carries_the_dates_of_its_files():
         ("binding_until", "2024-04-29"), ("exec_start", "2024-05-13"), ("exec_end", "2025-04-30")]
     assert found[1]["sources"] == [{"file": "HEM2301-2_Gesamt-LV.pdf", "where": "page 1"}]
     assert client.get("/api/catalog/F/summary").json()["dates"] == []
+
+
+def test_the_english_reading_copies_give_the_same_dates():
+    """dataset/en/ is what the team drops in when it shows the app in English: same days, English labels."""
+    def days(folder, names):
+        return {(d["kind"], d["date"], d["time"], d["approx"]) for n in names
+                for d in dates.read((folder / n).read_bytes(), n)}
+
+    en = DATASET / "en"
+    for folder, originals in (
+        ("A_Maschinentechnik-Anlagenbau_8209.003", ["04_pdf_tiefbau_sonstige/HEM2301-2_Gesamt-LV.pdf"]),
+        ("E_Tiefbau-und-Verlegung_501-24-01", ["01_gaeb_xml/501-24-01_GAEB-XML_sas.x83"]),
+        ("D_Bachdurchlass_152516", ["01_gaeb_xml/GAEB-[PROJEKT_004].X83", "04_pdf_tiefbau_sonstige/LV-Ausdruck-[PROJEKT_004].pdf"]),
+    ):
+        german = {x for rel in originals for x in days(DATASET, [rel])}
+        assert german and days(en / folder, [rel.split("/")[1] for rel in originals]) == german, folder

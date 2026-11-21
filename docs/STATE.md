@@ -327,6 +327,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   27.03.2024 14:30, binding 29.04.2024, work 13.05.2024 to 30.04.2025), E (GAEB cover text: 21.07.2025
   10:30, award period 22.08.2025, done by end of June 2026), B and D (execution dates only), C and F none.
   No file in the dataset states a question deadline; that pattern is tested on made-up lines only.
+  German and English labels: the English reading copies in `dataset/en/` give the same 13 dates.
   `POST /api/intake` returns `dates` and `plan`; the new-project dialog fills submission and questions from
   it with the quoted source; `POST /api/projects` keeps them (and the binding period) when none is sent, and
   files added to a project fill only the dates it lacks; the project summary (v3) carries `dates`, shown on

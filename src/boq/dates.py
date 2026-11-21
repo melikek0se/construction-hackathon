@@ -28,16 +28,23 @@ READABLE = {".pdf", ".x83", ".x84", ".x86", ".d83", ".d84", ".d86", ".docx", ".x
 # submission deadline too ("Fragen bis 6 Tage vor Ablauf der Angebotsfrist").
 _LABELS = [(kind, re.compile(pattern, re.I)) for kind, pattern in (
     ("questions_due", r"Bieterfragen|Rückfragen|Fragefrist|Auskunftsersuchen|"
-                      r"\bFragen\b[^.]{0,60}\b(bis|spätestens)|\bAuskünfte\b[^.]{0,60}\b(bis|spätestens)"),
-    ("sent_out", r"Datum der Versendung|Versanddatum|Tag der Absendung"),
-    ("binding_until", r"Bindefrist|Zuschlagsfrist|gebunden bis"),
-    ("opening", r"\(?Er\)?öffnungstermin|\bÖffnungstermin|Angebotseröffnung|Öffnung der Angebote|Submission"),
+                      r"\bFragen\b[^.]{0,60}\b(bis|spätestens)|\bAuskünfte\b[^.]{0,60}\b(bis|spätestens)|"
+                      r"bidder questions|requests? for clarification|deadline for (questions|queries)|"
+                      r"\b(questions|queries)\b[^.]{0,60}\b(by|until|no later than)"),
+    ("sent_out", r"Datum der Versendung|Versanddatum|Tag der Absendung|Date of dispatch"),
+    ("binding_until", r"Bindefrist|Zuschlagsfrist|gebunden bis|Binding period|Award period|bound until"),
+    ("due", r"Submission (date|deadline)|bid deadline|tender deadline|closing date|"
+            r"\b(bids|tenders|offers)\b[^.]{0,60}\b(submitted|received)"),
+    ("opening", r"\(?Er\)?öffnungstermin|\bÖffnungstermin|Angebotseröffnung|Öffnung der Angebote|Submission|"
+                r"Opening date|bid opening|opening of (the )?(bids|tenders)"),
     ("due", r"Angebotsfrist|Einreichungstermin|Einreichungsfrist|Abgabetermin|Abgabefrist|Angebotsabgabe|"
             r"Angebotsschluss|Schlusstermin|Abgabe des Angebot|Angebote?\b[^.]{0,60}\b(einzureichen|abzugeben)"),
     ("exec_start", r"Baubeginn|Ausführungsbeginn|Arbeitsbeginn|Beginn der (Ausführung|Arbeiten|Bauarbeiten)|"
-                   r"Ausführung ist zu beginnen"),
+                   r"Ausführung ist zu beginnen|Execution is to be started|start of (construction|execution|work)|"
+                   r"commencement of|work(s)? (is|are) to (start|begin|commence)"),
     ("exec_end", r"Fertigstellung|Bauende|Ausführungsende|Vollendung|zu vollenden|fertig\s?zu\s?stellen|"
-                 r"abgeschlossen sein|abzuschließen|fertiggestellt sein"),
+                 r"abgeschlossen sein|abzuschließen|fertiggestellt sein|"
+                 r"completion date|date of completion|to be completed|must be completed|completed by"),
 )]
 # after the date: "... bis spätestens Ende Juni 2026 abgeschlossen sein"
 _AFTER = [(kind, re.compile(pattern, re.I)) for kind, pattern in (
@@ -46,16 +53,22 @@ _AFTER = [(kind, re.compile(pattern, re.I)) for kind, pattern in (
 )]
 _ANY_LABEL = re.compile("|".join(p.pattern for _, p in _LABELS + _AFTER), re.I | re.S)
 # between a label and a date these say the date belongs to something else: a standard, a law, an edition
-_NOT_THIS = re.compile(r"\b(vom|DIN|Stand|Ausgabe|Fassung|Druckdatum|BGBl)\b", re.I)
+_NOT_THIS = re.compile(r"\b(vom|DIN|Stand|Ausgabe|Fassung|Druckdatum|BGBl|dated|as of|edition|print date)\b", re.I)
 
 _MONTHS = ("januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober",
            "november", "dezember")
+# the labels are known in English too (the dataset's English reading copies, tenders written in English)
+_MONTHS_EN = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
+              "november", "december")
+_PART = {"anfang": 1, "beginning of": 1, "start of": 1, "mitte": 15, "middle of": 15, "mid": 15}
 _DAY = re.compile(r"(?<![\d.])(\d{1,2})\.\s?(\d{1,2})\.\s?((?:20)?\d{2})(?![\d.]|\s?(?:m|mm|cm|kg|St)\b)")
-_MONTH = re.compile(rf"\b(?:(Anfang|Mitte|Ende)\s+)?({'|'.join(_MONTHS)})\s+(20\d{{2}})\b", re.I)
-_TIME = re.compile(r"(?<![\d.:])([01]?\d|2[0-3])[:.]([0-5]\d)\s*(?:Uhr|h\b)|(?<![\d.:])([01]?\d|2[0-3]):([0-5]\d)(?![\d:])")
+_MONTH = re.compile(rf"\b(?:(Anfang|Mitte|Ende|beginning of|start of|middle of|mid|end of)\s+)?"
+                    rf"({'|'.join(dict.fromkeys(_MONTHS + _MONTHS_EN))})\s+(20\d{{2}})\b", re.I)
+_TIME = re.compile(r"(?<![\d.:])([01]?\d|2[0-3])[:.]([0-5]\d)\s*(?:Uhr|hrs|h\b)|(?<![\d.:])([01]?\d|2[0-3]):([0-5]\d)(?![\d:])")
 # what may stand on a line beside a date without making it a sentence: "bis 18.10.2023;", "am", "| 10:30 Uhr"
 _FILLER = re.compile(r"\b(bis|am|um|ab|den|dem|zum|spätestens|Uhr|Datum|Uhrzeit|Mo|Di|Mi|Do|Fr|Sa|So|"
-                     r"Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag)\b|[\s|,;:.()/–-]", re.I)
+                     r"Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag|"
+                     r"on|by|at|until|to|from|date|time|hrs|Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b|[\s|,;:.()/–-]", re.I)
 
 
 class Line:
@@ -146,9 +159,9 @@ def _days(text: str) -> list[tuple[int, int, str, bool]]:
         if 2000 <= day.year <= 2099:
             found.append((m.start(), m.end(), day.isoformat(), False))
     for m in _MONTH.finditer(text):
-        year, month = int(m.group(3)), _MONTHS.index(m.group(2).lower()) + 1
-        part = (m.group(1) or "ende").lower()
-        day = 1 if part == "anfang" else 15 if part == "mitte" else calendar.monthrange(year, month)[1]
+        name = m.group(2).lower()
+        year, month = int(m.group(3)), (_MONTHS.index(name) if name in _MONTHS else _MONTHS_EN.index(name)) + 1
+        day = _PART.get((m.group(1) or "").lower()) or calendar.monthrange(year, month)[1]
         found.append((m.start(), m.end(), date(year, month, day).isoformat(), True))
     return sorted(found)
 
