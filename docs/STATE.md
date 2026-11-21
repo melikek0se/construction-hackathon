@@ -341,7 +341,8 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 - Polier answers (2026-11-21, D-036; `web/src/Agent.tsx`, `POST /api/catalog/chat`, `chat.overview_answer`):
   a click on the head opens a chat panel above it (Esc or × closes it). In a project or an LV: that
-  project's conversation, shared with the "Ask the project" tab. On the list of projects: all projects at
+  project's conversation; the "Ask the project" tab of the right pane is gone (LV workspace and project
+  overview), Polier is the only place to ask. On the list of projects: all projects at
   once, answered from their overview lines (stage, dates, files, rule findings, net totals), each answer
   citing project and line, a click opens the project; or one project picked in the panel. Conversations are
   kept in the browser as before. Polier bounces on a question and hops on the answer.

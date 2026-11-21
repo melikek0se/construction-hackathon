@@ -1,5 +1,5 @@
-// Polier in the corner, and the conversation a click on it opens: the same questions about a project as
-// the "Ask the project" tab (Chat.tsx), in a panel above the head. Inside a project or an LV it is that
+// Polier in the corner, and the conversation a click on it opens: questions about a project (Chat.tsx)
+// in a panel above the head, the only place they are asked. Inside a project or an LV it is that
 // project's conversation; on the list of projects it is about all projects at once (answered from their
 // overview), or about one that is picked there.
 import { useEffect, useRef, useState } from "react";

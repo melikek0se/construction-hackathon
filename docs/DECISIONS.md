@@ -525,8 +525,9 @@ Decided 2026-11-21 with Utku (he chose: first the existing chat from the avatar,
 free chatbot).
 
 - Polier (bottom right) opens a panel above it (`web/src/Agent.tsx`). Inside a project or an LV it is that
-  project's conversation, the same one as the "Ask the project" tab (D-025, D-027); only one of the two is
-  shown at a time. A passage clicked in the panel opens the item on the PDF and leaves the right pane alone.
+  project's conversation (D-025, D-027). A passage clicked in the panel opens the item on the PDF and
+  leaves the right pane alone. The "Ask the project" tab of the right pane (LV workspace and project
+  overview) was taken out the same day: one place to ask, and the right pane is the findings again.
 - On the list of projects the panel is about all projects at once (`POST /api/catalog/chat`,
   `chat.overview_answer`): the model reads one block of fact lines per project (stage, dates with their
   source, files, rule findings, net total: what the projects page shows) and nothing else. Each statement

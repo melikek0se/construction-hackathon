@@ -23,7 +23,6 @@ import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
-import { Chat } from "./Chat";
 import "./chat.css";
 import "./questions.css";
 import { LvMap } from "./LvMap";
@@ -113,10 +112,8 @@ export default function App() {
     for (const q of questions?.questions ?? []) if (q.status !== "new") for (const f of q.findings) map.set(f, q);
     return map;
   }, [questions]);
-  // The right pane: the findings (list or item sheet), or the questions about the project. A conversation
+  // Questions about the project are asked in the panel a click on Polier opens (Agent.tsx). A conversation
   // belongs to the project, so it stays when another file of the project is opened from an answer.
-  const [side, setSide] = useState<"findings" | "ask">("findings");
-  // The same conversation in the panel a click on Polier opens (Agent.tsx); only one of the two is shown.
   const [agentOpen, setAgentOpen] = useState(false);
   // Conversations survive a reload: kept in this browser, per project.
   const [chats, setChats] = useState<Record<string, ChatTurn[]>>(() => {
@@ -648,7 +645,6 @@ export default function App() {
   const open = selection.oz !== null || selection.finding !== null;
 
   const chatKey = current?.project.id ?? analysis?.id ?? "";
-  const setTurns = (turns: ChatTurn[]) => setChats((all) => ({ ...all, [chatKey]: turns }));
 
   // A passage of an answer: show its item, in this file or in the file of the project it stands in.
   // `from`: the project asked about from the list of projects, where none is open yet.
@@ -656,7 +652,6 @@ export default function App() {
     const show = () => {
       setSelection({ oz: c.oz || null, finding: null });
       setView("pdf");
-      if (!agentOpen) setSide("ask");
       setPassage({ oz: c.oz, quote: c.quote, at: Date.now() });
     };
     if (analysis && c.file === analysis.boq.file) return show();
@@ -828,7 +823,6 @@ export default function App() {
             };
             void run(lv?.name ?? "LV", () => loadAnalysis(id), through);
           }}
-          chat={{ turns: chats[chatKey] ?? [], onTurns: setTurns, onCite: cite }}
         />
       ) : !analysis || !stats ? (
         <ProjectsPage
@@ -972,24 +966,6 @@ export default function App() {
           </main>
 
           <aside className="right">
-            <div className="side-tabs" role="tablist" aria-label="Right pane">
-              <button role="tab" aria-selected={side === "findings"} onClick={() => setSide("findings")}>
-                Findings
-              </button>
-              <button role="tab" aria-selected={side === "ask"} onClick={() => (setSide("ask"), setAgentOpen(false))}>
-                Ask the project
-              </button>
-            </div>
-            {side === "ask" ? (
-              <Chat
-                analysisId={analysis.id}
-                openFile={analysis.boq.file}
-                turns={chats[chatKey] ?? []}
-                onTurns={setTurns}
-                onCite={cite}
-              />
-            ) : (
-              <>
             {open ? (
               <ItemSheet
                 analysis={analysis}
@@ -1019,18 +995,13 @@ export default function App() {
                 onReview={() => void review()}
               />
             )}
-              </>
-            )}
           </aside>
         </div>
       )}
       {/* Polier, the agent, lives in the bottom-right corner; a click opens the conversation about the project */}
       <Agent
         open={agentOpen}
-        onOpen={(to) => {
-          setAgentOpen(to);
-          if (to) setSide("findings");
-        }}
+        onOpen={setAgentOpen}
         here={agentHere}
         projects={catalog}
         chats={chats}
