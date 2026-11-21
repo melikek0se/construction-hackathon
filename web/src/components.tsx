@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LvText, eur, qty, quotedFragments } from "./format";
-import { ItemVisual } from "./ItemVisual";
+import { FindingVisual, ValueRank } from "./ItemVisual";
 import { sectionOf, worst, type Section } from "./sections";
 import {
   ACTION_LABEL,
@@ -248,10 +248,16 @@ function FindingPlate({
   finding,
   priced,
   onOz,
+  item,
+  items,
+  itemByOz,
 }: {
   finding: Finding;
   priced: boolean;
   onOz: (oz: string) => void;
+  item: Item | undefined;
+  items: Item[];
+  itemByOz: Map<string, Item>;
 }) {
   return (
     <section className={`plate-card sev-${finding.severity}`}>
@@ -264,6 +270,7 @@ function FindingPlate({
       </header>
       {finding.title && <p className="plate-title">{finding.title}</p>}
       <p className="evidence">{finding.evidence}</p>
+      <FindingVisual finding={finding} item={item} items={items} itemByOz={itemByOz} onOz={onOz} />
       <dl>
         <dt>Why it matters</dt>
         <dd>{finding.explanation}</dd>
@@ -339,7 +346,16 @@ export function ItemSheet({
         <div className="scroll" ref={top}>
           <h2 className="sheet-oz">{selection.oz ?? "Whole LV"}</h2>
           {selection.oz && <p className="quiet">This item number is not in the parsed file.</p>}
-          {selected && <FindingPlate finding={selected} priced={priced} onOz={goTo} />}
+          {selected && (
+            <FindingPlate
+              finding={selected}
+              priced={priced}
+              onOz={goTo}
+              item={undefined}
+              items={analysis.boq.items}
+              itemByOz={itemByOz}
+            />
+          )}
         </div>
       </div>
     );
@@ -374,12 +390,20 @@ export function ItemSheet({
           {item.total !== null && <span>Total {eur(item.total)}</span>}
         </p>
 
-        <ItemVisual item={item} findings={found} items={analysis.boq.items} />
-
         {ordered.length === 0 && <p className="quiet none">The rule checks found nothing on this item.</p>}
         {ordered.map((f, i) => (
-          <FindingPlate key={i} finding={f} priced={priced} onOz={goTo} />
+          <FindingPlate
+            key={i}
+            finding={f}
+            priced={priced}
+            onOz={goTo}
+            item={item}
+            items={analysis.boq.items}
+            itemByOz={itemByOz}
+          />
         ))}
+
+        <ValueRank item={item} items={analysis.boq.items} />
 
         {item.refs.length > 0 && (
           <p className="refs">
