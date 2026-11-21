@@ -431,6 +431,12 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   the building and its LV; no console error. Not checked: the production image (only the unit test), a person
   clicking through, Safari.
 
+- **LV page, band** (2026-11-21, on the user's word): no brand on an open LV or project; at the left a back
+  button (one step up: "Project" for an LV opened from a building, else "Projects"), then the name alone in
+  the display face (no file line under it; the file name is its tooltip), at the right only the actions (Risk report, Bidder questions). "All
+  projects" and "Back to project" are gone from the actions. Seen in headless Chrome at 1440 and 900 wide
+  on a versions project; the project view and an LV inside a building not seen.
+
 ## In progress
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against

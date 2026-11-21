@@ -21,7 +21,7 @@ import { Mascot } from "./Mascot";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
-import { LvText, eur, qty } from "./format";
+import { LvText, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
 import { Chat } from "./Chat";
 import "./chat.css";
@@ -31,7 +31,7 @@ import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
 import { QuestionsView } from "./Questions";
 import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type Route } from "./router";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState } from "./types";
+import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions";
 const VIEWS: [View, string][] = [
@@ -697,10 +697,25 @@ export default function App() {
       />
 
       <header className="band">
-        <button className="brand" onClick={closeAll} title="All projects">
-          <HardHatIcon size={24} />
-          Polier
-        </button>
+        {/* the brand stands on the projects page only; an open LV or project has the way back in its place:
+            one step up, to the project an LV was opened from, else to the projects */}
+        {!analysis && !project ? (
+          <button className="brand" onClick={closeAll} title="All projects">
+            <HardHatIcon size={24} />
+            Polier
+          </button>
+        ) : (
+          <button
+            className="band-back"
+            onClick={project && analysis ? () => leave(() => setAnalysis(null)) : closeAll}
+            title={project && analysis ? `Back to ${project.name}` : "Back to all projects"}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
+              <path d="M10 2.5 4.5 8 10 13.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+            </svg>
+            {project && analysis ? "Project" : "Projects"}
+          </button>
+        )}
         {!project && (!analysis || !stats) && catalog.length > 0 && (
           <div className="actions">
             <ScheduleSwitch projects={catalog} summaries={summaries} open={scheduleOpen} onToggle={() => setScheduleOpen(!scheduleOpen)} />
@@ -722,34 +737,15 @@ export default function App() {
               ) : (
                 <strong lang="de">{project.name}</strong>
               )}
-              <span>
-                {[current?.project.number, `${project.lvs.length} trade LVs`].filter(Boolean).join(" · ")}
-              </span>
-            </div>
-            <div className="actions">
-              <button className="btn" onClick={closeAll}>
-                All projects
-              </button>
             </div>
           </>
         )}
         {analysis && stats && (
           <>
             <div className="doc">
-              <strong lang="de">
+              <strong lang="de" title={analysis.boq.file}>
                 <LvText text={current && !project ? current.project.name : analysis.boq.name || analysis.boq.file} />
               </strong>
-              <span>
-                {analysis.boq.file} · {FORMAT_LABEL[analysis.boq.format]}
-                {/* what the project says the file is (read at intake, or corrected there) before the parser's phase */}
-                {current && !project && current.project.files[current.file]
-                  ? ` · ${current.project.files[current.file].role.replace(/^./, (c) => c.toUpperCase())}`
-                  : PHASE_LABEL[analysis.boq.phase]
-                    ? ` · ${PHASE_LABEL[analysis.boq.phase]}`
-                    : ""}{" "}
-                ·{" "}
-                {stats.priced ? `${eur(stats.net)} net` : "no prices in this file"}
-              </span>
             </div>
             <div className="actions">
               {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
@@ -758,14 +754,6 @@ export default function App() {
               </a>
               <button className="btn" onClick={() => setView("questions")}>
                 Bidder questions
-              </button>
-              {project && (
-                <button className="btn" onClick={() => leave(() => setAnalysis(null))}>
-                  Back to project
-                </button>
-              )}
-              <button className="btn" onClick={closeAll}>
-                All projects
               </button>
             </div>
           </>

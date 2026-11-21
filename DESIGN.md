@@ -359,15 +359,15 @@ container, button or badge is round or pill-shaped.
 The site, once per page: signal yellow, at least 70px high, one hazard stripe along its lower edge, 18px,
 twice the height of the stripe on the tapes; nothing along the top. It carries no lettering beyond the brand:
 words running along it were tried and read as buttons, a stripe along both edges was tried and dropped. Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
-brand style; in the workspace the brand is the way back to the projects. Then the open project (15px, 600) over
-a file line (12.5px, yellow ink); a created project's name is an input that shows its frame only on hover and
+brand style, on the projects page only. An open LV or project has the way back in its place: a white button
+with a 1px ink line, a chevron and "Projects" (or "Project" for an LV opened from a building), one step up;
+hover ink. Then the name in Barlow Condensed 25px 600, alone (the file line under it was dropped: the versions bar says it); a created project's name is an input that shows its frame only on hover and
 focus. Right: actions. On the projects page the one action is the Schedule switch: outline with the count of running
 tenders on a yellow chip, ink while the schedule is open; absent while there is no project.
 
 ### Buttons
 - **Shape:** 2px radius, 30 to 32px high, 12px side padding, Barlow 700 12px capitals with 0.08em tracking.
 - **Primary** (New project, Run AI review): yellow with ink text; hover inverts to ink with yellow text. One per view.
-- **Ink** (All projects in the band): ink with white text.
 - **Outline in the band** (Risk report, Bidder questions): white with a 1px inset ink line; hover ink with white text.
 - **Ghost** (Cancel, Add files): transparent with a `line-2` outline; hover yellow with an ink outline. "Add files" is the small size, 26px high, 10.5px.
 - **Back link** in the item sheet: a chevron and capitals, no outline; hover pale yellow.

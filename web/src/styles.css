@@ -3489,7 +3489,55 @@ button.flow-plate:hover {
   }
 }
 
-/* While the shutter is down the band is bare, as in the opening: the brand and nothing else. */
+/* The band of an open LV or project: the way back at the left in place of the brand, then the name in the
+   display face over its file line, the actions at the right. */
+.band-back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px 0 7px;
+  border: 0;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ink);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease), color 120ms var(--ease);
+}
+
+.band-back:hover,
+.band-back:focus-visible {
+  background: var(--ink);
+  color: #fff;
+}
+
+.band .doc {
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.band .doc strong,
+.band .doc-name {
+  font-family: var(--display);
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.05;
+}
+
+.band .doc-name {
+  height: 32px;
+  margin-left: -7px;
+}
+
+/* While the shutter is down the band is bare: the brand on the projects page, nothing on the others. */
 .app.covering .band > :not(.brand) {
   opacity: 0;
   pointer-events: none;
@@ -3499,10 +3547,10 @@ button.flow-plate:hover {
 /* Whenever the band is uncovered, what stands in it comes in from its own side: the group on the right
    (`.actions`) from the right, everything else from the left. One rule for all of it, whatever is put into
    the band later. The brand comes in with them after the opening (its name was on the yellow till then) and
-   stays put otherwise. The three moments: after the opening (`.entering`, set in App.tsx),
+   on the way back from an LV or a project, whose band has the way back in its place. The three moments: after the opening (`.entering`, set in App.tsx),
    a page opened through the shutter (`.arriving`), back on the projects page while the shutter rolls up. */
 .app:is(.entering, .arriving, .home.gated:not(.covering)) .band > :not(.brand),
-.app.entering .band > .brand {
+.app:is(.entering, .home.gated:not(.covering)) .band > .brand {
   animation: band-in-left 520ms var(--ease) var(--band-delay, 80ms) backwards;
 }
 
@@ -3738,7 +3786,7 @@ button.flow-plate:hover {
     animation: none !important;
   }
   .app:is(.entering, .arriving, .home.gated:not(.covering)) .band > :not(.brand),
-  .app.entering .band > .brand {
+  .app:is(.entering, .home.gated:not(.covering)) .band > .brand {
     animation: band-in-left 520ms var(--ease) var(--band-delay, 80ms) backwards !important;
   }
   .app:is(.entering, .arriving, .home.gated:not(.covering)) .band > .actions {
