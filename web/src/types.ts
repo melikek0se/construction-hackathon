@@ -182,7 +182,8 @@ export interface Project {
 }
 
 /** A project of the projects page: one LV in several versions, or the trade LVs of one building. */
-/** Where a tender stands and its dates. No LV file carries them: the user sets them. Days are YYYY-MM-DD. */
+/** Where a tender stands and its dates. Read from the files where these state them (FoundDate), else set
+ *  by the user. Days are YYYY-MM-DD. */
 export interface Plan {
   stage?: "check" | "questions" | "pricing"; // submitted and award follow from the files
   due?: string; // submission deadline (Angebotsfrist)
@@ -202,6 +203,19 @@ export interface CatalogProject {
   created: string | null;
   plan: Plan;
   files: { name: string; role: string; format: string }[];
+}
+
+/** A date of the tender as its files state it (src/boq/dates.py): what it is, and where it was read. */
+export type DateKind = "sent_out" | "questions_due" | "due" | "opening" | "binding_until" | "exec_start" | "exec_end";
+
+export interface FoundDate {
+  kind: DateKind;
+  date: string; // YYYY-MM-DD
+  time: string | null; // HH:MM, where the files give one
+  approx: boolean; // "Ende Juni 2026": taken as the last day of the month
+  label: string; // the label beside the date, as it stands; "" when the line itself says what the date is
+  text: string; // the line the date stands on
+  sources: { file: string; where: string }[]; // every file that states it
 }
 
 /** What a set of dropped files is, before anything is kept. */
@@ -230,6 +244,8 @@ export interface Intake {
   suggested: { id: string; reason: string } | null; // the project these files probably belong to
   files: IntakeFile[];
   left_out: { name: string; reason: string }[]; // dropped files that are not LVs
+  dates: FoundDate[]; // the tender's dates as the files state them, files that are no LV included
+  plan: Pick<Plan, "due" | "questions_due" | "binding_until">; // the ones the files give without doubt
 }
 
 export interface ProjectSummary {
@@ -239,6 +255,7 @@ export interface ProjectSummary {
   net: number | null;
   net_from: string | null;
   docs: ProjectDoc[]; // every document of the project with its own numbers
+  dates: FoundDate[]; // the tender's dates as its files state them
 }
 
 /** One document of a project: a version of the LV, or one trade LV. */

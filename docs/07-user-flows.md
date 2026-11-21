@@ -150,6 +150,7 @@ second; estimators check the nearest deadline first and name missed addenda as t
 [ConstructConnect on tracking bids](https://www.constructconnect.com/blog/how-to-track-multiple-construction-bids-without-losing-your-mind).
 What users want rests on vendor blogs only; no forum thread, survey or German practitioner was found.
 
-Built from it: deadline and stage on the project (two of the "not built" points above). Still not built:
+Built from it: deadline and stage on the project (two of the "not built" points above); the dates are
+read from the files where these state them (`src/boq/dates.py`, D-031). Still not built:
 client on the project, bidder-question status, addenda and version comparison, ZIP upload.
 

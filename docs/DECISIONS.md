@@ -396,3 +396,21 @@ Status: decided · 2026-11-21 (Atahan, after comparing three options each as a c
   the crane.
 - Options tried and dropped on 2026-11-21: flat SVG marks, figures, detailed 2D characters, rounded-block and
   pebble heads, white helmet. The team knows the head resembles the Grok bot and chose it anyway.
+
+## D-031 — The tender's dates are read from the files by their labels, shown with the source, never guessed
+
+**Decided** 2026-11-21.
+
+No format has a field for the submission deadline; in the dataset it stands in the cover text of an LV (E)
+and in the filled-in VHB forms of a package (A). `src/boq/dates.py` reads every file as text and keeps a date
+only when a label names it (same line, or beside a date that stands alone; in a PDF by position on the page).
+A date without a label is left out. No LLM: the result has to be the same every time and quotable.
+
+- Kinds: sent out, questions until, submission, opening, binding until, work starts, work done by.
+- A project is planned by a date only when the files give one day for it; two different days, or an
+  approximate one ("Ende Juni 2026"), are shown and left to the user. The opening stands in for the
+  deadline when only it is named.
+- A question deadline is never derived from the submission date. If none is stated the field stays empty.
+- What the user sets wins: files fill only empty dates; on a card the read dates are offered, not applied.
+- Files that are no LV (cover letter) are read for dates and still left out as LVs.
+

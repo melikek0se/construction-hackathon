@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Sign } from "./components";
 import { DateField, Select } from "./controls";
 import { eur } from "./format";
-import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Intake, type IntakeFile, type Plan, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
+import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type DateKind, type FoundDate, type Intake, type IntakeFile, type Plan, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
 import "./home.css";
 
 /* The projects page: the running tenders on a schedule (their dates and nothing else), and under it
@@ -68,6 +68,65 @@ function nextDate(p: CatalogProject, today: Date): { what: string; day: Date; da
       : [["questions close", parseDay(p.plan.questions_due)], ["submission", parseDay(p.plan.due)]];
   const ahead = dates.flatMap(([what, day]) => (day && daysBetween(today, day) >= 0 ? [{ what, day, days: daysBetween(today, day) }] : []));
   return ahead.sort((a, b) => a.days - b.days)[0] ?? null;
+}
+
+/* ------------------------------------------------------------------ dates read from the files */
+
+const DATE_LABEL: Record<DateKind, string> = {
+  sent_out: "Tender sent",
+  questions_due: "Questions until",
+  due: "Submission",
+  opening: "Bid opening",
+  binding_until: "Binding until",
+  exec_start: "Work starts",
+  exec_end: "Work done by",
+};
+const PLANNED = ["due", "questions_due", "binding_until"] as const;
+
+// an approximate date names a month ("Ende Juni 2026"); the day kept for it is not shown
+const dayText = (d: FoundDate) => (d.approx ? `${d.date.slice(5, 7)}.${d.date.slice(0, 4)}` : `${d.date.split("-").reverse().join(".")}${d.time ? `, ${d.time}` : ""}`);
+/** Where a date was read, with the words it was read from: the evidence behind it. */
+const readFrom = (d: FoundDate) => `${d.sources.map((s) => `${s.file}, ${s.where}`).join("; ")}: "${[d.label, d.text].filter(Boolean).join(" ")}"`;
+
+/** The dates the files give without doubt: one day per kind, not an approximate one (as `plan_of` in dates.py). */
+function planOf(dates: FoundDate[]): Pick<Plan, (typeof PLANNED)[number]> {
+  const one = (kind: DateKind) => {
+    const days = [...new Set(dates.filter((d) => d.kind === kind && !d.approx).map((d) => d.date))];
+    return days.length === 1 ? days[0] : undefined;
+  };
+  return { due: one("due") ?? one("opening"), questions_due: one("questions_due"), binding_until: one("binding_until") };
+}
+
+/** The tender's dates as its files state them, each with its evidence on hover; the ones a project is
+ *  planned by are taken over with one click where the project has another day or none. */
+function FoundDates({ dates, plan, disabled, onTake }: { dates: FoundDate[]; plan?: Plan; disabled?: boolean; onTake?: (change: Change) => void }) {
+  if (dates.length === 0) return null;
+  const read = planOf(dates);
+  const open = plan ? PLANNED.filter((k) => read[k] && read[k] !== plan[k]) : [];
+  return (
+    <div className="found-dates" onClick={(e) => e.stopPropagation()}>
+      <p>
+        <span>Dates in the files</span>
+        {onTake && open.length > 0 && (
+          <button className="btn-ghost small" disabled={disabled} title="Plan this tender by the dates its files state" onClick={() => onTake(Object.fromEntries(open.map((k) => [k, read[k]])))}>
+            Use these
+          </button>
+        )}
+      </p>
+      <dl>
+        {dates.map((d) => (
+          <div key={d.kind + d.date} title={`Read from ${readFrom(d)}`}>
+            <dt>{DATE_LABEL[d.kind]}</dt>
+            <dd className="num">{dayText(d)}</dd>
+            <dd className="src" lang="de">
+              {d.sources[0].file}, {d.sources[0].where}
+              {d.sources.length > 1 ? ` +${d.sources.length - 1}` : ""}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
 }
 
 /* ------------------------------------------------------------------ shared marks */
@@ -275,7 +334,7 @@ function Schedule({
                 {Array.from({ length: SPAN / 7 }, (_, w) => (
                   <i key={w} className="wkend" style={{ left: `${((w * 7 + 5) / SPAN) * 100}%`, width: `${(2 / SPAN) * 100}%` }} />
                 ))}
-                {!dated && <span className="lane-none">No date yet. A tender's dates stand on its notice, not in the LV: enter them on the left.</span>}
+                {!dated && <span className="lane-none">No date yet. Enter them on the left, or take the ones its files state from its card.</span>}
                 {stage === "submitted" ? (
                   <>
                     {sent && bar("past", received, sent)}
@@ -448,6 +507,7 @@ function Card({
           ))}
         </ul>
       )}
+      {ready && <FoundDates dates={s.dates ?? []} plan={p.plan} disabled={busy} onTake={stage === "award" ? undefined : (change) => onChange(p, change)} />}
       {ready && s.net !== null && (
         <p className="card-net">
           <span>{s.net_from === "award" ? "Award" : s.net_from === "offer" ? "Offer" : "Bid"}, net</span>
@@ -526,7 +586,7 @@ interface Pending {
 
 /** Dropped files, read but not yet kept. The server has read which tender they belong to and which step
  *  of it each file is; the dialog shows that with its evidence, so the user checks instead of filling in.
- *  Only what no file carries is asked for: the tender's dates. */
+ *  The tender's dates are filled in where a file states them (also a cover letter that is no LV). */
 function NewProjectDialog({
   pending,
   projects,
@@ -554,8 +614,8 @@ function NewProjectDialog({
   const [name, setName] = useState<string | null>(null); // null: as read from the files
   const [target, setTarget] = useState<string | null | undefined>(pending.target ?? undefined); // undefined: as suggested
   const [steps, setSteps] = useState(() => new Map<File, Step>()); // the user's corrections, by file
-  const [due, setDue] = useState("");
-  const [questionsDue, setQuestionsDue] = useState("");
+  const [due, setDue] = useState<string | null>(null); // null: as read from the files
+  const [questionsDue, setQuestionsDue] = useState<string | null>(null);
   const [over, setOver] = useState(false);
 
   useEffect(() => {
@@ -571,12 +631,19 @@ function NewProjectDialog({
   const toCheck = rows.filter((f) => !f.certain && !steps.has(fileOf(f))).length;
   const into = projects.find((p) => p.id === targetNow);
   const waiting = files.length === 0;
+  const dueNow = due ?? info?.plan.due ?? "";
+  const questionsNow = questionsDue ?? info?.plan.questions_due ?? "";
+  // the evidence under a date field: where the day in it was read, as long as it is still that day
+  const source = (value: string, ...kinds: DateKind[]) => {
+    const d = value && info?.dates.find((f) => kinds.includes(f.kind) && f.date === value);
+    return d ? `read from ${readFrom(d)}` : null;
+  };
 
   function confirm() {
     if (!info) return;
     const roles: (string | null)[] = files.map(() => null);
     for (const f of info.files) if (stepNow(f) !== f.step) roles[f.index] = stepNow(f);
-    onConfirm(nameNow.trim(), targetNow, roles, targetNow ? {} : { due: due || undefined, questions_due: questionsDue || undefined });
+    onConfirm(nameNow.trim(), targetNow, roles, targetNow ? {} : { due: dueNow || undefined, questions_due: questionsNow || undefined });
   }
 
   return (
@@ -735,14 +802,19 @@ function NewProjectDialog({
                 )}
                 <label>
                   <span>Submission deadline</span>
-                  <DateField label="Submission deadline" value={due} onChange={setDue} disabled={!info || busy} />
-                  <small>Not in an LV file. It stands on the tender notice.</small>
+                  <DateField label="Submission deadline" value={dueNow} onChange={setDue} disabled={!info || busy} />
+                  <small lang={source(dueNow, "due", "opening") ? "de" : undefined}>{source(dueNow, "due", "opening") ?? "Not stated in these files. It stands on the tender notice."}</small>
                 </label>
                 <label>
                   <span>Questions until</span>
-                  <DateField label="Questions until" value={questionsDue} max={due || undefined} onChange={setQuestionsDue} disabled={!info || busy} />
-                  <small>Set by the client. Both can be entered later.</small>
+                  <DateField label="Questions until" value={questionsNow} max={dueNow || undefined} onChange={setQuestionsDue} disabled={!info || busy} />
+                  <small lang={source(questionsNow, "questions_due") ? "de" : undefined}>{source(questionsNow, "questions_due") ?? "Not stated in these files. Both can be entered later."}</small>
                 </label>
+                {info && info.dates.length > 0 && (
+                  <div className="wide">
+                    <FoundDates dates={info.dates} />
+                  </div>
+                )}
               </>
             )}
           </section>

@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
 from boq import catalog, chat, db, retrieve
+from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
@@ -296,20 +297,25 @@ def get_analysis(analysis_id: str):
     return _dump(analysis_id, boq, sort_findings(findings + _llm_findings(analysis_id)))
 
 
-async def _read_uploads(files: list[UploadFile]) -> tuple[list[tuple[int, str, bytes, BoQ]], list[dict]]:
-    """The uploaded files that are LVs, parsed, each with its place among the uploads; and the ones left
-    out, each with the reason. A tender package holds plans, forms and letters next to the LV: a file that
-    is not an LV must not stop the others."""
-    read, left_out = [], []
+async def _read_uploads(files: list[UploadFile]) -> tuple[list[tuple[int, str, bytes, BoQ]], list[dict], list[dict]]:
+    """The uploaded files that are LVs, parsed, each with its place among the uploads; the ones left
+    out, each with the reason; and the tender's dates as every file states them (boq.dates). A tender
+    package holds plans, forms and letters next to the LV: a file that is not an LV must not stop the
+    others, and its dates count all the same (the deadline often stands in the cover letter)."""
+    read, left_out, found = [], [], []
     for n, file in enumerate(files):
         filename = Path(file.filename or f"upload{n}").name
         suffix = Path(filename).suffix.lower()
-        if suffix not in SUPPORTED:
+        if suffix not in SUPPORTED | tender_dates.READABLE:
             left_out.append({"name": filename, "reason": f"{suffix or 'this file type'} is not an LV format"})
             continue
         data = await file.read(MAX_BYTES + 1)
         if len(data) > MAX_BYTES:
             left_out.append({"name": filename, "reason": "larger than 30 MB"})
+            continue
+        found += tender_dates.read(data, filename)
+        if suffix not in SUPPORTED:
+            left_out.append({"name": filename, "reason": f"{suffix} is not an LV format"})
             continue
         try:
             read.append((n, filename, data, _parse_bytes(data, filename)))
@@ -319,7 +325,7 @@ async def _read_uploads(files: list[UploadFile]) -> tuple[list[tuple[int, str, b
     if not read:
         raise HTTPException(422, "None of these files is an LV: " + "; ".join(
             f"{f['name']} ({f['reason']})" for f in left_out) + f". Use GAEB, PDF or Excel: {', '.join(sorted(SUPPORTED))}.")
-    return read, left_out
+    return read, left_out, tender_dates.merge(found)
 
 
 _shared, _versions, _same_lv = intake_rules.shared, intake_rules.versions, intake_rules.same_lv
@@ -342,9 +348,10 @@ def _one_per_lv(boqs: list[BoQ]) -> list[BoQ]:
 async def intake(files: list[UploadFile], project: str | None = Form(None)):
     """What a set of dropped files is, before anything is kept: the tender they belong to (number, name,
     client, read from the files), which files are the same LV, the step of each file with its evidence,
-    the project they probably belong to, and the files that are not LVs. `project`: the project they were
-    dropped on, whose files then count as evidence too."""
-    uploads, left_out = await _read_uploads(files)
+    the project they probably belong to, the files that are not LVs, and the tender's dates as the files
+    state them (`dates`, each with the label and line it was read from; `plan`: the ones to plan by).
+    `project`: the project they were dropped on, whose files then count as evidence too."""
+    uploads, left_out, dates = await _read_uploads(files)
     boqs = [boq for _, _, _, boq in uploads]
     existing = catalog.all_projects()
     target = next((p for p in existing if p["id"] == project), None)
@@ -361,7 +368,7 @@ async def intake(files: list[UploadFile], project: str | None = Form(None)):
             "files": [{"index": n, "name": name, "format": boq.format, "title": lv_name(boq),
                        "items": len(boq.items), "lv": g, **intake_rules.classify(boq, boqs + known)}
                       for (n, name, _, boq), g in zip(uploads, groups)],
-            "left_out": left_out}
+            "left_out": left_out, "dates": dates, "plan": tender_dates.plan_of(dates)}
 
 
 @app.post("/api/projects")
@@ -374,10 +381,13 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     item numbers of the files. Several LVs are also analysed against each other, as before. What each
     file is (tender, bid, award) is read from the files as in the intake; `roles`, a JSON list with one
     entry per uploaded file (null = as read), is what the user corrected there. `due` and `questions_due`
-    (YYYY-MM-DD) are the tender's dates, which no LV file carries; they are kept with a new project.
+    (YYYY-MM-DD) are the tender's dates. Left out, they are taken from the files where these state them
+    (boq.dates), as the end of the binding period always is. Files added to a project fill only the
+    dates it does not have yet.
     """
-    plan = {k: v for k, v in _plan({"due": due, "questions_due": questions_due}).items() if v}
-    uploads, _ = await _read_uploads(files)
+    said_dates = {k: v for k, v in (("due", due), ("questions_due", questions_due)) if v}
+    uploads, _, dates = await _read_uploads(files)
+    plan = {k: v for k, v in {**tender_dates.plan_of(dates), **_plan(said_dates)}.items() if v}
     new = [boq for _, _, _, boq in uploads]
     try:
         said = json.loads(roles) if roles else []
@@ -393,6 +403,8 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     if existing:
         catalog.add_files(project, stored, kind)
         project_id, title = project, existing["name"]
+        if missing := {k: v for k, v in tender_dates.plan_of(dates).items() if not existing["plan"].get(k)}:
+            catalog.set_plan(project, missing)
     else:
         found = intake_rules.identity(new)
         title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
@@ -425,12 +437,14 @@ def catalog_summary(project_id: str):
     Parses every file, so it is asked for per project and kept with the project until its files change."""
     project = _catalog(project_id)
     kept = catalog.summary(project_id)
-    if kept is None or kept.get("v") != 2:  # v: summaries kept by an earlier version are worked out again
+    if kept is None or kept.get("v") != 3:  # v: summaries kept by an earlier version are worked out again
         rank = {"info": 1, "warn": 2, "high": 3}
-        docs, net, net_from = [], None, None
+        docs, net, net_from, dates = [], None, None, []
         for index, f in enumerate(project["files"]):
+            data = catalog.file_bytes(f["id"])
+            dates += tender_dates.read(data, f["name"])
             try:
-                boq = _parse_doc(f)
+                boq = _parse_bytes(data, f["name"])
             except HTTPException as exc:  # one unreadable document must not hide the others
                 docs.append({"index": index, "name": f["name"], "role": f["role"], "format": f["format"],
                              "title": "", "items": 0, "counts": None, "marks": "", "error": str(exc.detail),
@@ -456,9 +470,11 @@ def catalog_summary(project_id: str):
         # trade LVs all count.
         counted = [d for d in docs if d["counts"]]
         counted = counted if project["kind"] == "trades" else counted[:1]
-        kept = {"v": 2, "lvs": len(counted), "items": sum(d["items"] for d in counted),
+        kept = {"v": 3, "lvs": len(counted), "items": sum(d["items"] for d in counted),
                 "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
-                "net": net, "net_from": net_from, "docs": docs}
+                "net": net, "net_from": net_from, "docs": docs,
+                # the tender's dates as its files state them, each with where it was read (boq.dates)
+                "dates": tender_dates.merge(dates)}
         catalog.keep_summary(project_id, kept)
     return kept
 

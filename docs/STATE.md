@@ -277,7 +277,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   file, F's 27 PDFs (name "79-222 Ausbildungszentrum und Bürogebäude -AK Juni 21", 27 LVs), a lone priced PDF
   marked "check" and set to award, the award of A dropped after its tender (destination suggested).
   Not seen: narrow widths, a real mouse drag. A file is moved to another step from the project row ("Move to…" beside the selected file; seen once in
-  headless Chrome: a PDF bid moved to Award). Not built: ZIP / folders, deadline. Untested on tenders outside the dataset: the header labels are the ones these six projects use.
+  headless Chrome: a PDF bid moved to Award). Not built: ZIP / folders. Untested on tenders outside the dataset: the header labels are the ones these six projects use.
 
 - Home page rebuilt (2026-11-21, D-029): a schedule of the running tenders on top (dates only, set in place),
   a board of all tenders by stage under it (strip, counts, open items, files, net), new project in a modal
@@ -315,6 +315,23 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   Chrome by script: schedule calendar (open, arrow keys, PageDown, Esc returns focus), stage and step
   selects, category select by keyboard, panel placement at 1800px (zoomed, flips above). Not checked: the
   controls inside the new-project dialog with files loaded, what-if selects, Safari/Firefox, touch.
+
+- Dates read from the files (2026-11-21, D-031): `src/boq/dates.py` reads every file as text (PDF with
+  positions, GAEB XML, GAEB 90, .docx, .xlsx, .txt; also files that are no LV) and keeps a date only when a
+  label says what it is: tender sent, questions until, submission, bid opening, binding until, work starts,
+  work done by. Each with file, place, label and line. In the dataset: A (VHB 211 and 214 in the package:
+  27.03.2024 14:30, binding 29.04.2024, work 13.05.2024 to 30.04.2025), E (GAEB cover text: 21.07.2025
+  10:30, award period 22.08.2025, done by end of June 2026), B and D (execution dates only), C and F none.
+  No file in the dataset states a question deadline; that pattern is tested on made-up lines only.
+  `POST /api/intake` returns `dates` and `plan`; the new-project dialog fills submission and questions from
+  it with the quoted source; `POST /api/projects` keeps them (and the binding period) when none is sent, and
+  files added to a project fill only the dates it lacks; the project summary (v3) carries `dates`, shown on
+  the card with "Use these" for the schedule. `tests/test_dates.py` (9). Walked through in headless Chrome
+  at 1440 wide on a seeded SQLite database: cards of A, B, D, E, "Use these" on E, dialog with E's X83.
+  Not checked: a person clicking through, narrow widths, a real cover letter (only a made-up .docx).
+  Not read: contract milestones (B: "Dokumentation BA01 bis 30.10.2023"), calendar weeks, scanned PDFs,
+  a label and its date on two lines of running text in GAEB 90. A date cleared in the dialog comes back
+  from the files on create; it is taken out on the schedule.
 
 ## In progress
 

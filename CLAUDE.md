@@ -79,7 +79,8 @@ python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdli
 Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src/boq/checks` (`rules.py` per item,
 `companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/report.py` (risk report, bidder questions), `src/boq/prices.py` (price suggestions), `src/boq/whatif.py`,
 `src/boq/project.py` (several trade LVs: interfaces, dependency graph, cross-LV findings),
-`src/boq/intake.py` (what dropped files are: same LV, project name, step per file) → `src/boq/api.py`
+`src/boq/intake.py` (what dropped files are: same LV, project name, step per file),
+`src/boq/dates.py` (the tender's dates read from the files: deadline, binding period, execution) → `src/boq/api.py`
 (storage in `src/boq/db.py`: projects, documents, analyses, LLM cache; `DATABASE_URL`, SQLite by default) → `web/` (Vite + React, one screen:
 `web/src/App.tsx`, the projects page (schedule, board, new-project dialog, opening) in `Projects.tsx` with `home.css`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`, the original PDF pages with
 findings marked on them in `PdfView.tsx`, positions from `src/boq/pdfmarks.py`, pages for LVs without a PDF
