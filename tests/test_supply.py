@@ -110,7 +110,7 @@ def test_an_inquiry_goes_out_as_a_sheet_and_the_quotes_are_compared_on_what_they
         # a supplier's price is material only: it is no unit price and does not go into the bid by itself
         assert client.post(f"/api/analyses/{aid}/supply/to-bid").json()["taken"] == 0
         tally = supply.tally(pid)
-        assert tally == {"packages": 1, "to_send": 0, "out": 0, "answered": 2, "held": tally["held"]}
+        assert tally == {"packages": 1, "to_send": 0, "to_answer": 0, "out": 0, "answered": 2, "held": tally["held"]}
     finally:
         catalog.remove_project(pid)
         for sid in made:
@@ -130,3 +130,48 @@ def test_a_reply_in_free_text_counts_only_where_its_passage_stands_in_the_reply_
     assert [(line["oz"], line["unit_price"], line["unit_differs"]) for line in read["lines"]] == [("1.1.10", 12.4, False), ("1.1.20", 310.0, False)]
     assert read["dropped"] == 1 and [u["pos"] for u in read["unmatched"]] == ["7"]
     assert read["terms"]["freight"] is None and read["terms"]["discount_pct"] is None
+
+
+def test_a_reply_that_asks_back_is_a_turn_in_a_conversation_and_the_answer_names_the_message_before(monkeypatch):
+    pid, opened = _project()
+    aid = opened["id"]
+    sid = client.post("/api/suppliers", json={"name": "Rohrhandel Nord", "email": "nord@example.org", "groups": ["Rohre"]}).json()["id"]
+    try:
+        ozs = [i["oz"] for i in opened["boq"]["items"] if i["qty"]][:2]
+
+        async def planned(boq, skip, client=None):
+            return supply.check_plan([{"name": "Rohre", "kind": "material", "why": "pipes", "items": ozs, "ask": [sid]}],
+                                     boq.items, supply.suppliers())
+
+        async def read(asked, reply, client=None):  # what Claude gives for a reply that asks back and prices nothing
+            return {**supply.match_lines(asked, reply, [], {}), "kind": "question", "summary": "Asks for the pressure class.",
+                    "asks": [{"pos": ozs[0], "quote": "Welche Druckstufe?", "question": "Which pressure class?"}]}
+
+        async def answered(items, thread, asks, dates, client=None):
+            assert [t["who"] for t in thread] == ["us", "supplier"] and asks[0]["question"] == "Which pressure class?"
+            return {"body": "Guten Tag,\n\ndas LV nennt keine Druckstufe.\n", "points": [
+                {"question": "Which pressure class?", "answer": "The LV does not say.", "pos": "", "lv_quote": "", "settled": False}]}
+
+        monkeypatch.setattr(supply, "plan", planned)
+        monkeypatch.setattr(supply, "read_quote", read)
+        monkeypatch.setattr(supply, "answer", answered)
+        client.post(f"/api/analyses/{aid}/supply/plan")
+        draft = client.post(f"/api/analyses/{aid}/supply/compose", json={"package": "p1", "supplier_id": sid}).json()
+        state = client.post(f"/api/analyses/{aid}/supply/mails", json={"package": "p1", "supplier_id": sid, **draft}).json()
+        first = state["packages"][0]["ask"][0]["mail"]["id"]
+        took = client.post(f"/api/mails/{first}/quote", data={"text": "Guten Tag, vor einem Angebot: Welche Druckstufe? Gruß"})
+        assert took.status_code == 200 and took.json()["kind"] == "question" and took.json()["lines"] == 0
+        ask = client.get(f"/api/analyses/{aid}/supply").json()["packages"][0]["ask"][0]
+        assert ask["status"] == "question" and ask["quote"] is None and ask["thread"][0]["reply"]["asks"][0]["question"] == "Which pressure class?"
+        assert supply.tally(pid)["to_answer"] == 1 and supply.tally(pid)["out"] == 0
+
+        reply = client.post(f"/api/analyses/{aid}/supply/compose", json={"package": "p1", "supplier_id": sid, "answer": True}).json()
+        assert reply["subject"].startswith("AW: Preisanfrage") and not reply["points"][0]["settled"] and reply["to"] == "nord@example.org"
+        state = client.post(f"/api/analyses/{aid}/supply/mails", json={"package": "p1", "supplier_id": sid, "kind": "answer",
+                                                                      "to": reply["to"], "subject": reply["subject"], "body": reply["body"]}).json()
+        ask = state["packages"][0]["ask"][0]
+        assert [t["kind"] for t in ask["thread"]] == ["inquiry", "answer"] and ask["status"] == "drafted"
+        assert supply.tally(pid)["to_answer"] == 0
+    finally:
+        catalog.remove_project(pid)
+        supply.remove_supplier(sid)

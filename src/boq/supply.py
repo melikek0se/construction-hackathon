@@ -491,12 +491,23 @@ def read_sheet(data: bytes, asked: list[dict]) -> dict:
         terms |= {"basis": "free_to_site" if free.startswith("j") or free == "yes" else "ex_works" if free.startswith("n") else "unknown",
                   "freight": _number(said.get("freight")), "discount_pct": _number(said.get("discount_pct")),
                   "skonto": str(said.get("skonto") or "").strip(), "valid_until": _iso(said.get("valid_until"))}
-    return match_lines(asked, None, lines, terms)
+    return {**match_lines(asked, None, lines, terms), "kind": "quote", "summary": "", "asks": []}
 
 
 QUOTE_SCHEMA = {
     "type": "object",
     "properties": {
+        "kind": {"type": "string", "enum": ["quote", "question", "decline", "later", "other"]},
+        "summary": {"type": "string"},
+        "asks": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"pos": {"type": "string"}, "quote": {"type": "string"}, "question": {"type": "string"}},
+                "required": ["pos", "quote", "question"],
+                "additionalProperties": False,
+            },
+        },
         "terms": {
             "type": "object",
             "properties": {
@@ -529,7 +540,7 @@ QUOTE_SCHEMA = {
             },
         },
     },
-    "required": ["terms", "lines"],
+    "required": ["kind", "summary", "asks", "terms", "lines"],
     "additionalProperties": False,
 }
 
@@ -574,6 +585,21 @@ period and the date of the reply, else empty.
 - note: one English sentence on anything else that decides the comparison (partial quote, minimum order \
 value, surcharge for small quantities). Empty if nothing.
 
+What the reply is, and what it asks back. A conversation does not end with one message: a supplier often \
+answers with a question, a refusal or a promise instead of prices.
+
+- kind: quote if the reply gives at least one price for an asked item; question if it gives none and asks \
+something the supplier needs to know before quoting; decline if it says it will not quote; later if it \
+promises a quote for later or asks for more time; other for anything else (an out-of-office note, a \
+forwarded message without content).
+- summary: one or two English sentences for the estimator on what the reply says, including by when a \
+promised quote is to come.
+- asks: every question the reply puts to the estimator, also beside prices ("Welche Druckstufe?", "Ist \
+Anlieferung mit Sattelzug möglich?", "Bis wann benötigen Sie die Lieferung?"). question is the question in \
+English; quote is its passage in the reply, copied character for character, at most 300 characters; pos is \
+the asked item it is about, or "" if it is about the whole inquiry. A polite closing phrase ("Für Rückfragen \
+stehen wir zur Verfügung") is no question.
+
 Say only what the reply says. The files are anonymised: tokens such as [FIRMA_044] replace names.
 """
 
@@ -605,7 +631,123 @@ async def read_quote(asked: list[dict], reply: str, client: anthropic.AsyncAnthr
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"Reading the quote stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))
-    return match_lines(asked, reply, raw["lines"], raw["terms"])
+    read = match_lines(asked, reply, raw["lines"], raw["terms"])
+    text, known = _squash(reply), {i["oz"] for i in asked}
+    asks = [{"pos": a.get("pos") if a.get("pos") in known else "", "quote": _squash(a.get("quote") or "")[:320],
+             "question": str(a.get("question") or "").strip()[:300]}
+            for a in raw.get("asks") or [] if _squash(a.get("quote") or "") and _squash(a["quote"]) in text]
+    kind = raw.get("kind") if raw.get("kind") in ("quote", "question", "decline", "later", "other") else "other"
+    if read["lines"]:
+        kind = "quote"  # a price for an asked item makes it a quote, whatever else it says
+    elif kind == "quote":
+        kind = "question" if asks else "other"  # it claimed prices and none stood up
+    return {**read, "kind": kind, "summary": str(raw.get("summary") or "").strip()[:400], "asks": asks}
+
+
+ANSWER_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "body": {"type": "string"},
+        "points": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string"},
+                    "answer": {"type": "string"},
+                    "pos": {"type": "string"},
+                    "lv_quote": {"type": "string"},
+                    "settled": {"type": "boolean"},
+                },
+                "required": ["question", "answer", "pos", "lv_quote", "settled"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["body", "points"],
+    "additionalProperties": False,
+}
+
+ANSWER_SYSTEM = """\
+You work for the estimator of a German construction contractor. The estimator asked a supplier or a \
+subcontractor for prices on items of a bill of quantities (Leistungsverzeichnis, LV). The supplier has \
+written back with questions instead of, or beside, prices. You are given the conversation so far, the \
+supplier's questions, and the full text of the asked items as the client's LV has them. Write the \
+estimator's answer.
+
+The estimator knows only what the LV says. So:
+
+- Answer a question only from the text of the items given. For each question give a point: question (the \
+supplier's question, in English), answer (what you answer, in English), pos (the item number the answer \
+rests on, or ""), lv_quote (the words of that item that carry the answer, copied character for character, \
+at most 250 characters) and settled true.
+- Where the items do not say what the supplier asks (a pressure class the LV does not name, access to the \
+site, a delivery date, a preference between makes), do NOT invent an answer and do not assume what is \
+usual. Give the point with settled false, lv_quote empty and answer saying what is missing. In the \
+message, say plainly that the tender documents do not state this, that it is being clarified with the \
+client, and ask the supplier to quote on a stated assumption of their own, named in the quote, so that \
+the quote can still come in time.
+- A question about delivery dates or the place of delivery that the given dates or the firm's particulars \
+answer may be answered from those.
+
+body is the message in German: formal, short, one paragraph per question in the supplier's order, quoting \
+the LV where it answers ("Laut Leistungsverzeichnis, Pos. 3.2: „…“"). It opens with a salutation and \
+thanks for the reply, and closes by asking for the quote by the day given (if one is given) and with \
+"Freundliche Grüße" followed by the firm's particulars exactly as given. No subject line, no quoted \
+history. Do not promise an order, do not negotiate prices, and do not state anything about the firm that \
+is not in its particulars. The files are anonymised: tokens such as [FIRMA_044] replace names; use them \
+as they stand.
+"""
+
+
+async def answer(items: list[Item], thread: list[dict], asks: list[dict], dates: dict,
+                 client: anthropic.AsyncAnthropic | None = None) -> dict:
+    """The estimator's answer to what a supplier asked back, written from the LV: the German message, and
+    per question what it rests on. A point whose words are not in the item it names counts as not settled
+    by the LV (`settled` false), so the estimator sees what the answer does not stand on."""
+    firm = company()
+    client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
+    listed = "\n\n".join(f"<item pos=\"{i.oz}\" qty=\"{i.qty if i.qty is not None else ''}\" unit=\"{i.unit_raw or i.unit}\">\n"
+                         f"{i.text[:2500]}\n</item>" for i in items)
+    talk = "\n\n".join(f"<{m['who']} date=\"{m['at'][:10]}\">\n{m['text'][:6000]}\n</{m['who']}>" for m in thread)
+    asked = "\n".join(f"- {a['question']} (in the reply: „{a['quote']}“" + (f", about item {a['pos']}" if a.get("pos") else "") + ")"
+                      for a in asks) or "(none marked: answer what the last reply asks)"
+    particulars = "\n".join(x for x in (firm["contact"], firm["name"], firm["place"], firm["phone"], firm["email"]) if x) or "(none set)"
+    started = time.monotonic()
+    try:
+        response = await client.beta.messages.create(
+            model=MODEL,
+            max_tokens=16000,
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+            thinking={"type": "adaptive"},
+            output_config={"effort": "low", "format": {"type": "json_schema", "schema": ANSWER_SCHEMA}},
+            system=ANSWER_SYSTEM,
+            messages=[{"role": "user", "content":
+                       f"<firm>\n{particulars}\n</firm>\n\n"
+                       f"<dates>\nquote needed by: {_day(reply_by(dates)) or 'not set'}\n"
+                       f"submission of our bid: {_day(dates.get('due')) or 'not set'}\n"
+                       f"work from {_day(dates.get('exec_start')) or 'not stated'} to {_day(dates.get('exec_end')) or 'not stated'}\n</dates>\n\n"
+                       f"<items>\n{listed}\n</items>\n\n<conversation>\n{talk}\n</conversation>\n\n"
+                       f"<questions>\n{asked}\n</questions>"}],
+        )
+    except _NO_CREDENTIALS as exc:
+        raise LLMUnavailable(
+            "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
+            "root (see .env.example) and restart the server.") from exc
+    spend.answered("answer to a supplier drafted", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    if response.stop_reason != "end_turn":
+        raise RuntimeError(f"Writing the answer stopped with {response.stop_reason}")
+    raw = json.loads(next(b.text for b in response.content if b.type == "text"))
+    texts = {i.oz: _squash(i.text) for i in items}
+    points = []
+    for p in raw["points"]:
+        quote = _squash(p.get("lv_quote") or "").strip("…\"„“' ")
+        stands = len(quote) >= 4 and quote in texts.get(p.get("pos") or "", "")
+        points.append({"question": str(p.get("question") or "")[:300], "answer": str(p.get("answer") or "")[:500],
+                       "pos": p.get("pos") if p.get("pos") in texts else "", "lv_quote": quote if stands else "",
+                       "settled": bool(p.get("settled")) and stands})
+    return {"body": str(raw["body"]).strip() + "\n", "points": points}
 
 
 def _squash(text: str) -> str:
@@ -826,15 +968,23 @@ def tally(project_id: str) -> dict | None:
     without a reply, answered; None while nothing is planned."""
     with db.engine().connect() as conn:
         plans = conn.execute(select(db.supply_plans.c.plan).where(db.supply_plans.c.project_id == project_id)).all()
-        mails = conn.execute(select(db.mails.c.id, db.mails.c.sent_at, db.mails.c.meta)
-                             .where(db.mails.c.project_id == project_id, db.mails.c.kind == PRICE_INQUIRY)).all()
+        mails = conn.execute(select(db.mails.c.id, db.mails.c.sent_at, db.mails.c.meta, db.mails.c.reply, db.mails.c.answers)
+                             .where(db.mails.c.project_id == project_id, db.mails.c.kind == PRICE_INQUIRY)
+                             .order_by(db.mails.c.created)).all()
         answered = {r.mail_id for r in conn.execute(select(db.quotes.c.mail_id).where(db.quotes.c.project_id == project_id))}
     if not plans:
         return None
     wanted = {(p["id"], s) for (plan_,) in plans for p in plan_["packages"] for s in p["ask"]}
     written = {((m.meta or {}).get("package"), (m.meta or {}).get("supplier_id")) for m in mails if m.sent_at}
+    # one conversation per package and supplier; its last message of ours says where it stands
+    last = {}
+    for m in mails:
+        last[((m.meta or {}).get("package"), (m.meta or {}).get("supplier_id"))] = m
+    quoted = {((m.meta or {}).get("package"), (m.meta or {}).get("supplier_id")) for m in mails if m.id in answered}
+    asks_back = sum(1 for m in last.values() if (m.answers or {}).get("asks") or (m.answers or {}).get("kind") == "question")
     return {"packages": sum(len(plan_["packages"]) for (plan_,) in plans),
             "to_send": len(wanted - written),
-            "out": sum(1 for m in mails if m.sent_at and m.id not in answered),
-            "answered": len(answered),
+            "to_answer": asks_back,  # a supplier asked something back: the estimator's move
+            "out": sum(1 for key, m in last.items() if m.sent_at and key not in quoted and not m.reply),
+            "answered": len(quoted),
             "held": sum(len(plan_.get("held") or {}) for (plan_,) in plans)}

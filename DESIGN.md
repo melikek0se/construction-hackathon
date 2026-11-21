@@ -441,7 +441,7 @@ tender was found; on Check and Pricing a checklist, one 13px row per open thing 
 says whose it is (a yellow square with an ink line: the estimator's; an open ink square: the client's or a
 supplier's; an ink tick: done; a 6px grey dot: to know) and under it in 11.5px what stands behind it; the
 items priced carry a 5px bar; the net total in the figure style where a priced file exists; the work period on a bid. No file
-list (files, their steps and deleting are in the project's settings), no pipeline marks. The foot, 36px,
+list (files, their steps and deleting are in the project's settings), no pipeline marks. The head is filled by status: `hover` yellow in the intake, `tint` with the client or ended without a contract, ink with white text when won; a 4px yellow bar at its left edge when it is the estimator's move. While a run is going the foot is the six station marks with "3/6" and the station's name; when it ends the foot wipes in from the left (620ms). On YOUR MOVE the count stands on an ink plate (Barlow Condensed 24px, yellow) at the left of the foot. The foot, 36px,
 edge to edge, is the one filled surface and says whose move it is: YOUR MOVE on yellow with an ink rule,
 POLIER under a running 4px hazard stripe, CLIENT or "Nothing open" on `tint`; a tender that ended carries
 WON / LOST / NO BID / CANCELLED on an ink chip and stands back in `mute` unless won. The stage select (Check,

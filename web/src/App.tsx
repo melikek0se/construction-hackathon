@@ -1,25 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  catalogSummary,
-  changeProject,
-  createProject,
-  intakeFiles,
-  listRuns,
-  listProjectRuns,
-  changeRun,
-  startRun,
-  listCatalog,
-  loadAnalysis,
-  loadPrices,
-  loadSample,
-  openCatalogFile,
-  openCatalogProject,
-  renameProject,
-  deleteProject, removeProjectFile,
-  setFileStep,
-  runLlmReview,
-  getQuestions,
-} from "./api";
+import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, listProjectRuns, changeRun, startRun, listCatalog, loadAnalysis, loadPrices, loadSample, openCatalogFile, openCatalogProject, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, type MailSorted } from "./api";
 import { HardHatIcon, Opening, ProjectsPage } from "./Projects";
 import { ProjectSettings } from "./Settings";
 import { PipelineStrip, RunsDialog, RunsSwitch } from "./Runs";
@@ -614,8 +594,44 @@ export default function App() {
   // Files dropped or chosen. With the dialog already holding files they are added to those (a file that is
   // there already is not taken twice); the whole set is then read again, since what a file is depends on
   // the others (same LV, same prices).
+  // Tenders found in the mail (src/boq/inbox.py): where the app has a mailbox it looks into it when the
+  // projects page opens and every few minutes after; an e-mail dropped on the page as a file goes the same way.
+  const [mailbox, setMailbox] = useState<string | null>(null);
+  const [mailNote, setMailNote] = useState<string | null>(null);
+  const [mailBusy, setMailBusy] = useState(false);
+  const sorted = useCallback(
+    async (job: () => Promise<MailSorted>, quiet = false) => {
+      setMailBusy(true);
+      try {
+        const got = await job();
+        if (got.taken.length > 0) {
+          await refreshCatalog();
+          setMailNote(`Polier found ${got.taken.length === 1 ? "a tender" : `${got.taken.length} tenders`} in your mail: ${got.taken.map((t) => t.name).join(", ")}. ${got.taken.length === 1 ? "It stands" : "They stand"} in the intake.`);
+        } else if (!quiet)
+          setMailNote(got.looked === 0 ? "Nothing new in the mail." : `${got.looked} new message${got.looked === 1 ? "" : "s"} looked at, no invitation to bid among them${got.passed[0] ? ` (${got.passed[0].why})` : ""}.`);
+      } catch (e) {
+        if (!quiet) setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setMailBusy(false);
+      }
+    },
+    [refreshCatalog],
+  );
+  useEffect(() => {
+    getInbox().then((box) => setMailbox(box.user), () => undefined);
+  }, []);
+  useEffect(() => {
+    if (!mailbox) return;
+    void sorted(scanInbox, true);
+    const t = window.setInterval(() => void sorted(scanInbox, true), 180_000);
+    return () => window.clearInterval(t);
+  }, [mailbox, sorted]);
+
   const upload = useCallback(
     (files: FileList | File[] | null | undefined, target: string | null = null) => {
+      // e-mails saved as files are not LVs: Polier reads them as mail and puts a tender into the intake
+      const mails = [...(files ?? [])].filter((f) => f.name.toLowerCase().endsWith(".eml"));
+      if (mails.length > 0 && mails.length === (files?.length ?? 0)) return void sorted(() => sortMessages(mails));
       const had = pendingNow.current;
       const same = (a: File, b: File) => a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
       const added = [...(files ?? [])].filter((f) => !had?.files.some((h) => same(h, f)));
@@ -625,7 +641,7 @@ export default function App() {
       setCurrent(null);
       readPending([...(had?.files ?? []), ...added], had ? had.target : target);
     },
-    [readPending],
+    [readPending, sorted],
   );
 
   // A file taken out of the dialog again, before anything is kept.
@@ -889,6 +905,11 @@ export default function App() {
         {!project && (!analysis || !stats) && (
           <div className="actions">
             {catalog.length > 0 && <RunsSwitch runs={runs} onOpen={() => setRunsOpen(true)} />}
+            {mailbox && (
+              <button className="btn plain" disabled={mailBusy} onClick={() => void sorted(scanInbox)} title={`Polier looks into ${mailbox} for tenders: messages of the last two weeks with an LV attached`}>
+                {mailBusy ? "Reading mail…" : "Check mail"}
+              </button>
+            )}
             <button className="btn plain" onClick={() => setDirectoryOpen(true)} title="Who is asked for prices, and who is asking">
               Suppliers
             </button>
@@ -1050,6 +1071,14 @@ export default function App() {
         <div className="notice error" role="alert">
           <span>{error}</span>
           <button className="text-link" onClick={() => setError(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
+      {mailNote && !pending && (
+        <div className="notice" role="status">
+          <span>{mailNote}</span>
+          <button className="text-link" onClick={() => setMailNote(null)}>
             Dismiss
           </button>
         </div>

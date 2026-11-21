@@ -14,6 +14,26 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 ## Done
 
+- Conversations with suppliers, tenders from the inbox, price risk on the bid (2026-11-21 late, D-045):
+  `supply.answer` and the thread in `Inquiries.tsx`; `src/boq/inbox.py` with `/api/inbox/*`, "Check mail" in
+  the band and `.eml` dropped on the page; `src/boq/risk.py` with `Risk.tsx` in the Bid view.
+  Checked: `tests/test_supply.py` (a reply that asks back is a turn, the answer follows it), `test_inbox.py`
+  (invitation → intake once, other mail passed over, no LV not put to the model), `test_risk.py`; type-check.
+  With real Claude calls on the dev stack: a supplier's reply with three questions read (kind question, each
+  with its item and passage) and the answer drafted (one settled from the LV with its quote, three said to
+  be clarified with the client); a made-up invitation as `.eml` → project in the intake in 5 s with "fits
+  your work" and the reason, deadline and question date from the mail; the risk panel on project D (9 of 50
+  items priced: 2.1 %, the largest typed-in item and the one over an open question on top), seen in
+  headless Chrome. Not checked: IMAP against a real mailbox (scan, replies); the thread, the answer composer
+  and "Check mail" clicked in a browser; `.eml` dropped on the page in a browser.
+  Known: "Die Bindefrist endet am …" in a mail's text is not read as the binding date.
+  **Voice call (item 5) written, never run**: `src/boq/voice.py` (agent and client tool made through the
+  ElevenLabs API on first use, WebRTC token), `/api/analyses/{id}/supply/call`, `/api/mails/{id}/call-price`
+  and `call-end`, `web/src/Call.tsx` (lazy, `@elevenlabs/client` 1.37) behind a "Call" button on a supplier's
+  row, shown only when `ELEVENLABS_API_KEY` is set. It is empty in `.env`, so no agent was created and no
+  call was made; the API shapes are from the docs read on 2026-11-21, the SDK options from its type files.
+  Only the type-check covers it. First thing to do with a key: one call, and expect the first to fail.
+
 - Price inquiries to suppliers and subcontractors (2026-11-21, D-044; research and what is built:
   `docs/09-price-inquiries.md`; `src/boq/supply.py`, tables `suppliers`, `supply_plans`, `quotes`, `settings`;
   `web/src/Inquiries.tsx`, `Suppliers.tsx`, `supply.css`): view "Price inquiries" on every LV, "Suppliers" in
@@ -103,6 +123,13 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   price inquiries, items priced (with a bar), then what `openItems` says. The foot says one move in full
   and counts several ("3 things wait for you"). Seen in headless Chrome on a1344a2b6dbc with rows put in
   for the look and taken out again; `npm run build`.
+  Card, second playground (Atahan chose: count + band, filled head, six stations, band wipes in): the
+  head is filled by where the tender stands (pale yellow intake, tint with the client or ended otherwise,
+  ink when won; a yellow bar at its left when it is the estimator's move); the estimator's move shows
+  its count on an ink plate in the yellow foot; while a run is going the foot is the six stations with
+  "3/6 AI review" and the station's line; when a run ends on a card that is on the page the foot wipes
+  in and the estimator's rows come in (`just-done`, once). Seen in headless Chrome: heads, plate, list.
+  Not seen in the browser: the stations foot and the wipe (no run was going).
   Not built (shown in the prototype with made-up data): worst item per project, "new version, not
   checked".
 

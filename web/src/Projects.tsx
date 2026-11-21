@@ -707,7 +707,7 @@ function nowOf(
   s: ProjectSummary | "failed" | undefined,
   run: Run | undefined,
   stage: Stage,
-): { who: "polier" | "you" | "client" | "supplier" | "end"; label: string; text: string } | null {
+): { who: "polier" | "you" | "client" | "supplier" | "end"; label: string; text: string; n?: number } | null {
   const count = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
   if (stage === "result") {
     const o = outcomeOf(p) ?? "won";
@@ -736,13 +736,14 @@ function nowOf(
   const inquiries = (n: number) => `${n} price ${n === 1 ? "inquiry" : "inquiries"}`;
   // what waits for the estimator, in one line: questions and inquiries to send, answers to decide on
   const decide = run?.decisions?.proposed ?? 0;
-  const mine = [
-    q && q.to_send > 0 && `${count(q.to_send, "question")} to send`,
-    decide > 0 && `${count(decide, "answer")} of the client to decide`,
-    inq && inq.to_send > 0 && `${inquiries(inq.to_send)} to send`,
-  ].filter((t): t is string => !!t);
+  // [how many, what]: the foot shows the figure on a plate and the words beside it
+  const mine: [number, string][] = [];
+  if (q && q.to_send > 0) mine.push([q.to_send, `question${q.to_send === 1 ? "" : "s"} to send`]);
+  if (decide > 0) mine.push([decide, `answer${decide === 1 ? "" : "s"} of the client to decide`]);
+  if (inq && inq.to_send > 0) mine.push([inq.to_send, `price inquir${inq.to_send === 1 ? "y" : "ies"} to send`]);
   // one move is said in full; several are counted, the card's list names them
-  if (mine.length > 0) return { who: "you", label: "You", text: mine.length === 1 ? mine[0] : `${mine.length} things wait for you` };
+  if (mine.length === 1) return { who: "you", label: "You", n: mine[0][0], text: mine[0][1] };
+  if (mine.length > 1) return { who: "you", label: "You", n: mine.length, text: "things wait for you" };
   if (q && q.out > 0) {
     const until = parseDay(plan.questions_due);
     return { who: "client", label: "Client", text: `${count(q.out, "question")} out, no answer yet${until ? ` · until ${dm(until)}` : ""}` };
@@ -852,7 +853,15 @@ function Card({
           {found.received && parseDay(found.received) ? ` · ${dm(parseDay(found.received)!)}` : ""}
         </span>
         {found.subject && <span lang="de">„{found.subject}“</span>}
-        {found.sender}
+        {found.client || found.sender}
+      </p>,
+    );
+  // what the mail asks, and how the job fits what the firm's own people do: Polier's read, with its reason
+  if (stage === "intake" && found?.summary)
+    block.push(
+      <p key="read" className={`card-read is-${found.fit ?? "partly"}`}>
+        <b>{found.fit === "yes" ? "Fits your work" : found.fit === "no" ? "Not your trade" : "Fits in part"}</b>
+        {found.why || found.summary}
       </p>,
     );
   /* What is open on the tender, as one list. The mark of a row says whose it is: a yellow square is the
@@ -960,9 +969,23 @@ function Card({
       />
     ) : null;
   const who = stage === "intake" ? "decide" : (now?.who ?? "none");
+  // the checks are running: the foot shows the six stations and the one they are at
+  const stations = run?.active ? run.stages : null;
+  const at = stations ? Math.max(0, stations.findIndex((x) => x.status === "running")) : 0;
+  // a run that ends while the card is on the page: what it left comes in once (the foot wipes in)
+  const wasActive = useRef(!!run?.active);
+  const [ended, setEnded] = useState(false);
+  useEffect(() => {
+    const was = wasActive.current;
+    wasActive.current = !!run?.active;
+    if (!was || run?.active) return;
+    setEnded(true);
+    const t = window.setTimeout(() => setEnded(false), 1400);
+    return () => window.clearTimeout(t);
+  }, [run?.active]);
   return (
     <article
-      className={`card kc is-${stage}${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}${pinned ? " pinned" : ""}${stage === "result" && outcomeOf(p) !== "won" ? " back" : ""}`}
+      className={`card kc is-${stage}${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}${pinned ? " pinned" : ""}${stage === "result" && outcomeOf(p) !== "won" ? " back" : ""}${who === "you" ? " mine" : ""}${ended ? " just-done" : ""}`}
       tabIndex={0}
       aria-disabled={busy}
       onClick={() => !busy && onOpen(p)}
@@ -1016,28 +1039,45 @@ function Card({
       {!strip && alsoDue && <div className="card-lv">{alsoDue}</div>}
       {block.length > 0 && <div className="kc-block">{block}</div>}
 
-      <footer className={`kc-now is-${who}`}>
-        {stage === "intake" ? (
-          <span className="kc-decide" onClick={stop}>
-            <button className="btn-new" disabled={busy} title="The checks start on its files" onClick={() => onChange(p, { stage: "check" })}>
-              Take it on
-            </button>
-            <button className="btn-ghost" disabled={busy} title="No bid: it goes to Result as passed" onClick={() => onChange(p, { outcome: "passed" })}>
-              Pass
-            </button>
+      {stations ? (
+        <footer className="kc-now is-run">
+          <span className="run-seg-row" aria-hidden>
+            {stations.map((x) => (
+              <i key={x.id} className={`is-${x.status}`} />
+            ))}
           </span>
-        ) : (
-          <>
-            {now && <b>{now.who === "you" ? "Your move" : now.label}</b>}
-            <span>{now ? now.text : !ready ? "" : run ? "Nothing open" : "Not checked yet"}</span>
-            {move && (
-              <span className="kc-move" onClick={stop}>
-                {move}
-              </span>
-            )}
-          </>
-        )}
-      </footer>
+          <p>
+            <b>
+              {at + 1}/{stations.length} {stations[at]?.title ?? "Waiting for a free worker"}
+            </b>
+            <span>{stations[at]?.line}</span>
+          </p>
+        </footer>
+      ) : (
+        <footer className={`kc-now is-${who}`}>
+          {stage === "intake" ? (
+            <span className="kc-decide" onClick={stop}>
+              <button className="btn-new" disabled={busy} title="The checks start on its files" onClick={() => onChange(p, { stage: "check" })}>
+                Take it on
+              </button>
+              <button className="btn-ghost" disabled={busy} title="No bid: it goes to Result as passed" onClick={() => onChange(p, { outcome: "passed" })}>
+                Pass
+              </button>
+            </span>
+          ) : (
+            <>
+              {/* the estimator's move: how many on an ink plate, what beside it */}
+              {now?.who === "you" ? <em className="num">{now.n ?? "!"}</em> : now && <b>{now.label}</b>}
+              <span>{now ? now.text : !ready ? "" : run ? "Nothing open" : "Not checked yet"}</span>
+              {move && (
+                <span className="kc-move" onClick={stop}>
+                  {move}
+                </span>
+              )}
+            </>
+          )}
+        </footer>
+      )}
     </article>
   );
 }

@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getBid, setBidPrices } from "./api";
 import { eur } from "./format";
+import { BidRiskPanel } from "./Risk";
 import { KIND_LABEL, type Bid, type BidRow, type ItemKind } from "./types";
 
 const num = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 3 });
@@ -87,6 +88,8 @@ export function BidView({
           </a>
         </div>
       </div>
+
+      <BidRiskPanel analysisId={analysisId} at={`${bid.net}|${bid.priced}`} onItem={onItem} />
 
       {bid.missing > 0 && (
         <p className="bid-note is-open">

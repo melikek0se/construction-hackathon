@@ -1,4 +1,4 @@
-import type { Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
+import type { AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -318,19 +318,21 @@ export async function setPackageSuppliers(id: string, pkg: string, ask: string[]
   return read(await fetch(`/api/analyses/${id}/supply/packages/${pkg}`, send("PUT", { ask })));
 }
 
-export async function composeInquiry(id: string, pkg: string, supplierId: string, remind = false): Promise<{ subject: string; body: string; to: string }> {
-  return read(await fetch(`/api/analyses/${id}/supply/compose`, send("POST", { package: pkg, supplier_id: supplierId, remind })));
+/** The message to read and change: the inquiry, a reminder, or the answer to what the supplier asked back
+ *  (written by Claude from the LV: seconds; `points` says what each part of it rests on). */
+export async function composeInquiry(id: string, pkg: string, supplierId: string, kind: "inquiry" | "reminder" | "answer" = "inquiry"): Promise<{ subject: string; body: string; to: string; points: AnswerPoint[] }> {
+  return read(await fetch(`/api/analyses/${id}/supply/compose`, send("POST", { package: pkg, supplier_id: supplierId, remind: kind === "reminder", answer: kind === "answer" })));
 }
 
 export async function mailInquiry(
   id: string,
-  message: { package: string; supplier_id: string; to: string; subject: string; body: string; via: "draft" | "smtp" },
+  message: { package: string; supplier_id: string; to: string; subject: string; body: string; via: "draft" | "smtp"; kind?: "inquiry" | "reminder" | "answer" },
 ): Promise<SupplyState> {
   return read(await fetch(`/api/analyses/${id}/supply/mails`, send("POST", message)));
 }
 
 /** A supplier's reply: pasted text, or the filled-in sheet / the quote as a file. */
-export async function readQuote(mailId: string, text: string, file: File | null): Promise<{ lines: number; unmatched: { pos: string; unit_price: number; note: string }[]; dropped: number }> {
+export async function readQuote(mailId: string, text: string, file: File | null): Promise<{ lines: number; unmatched: { pos: string; unit_price: number; note: string }[]; dropped: number; kind: string; summary: string; asks: { question: string }[] }> {
   const form = new FormData();
   form.append("text", text);
   if (file) form.append("file", file);
@@ -347,4 +349,34 @@ export async function chooseQuote(id: string, pkg: string, mode: "single" | "spl
 
 export async function quotesToBid(id: string): Promise<SupplyState> {
   return read(await fetch(`/api/analyses/${id}/supply/to-bid`, { method: "POST" }));
+}
+
+/* ------------------------------------------------------------------ tenders found in the mailbox */
+
+export interface MailSorted {
+  looked: number;
+  taken: { id: string; name: string }[]; // invitations to bid, now projects in the intake
+  passed: { subject: string; sender: string; why: string }[];
+}
+
+/** The mailbox the app may look into; `user` null: none is set. */
+export async function getInbox(): Promise<{ user: string | null }> {
+  return read(await fetch("/api/inbox"));
+}
+
+/** Look into the mailbox for tenders (asks Claude once per new message with an LV attached). */
+export async function scanInbox(): Promise<MailSorted> {
+  return read(await fetch("/api/inbox/scan", { method: "POST" }));
+}
+
+/** The same for e-mails handed over as .eml files. */
+export async function sortMessages(files: File[]): Promise<MailSorted> {
+  const form = new FormData();
+  for (const file of files) form.append("files", file);
+  return read(await fetch("/api/inbox/messages", { method: "POST", body: form }));
+}
+
+/** The bid's price risk: the total as a range, the allowance that covers it, the items behind it. */
+export async function getBidRisk(id: string): Promise<BidRisk> {
+  return read(await fetch(`/api/analyses/${id}/bid/risk`));
 }

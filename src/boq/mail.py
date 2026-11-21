@@ -84,9 +84,12 @@ def account() -> dict | None:
             "from": os.environ.get("SMTP_FROM", "").strip() or user}
 
 
-def send(to: str, subject: str, body: str, attachments: list[tuple[str, bytes]] | None = None) -> str:
+def send(to: str, subject: str, body: str, attachments: list[tuple[str, bytes]] | None = None,
+         references: str | None = None) -> str:
     """Send one plain-text message through the account in .env, with files (name, bytes) if any, and return
-    its Message-ID, by which a reply is recognised. Raises MailUnavailable with the reason."""
+    its Message-ID, by which a reply is recognised. `references`: the Message-ID of the message of ours this
+    one follows in a conversation, so that mail programs keep the thread together. Raises MailUnavailable
+    with the reason."""
     acc = account()
     if acc is None or not acc["from"]:
         raise MailUnavailable("No mail account is set. Put SMTP_HOST, SMTP_USER, SMTP_PASSWORD and SMTP_FROM "
@@ -95,6 +98,8 @@ def send(to: str, subject: str, body: str, attachments: list[tuple[str, bytes]] 
     message = EmailMessage()
     message["From"], message["To"], message["Subject"] = acc["from"], to, subject
     message["Date"], message["Message-ID"] = formatdate(localtime=True), make_msgid()
+    if references:
+        message["In-Reply-To"] = message["References"] = references
     message.set_content(body)
     for name, data in attachments or []:
         message.add_attachment(data, maintype="application", subtype="octet-stream", filename=name)

@@ -21,7 +21,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import amendments, bid, catalog, chat, db, mail, pipeline, retrieve, runs, spend, supply
+from boq import amendments, bid, catalog, chat, db, inbox, mail, pipeline, retrieve, risk, runs, spend, supply, voice
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -1282,6 +1282,17 @@ def bid_sheet(analysis_id: str):
     return _bid(analysis_id)
 
 
+@app.get("/api/analyses/{analysis_id}/bid/risk")
+def bid_risk(analysis_id: str):
+    """How sure the prices of the bid are: the total as a range, the risk allowance that covers it in four
+    cases out of five, and the items that cause most of it (boq.risk)."""
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    planned = supply.find_plan(project_id, boq.file) is not None
+    return risk.assess(_bid(analysis_id)["rows"], _supply_state(analysis_id)["prices"] if planned else {},
+                       ((catalog.find(project_id) if project_id else None) or {}).get("plan", {}).get("binding_until"))
+
+
 class BidPrices(BaseModel):
     prices: dict[str, str | None] = {}  # item number -> unit price as typed; empty or null clears it
     take_suggestions: bool = False  # put the suggested price into every item that has none
@@ -1434,6 +1445,7 @@ def _supply_state(analysis_id: str) -> dict:
             "due": dates.get("due"), "binding_until": dates.get("binding_until"), "reply_by": supply.reply_by(dates),
             "account": account["from"] if account else None, "inbox": (mail.inbox() or {}).get("user") or None,
             "company": supply.company(), "suppliers": directory,
+            "voice": voice.available(),  # the voice agent can phone a supplier (an ElevenLabs key is set)
             "priced_file": any(i.total is not None for i in boq.items)}
     if kept is None:
         return {**base, "plan": None, "packages": [], "waits": [{"oz": oz, "question": q} for oz, q in wait.items()],
@@ -1451,13 +1463,26 @@ def _supply_state(analysis_id: str) -> dict:
             sent = [m for m in mails if (m["meta"] or {}).get("package") == p["id"] and (m["meta"] or {}).get("supplier_id") == sid]
             latest = sent[-1] if sent else None
             quote = next((q for q in mine if q["supplier_id"] == sid), None)
+            # the conversation: every message of ours with the reply read into it, oldest first
+            thread = [{"id": m["id"], "kind": (m["meta"] or {}).get("kind") or "inquiry", "subject": m["subject"],
+                       "body": m["body"], "created": m["created"], "sent_at": m["sent_at"], "via": m["via"],
+                       "reply": m["reply"] and {"text": m["reply"], "at": m["reply_at"], "via": m["reply_via"],
+                                                "kind": (m["answers"] or {}).get("kind") or "quote",
+                                                "summary": (m["answers"] or {}).get("summary") or "",
+                                                "asks": (m["answers"] or {}).get("asks") or [],
+                                                "unmatched": (m["answers"] or {}).get("unmatched") or []}}
+                      for m in sent]
+            said = latest and thread[-1]["reply"]
+            # whose move it is: a question back is the estimator's, whatever else has come in
+            status = ("new" if not latest else "question" if said and (said["asks"] or said["kind"] == "question")
+                      else "answered" if quote else "declined" if said and said["kind"] == "decline"
+                      else "later" if said and said["kind"] in ("later", "other") else "sent" if latest["sent_at"] else "drafted")
             ask.append({"supplier_id": sid, "supplier": names.get(sid, "(removed from the directory)"),
                         "email": next((s["email"] for s in directory if s["id"] == sid), ""),
                         "mail": latest and {"id": latest["id"], "to": latest["to"], "sent_at": latest["sent_at"],
                                             "created": latest["created"], "via": latest["via"], "subject": latest["subject"],
-                                            "reminders": len(sent) - 1},
-                        "quote": quote and quote["id"],
-                        "status": "answered" if quote else "sent" if latest and latest["sent_at"] else "drafted" if latest else "new"})
+                                            "reminders": sum(1 for t in thread if t["kind"] == "reminder")},
+                        "quote": quote and quote["id"], "thread": thread, "status": status})
         packages.append({**p, "items": [{**row, "provisional": assume.get(row["oz"])} for row in _asked(boq, p["items"])],
                          "ask": ask, "comparison": comparisons[p["id"]], "chosen": chosen.get(p["id"])})
     suggestions = _prices(boq)
@@ -1532,6 +1557,7 @@ class InquiryDraft(BaseModel):
     package: str
     supplier_id: str
     remind: bool = False  # a reminder about the inquiry already sent to this supplier
+    answer: bool = False  # the answer to what the supplier asked back, written from the LV (asks Claude)
 
 
 def _dates(analysis_id: str) -> dict:
@@ -1540,17 +1566,41 @@ def _dates(analysis_id: str) -> dict:
 
 
 @app.post("/api/analyses/{analysis_id}/supply/compose")
-def compose_inquiry(analysis_id: str, body: InquiryDraft):
-    """The German inquiry about a package to one supplier, for the estimator to read and change."""
+async def compose_inquiry(analysis_id: str, body: InquiryDraft):
+    """The German message about a package to one supplier, for the estimator to read and change: the
+    inquiry, a reminder, or the answer to what the supplier asked back. The answer is written from the
+    items of the LV; `points` says per question what it rests on, and which the LV does not settle."""
     state = _supply_state(analysis_id)
     boq, _ = _analysis(analysis_id)
     _, package = _package(analysis_id, body.package)
     to = supply.supplier(body.supplier_id)
     if to is None:
         raise HTTPException(404, "This supplier is no longer in the directory.")
+    mine = next((a for p in state["packages"] if p["id"] == body.package for a in p["ask"]
+                 if a["supplier_id"] == body.supplier_id), None)
+    if body.answer:
+        said = mine and mine["thread"] and mine["thread"][-1]["reply"]
+        if not said:
+            raise HTTPException(422, "There is no reply to answer.")
+        talk = []
+        for t in mine["thread"]:
+            talk.append({"who": "us", "at": t["sent_at"] or t["created"], "text": t["body"]})
+            if t["reply"]:
+                talk.append({"who": "supplier", "at": t["reply"]["at"] or t["created"], "text": t["reply"]["text"]})
+        by_oz = {i.oz: i for i in boq.items}
+        try:
+            with spend.scope(project_id=_project_id(analysis_id), file=boq.file):
+                drafted = await supply.answer([by_oz[oz] for oz in package["items"] if oz in by_oz], talk, said["asks"],
+                                              _dates(analysis_id))
+        except LLMUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(502, f"Writing the answer failed: {exc}") from exc
+        first = mine["thread"][0]["subject"]
+        return {"subject": first if first.lower().startswith(("aw:", "re:")) else f"AW: {first}",
+                "body": drafted["body"], "to": mine["mail"]["to"] or to["email"], "points": drafted["points"]}
     if body.remind:
-        asked = next((a["mail"] for p in state["packages"] if p["id"] == body.package for a in p["ask"]
-                      if a["supplier_id"] == body.supplier_id and a["mail"]), None)
+        asked = mine and mine["mail"]
         if asked is None:
             raise HTTPException(422, "There is no inquiry to remind of.")
         subject, text = supply.remind(_mail(asked["id"]), _dates(analysis_id))
@@ -1558,7 +1608,7 @@ def compose_inquiry(analysis_id: str, body: InquiryDraft):
         by_oz = {i.oz: i for i in boq.items}
         subject, text = supply.compose(state["lv"], package, [by_oz[oz] for oz in package["items"] if oz in by_oz],
                                        to, _dates(analysis_id))
-    return {"subject": subject, "body": text, "to": to["email"]}
+    return {"subject": subject, "body": text, "to": to["email"], "points": []}
 
 
 class Inquiry(BaseModel):
@@ -1568,6 +1618,7 @@ class Inquiry(BaseModel):
     subject: str
     body: str
     via: str = "draft"
+    kind: str = "inquiry"  # "inquiry", "reminder", or "answer" to what the supplier asked back
 
 
 @app.post("/api/analyses/{analysis_id}/supply/mails")
@@ -1585,15 +1636,22 @@ def mail_inquiry(analysis_id: str, body: Inquiry):
         raise HTTPException(422, "The message needs a subject and a text.")
     if body.via not in ("draft", "smtp"):
         raise HTTPException(422, "via is draft or smtp.")
+    if body.kind not in ("inquiry", "reminder", "answer"):
+        raise HTTPException(422, "kind is inquiry, reminder or answer.")
     asked, message_id = _asked(boq, package["items"]), None
+    # a follow-up goes into the same conversation: it names the message before it
+    before = [m for m in mail.about(supply.PRICE_INQUIRY, _project_id(analysis_id), boq.file)
+              if (m["meta"] or {}).get("package") == body.package and (m["meta"] or {}).get("supplier_id") == body.supplier_id]
     if body.via == "smtp":
         try:
-            message_id = mail.send(to, subject, text + "\n", [(f"Preisanfrage_{package['id']}.xlsx", supply.sheet(asked))])
+            message_id = mail.send(to, subject, text + "\n",
+                                   [(f"Preisanfrage_{package['id']}.xlsx", supply.sheet(asked))] if body.kind == "inquiry" else None,
+                                   references=next((m["message_id"] for m in reversed(before) if m["message_id"]), None))
         except mail.MailUnavailable as exc:
             raise HTTPException(503, str(exc)) from exc
     mail.keep(supply.PRICE_INQUIRY, _project_id(analysis_id), boq.file, to, subject, text, body.via, asked,
               sent=body.via == "smtp", message_id=message_id,
-              meta={"package": body.package, "supplier_id": body.supplier_id})
+              meta={"package": body.package, "supplier_id": body.supplier_id, "kind": body.kind})
     return _supply_state(analysis_id)
 
 
@@ -1607,7 +1665,7 @@ def inquiry_sheet(mail_id: str):
                     headers={"Content-Disposition": f'attachment; filename="Preisanfrage_{mail_id[:6]}.xlsx"'})
 
 
-async def _take_quote(found: dict, text: str, sheet: bytes | None) -> dict:
+async def _take_quote(found: dict, text: str, sheet: bytes | None, via: str = "pasted") -> dict:
     """Read a supplier's reply (the filled-in sheet, else its text) against the items of the inquiry and
     keep it as a quote."""
     try:
@@ -1622,14 +1680,18 @@ async def _take_quote(found: dict, text: str, sheet: bytes | None) -> dict:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:
         raise HTTPException(502, f"Reading the quote failed: {exc}") from exc
-    if not read["lines"]:
+    # A reply without a price is still a reply: a question back, a refusal, a promise. Only one that says
+    # nothing at all (a sheet handed back empty) is refused.
+    if not read["lines"] and read["kind"] in ("quote", "other") and not read["asks"] and not read["summary"]:
         raise HTTPException(422, "No price for an asked item was found in this reply"
                             + (f" ({len(read['unmatched'])} lines could not be matched to an item)." if read["unmatched"] else "."))
-    mail.keep_reply(found["id"], text or "(Excel sheet)", {"unmatched": read["unmatched"], "dropped": read["dropped"]},
-                    "pasted")
+    mail.keep_reply(found["id"], text or "(Excel sheet)",
+                    {"kind": read["kind"], "summary": read["summary"], "asks": read["asks"],
+                     "unmatched": read["unmatched"], "dropped": read["dropped"]}, via)
     if not found["sent_at"]:
         mail.set_sent(found["id"], True)
-    supply.keep_quote(found, found["file"], read, text)
+    if read["lines"]:
+        supply.keep_quote(found, found["file"], read, text)
     return read
 
 
@@ -1656,7 +1718,8 @@ async def read_quote(mail_id: str, text: str = Form(""), file: UploadFile | None
     if sheet is None and len(text) < 10:
         raise HTTPException(422, "Paste the supplier's reply, or upload the filled-in sheet or the quote as PDF.")
     read = await _take_quote(found, text, sheet)
-    return {"unmatched": read["unmatched"], "dropped": read["dropped"], "lines": len(read["lines"])}
+    return {"unmatched": read["unmatched"], "dropped": read["dropped"], "lines": len(read["lines"]),
+            "kind": read["kind"], "summary": read["summary"], "asks": read["asks"]}
 
 
 @app.post("/api/analyses/{analysis_id}/supply/replies")
@@ -1670,10 +1733,9 @@ async def check_quote_replies(analysis_id: str):
     read = 0
     for found, text in replies:
         try:
-            await _take_quote(found, text[:supply.MAX_REPLY_CHARS], None)
-            read += 1
+            read += bool((await _take_quote(found, text[:supply.MAX_REPLY_CHARS], None, "imap"))["lines"])
         except HTTPException as exc:
-            if exc.status_code != 422:  # a reply without prices (a decline, a question back) is left for the person
+            if exc.status_code != 422:  # a reply that says nothing is left where it is
                 raise
     return {**_supply_state(analysis_id), "found": len(replies), "read": read}
 
@@ -1712,6 +1774,187 @@ def quotes_to_bid(analysis_id: str):
                if p["status"] == "quoted" and p.get("taken") and kinds.get(oz) == "subcontract" and oz not in have}
     bid.keep(_project_id(analysis_id), boq.file, changes)
     return {**_supply_state(analysis_id), "taken": len(changes)}
+
+
+
+# ---------------------------------------------------------------- the supplier phoned (boq.voice)
+
+class CallStart(BaseModel):
+    package: str
+    supplier_id: str
+
+
+@app.post("/api/analyses/{analysis_id}/supply/call")
+def start_call(analysis_id: str, body: CallStart):
+    """Start a call to a supplier about a package, from the browser: a token for the voice agent, what it
+    is told (who asks, the job, the items), and the record the prices of the call are kept under."""
+    boq, _ = _analysis(analysis_id)
+    state = _supply_state(analysis_id)
+    _, package = _package(analysis_id, body.package)
+    to = supply.supplier(body.supplier_id)
+    if to is None:
+        raise HTTPException(404, "This supplier is no longer in the directory.")
+    try:
+        session = voice.token()
+    except voice.VoiceUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    asked, firm = _asked(boq, package["items"]), state["company"]
+    listed = "\n".join(f"{i['oz']} | {i['qty'] if i['qty'] is not None else '-'} {i['unit']} | {i['label']}" for i in asked)
+    kept = mail.keep(supply.PRICE_INQUIRY, _project_id(analysis_id), boq.file, to["phone"] or to["email"] or to["name"],
+                     f"Telefonat – {package['name']} – {state['lv']['name']}", f"Call by the voice agent about:\n{listed}", "phone",
+                     asked, sent=True, meta={"package": body.package, "supplier_id": body.supplier_id, "kind": "call",
+                                             "conversation_id": session["conversation_id"]})
+    day = state["reply_by"]
+    return {"mail_id": kept["id"], "token": session["token"], "conversation_id": session["conversation_id"],
+            "variables": {"company_name": firm["name"] or "unser Unternehmen", "supplier_name": to["name"],
+                          "project_name": state["lv"]["name"], "contact_name": firm["contact"] or "unsere Kalkulation",
+                          "reply_by": f"{date.fromisoformat(day):%d.%m.%Y}" if day else "Ende der Woche", "items_text": listed},
+            "items": asked}
+
+
+class CallPrice(BaseModel):
+    pos: str
+    unit_price: float
+    unit: str = ""
+    product: str = ""
+    alternative: bool = False
+    note: str = ""
+
+
+@app.post("/api/mails/{mail_id}/call-price")
+def call_price(mail_id: str, body: CallPrice):
+    """A price the supplier gave on the phone, handed over by the voice agent while the call is going. It
+    joins the prices of this call; a price by phone is indicative, so the quote is marked not binding."""
+    found = _mail(mail_id)
+    if (found["meta"] or {}).get("kind") != "call":
+        raise HTTPException(422, "This record is no call.")
+    before = next((q for q in supply.quotes_for(found["project_id"], found["file"]) if q["mail_id"] == mail_id), None)
+    lines = [{**line, "pos": line["oz"]} for line in (before or {"lines": []})["lines"] if line["oz"] != body.pos.strip()]
+    lines.append({"pos": body.pos, "unit_price": body.unit_price, "unit": body.unit, "product": body.product,
+                  "alternative": body.alternative, "note": body.note, "quote": None})
+    read = supply.match_lines(found["items"], None, lines, {"basis": "unknown", "binding": "non_binding",
+                                                           "note": "By phone, indicative: ask for the written quote."})
+    if not any(line["oz"] == body.pos.strip().lstrip("0") or line["oz"] == body.pos.strip() for line in read["lines"]):
+        return {"ok": False, "say": f"Position {body.pos} is not in the inquiry. Use the item number exactly as listed."}
+    supply.keep_quote(found, found["file"], read, "")
+    return {"ok": True, "say": f"Noted: item {body.pos}, {body.unit_price:.2f} EUR per {body.unit or 'unit'}.", "priced": len(read["lines"])}
+
+
+class CallEnd(BaseModel):
+    transcript: str = ""
+
+
+@app.post("/api/mails/{mail_id}/call-end")
+def call_end(mail_id: str, body: CallEnd):
+    """The call is over: what was said is kept with it, as the reply of this turn of the conversation."""
+    found = _mail(mail_id)
+    quoted = any(q["mail_id"] == mail_id for q in supply.quotes_for(found["project_id"], found["file"]))
+    mail.keep_reply(mail_id, body.transcript.strip()[:60000] or "(nothing was said)",
+                    {"kind": "quote" if quoted else "other", "asks": [], "unmatched": [],
+                     "summary": "Prices given by phone: indicative, the written quote is still to come." if quoted
+                     else "The call ended without a price."}, "phone")
+    return {"ok": True}
+
+
+
+# ---------------------------------------------------------------- tenders found in the mailbox (boq.inbox)
+
+async def _take_message(message: dict, ours: set[str]) -> dict:
+    """One message of the mailbox: a project in the intake if it invites the firm to bid on an LV attached
+    to it; else why it was passed over. Either way it is not looked at again."""
+    passed = lambda why: {"taken": None, "subject": message["subject"], "sender": message["sender"], "why": why}  # noqa: E731
+    if any(m in message["answers"] for m in ours if m):
+        return passed("answers a message of ours: it belongs to that conversation")
+    read, dates = [], []
+    for name, data in message["files"]:
+        suffix = Path(name).suffix.lower()
+        if suffix in tender_dates.READABLE and len(data) <= MAX_BYTES:
+            dates += tender_dates.read(data, name)
+        if suffix in SUPPORTED and len(data) <= MAX_BYTES:
+            try:
+                read.append((name, data, _parse_bytes(data, name)))
+            except HTTPException:
+                pass
+    if not read:
+        return passed("no attachment that is an LV")
+    lvs = [{"name": name, "items": len(boq.items), "sample": [f"{i.oz} | {i.label[:90]}" for i in boq.items[:: max(1, len(boq.items) // 25)][:25]]}
+           for name, _, boq in read]
+    said = await inbox.read_invitation(message, lvs)
+    if not said["tender"]:
+        return passed(said["summary"] or "not an invitation to bid")
+    boqs = [boq for _, _, boq in read]
+    identity = intake_rules.identity(boqs)
+    title = identity["name"] or message["subject"][:80] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
+    stored = [(name, data, intake_rules.classify(boq, boqs)["role"]) for name, data, boq in read]
+    plan = {k: v for k, v in tender_dates.plan_of(tender_dates.merge(dates)).items() if v}
+    # the invitation is newer than the files it carries: a date its text states goes before theirs
+    stated = tender_dates.plan_of(tender_dates.merge(tender_dates.read(message["text"].encode(), "E-Mail.txt")))
+    plan |= {k: v for k, v in stated.items() if v}
+    if said["due"] and not stated.get("due"):
+        plan["due"] = said["due"]
+    if plan.get("binding_until") and plan.get("due") and plan["binding_until"] < plan["due"]:
+        del plan["binding_until"]  # a binding period that ends before the bid is due is an old file's
+    plan |= {"stage": "intake", "found": {"via": "mail", "sender": message["sender"], "subject": message["subject"],
+                                           "received": message["received"], "summary": said["summary"],
+                                           "client": said["client"], "fit": said["fit"], "why": said["why"],
+                                           "message_id": message["message_id"]}}
+    kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
+    project_id = catalog.save_project(title, stored, kind, number=identity["number"], plan=plan)
+    return {"taken": {"id": project_id, "name": title}, "subject": message["subject"], "sender": message["sender"],
+            "why": said["summary"]}
+
+
+async def _sort_mail(messages: list[dict]) -> dict:
+    with db.engine().connect() as conn:
+        ours = {row.message_id for row in conn.execute(select(db.mails.c.message_id).where(db.mails.c.message_id.isnot(None)))}
+    known = inbox.seen() | {(p["plan"].get("found") or {}).get("message_id") for p in catalog.all_projects()}
+    results = []
+    for message in messages:
+        if message["message_id"] and message["message_id"] in known:
+            continue
+        try:
+            with spend.scope():
+                results.append(await _take_message(message, ours))
+        except LLMUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+        except Exception as exc:  # one message that cannot be read must not stop the others; it is tried again
+            results.append({"taken": None, "subject": message["subject"], "sender": message["sender"],
+                            "why": f"could not be read: {type(exc).__name__}: {exc}"[:200]})
+            continue
+        inbox.mark_seen([message["message_id"]])
+    return {"looked": len(results), "taken": [r["taken"] for r in results if r["taken"]],
+            "passed": [{"subject": r["subject"], "sender": r["sender"], "why": r["why"]} for r in results if not r["taken"]]}
+
+
+@app.get("/api/inbox")
+def inbox_state():
+    """The mailbox the app looks into for tenders and replies; `user` is null where none is set."""
+    return {"user": (mail.inbox() or {}).get("user") or None}
+
+
+@app.post("/api/inbox/scan")
+async def scan_inbox():
+    """Look into the mailbox for tenders: every message of the last two weeks with an LV attached that was
+    not looked at yet. An invitation to bid becomes a project in the intake; nothing in the mailbox is
+    changed. `taken` are the projects made, `passed` the messages left, each with the reason."""
+    try:
+        messages = inbox.recent(inbox.seen())
+    except mail.MailUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    return await _sort_mail(messages)
+
+
+@app.post("/api/inbox/messages")
+async def sort_messages(files: list[UploadFile]):
+    """The same for messages handed over as files (.eml, as a mail program saves them): for a mailbox the
+    app cannot look into."""
+    messages = []
+    for file in files:
+        data = await file.read(MAX_BYTES + 1)
+        if len(data) > MAX_BYTES or not (file.filename or "").lower().endswith(".eml"):
+            raise HTTPException(422, "Hand over e-mails as .eml files of at most 30 MB.")
+        messages.append(inbox.from_eml(data))
+    return await _sort_mail(messages)
 
 
 

@@ -737,3 +737,31 @@ missed (prototype A, one row per tender, was the alternative), or the API gets a
 Revisit if: a practitioner says how many are really asked and how late answers come (`OPEN_QUESTIONS.md`);
 the unit price gets its split into labour / material / equipment (then a supplier's price can enter the
 bid); the mail agent reads the inbox by itself (then quotes arrive without "Check the inbox").
+
+## D-045 — A conversation with a supplier has turns; the inbox fills the intake; the risk allowance follows the source of a price
+
+**Decided** 2026-11-21 (Atahan: "implement it, make the agent more capable"; items 3, 4 and 6 of the list of
+that evening). Builds on D-042 and D-044.
+
+- **Conversation.** A reply to an inquiry is read for what it is (quote, question, decline, later, other) and
+  for what it asks back, each question with its passage. A reply without a price is kept as a turn, not
+  refused. The answer is written by Claude from the text of the asked items only (`supply.answer`): what the
+  LV says is quoted with its item, what it does not say is said to be clarified with the client and the
+  supplier is asked to quote on an assumption of their own. Per question the estimator sees what the answer
+  rests on; words that do not stand in the item count as not settled. The estimator sends it; a follow-up
+  names the message before it (In-Reply-To), so the thread stays together. `run.inquiries.to_answer` counts
+  the conversations that wait for the estimator.
+- **Inbox to intake** (`src/boq/inbox.py`). A message of the last two weeks with an attachment the parsers
+  read as an LV is put to Claude once: is it an invitation to bid, who asks, by when, and does the work fit
+  what the firm's own people do (yes / partly / no, with the reason). An invitation becomes a project in the
+  intake with that read on its card; a message that answers one of ours is not looked at. Dates the mail's
+  text states go before those of the files. IMAP read-only (`POST /api/inbox/scan`, asked by the page every
+  three minutes where an inbox is set) or `.eml` files dropped on the page (`POST /api/inbox/messages`).
+  IMAP instead of the Gmail MCP for the reason in D-040: the app cannot call a coding assistant's tool.
+- **Risk allowance** (`src/boq/risk.py`, panel in the Bid view). Every priced item has a band by what its
+  price rests on (binding quote 2 %, soft quote 6 %, other product 8 %, typed in 5 %, past bids 12 % or their
+  spread, open question 20 %: rules of thumb, stated on the page); a seeded simulation gives P50 and P80,
+  the allowance proposed is P80 minus the total, and the items behind it are listed. It is shown, not added.
+
+Revisit if: bands can be measured (quotes against what was paid); unanswered points of a supplier's question
+should become bidder questions to the client by a click.

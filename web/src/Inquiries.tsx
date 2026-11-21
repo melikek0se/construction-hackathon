@@ -3,19 +3,32 @@
    estimator reads each inquiry and sends it (nothing goes out by itself), the replies are read into one
    line per item, and each package gets a comparison on what it costs on site with a proposal. Items that
    cannot be priced as written wait for the client's answer and are not asked for. */
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { checkQuoteReplies, chooseQuote, composeInquiry, getSupply, mailInquiry, markMailSent, planSupply, quotesToBid, readQuote, setPackageSuppliers } from "./api";
 import { dayText } from "./controls";
 import { eur } from "./format";
-import type { Comparison, SupplyPackage, SupplyState } from "./types";
+import type { AnswerPoint, Comparison, InquiryTurn, SupplyPackage, SupplyState } from "./types";
 import "./supply.css";
 
-const STATUS: Record<SupplyPackage["ask"][number]["status"], string> = { new: "Not asked", drafted: "Draft", sent: "Sent", answered: "Quote in" };
+const STATUS: Record<SupplyPackage["ask"][number]["status"], string> = {
+  new: "Not asked",
+  drafted: "Draft",
+  sent: "Sent",
+  answered: "Quote in",
+  question: "Asks back",
+  declined: "Declined",
+  later: "Quote promised",
+};
+// the chip classes of the bidder questions: yellow is the estimator's move
+const CHIP: Record<SupplyPackage["ask"][number]["status"], string> = { new: "new", drafted: "drafted", sent: "sent", answered: "answered", question: "partly", declined: "new", later: "sent" };
 const num = (v: number) => v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const qty = (v: number | null) => (v === null ? "–" : v.toLocaleString("de-DE", { maximumFractionDigits: 3 }));
 const say = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-type Open = { kind: "write" | "remind" | "read"; pkg: string; supplier: string } | null;
+type Open = { kind: "write" | "remind" | "answer" | "read" | "thread" | "call"; pkg: string; supplier: string } | null;
+
+// the voice call brings its own library: loaded when a call is opened
+const CallPanel = lazy(() => import("./Call"));
 
 export function InquiriesView({
   analysisId,
@@ -247,9 +260,10 @@ function Package({
         {p.ask.map((a) => (
           <li key={a.supplier_id} className={`is-${a.status}`}>
             <b>{a.supplier}</b>
-            <span className={`q-status is-${a.status === "answered" ? "answered" : a.status === "sent" ? "sent" : a.status === "drafted" ? "drafted" : "new"}`}>{STATUS[a.status]}</span>
+            <span className={`q-status is-${CHIP[a.status]}`}>{STATUS[a.status]}</span>
             <small>
-              {a.mail?.sent_at ? `sent ${dayText(a.mail.sent_at.slice(0, 10))}${a.mail.reminders ? `, reminded ${a.mail.reminders}×` : ""}` : a.mail ? "written, not sent yet" : a.email || "no address in the directory"}
+              {lastSaid(a.thread) ??
+                (a.mail?.sent_at ? `sent ${dayText(a.mail.sent_at.slice(0, 10))}${a.mail.reminders ? `, reminded ${a.mail.reminders}×` : ""}` : a.mail ? "written, not sent yet" : a.email || "no address in the directory")}
             </small>
             <span className="sup-acts">
               {a.status === "new" && (
@@ -267,14 +281,29 @@ function Package({
                   </button>
                 </>
               )}
-              {a.mail && a.status === "sent" && (
+              {a.status === "question" && (
+                <button className="btn-new" title="Polier writes the answer from the LV; you read and send it" onClick={() => onOpen({ kind: "answer", pkg: p.id, supplier: a.supplier_id })}>
+                  Write the answer
+                </button>
+              )}
+              {a.mail && (a.status === "sent" || a.status === "later") && (
                 <button className="btn-ghost small" onClick={() => onOpen({ kind: "remind", pkg: p.id, supplier: a.supplier_id })}>
                   Remind
                 </button>
               )}
+              {state.voice && a.status !== "answered" && a.status !== "declined" && (
+                <button className="btn-ghost small" title="The voice agent phones and asks for the prices; you listen" onClick={() => onOpen({ kind: "call", pkg: p.id, supplier: a.supplier_id })}>
+                  Call
+                </button>
+              )}
+              {a.thread.length > 0 && (a.thread.length > 1 || a.thread[0].reply) && (
+                <button className="text-link" onClick={() => onOpen(open?.kind === "thread" && open.supplier === a.supplier_id ? null : { kind: "thread", pkg: p.id, supplier: a.supplier_id })}>
+                  Conversation ({a.thread.length + a.thread.filter((t) => t.reply).length})
+                </button>
+              )}
               {a.mail && (
                 <button className="btn-ghost small" onClick={() => onOpen({ kind: "read", pkg: p.id, supplier: a.supplier_id })}>
-                  {a.status === "answered" ? "Read another reply" : "Read the quote"}
+                  {a.status === "answered" || a.thread.some((t) => t.reply) ? "Read another reply" : "Read the reply"}
                 </button>
               )}
               {!a.mail && (
@@ -283,12 +312,18 @@ function Package({
                 </button>
               )}
             </span>
-            {open && open.supplier === a.supplier_id && open.kind !== "read" && (
+            {open && open.supplier === a.supplier_id && open.kind === "thread" && <Thread turns={a.thread} supplier={a.supplier} />}
+            {open && open.supplier === a.supplier_id && open.kind === "call" && (
+              <Suspense fallback={<p className="quiet">Loading the call…</p>}>
+                <CallPanel analysisId={analysisId} pkg={p.id} supplier={a.supplier_id} supplierName={a.supplier} onDone={() => void act("", () => getSupply(analysisId))} />
+              </Suspense>
+            )}
+            {open && open.supplier === a.supplier_id && (open.kind === "write" || open.kind === "remind" || open.kind === "answer") && (
               <Composer
                 analysisId={analysisId}
                 pkg={p.id}
                 supplier={a.supplier_id}
-                remind={open.kind === "remind"}
+                kind={open.kind === "remind" ? "reminder" : open.kind === "answer" ? "answer" : "inquiry"}
                 account={state.account}
                 onDone={(next) => (act("", async () => next), onOpen(null))}
                 onCancel={() => onOpen(null)}
@@ -337,12 +372,67 @@ function Package({
   );
 }
 
-/** The inquiry (or a reminder) as the server wrote it, to read, change and send. */
+/** What the supplier said last, in a few words: under its name while the conversation is going. */
+function lastSaid(thread: InquiryTurn[]): string | null {
+  const last = thread[thread.length - 1];
+  if (!last?.reply || last.reply.kind === "quote") return null;
+  return last.reply.summary || (last.reply.asks[0]?.question ?? null);
+}
+
+/** The conversation with one supplier about one package: our messages and what came back, in order. */
+function Thread({ turns, supplier }: { turns: InquiryTurn[]; supplier: string }) {
+  const LABEL = { inquiry: "Inquiry", reminder: "Reminder", answer: "Our answer", call: "Call by the voice agent" } as const;
+  return (
+    <ol className="sup-thread">
+      {turns.map((t) => (
+        <li key={t.id}>
+          <article className="is-ours">
+            <header>
+              <b>{LABEL[t.kind]}</b>
+              <span>{t.sent_at ? `sent ${dayText(t.sent_at.slice(0, 10))}` : "written, not sent yet"}</span>
+            </header>
+            <details>
+              <summary lang="de">{t.subject}</summary>
+              <pre lang="de">{t.body}</pre>
+            </details>
+          </article>
+          {t.reply && (
+            <article className="is-theirs">
+              <header>
+                <b>{supplier}</b>
+                <span>
+                  {t.reply.at ? dayText(t.reply.at.slice(0, 10)) : ""}
+                  {t.reply.via === "imap" ? " · from the inbox" : ""}
+                </span>
+              </header>
+              {t.reply.summary && <p>{t.reply.summary}</p>}
+              {t.reply.asks.length > 0 && (
+                <ul>
+                  {t.reply.asks.map((q, i) => (
+                    <li key={i}>
+                      <b>Asks{q.pos ? ` about ${q.pos}` : ""}:</b> {q.question} <q lang="de">{q.quote}</q>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <details>
+                <summary>The reply as it came</summary>
+                <pre lang="de">{t.reply.text}</pre>
+              </details>
+            </article>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** The inquiry, a reminder, or the answer to a question back, as the server wrote it: to read, change and send. */
 function Composer({
   analysisId,
   pkg,
   supplier,
-  remind,
+  kind,
   account,
   onDone,
   onCancel,
@@ -350,28 +440,33 @@ function Composer({
   analysisId: string;
   pkg: string;
   supplier: string;
-  remind: boolean;
+  kind: "inquiry" | "reminder" | "answer";
   account: string | null;
   onDone: (next: SupplyState) => void;
   onCancel: () => void;
 }) {
+  const [points, setPoints] = useState<AnswerPoint[]>([]);
+  const [writing, setWriting] = useState(true);
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState<"draft" | "smtp" | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    composeInquiry(analysisId, pkg, supplier, remind).then(
-      (m) => (setTo(m.to), setSubject(m.subject), setBody(m.body)),
-      (e) => setError(say(e)),
-    );
-  }, [analysisId, pkg, supplier, remind]);
+    setWriting(true);
+    composeInquiry(analysisId, pkg, supplier, kind)
+      .then(
+        (m) => (setTo(m.to), setSubject(m.subject), setBody(m.body), setPoints(m.points)),
+        (e) => setError(say(e)),
+      )
+      .finally(() => setWriting(false));
+  }, [analysisId, pkg, supplier, kind]);
 
   async function send(via: "draft" | "smtp") {
     setBusy(via);
     setError(null);
     try {
-      const next = await mailInquiry(analysisId, { package: pkg, supplier_id: supplier, to: to.trim(), subject, body, via });
+      const next = await mailInquiry(analysisId, { package: pkg, supplier_id: supplier, to: to.trim(), subject, body, via, kind });
       if (via === "draft") {
         // the estimator's own mail program, with the message filled in; the sheet is attached by hand
         const link = document.createElement("a");
@@ -390,6 +485,24 @@ function Composer({
 
   return (
     <div className="sup-compose q-mail is-draft">
+      {writing && kind === "answer" && <p className="quiet">Polier is writing the answer from the LV…</p>}
+      {points.length > 0 && (
+        <ul className="sup-points">
+          {points.map((pt, i) => (
+            <li key={i} className={pt.settled ? "is-settled" : "is-open"}>
+              <b>{pt.question}</b>
+              <span>{pt.answer}</span>
+              {pt.settled ? (
+                <small lang="de">
+                  LV{pt.pos ? `, item ${pt.pos}` : ""}: „{pt.lv_quote}“
+                </small>
+              ) : (
+                <small>Not in the LV: the message says so and asks for a quote on a stated assumption. Decide it yourself, or ask the client.</small>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
       <label>
         <span>To</span>
         <input type="email" value={to} onChange={(e) => setTo(e.target.value)} placeholder="address of the supplier" />
@@ -399,7 +512,7 @@ function Composer({
         <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} lang="de" />
       </label>
       <label>
-        <span>Message{remind ? " (reminder)" : ""}</span>
+        <span>Message{kind === "reminder" ? " (reminder)" : kind === "answer" ? " (answer)" : ""}</span>
         <textarea className="q-body" rows={14} value={body} onChange={(e) => setBody(e.target.value)} lang="de" />
       </label>
       {error && <p className="q-error">{error}</p>}
@@ -432,7 +545,13 @@ function Reader({ mailId, onDone, onCancel }: { mailId: string; onDone: (note: s
     try {
       const got = await readQuote(mailId, text, file);
       onDone(
-        `${got.lines} price${got.lines === 1 ? "" : "s"} read` +
+        (got.lines === 0
+          ? got.kind === "question"
+            ? `No prices: the supplier asks back (${got.asks.length} question${got.asks.length === 1 ? "" : "s"}). ${got.summary}`
+            : got.kind === "decline"
+              ? `The supplier declines. ${got.summary}`
+              : `No prices in this reply. ${got.summary}`
+          : `${got.lines} price${got.lines === 1 ? "" : "s"} read${got.asks.length ? `, and ${got.asks.length} question${got.asks.length === 1 ? "" : "s"} back` : ""}`) +
           (got.unmatched.length ? `; ${got.unmatched.length} line${got.unmatched.length === 1 ? "" : "s"} fit no asked item and were left out (${got.unmatched.map((u) => u.pos || u.note || "?").slice(0, 3).join(", ")})` : "") +
           (got.dropped ? `; ${got.dropped} dropped because the passage was not in the reply` : "") +
           ".",
@@ -457,7 +576,7 @@ function Reader({ mailId, onDone, onCancel }: { mailId: string; onDone: (note: s
       {error && <p className="q-error">{error}</p>}
       <div className="q-actions">
         <button className="btn q-send" disabled={busy || (!file && text.trim().length < 10)} onClick={() => void go()}>
-          {busy ? "Reading…" : "Read the quote"}
+          {busy ? "Reading…" : "Read the reply"}
         </button>
         <button className="btn-ghost small" onClick={onCancel}>
           Cancel

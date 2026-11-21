@@ -190,7 +190,9 @@ export interface Plan {
   stage?: "intake" | "check" | "pricing";
   // how the tender ended; an award among the files is "won" without being said. passed: no bid was made
   outcome?: "won" | "lost" | "passed" | "cancelled";
-  found?: { via?: string; sender?: string; subject?: string; received?: string }; // where the agent found it
+  // where the agent found it; from the mailbox also what the mail asks (summary), who asks, and how the
+  // job fits what the firm's own people do (src/boq/inbox.py)
+  found?: { via?: string; sender?: string; subject?: string; received?: string; summary?: string; client?: string; fit?: "yes" | "partly" | "no"; why?: string };
   due?: string; // submission deadline (Angebotsfrist)
   questions_due?: string; // last day for bidder questions
   sent?: string; // the day the bid went out
@@ -511,7 +513,8 @@ export interface Run {
   // the bidder questions of the project: to_send is the estimator's move, out is the client's
   questions: { total: number; to_send: number; out: number; answered: number } | null;
   // the price inquiries of the project (null: none planned): to_send is the estimator's move, out the suppliers'
-  inquiries: { packages: number; to_send: number; out: number; answered: number; held: number } | null;
+  // to_answer: a supplier asked something back (the estimator's move)
+  inquiries: { packages: number; to_send: number; to_answer?: number; out: number; answered: number; held: number } | null;
   // changes proposed from the client's answers (null: none yet): proposed is the estimator's move; of the
   // accepted ones, the quantities the client corrected and the risk allowances
   decisions: { proposed: number; accepted: number; quantities: number; allowances: number } | null;
@@ -656,10 +659,41 @@ export interface SupplyPackage {
     email: string;
     mail: { id: string; to: string; sent_at: string | null; created: string; via: string; subject: string; reminders: number } | null;
     quote: string | null;
-    status: "new" | "drafted" | "sent" | "answered";
+    thread: InquiryTurn[]; // the conversation: our messages, oldest first, each with the reply read into it
+    // question: the supplier asked something back (the estimator's move); later: a quote is promised
+    status: "new" | "drafted" | "sent" | "answered" | "question" | "declined" | "later";
   }[];
   comparison: Comparison;
   chosen: { mode: "single" | "split" | "assume"; quote: string | null } | null;
+}
+
+/** One message of ours in a conversation with a supplier, and what came back on it. */
+export interface InquiryTurn {
+  id: string;
+  kind: "inquiry" | "reminder" | "answer" | "call"; // call: the voice agent phoned (src/boq/voice.py)
+  subject: string;
+  body: string;
+  created: string;
+  sent_at: string | null;
+  via: string;
+  reply: {
+    text: string;
+    at: string | null;
+    via: string | null; // "pasted" or "imap"
+    kind: "quote" | "question" | "decline" | "later" | "other";
+    summary: string;
+    asks: { pos: string; quote: string; question: string }[]; // what the supplier asks back
+    unmatched: { pos: string; unit_price: number; note: string }[];
+  } | null;
+}
+
+/** What an answer to a supplier rests on, per question: the LV's words, or nothing (the LV does not say). */
+export interface AnswerPoint {
+  question: string;
+  answer: string;
+  pos: string;
+  lv_quote: string;
+  settled: boolean;
 }
 
 /** Where the price of an item comes from, as it stands. */
@@ -684,6 +718,7 @@ export interface SupplyState {
   inbox: string | null;
   company: Company;
   suppliers: Supplier[];
+  voice: boolean; // the voice agent can phone a supplier (an ElevenLabs key is set)
   priced_file: boolean;
   plan: { id: string; created: string } | null;
   packages: SupplyPackage[];
@@ -694,4 +729,18 @@ export interface SupplyState {
   found?: number;
   read?: number;
   taken?: number;
+}
+
+/** How sure the prices of a bid are (src/boq/risk.py): the total as a range and the allowance that covers it. */
+export interface BidRisk {
+  priced: number;
+  gaps: number; // items without a price: not in the range
+  total: number;
+  p50: number;
+  p80: number; // the total is at or under this in four cases out of five
+  allowance: number; // p80 − total
+  allowance_percent: number;
+  by_basis: { basis: string; label: string; items: number; value: number; exposure: number }[];
+  top: { oz: string; label: string; value: number; basis: string; band: number; why: string; exposure: number }[];
+  bands: Record<string, number>;
 }

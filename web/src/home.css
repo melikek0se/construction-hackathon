@@ -2412,3 +2412,150 @@
 .kc-list .kc-bar {
   height: 5px;
 }
+
+/* an intake card: Polier's read of the invitation, how the job fits the firm's own work, with the reason */
+.card.kc .card-read {
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+  border-left: 3px solid var(--ink);
+  background: var(--tint);
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+
+.card.kc .card-read.is-partly {
+  border-left-color: var(--yellow);
+}
+
+.card.kc .card-read.is-no {
+  border-left-color: var(--line-2);
+}
+
+.card.kc .card-read b {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ the card: filled head, count on the foot, stations, the end of a run */
+
+/* The head is filled by where the tender stands: pale yellow in the intake, tint with the client, ink when
+   won, tint and standing back when it ended otherwise. A yellow bar at its left edge: it is the estimator's move. */
+.card.kc > header {
+  margin: -12px -12px 0;
+  padding: 12px;
+}
+
+.card.kc.is-intake > header {
+  background: var(--hover);
+}
+
+.card.kc.is-submitted > header,
+.card.kc.is-result.back > header {
+  background: var(--tint);
+}
+
+.card.kc.is-result:not(.back) > header {
+  background: var(--ink);
+  color: #fff;
+}
+
+.card.kc.is-result:not(.back) > header .card-name small {
+  color: #c9ccc4;
+}
+
+.card.kc.is-result:not(.back) > header .kc-days span {
+  border-color: #6d726a;
+  color: #fff;
+}
+
+.card.kc.mine:not(.is-intake) > header {
+  box-shadow: inset 4px 0 0 var(--yellow);
+}
+
+/* the estimator's move: how many on an ink plate, the band beside it */
+.kc-now.is-you {
+  min-height: 40px;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  gap: 10px;
+}
+
+.kc-now.is-you > em {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-width: 42px;
+  padding: 0 6px;
+  background: var(--ink);
+  color: var(--yellow);
+  font-family: var(--display);
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* the checks are running: the six stations, and the one they are at */
+.kc-now.is-run {
+  display: grid;
+  gap: 5px;
+  padding: 8px 12px;
+  background: #fff;
+}
+
+.kc-now.is-run .run-seg-row {
+  display: grid;
+  overflow: visible;
+}
+
+.kc-now.is-run p {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.kc-now.is-run p b {
+  flex: none;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.kc-now.is-run p span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* a run ended while the card was on the page: the foot wipes in, the estimator's rows come in after it */
+.card.kc.just-done .kc-now {
+  animation: kc-wipe 620ms cubic-bezier(0.65, 0, 0.2, 1) both;
+}
+
+.card.kc.just-done .kc-list li.is-mine {
+  animation: kc-row 420ms var(--ease) 300ms both;
+}
+
+@keyframes kc-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes kc-row {
+  from {
+    opacity: 0;
+    translate: -8px 0;
+  }
+}
