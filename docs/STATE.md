@@ -44,7 +44,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   installed and for a lump sum's description against the LV median; for wording and AI findings a line map of
   the description with the quoted passage marked; value rank chart on priced files), evidence, reason, action,
   German LV text. Also item table, preliminary remarks, upload / drag-and-drop / dataset picker (GAEB and PDF), and the
-  "Run AI review" button. Deep link: `?sample=<path>&view=table&item=5.1.4`. Design notes: `PRODUCT.md`,
+  "Run AI review" button. Deep link: `?sample=<path>&view=table&item=5.1.4` (since D-034: `/samples/<path>?view=table&item=5.1.4`; the old form is rewritten). Design notes: `PRODUCT.md`,
   `DESIGN.md`, `.impeccable/`.
   Checked in Chrome through a script at 1440x900 (hover, click, severity toggle, section filter, a GAEB and a
   PDF sample). "Run AI review" was run once from this UI against the live API (project D, 50 items: 55 s, 11 findings
@@ -136,7 +136,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   projects, A–F from the dataset plus projects created by upload, each row with its versions or trade count,
   items, Stop / Caution / Note counts and net total where a priced version exists. A versions project opens its
   tender with a switcher for the other versions; a trades project opens the cross-trade view. Several uploaded
-  files are kept as a project and can be renamed in the band. Deep link `?project=A&file=2`.
+  files are kept as a project and can be renamed in the band. Deep link `?project=A&file=2` (since D-034: `/projects/A/files/2`).
   Walked through in Chrome by script (list, open B, switch to the award, open F, create a project from three
   PDFs, rename it); `tests/test_catalog.py` covers the API. Restyled on 2026-11-21 (D-020): yellow and white,
   one row per project; inside it the three steps tender, bid, award in order, the files of a step side by
@@ -289,7 +289,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 - Home page rebuilt (2026-11-21, D-029): a schedule of the running tenders on top (dates only, set in place),
   a board of all tenders by stage under it (strip, counts, open items, files, net), new project in a modal
   dialog, barrier-tape opening (since changed: the tapes cross on diagonals, bottom corner to opposite top
-  corner, and the yellow rolls up as a roller shutter that stops as the band, brand and stripes on it from the
+  corner, and the yellow rolls up as a roller shutter that stops as the band, the name large on the yellow until then, stripes on it from the
   start; looked at as stills in headless Chrome, where the end state is pixel-identical to the band, the
   motion itself not watched). Backend: `projects.plan` (stage, due, questions_due, sent, binding_until),
   `PATCH /api/catalog/{id}` takes them, `POST /api/projects` takes `due` and `questions_due`, the summary
@@ -384,6 +384,26 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   else at the dates of the tender nearest to today (the database's project: March 2024), until the user moves
   it. The year stands above the weeks, where the axis begins and where a year begins. The "Dates" list under
   a row shows label and day only; the source (file, page, words) is on hover.
+- **The gate** (2026-11-21, D-033): opening an LV or a project no longer pops in under two tapes. The
+  band is the shutter, as in the opening: it is let down from under the band (`Gate` in
+  `web/src/Loading.tsx`, styles under "the gate" in `styles.css`), says what is being opened with the LV strip and counts the projects page already has, the
+  page changes behind it, and it rolls up into the band while band lettering, map rows and findings pane set themselves up.
+  Going back uses the same shutter, bare. In `App.tsx`: `run` / `runProject` take a third argument `through`
+  (a `GateInfo`) for a change of page; without it the old tapes are used (version switch, chat citation);
+  `leave(swap)` is the way back. A deep link starts with the shutter down.
+  Seen in headless Chrome at 1440x900, frame by frame, with "reduce motion" on, on a GAEB file (0.2 s) and
+  back. Not seen: a slow PDF (3 s), a trades project, a failed open, a deep link.
+
+- Addresses and pagination (2026-11-21, D-034): `web/src/router.ts` gives every page a URL (`/projects/A/files/1/table?item=5.1.46&page=2`,
+  `/projects/F`, `/projects/F/lv/<analysis>`, `/samples/<path>`); `App.tsx` writes the address from its state
+  and reads it on load and on Back / Forward, through the shutter of D-033. Old `?project=` / `?sample=` links
+  are rewritten. Item table 50 per page, findings list 20 per page (`Pager.tsx`). The production API answers
+  page addresses with `index.html` (test in `tests/test_api.py`). Checked in headless Chrome at 1440×900 against
+  a scratch database with the six dataset projects: click into C, table, page 2, a row, Back ×4 to the projects
+  page, Forward, findings page 2, another version and Back, reload on a table + item address, an old-style
+  link, an unknown project, a sample, a building's LV by address, "Back to project", Back / Forward between
+  the building and its LV; no console error. Not checked: the production image (only the unit test), a person
+  clicking through, Safari.
 
 ## In progress
 

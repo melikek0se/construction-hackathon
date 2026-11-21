@@ -149,7 +149,7 @@ const MARK = ["", "info", "warn", "high"];
 
 /** An LV as one strip: a mark for every flagged item, where it stands in the LV. Marks keep a visible
  *  width however long the LV is, so one stop in a thousand items can still be seen. */
-function Fingerprint({ marks, cuts = [] }: { marks: string; cuts?: number[] }) {
+export function Fingerprint({ marks, cuts = [] }: { marks: string; cuts?: number[] }) {
   const n = Math.max(1, marks.length);
   const H = 22;
   return (
@@ -198,7 +198,8 @@ const plateOf = (p: CatalogProject) => (p.source === "demo" ? p.id : (p.name.mat
 
 /** The page opens the way a site does: barrier tape across full yellow while the projects are fetched,
  *  then the tapes run on through (bottom corner to opposite top corner) and the yellow rolls up like a shutter
- *  until what is left of it is the band: the brand stands on it where the band has it, from the start.
+ *  until what is left of it is the band. The name stands on the yellow in very large letters behind the
+ *  tapes and fades as the shutter starts; the brand then comes into the band from the left (`.entering`).
  *  `phase`: "loading" holds, "opening" plays the roll-up. */
 export function Opening({ phase }: { phase: "loading" | "opening" }) {
   const run = (text: string) => (
@@ -211,18 +212,23 @@ export function Opening({ phase }: { phase: "loading" | "opening" }) {
   // the band's own height, so that the shutter stops exactly on it
   const [bandH, setBandH] = useState<number | null>(null);
   useLayoutEffect(() => setBandH(document.querySelector<HTMLElement>(".band")?.offsetHeight ?? null), []);
+  // the large name is shown only in its own typeface: in the fallback it is wider than the screen
+  const [lettered, setLettered] = useState(false);
+  useEffect(() => {
+    const done = () => setLettered(true);
+    void document.fonts.load('700 1em "Barlow Condensed"').then(done, done);
+  }, []);
   return (
     <div className={`opening is-${phase}`} role="status" style={bandH ? ({ "--band-h": `${bandH}px` } as CSSProperties) : undefined}>
       <span className="visually-hidden">Reading the projects</span>
       <div className="open-sheet">
+        <div className={`open-word${lettered ? "" : " is-waiting"}`} aria-hidden>
+          Polier
+        </div>
         <div className="open-edge foot" />
       </div>
       <div className="open-edge head" />
-      <div className="open-brand brand" aria-hidden>
-        <HardHatIcon size={24} />
-        Polier
-      </div>
-      <div className="open-tape a">{run("Polier")}</div>
+      <div className="open-tape a">{run("Reading the projects")}</div>
       <div className="open-tape b">{run("Reading the projects")}</div>
     </div>
   );

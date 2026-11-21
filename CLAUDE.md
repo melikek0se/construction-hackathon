@@ -86,7 +86,7 @@ Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src
 findings marked on them in `PdfView.tsx`, positions from `src/boq/pdfmarks.py`, pages for LVs without a PDF
 drawn by `src/boq/lvpages.py`, questions about the project in `Chat.tsx` answered by `src/boq/chat.py` from the passages
 `src/boq/retrieve.py` finds; `web/src/types.ts` mirrors
-`boq.model`). The projects page lists `src/boq/catalog.py` (projects in the database; the dataset ones seeded from
+`boq.model`; the addresses of the pages are in `web/src/router.ts`, written and read by `App.tsx`, D-034). The projects page lists `src/boq/catalog.py` (projects in the database; the dataset ones seeded from
 its hand mapping). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
 
 ## Conventions

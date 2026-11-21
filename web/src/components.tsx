@@ -3,6 +3,7 @@ import { Select } from "./controls";
 import { LvText, eur, qty, quotedFragments } from "./format";
 import { FindingVisual, PriceRange, ValueRank } from "./ItemVisual";
 import { sectionOf, worst, type Section } from "./sections";
+import { Pager, pageOf } from "./Pager";
 import {
   ACTION_LABEL,
   CATEGORY_LABEL,
@@ -16,6 +17,9 @@ import {
   type PriceSuggestion,
   type Severity,
 } from "./types";
+
+const ITEMS_PER_PAGE = 50;
+const FINDINGS_PER_PAGE = 20; // rows of the findings list: one per item
 
 export interface Selection {
   oz: string | null;
@@ -66,9 +70,13 @@ export function FindingsList({
   section,
   onSection,
   onSelect,
+  page,
+  onPage,
   ai,
   onReview,
 }: {
+  page: number; // of the rows, from 1 (kept in the address)
+  onPage: (page: number) => void;
   ai: "idle" | "running" | "done";
   onReview: () => void;
   analysis: Analysis;
@@ -120,6 +128,21 @@ export function FindingsList({
   }, [analysis, severities, category, section, query, itemByOz]);
 
   const shownFindings = rows.reduce((n, r) => n + r.findings.length, 0);
+
+  // The worst rows come first, so page 1 is where to start; a changed filter starts there again.
+  const paged = pageOf(rows, page, FINDINGS_PER_PAGE);
+  const filter = `${category}|${query}|${section}|${SEVERITIES.filter((s) => severities.has(s)).join()}`;
+  const filtered = useRef(filter);
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (filtered.current === filter) return;
+    filtered.current = filter;
+    onPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: 0 });
+  }, [paged.page]);
 
   function toggle(sev: Severity) {
     const next = new Set(severities);
@@ -181,7 +204,7 @@ export function FindingsList({
       </div>
       )}
 
-      <div className="scroll">
+      <div className="scroll" ref={listRef}>
         {analysis.findings.length === 0 && (
           <p className="empty">
             The rule checks found nothing in this file. That is a valid result, not a clean bill: unclear scope
@@ -211,7 +234,7 @@ export function FindingsList({
           <p className="empty">No finding matches. Switch a severity back on or clear the search.</p>
         )}
         <ol className="findings">
-          {rows.map(({ oz, first, findings }) => {
+          {paged.rows.map(({ oz, first, findings }) => {
             const money = findings.reduce((n, f) => n + Number(f.money_at_stake ?? 0), 0);
             return (
               <li key={first}>
@@ -237,6 +260,7 @@ export function FindingsList({
           })}
         </ol>
       </div>
+      <Pager page={paged.page} pages={paged.pages} total={rows.length} size={FINDINGS_PER_PAGE} what="items" onPage={onPage} />
     </div>
   );
 }
@@ -480,39 +504,76 @@ export function ItemsView({
   findingsByOz,
   selectedOz,
   onSelect,
+  page,
+  onPage,
 }: {
   analysis: Analysis;
   findingsByOz: Map<string, Finding[]>;
   selectedOz: string | null;
   onSelect: (oz: string) => void;
+  page: number; // from 1 (kept in the address)
+  onPage: (page: number) => void;
 }) {
   const [query, setQuery] = useState("");
   const [onlyFlagged, setOnlyFlagged] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const priced = analysis.boq.items.some((i) => i.total !== null);
 
-  const groups = useMemo(() => {
+  const kept = useMemo(() => {
     const q = query.trim().toLowerCase();
+    return analysis.boq.items.filter(
+      (item) =>
+        (!onlyFlagged || findingsByOz.has(item.oz)) &&
+        (!q || `${item.oz} ${item.short_text} ${item.long_text}`.toLowerCase().includes(q)),
+    );
+  }, [analysis, query, onlyFlagged, findingsByOz]);
+
+  const shown = kept.length;
+  const paged = pageOf(kept, page, ITEMS_PER_PAGE);
+
+  // The rows of this page under their section heads; a section that runs over the page break is headed again.
+  const groups = useMemo(() => {
     const out: { title: string; items: Item[] }[] = [];
-    for (const item of analysis.boq.items) {
-      if (onlyFlagged && !findingsByOz.has(item.oz)) continue;
-      if (q && !`${item.oz} ${item.short_text} ${item.long_text}`.toLowerCase().includes(q)) continue;
+    for (const item of paged.rows) {
       const title = item.path.join(" / ") || `Section ${sectionOf(item.oz)}`;
       if (out.length === 0 || out[out.length - 1].title !== title) out.push({ title, items: [] });
       out[out.length - 1].items.push(item);
     }
     return out;
-  }, [analysis, query, onlyFlagged, findingsByOz]);
-
-  const shown = groups.reduce((n, g) => n + g.items.length, 0);
-
-  // Arriving from the plan or a finding: bring the row into view.
-  useEffect(() => {
-    if (!selectedOz) return;
-    scrollRef.current?.querySelector(`[data-oz="${CSS.escape(selectedOz)}"]`)?.scrollIntoView({ block: "center" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [kept, paged.page]);
 
+  // Arriving from the plan or a finding: turn to the page of the row, then bring it into view.
+  // A page turned by hand starts at its top.
+  const seek = useRef(selectedOz);
+  const turned = useRef(paged.page);
+  useEffect(() => {
+    const was = turned.current;
+    turned.current = paged.page;
+    if (seek.current === null) {
+      if (was !== paged.page) scrollRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+    const at = kept.findIndex((i) => i.oz === seek.current);
+    const its = at < 0 ? paged.page : Math.floor(at / ITEMS_PER_PAGE) + 1;
+    if (its !== paged.page) {
+      onPage(its); // runs again on that page
+      return;
+    }
+    scrollRef.current?.querySelector(`[data-oz="${CSS.escape(seek.current)}"]`)?.scrollIntoView({ block: "center" });
+    seek.current = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paged.page]);
+
+  // A changed search or filter starts at its first page.
+  const filter = `${query}|${onlyFlagged}`;
+  const filtered = useRef(filter);
+  useEffect(() => {
+    if (filtered.current === filter) return;
+    filtered.current = filter;
+    onPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
   return (
     <div className="table-view">
       <div className="table-tools">
@@ -582,6 +643,7 @@ export function ItemsView({
         </table>
         {shown === 0 && <p className="empty">No item matches. Clear the search or the filter.</p>}
       </div>
+      <Pager page={paged.page} pages={paged.pages} total={shown} size={ITEMS_PER_PAGE} what="items" onPage={onPage} />
     </div>
   );
 }

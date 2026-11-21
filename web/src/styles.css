@@ -3423,3 +3423,357 @@ button.flow-plate:hover {
   }
 }
 /* runs with reduce motion set too: a demo exception, as the mascot itself (Mascot.tsx) */
+
+/* ------------------------------------------------------------------ the gate */
+
+/* The way from one page to another (Gate in Loading.tsx): the band is the shutter, as in the opening
+   (home.css), where the yellow rolls up until what is left of it is the band. Here it is let down again:
+   plain yellow from under the band, the band's hazard stripe along its foot, the page is changed behind
+   it, and it rolls up into the band. Into an LV or a project it says what is being opened; on the way back
+   it is bare and quicker. `--band-h` is the band's height, measured by `Gate`. */
+.gate {
+  position: fixed;
+  inset: calc(var(--band-h, 70px) - 9px) 0 0;
+  z-index: 60;
+  overflow: hidden;
+  --gate-ease: cubic-bezier(0.7, 0, 0.25, 1);
+  /* rolled up: only its foot is left, lying exactly on the band's lower stripe */
+  --gate-up: 0 calc(9px - 100%);
+}
+
+.gate.is-opening {
+  pointer-events: none;
+}
+
+.gate-sheet {
+  position: absolute;
+  inset: 0;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+/* the foot: the band's lower stripe, drawn in a box the size of the band so it runs exactly as the band's */
+.gate-foot {
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--band-h, 70px);
+  box-sizing: border-box;
+  border-block: 9px solid;
+  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) 9;
+  clip-path: inset(calc(100% - 9px) 0 0 0);
+}
+
+.gate.is-closing .gate-sheet {
+  animation: gate-down 520ms var(--gate-ease) both;
+}
+.gate.dir-out.is-closing .gate-sheet {
+  animation-duration: 380ms;
+}
+.gate.is-opening .gate-sheet {
+  animation: gate-up 780ms var(--gate-ease) both;
+}
+
+/* it was down already (a link straight into a project): not let down again */
+.gate.is-held.is-closing .gate-sheet {
+  animation: none;
+}
+
+@keyframes gate-down {
+  from {
+    translate: var(--gate-up);
+  }
+}
+@keyframes gate-up {
+  to {
+    translate: var(--gate-up);
+  }
+}
+
+/* While the shutter is down the band is bare, as in the opening: the brand and nothing else. */
+.app.covering .band > :not(.brand) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease);
+}
+
+/* Whenever the band is uncovered, what stands in it comes in from its own side: the group on the right
+   (`.actions`) from the right, everything else from the left. One rule for all of it, whatever is put into
+   the band later. The brand comes in with them after the opening (its name was on the yellow till then) and
+   stays put otherwise. The three moments: after the opening (`.entering`, set in App.tsx),
+   a page opened through the shutter (`.arriving`), back on the projects page while the shutter rolls up. */
+.app:is(.entering, .arriving, .home.gated:not(.covering)) .band > :not(.brand),
+.app.entering .band > .brand {
+  animation: band-in-left 520ms var(--ease) var(--band-delay, 80ms) backwards;
+}
+
+.app:is(.entering, .arriving, .home.gated:not(.covering)) .band > .actions {
+  animation-name: band-in-right;
+}
+
+.app.home.gated {
+  --band-delay: 420ms; /* the shutter is still on its way up */
+}
+
+@keyframes band-in-left {
+  from {
+    opacity: 0;
+    translate: -48px 0;
+  }
+}
+
+@keyframes band-in-right {
+  from {
+    opacity: 0;
+    translate: 48px 0;
+  }
+}
+
+.gate-sign {
+  position: absolute;
+  left: clamp(20px, 9vw, 150px);
+  right: clamp(20px, 9vw, 150px);
+  top: 44%;
+  translate: 0 -50%;
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  max-width: 900px;
+}
+
+.gate-sign > * {
+  animation: gate-rise 520ms var(--ease) backwards;
+}
+.gate-sign > :nth-child(1) {
+  animation-delay: 240ms;
+}
+.gate-sign > :nth-child(2) {
+  animation-delay: 300ms;
+}
+.gate-sign > :nth-child(3) {
+  animation-delay: 360ms;
+}
+.gate-sign > :nth-child(4) {
+  animation-delay: 420ms;
+}
+.gate-sign > :nth-child(5) {
+  animation-delay: 480ms;
+}
+
+@keyframes gate-rise {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+.gate-caption {
+  padding: 3px 8px 2px;
+  background: var(--ink);
+  color: var(--yellow);
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.gate-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-family: var(--display);
+  font-size: clamp(34px, 5.2vw, 72px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+
+.gate-sub {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--yellow-ink);
+}
+
+.gate-title .anon,
+.gate-sub .anon {
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* the LV as the projects page read it: the same strip as on its card, larger, on a white plate */
+.gate-strip {
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px 8px 0;
+  --strip-base: #e4e6e1;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.gate-strip .fingerprint {
+  height: 46px;
+  animation: gate-strip 700ms cubic-bezier(0.65, 0, 0.2, 1) 520ms backwards;
+}
+
+@keyframes gate-strip {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.gate-counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+  margin: 0;
+  font-size: 17px;
+}
+
+.gate-counts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gate-counts .zero {
+  opacity: 0.4;
+}
+
+.gate-counts small {
+  font-size: 13.5px;
+  color: var(--yellow-ink);
+}
+
+/* one tape low across the sheet, pulled in once the sheet is across: what is being read */
+.gate .tape {
+  top: auto;
+  bottom: 13%;
+  rotate: -3deg;
+  animation: tape-from-right 560ms var(--ease) 420ms backwards;
+}
+
+.gate .tape .tape-run {
+  animation-direction: normal;
+}
+
+/* The page behind the shutter sets itself up while it rolls up: the band's lettering, the head of the left
+   pane, what is under it, the right pane. (The band's own things: see "band-in" above.) */
+.app.arriving .versions > *,
+.app.arriving .work .left > *,
+.app.arriving .work .right {
+  animation: arrive 560ms var(--ease) backwards;
+}
+
+.app.arriving .versions > * {
+  animation-delay: 120ms;
+}
+.app.arriving .work .left > :first-child {
+  animation-delay: 140ms;
+}
+.app.arriving .work .left > :nth-child(n + 2) {
+  animation-delay: 220ms;
+}
+.app.arriving .work .right {
+  animation-name: arrive-side;
+  animation-delay: 280ms;
+}
+
+/* the rows of the LV map, one after the other */
+.app.arriving .map .row {
+  animation: arrive 480ms var(--ease) backwards;
+  animation-delay: calc(240ms + var(--n, 8) * 45ms);
+}
+.app.arriving .map .row:nth-child(1) { --n: 0; }
+.app.arriving .map .row:nth-child(2) { --n: 1; }
+.app.arriving .map .row:nth-child(3) { --n: 2; }
+.app.arriving .map .row:nth-child(4) { --n: 3; }
+.app.arriving .map .row:nth-child(5) { --n: 4; }
+.app.arriving .map .row:nth-child(6) { --n: 5; }
+.app.arriving .map .row:nth-child(7) { --n: 6; }
+.app.arriving .map .row:nth-child(8) { --n: 7; }
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+@keyframes arrive-side {
+  from {
+    opacity: 0;
+    translate: 28px 0;
+  }
+}
+
+/* Polier stays in his corner, in front of the shutter */
+.app.gated .agent-dock {
+  z-index: 70;
+}
+
+/* "Reduce motion": the shutter, its lettering and the page setting itself up each run once and are kept, as
+   the opening is (D-029); without them the page would change behind a shutter that never moved (D-033). The
+   tape on the shutter keeps running too: it is the only sign that something is being read. */
+@media (prefers-reduced-motion: reduce) {
+  .gate.is-closing .gate-sheet {
+    animation: gate-down 520ms var(--gate-ease) both !important;
+  }
+  .gate.dir-out.is-closing .gate-sheet {
+    animation-duration: 380ms !important;
+  }
+  .gate.is-opening .gate-sheet {
+    animation: gate-up 780ms var(--gate-ease) both !important;
+  }
+  .gate.is-held.is-closing .gate-sheet {
+    animation: none !important;
+  }
+  .app:is(.entering, .arriving, .home.gated:not(.covering)) .band > :not(.brand),
+  .app.entering .band > .brand {
+    animation: band-in-left 520ms var(--ease) var(--band-delay, 80ms) backwards !important;
+  }
+  .app:is(.entering, .arriving, .home.gated:not(.covering)) .band > .actions {
+    animation-name: band-in-right !important;
+  }
+  .gate .gate-sign > * {
+    animation: gate-rise 520ms var(--ease) backwards !important;
+  }
+  .gate .gate-sign > :nth-child(1) { animation-delay: 240ms !important; }
+  .gate .gate-sign > :nth-child(2) { animation-delay: 300ms !important; }
+  .gate .gate-sign > :nth-child(3) { animation-delay: 360ms !important; }
+  .gate .gate-sign > :nth-child(4) { animation-delay: 420ms !important; }
+  .gate .gate-sign > :nth-child(5) { animation-delay: 480ms !important; }
+  .gate .gate-strip .fingerprint {
+    animation: gate-strip 700ms cubic-bezier(0.65, 0, 0.2, 1) 520ms backwards !important;
+  }
+  .gate .tape {
+    animation: tape-from-right 560ms var(--ease) 420ms backwards !important;
+  }
+  .gate .tape .tape-run {
+    animation: tape-run 26s linear infinite !important;
+  }
+  .app.arriving .versions > * {
+    animation: arrive 560ms var(--ease) 120ms backwards !important;
+  }
+  .app.arriving .work .left > :first-child {
+    animation: arrive 560ms var(--ease) 140ms backwards !important;
+  }
+  .app.arriving .work .left > :nth-child(n + 2) {
+    animation: arrive 560ms var(--ease) 220ms backwards !important;
+  }
+  .app.arriving .map .row {
+    animation: arrive 480ms var(--ease) calc(240ms + var(--n, 8) * 45ms) backwards !important;
+  }
+  .app.arriving .work .right {
+    animation: arrive-side 560ms var(--ease) 280ms backwards !important;
+  }
+}

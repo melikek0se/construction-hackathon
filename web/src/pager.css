@@ -1,0 +1,69 @@
+/* Pages of a list: the range on the left, the steps on the right, on a hairline under the rows. */
+
+.pager {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 24px;
+  border-top: 1.5px solid var(--ink);
+  background: var(--ground);
+}
+
+/* In the right pane the steps stand on the left: the bottom-right corner belongs to Polier (.agent-dock). */
+.panel .pager {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  row-gap: 4px;
+  padding: 8px 140px 8px 14px;
+}
+
+.pager-range {
+  color: var(--ink-2);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pager-steps {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pager-steps button {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1.5px solid transparent;
+  border-radius: 2px;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pager-steps button:hover:not(:disabled):not([aria-current]) {
+  background: var(--yellow);
+}
+
+.pager-steps button[aria-current] {
+  background: var(--ink);
+  color: #fff;
+  cursor: default;
+}
+
+.pager-steps button:disabled {
+  color: var(--dim);
+  cursor: default;
+}
+
+.pager-steps span {
+  min-width: 20px;
+  text-align: center;
+  color: var(--dim);
+}

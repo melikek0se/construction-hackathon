@@ -1672,11 +1672,26 @@
   clip-path: inset(calc(100% - 9px) 0 0 0);
 }
 
-.open-brand {
+/* the name, as large as the screen takes, behind the tapes; it fades as the shutter starts */
+.open-word {
   position: absolute;
-  left: 20px;
-  top: 9px;
-  height: calc(var(--band-h, 70px) - 18px);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-size: min(34vw, 62vh);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  transition: opacity 280ms var(--ease);
+}
+
+.open-word.is-waiting,
+.opening.is-opening .open-word {
+  opacity: 0;
 }
 
 .open-tape {
@@ -1831,6 +1846,10 @@
 
   .open-tape {
     transition: translate 600ms var(--ease) !important;
+  }
+
+  .open-word {
+    transition: opacity 280ms var(--ease) !important;
   }
 
   .open-tape.a {

@@ -16,6 +16,7 @@ from pathlib import Path
 from fastapi import FastAPI, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
@@ -835,5 +836,24 @@ def bidder_questions(analysis_id: str):
                              headers={"Content-Disposition": 'attachment; filename="bieterfragen.txt"'})
 
 
+class _WebApp(StaticFiles):
+    """The built frontend. Its pages have addresses of their own (/projects/A/files/0, see web/src/router.ts)
+    that are not files: those get index.html, and the page reads the address. Unknown /api paths and missing
+    assets stay 404."""
+
+    async def get_response(self, path: str, scope):
+        try:
+            response = await super().get_response(path, scope)
+        except StarletteHTTPException as e:
+            if e.status_code != 404:
+                raise
+            response = None
+        if response is not None and response.status_code != 404:
+            return response
+        if path.split("/")[0] in ("api", "assets") or scope["method"] not in ("GET", "HEAD"):
+            raise StarletteHTTPException(404)
+        return await super().get_response("index.html", scope)
+
+
 if WEB_DIST.is_dir():  # production build of the frontend, if present
-    app.mount("/", StaticFiles(directory=WEB_DIST, html=True), name="web")
+    app.mount("/", _WebApp(directory=WEB_DIST, html=True), name="web")

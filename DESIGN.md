@@ -375,10 +375,11 @@ tenders on a yellow chip, ink while the schedule is open; absent while there is 
 - **Focus:** 2px ink outline, 2px offset, everywhere.
 - Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; `prefers-reduced-motion` removes all transitions.
 - The larger motions are the loading tapes (520ms pull-in, then a steady run along the tape) and the opening
-  of the app: full yellow with two tapes while the projects are fetched, then each tape runs on through on its
+  of the app: full yellow with the name on it in very large letters (Barlow Condensed 700, `min(34vw, 62vh)`,
+  ink) and two tapes across it while the projects are fetched; the name fades (280ms), then each tape runs on through on its
   diagonal (in from a bottom corner, out at the opposite top corner, 600ms), the yellow rolls up like a roller shutter (820ms: plain yellow, the
-  band's hazard stripe along its top and its foot, the brand on it where the band has it) and stops as the
-  band itself, and the schedule rows are un-taped one after the
+  band's hazard stripe along its top and its foot, nothing on it) and stops as the
+  band itself, what stands in the band comes in from its own side (see Gate), and the schedule rows are un-taped one after the
   other.
 
 ### Chips, tags and toggles
@@ -490,7 +491,7 @@ A bar under the band: red with white text, 13px 500, for an error and for the se
 used for loading.
 
 ### Loading tapes (signature)
-While files are being read, and while the AI review runs, the page is veiled in white (78 %) and two barrier tapes are pulled across it, one
+While the open page itself is being worked on (another version of the LV, a file opened from an answer, the AI review), the page is veiled in white (78 %) and two barrier tapes are pulled across it, one
 from each side, crossing a little off level (-5 and 4 degrees). A tape is 46px high: signal yellow, the hazard
 stripe 9px along both edges, a 1px ink line outside. Along it runs what is being read, in Barlow Condensed
 17px 600 capitals at 0.14em, the two tapes running in opposite directions. The tapes block the page until the
@@ -501,6 +502,28 @@ border, 560px wide at most. It says what is being done at that moment: a heading
 capitals with "n of m sections read" beside it, a 6px ink meter, the section being read, and the six kinds of
 finding in two columns, each with its count so far (a count above zero on yellow). All six are looked for at
 once in every section, so they are listed together and never as steps.
+
+### Gate (the way from one page to another)
+Pages change behind the shutter, never in the open, and the band is the shutter: in the opening the yellow
+rolls up until what is left of it is the band; between pages it is let down again from under the band
+(520ms) and rolls back up into it (780ms). It is plain signal yellow with the band's 9px hazard stripe along
+its foot, drawn so that it lies exactly on the band's lower stripe when rolled up. While it is down the band
+carries the brand and nothing else. On the shutter, left of centre: an ink plate with "Opening the LV" in
+yellow capitals (Barlow Condensed 14px, 0.14em), the name in Barlow Condensed 600 at 34 to 72px (two lines
+at most), the file line in yellow ink 15px, the LV strip 46px high on a white plate with a 1px ink line
+(drawn in from the left), and the three signs with their counts. One tape low across it (-3 degrees)
+carries what is being read. It stays down at least 950ms; as it rolls up the page sets itself up: band
+lettering, head, map rows one after the other (45ms apart), the right pane from the right. On the way back
+it is bare and comes down in 380ms, and the band fills again as after the opening.
+
+Whenever the band is uncovered (after the opening, a page opened through the shutter, back on the projects
+page), what stands in it comes in from its own side: the group on the right (`.actions`) from the right,
+everything else from the left, 48px and a fade, 520ms with `--ease`. It is one rule on the band's children
+(`band-in-left` / `band-in-right` in `styles.css`), so whatever is put into the band later gets it without
+more CSS. The brand comes in from the left with them after the opening, where its name stood large on the
+yellow until then, and stays put otherwise. It also runs with "reduce motion" set.
+Easing for the shutter `cubic-bezier(0.7, 0, 0.25, 1)`, for what rises `--ease`. Polier stays in front of
+it. With "reduce motion" all of it still runs (D-033).
 
 ### Trade diagram (project view)
 The one three-dimensional drawing (D-018): each trade LV is a lettered slab, standing one storey above the last

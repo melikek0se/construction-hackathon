@@ -17,7 +17,7 @@ import {
 } from "./api";
 import { HardHatIcon, Opening, ProjectsPage, ScheduleSwitch } from "./Projects";
 import { Mascot } from "./Mascot";
-import { LoadingTapes, ReviewTapes } from "./Loading";
+import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, eur, qty } from "./format";
@@ -27,6 +27,7 @@ import "./chat.css";
 import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
+import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type Route } from "./router";
 import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf";
@@ -40,6 +41,17 @@ const VIEWS: [View, string][] = [
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
 const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
+// A link straight into a project or a file: the page opens behind the sheet, without the opening.
+// The address the page was loaded with (router.ts); one of before the routes is rewritten to what it means.
+const START = parseRoute();
+writeRoute(START, true);
+const DEEP_LINK = START.at !== "home";
+const wait = (ms: number) => new Promise<void>((done) => window.setTimeout(done, ms));
+// The shutter over the page (styles.css, "the gate"): on the way in it stays down at least this long, so
+// the name on it can be read; on the way back it only has to come down; then the time it takes to roll up.
+const GATE_HOLD = 950;
+const GATE_BACK = 380;
+const GATE_CUT = 780;
 
 export default function App() {
   const [catalog, setCatalog] = useState<CatalogProject[]>([]);
@@ -69,6 +81,11 @@ export default function App() {
   const [section, setSection] = useState<string | null>(null);
   const [hovered, setHovered] = useState<Item | null>(null);
   const [selection, setSelection] = useState<Selection>(NONE);
+  // Pages of the item table and of the findings list, from 1. Both are part of the address.
+  const [page, setPage] = useState(1);
+  const [fpage, setFpage] = useState(1);
+  // A dataset file opened by its path, with no project around it (/samples/...).
+  const [sample, setSample] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
   // The right pane: the findings (list or item sheet), or the questions about the project. A conversation
@@ -93,6 +110,59 @@ export default function App() {
   const [passage, setPassage] = useState<{ oz: string; quote: string; at: number } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
+  // The way into an LV or a project, and back out: the band is the shutter. It is let down over the page,
+  // the page changes behind it, and it rolls up into the band again. A link straight into a project starts
+  // with it down.
+  const [gate, setGate] = useState<{ dir: "in" | "out"; phase: "closing" | "opening"; info: GateInfo | null; held: boolean } | null>(
+    () => (DEEP_LINK ? { dir: "in", phase: "closing", info: null, held: true } : null),
+  );
+  const [arriving, setArriving] = useState(false); // the opened page is still setting itself up
+  const gateTimers = useRef<number[]>([]);
+  /** Draws the sheet across; resolves once the page is covered (and, on the way in, its name was readable). */
+  const closeGate = useCallback((dir: "in" | "out", info: GateInfo | null) => {
+    gateTimers.current.forEach(clearTimeout);
+    setArriving(false);
+    // a sheet that is across already stays as it is, with the new lettering
+    setGate((g) => ({ dir, info, phase: "closing", held: g?.phase === "closing" }));
+    return new Promise<void>((done) => window.setTimeout(done, dir === "in" ? GATE_HOLD : GATE_BACK));
+  }, []);
+  const openGate = useCallback(() => {
+    setGate((g) => g && { ...g, phase: "opening" });
+    setArriving(true);
+    window.dispatchEvent(new CustomEvent("polier", { detail: "hop" }));
+    gateTimers.current = [
+      window.setTimeout(() => setGate((g) => (g?.phase === "opening" ? null : g)), GATE_CUT),
+      window.setTimeout(() => setArriving(false), GATE_CUT + 900),
+    ];
+  }, []);
+  const summariesNow = useRef(summaries);
+  summariesNow.current = summaries;
+  /** What the sheet says about a project (or one file of it): the numbers it was last read with. */
+  const gateInfo = useCallback((p: CatalogProject, file?: number): GateInfo => {
+    const s = summariesNow.current[p.id];
+    const known = s && s !== "failed" ? s : null;
+    if (p.kind === "trades" && file === undefined) {
+      return {
+        caption: "Opening the project",
+        title: p.name,
+        sub: [p.number, `${p.files.length} trade LVs`].filter(Boolean).join(" · "),
+        marks: known?.docs.filter((d) => d.counts).map((d) => d.marks).join(""),
+        counts: known?.counts,
+        items: known?.items,
+      };
+    }
+    const f = p.files[file ?? 0];
+    const d = known?.docs.find((x) => x.index === (file ?? 0));
+    return {
+      caption: "Opening the LV",
+      title: p.name,
+      sub: f && `${f.name} · ${f.format} · ${f.role}`,
+      marks: d?.counts ? d.marks : undefined,
+      counts: d?.counts ?? undefined,
+      items: d?.counts ? d.items : undefined,
+    };
+  }, []);
+
   const refreshCatalog = useCallback(async () => {
     const list = await listCatalog();
     setCatalog(list);
@@ -100,11 +170,9 @@ export default function App() {
   }, []);
 
   // The opening: full yellow with barrier tape until the projects are there (and for at least a moment,
-  // so it does not flicker), then the yellow is cut away and the page stands. A link straight into a
+  // so it does not flicker), then the yellow rolls up like a shutter and the page stands. A link straight into a
   // project skips it. "entering" lasts while the rows of the page are still being uncovered.
-  const [intro, setIntro] = useState<"loading" | "opening" | "entering" | "done">(() =>
-    /[?&](project|sample)=/.test(location.search) ? "done" : "loading",
-  );
+  const [intro, setIntro] = useState<"loading" | "opening" | "entering" | "done">(() => (DEEP_LINK ? "done" : "loading"));
   useEffect(() => {
     const shown = Date.now();
     let timers: number[] = [];
@@ -117,10 +185,20 @@ export default function App() {
       ];
     };
     refreshCatalog()
-      .catch(() => setApiDown(true))
+      .then((list) => {
+        // a link to a project that is not there: nothing will open, so the sheet must not stay across
+        if ("id" in START && !list.some((p) => p.id === START.id)) {
+          openGate();
+          settle(START);
+        }
+      })
+      .catch(() => {
+        setApiDown(true);
+        if (DEEP_LINK) openGate();
+      })
       .then(open);
     return () => timers.forEach(clearTimeout);
-  }, [refreshCatalog]);
+  }, [refreshCatalog, openGate]);
 
   // Each project's numbers need its files parsed on the server: ask one after the other, so a building of
   // 27 PDFs does not hold up the small ones.
@@ -139,83 +217,220 @@ export default function App() {
     }
   }, [catalog]);
 
-  const runProject = useCallback(async (label: string, job: () => Promise<Project>) => {
+  // With `through` the page is changed behind the sheet (a way into another page); without it the page
+  // stays and the tapes are pulled across it (another version of the LV that is open).
+  const runProject = useCallback(async (label: string, job: () => Promise<Project>, through?: GateInfo) => {
     setBusy(label);
     setError(null);
+    const covered = through && closeGate("in", through);
     try {
-      setProject(await job());
+      const opened = await job();
+      await covered;
+      setProject(opened);
       setAnalysis(null);
     } catch (e) {
+      await covered;
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(null);
+      if (through) openGate();
     }
-  }, []);
+  }, [closeGate, openGate]);
 
-  const run = useCallback(async (label: string, job: () => Promise<Analysis>) => {
+  const run = useCallback(async (label: string, job: () => Promise<Analysis>, through?: GateInfo) => {
     setBusy(label);
     setError(null);
+    const covered = through && closeGate("in", through);
     try {
-      setAnalysis(await job());
+      const opened = await job();
+      await covered;
+      setAnalysis(opened);
       setPassage(null); // a passage belongs to the file it was clicked for; cite() sets it again after this
       setAi("idle");
       setView("plan");
       setSeverities(ALL);
       setSection(null);
       setSelection(NONE);
+      setPage(1);
+      setFpage(1);
     } catch (e) {
+      await covered;
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(null);
+      if (through) openGate();
     }
-  }, []);
+  }, [closeGate, openGate]);
 
+  // `inPlace`: another version of the LV that is open, so the page stays and only its content changes.
   const openProject = useCallback(
-    (p: CatalogProject, file = 0) => {
-      setCurrent({ project: p, file });
-      if (p.kind === "trades") void runProject(p.name, () => openCatalogProject(p.id));
-      else {
-        setProject(null);
+    (p: CatalogProject, file = 0, inPlace = false) => {
+      if (p.kind === "trades") {
+        setCurrent({ project: p, file });
+        void runProject(p.name, () => openCatalogProject(p.id), gateInfo(p));
+      } else if (inPlace) {
+        setCurrent({ project: p, file });
         void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file));
+      } else {
+        setCurrent({ project: p, file });
+        setProject(null);
+        void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file), gateInfo(p, file));
       }
     },
-    [run, runProject],
+    [run, runProject, gateInfo],
   );
 
-  function closeAll() {
-    setPending(null);
-    setAnalysis(null);
-    setProject(null);
-    setCurrent(null);
+  /** Leaves the open page behind the sheet, drawn back the other way. */
+  function leave(swap: () => void) {
+    void closeGate("out", null).then(() => {
+      swap();
+      openGate();
+    });
   }
 
-  // ?project=A[&file=2] reopens a project after a reload; ?sample=<folder>/<file> a single dataset file.
-  // Both take &view=table|remarks|whatif|pdf and &item=5.1.4.
+  function closeAll() {
+    const swap = () => {
+      setPending(null);
+      setAnalysis(null);
+      setProject(null);
+      setCurrent(null);
+      setSample(null);
+    };
+    if (analysis || project) leave(swap);
+    else swap();
+  }
+
+  // ---- The address bar (router.ts). The state above is what is shown; `here` is the address that says it.
+  // It is written whenever the state changes; on load and on Back / Forward the address is read and the
+  // state brought to it (`navigate`), through the same sheet as a click.
+  const place: LvPlace = { view, item: selection.oz, page: view === "table" ? page : 1, fpage };
+  const here: Route =
+    analysis && current
+      ? project
+        ? { at: "lv", id: current.project.id, analysis: analysis.id, ...place }
+        : { at: "file", id: current.project.id, file: current.file, ...place }
+      : analysis && sample
+        ? { at: "sample", path: sample, ...place }
+        : project && current
+          ? { at: "project", id: current.project.id }
+          : HOME;
+  // The address being loaded (from the address bar, not from a click): until the state has reached it,
+  // the state is not written back over it.
+  const target = useRef<Route | null>(DEEP_LINK ? START : null);
+  const [settled, setSettled] = useState(0);
+  /** The address `r` was not reached (no such project, the file did not load): the address follows the state again. */
+  function settle(r: Route) {
+    if (target.current !== r) return;
+    target.current = null;
+    setSettled((n) => n + 1);
+  }
+  const url = formatRoute(here);
+  const written = useRef(0); // `settled` as of the last write: an address given up is replaced, not added to
+  useEffect(() => {
+    if (busy) return; // a page is on its way; the address changes with it
+    const t = target.current;
+    if (t) {
+      if (docKey(t) !== docKey(here)) return;
+      target.current = null; // arrived; what is open in it (view, item, page) is set from the address next
+      return;
+    }
+    writeRoute(here, settled !== written.current);
+    written.current = settled;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, busy, settled]);
+  /** Brings the state to an address. Null when its project is not in the catalogue. */
+  function navigate(r: Route): Promise<void> | null {
+    const inside = () => {
+      if (!isLv(r)) return;
+      setView(r.view);
+      if (r.item) setSelection({ oz: r.item, finding: null });
+      setPage(r.page);
+      setFpage(r.fpage);
+    };
+    const done = () => (inside(), settle(r));
+    if (r.at === "home") {
+      closeAll();
+      return Promise.resolve();
+    }
+    if (r.at === "sample") {
+      const name = r.path.split("/").pop() ?? r.path;
+      setCurrent(null);
+      setProject(null);
+      setSample(r.path);
+      return run(name, () => loadSample(r.path), { caption: "Opening the LV", title: name }).then(done);
+    }
+    const p = catalog.find((x) => x.id === r.id);
+    if (!p) return null;
+    const sameProject = current?.project.id === p.id;
+    if (r.at === "project" && p.kind === "versions") {
+      // a project that is one LV: its first file
+      const first: Route = { at: "file", id: p.id, file: 0, view: "plan", item: null, page: 1, fpage: 1 };
+      target.current = first;
+      writeRoute(first, true);
+      return navigate(first);
+    }
+    if (r.at === "project") {
+      if (sameProject && project && analysis) leave(() => setAnalysis(null)); // back from one of its LVs
+      else if (!(sameProject && project)) openProject(p);
+      return Promise.resolve();
+    }
+    if (r.at === "file") {
+      const inPlace = sameProject && !project && analysis !== null; // another version of the LV that is open
+      setCurrent({ project: p, file: r.file });
+      setProject(null);
+      return run(p.files[r.file]?.name ?? p.name, () => openCatalogFile(p.id, r.file), inPlace ? undefined : gateInfo(p, r.file)).then(done);
+    }
+    // one trade LV of a building: the building is needed around it
+    const lv = sameProject ? project?.lvs.find((l) => l.analysis_id === r.analysis) : undefined;
+    if (sameProject && project) {
+      const through: GateInfo = { caption: "Opening the LV", title: lv?.name ?? "LV", sub: lv && `${lv.file} · ${project.name}`, counts: lv?.counts, items: lv?.items };
+      return run(lv?.name ?? "LV", () => loadAnalysis(r.analysis), through).then(done);
+    }
+    setCurrent({ project: p, file: 0 });
+    const job = async () => {
+      // the building is put in place once the sheet is across, the LV on top of it when it has loaded
+      const [building] = await Promise.all([openCatalogProject(p.id), wait(GATE_HOLD)]);
+      setProject(building);
+      setAnalysis(null);
+      return loadAnalysis(r.analysis);
+    };
+    return run(p.name, job, gateInfo(p)).then(done);
+  }
+  const navigateNow = useRef(navigate);
+  navigateNow.current = navigate;
+  const hereNow = useRef(here);
+  hereNow.current = here;
+
+  // The address the page was loaded with, once the catalogue is there to find its project in.
   const linked = useRef(false);
   useEffect(() => {
-    if (linked.current) return;
-    const params = new URLSearchParams(location.search);
-    const then = () => {
-      const v = params.get("view");
-      if (v === "table" || v === "remarks" || v === "whatif" || v === "pdf") setView(v);
-      const oz = params.get("item");
-      if (oz) setSelection({ oz, finding: null });
+    if (linked.current || !DEEP_LINK) return;
+    if (START.at !== "sample" && !catalog.some((p) => "id" in START && p.id === START.id)) return; // not arrived yet
+    linked.current = true;
+    navigateNow.current(START);
+  }, [catalog]);
+
+  // Back and Forward. Inside the same LV only what is open changes; another page is loaded like a click.
+  useEffect(() => {
+    const onPop = () => {
+      const r = parseRoute();
+      if (docKey(r) === docKey(hereNow.current)) {
+        if (!isLv(r)) return;
+        setView(r.view);
+        setSelection((s) => (s.oz === r.item ? s : { oz: r.item, finding: null }));
+        setPage(r.page);
+        setFpage(r.fpage);
+        return;
+      }
+      target.current = r;
+      if (navigateNow.current(r) === null) {
+        target.current = null;
+        setSettled((n) => n + 1);
+      }
     };
-    const id = params.get("project");
-    const sample = params.get("sample");
-    if (id) {
-      const p = catalog.find((x) => x.id === id);
-      if (!p) return; // the catalogue has not arrived yet
-      linked.current = true;
-      const file = Number(params.get("file") ?? 0);
-      setCurrent({ project: p, file });
-      if (p.kind === "trades") void runProject(p.name, () => openCatalogProject(p.id));
-      else void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file)).then(then);
-    } else if (sample) {
-      linked.current = true;
-      void run(sample.split("/").pop() ?? sample, () => loadSample(sample)).then(then);
-    }
-  }, [catalog, run, runProject]);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   // The AI review adds findings to the same list; rule findings stay first within each severity.
   async function review() {
@@ -434,7 +649,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}`}
+      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}${gate ? " gated" : ""}${gate?.phase === "closing" ? " covering" : ""}${arriving && gate?.dir !== "out" ? " arriving" : ""}${intro === "entering" ? " entering" : ""}`}
       onDragOver={(e) => (e.preventDefault(), setDragging(true))}
       onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)}
       onDrop={(e) => {
@@ -520,7 +735,7 @@ export default function App() {
                 Bidder questions
               </a>
               {project && (
-                <button className="btn" onClick={() => setAnalysis(null)}>
+                <button className="btn" onClick={() => leave(() => setAnalysis(null))}>
                   Back to project
                 </button>
               )}
@@ -541,7 +756,7 @@ export default function App() {
               aria-pressed={current.file === n}
               disabled={busy !== null}
               title={f.name}
-              onClick={() => current.file !== n && openProject(current.project, n)}
+              onClick={() => current.file !== n && openProject(current.project, n, true)}
             >
               <b>{f.role}</b> {f.format}
             </button>
@@ -551,7 +766,8 @@ export default function App() {
 
       {(intro === "loading" || intro === "opening") && <Opening phase={intro} />}
       {/* while the new-project dialog is open it says itself that it is working */}
-      {busy && !pending && <LoadingTapes what={busy} />}
+      {gate && <Gate {...gate} />}
+      {busy && !pending && !gate && <LoadingTapes what={busy} />}
       {/* the AI review reads every section with Claude: seconds when cached, a minute or two otherwise;
           the board under the tapes says which section is being read and what was found so far */}
       {!busy && ai === "running" && analysis && (
@@ -578,7 +794,17 @@ export default function App() {
       {project && !analysis ? (
         <ProjectView
           project={project}
-          onOpenLv={(id) => void run("LV", () => loadAnalysis(id))}
+          onOpenLv={(id) => {
+            const lv = project.lvs.find((l) => l.analysis_id === id);
+            const through: GateInfo = {
+              caption: "Opening the LV",
+              title: lv?.name ?? "LV",
+              sub: lv && `${lv.file} · ${project.name}`,
+              counts: lv?.counts,
+              items: lv?.items,
+            };
+            void run(lv?.name ?? "LV", () => loadAnalysis(id), through);
+          }}
           chat={{ turns: chats[chatKey] ?? [], onTurns: setTurns, onCite: cite }}
         />
       ) : !analysis || !stats ? (
@@ -597,7 +823,7 @@ export default function App() {
             // one trade LV of a building, opened straight from the list
             setCurrent({ project: p, file });
             setProject(null);
-            void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file));
+            void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file), gateInfo(p, file));
           }}
           onChooseFiles={(target) => {
             addTarget.current = target;
@@ -690,6 +916,8 @@ export default function App() {
                 analysis={analysis}
                 findingsByOz={findingsByOz}
                 selectedOz={selection.oz}
+                page={page}
+                onPage={setPage}
                 onSelect={(oz) => setSelection({ oz, finding: null })}
               />
             )}
@@ -750,6 +978,8 @@ export default function App() {
                 section={section}
                 onSection={setSection}
                 onSelect={setSelection}
+                page={fpage}
+                onPage={setFpage}
                 ai={ai}
                 onReview={() => void review()}
               />

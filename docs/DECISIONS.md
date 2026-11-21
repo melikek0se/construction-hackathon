@@ -356,7 +356,7 @@ Status: decided · 2026-11-21 (Atahan, after comparing three options each as a c
 - **New project is a modal dialog** (`<dialog>`): files first, then what was read with its evidence, then the
   two dates. Same intake rules as D-028.
 - **Opening.** Full yellow with two barrier tapes while the projects are fetched, then the tapes run on
-  through on their diagonals (in from a bottom corner, out at the opposite top corner) and the yellow rolls up like a roller shutter until what is left of it is the band, brand and hazard
+  through on their diagonals (in from a bottom corner, out at the opposite top corner) and the yellow rolls up like a roller shutter until what is left of it is the band (the name stands large on the yellow behind the tapes and fades; the brand then comes into the band from the left), hazard
   stripes in place from the start (changed 2026-11-21, Atahan; before:
   cut away on the slant, tapes pulled back to their own sides); schedule rows are uncovered one after the other, a board card keeps a tape across it until
   its files are read. The one-off wipes also run with "reduce motion" set (the loops do not): a deliberate
@@ -443,3 +443,51 @@ A date without a label is left out. No LLM: the result has to be the same every 
   the weeks; the "Dates" list under a row shows only label and day. This narrows D-031 for that list: the
   source is still read and kept, and shown on hover, but no longer written under each date.
 
+
+## D-033 — Pages change behind the roller shutter (the gate); the tapes are for work on the page that stays
+Status: decided · 2026-11-21 (built on the user's request to improve the way from the projects page to an LV)
+
+- **Into an LV or a project** (from the projects page, from a project to one of its LVs, from a link): the
+  band is the shutter (as in the opening, D-029, where the yellow rolls up until what is left is the band).
+  It is let down from under the band, plain yellow with the band's hazard stripe along its foot; the band
+  itself stays and is bare meanwhile (brand only). On the shutter: what is being opened, the file, and
+  the LV strip with its counts as the projects page last read them ("as last read"; without a summary there
+  is no strip and no number). One tape low across it says what is being read. The page is changed only once
+  it is covered, and the shutter stays down at least 0.95 s so the name can be read; then it rolls up into
+  the band (0.78 s) while the page sets itself up. Built first as a sheet drawn across on the slant, then
+  as a separate slatted shutter with an ink rail; both replaced the same day (Atahan: follow the opening,
+  the header is the shutter), so that there is one way of covering a page.
+- **Back** ("All projects", the brand, "Back to project", the browser's back): the same shutter, bare and
+  quicker, about 1.1 s in all.
+- **The two crossing tapes on a white veil stay** for work on the page that is open: another version of the
+  same LV, a file opened from a chat answer, the AI review.
+- **Reduce motion:** the shutter, its lettering and the page setting itself up run anyway (one-off, as D-029's
+  opening). The tape on the shutter also keeps running: this goes beyond D-029 ("the loops do not"), for the
+  reason of D-030: the team's Mac has the setting on, and a three-second PDF read behind a still shutter
+  looks hung. All of it is in one `@media` block at the end of `styles.css`.
+- Polier stays in front of the shutter in his corner and hops when the page opens.
+
+
+## D-034 — Every page has an address; the state writes it, Back and Forward read it
+Status: decided · 2026-11-21 (the user asked for routing and pagination, built beside D-033)
+
+- **Addresses** (`web/src/router.ts`, History API, no router library):
+  `/` projects · `/projects/:id` a building's overview (for an LV in versions: its first file) ·
+  `/projects/:id/files/:n[/table|remarks|whatif|pdf]` one file as an LV ·
+  `/projects/:id/lv/:analysis[/view]` a trade LV opened from its building ·
+  `/samples/<folder>/<file>[?view=]` a dataset file without a project.
+  An LV takes `?item=5.1.4` (the open item), `?page=2` (item table), `?fpage=2` (findings list).
+  Item numbers and file names carry dots, so they are kept in the query (or, for samples, last in the path).
+- **The React state stays what is shown.** `App.tsx` works out the address from it (`here`) and writes it when
+  it changes: a new history entry per page, view, item or list page. So the address changes when the page
+  does, behind the shutter, not at the click. On load and on Back / Forward the address is read and
+  `navigate()` brings the state to it through the same `run(…, through)` / `leave()` as a click (D-033);
+  inside the same LV only view, item and page are set, with no shutter.
+- The links of before (`?project=A&file=2&view=table`, `?sample=…`) still open and are rewritten.
+  An address whose project is gone opens the projects page and is replaced by `/`.
+- The API serves `index.html` for page addresses in the production build (`_WebApp` in `api.py`); unknown
+  `/api/…` paths and missing assets stay 404.
+- **Pagination:** item table 50 per page, findings list 20 rows per page (one row per item, worst first),
+  `Pager.tsx`. A changed search or filter goes to page 1; opening an item "in the table" turns to its page.
+  The lists are cut in the browser; the API still sends the whole LV (the map and the checks need all items).
+  Not paginated: the projects board (columns by stage, a handful of tenders) and a building's trade list.

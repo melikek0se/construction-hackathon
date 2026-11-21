@@ -133,3 +133,22 @@ def test_marks_are_worked_out_once_per_set_of_findings(monkeypatch):
     api._keep_llm_findings(body["id"], [])  # a review that added nothing: same findings, no new search
     client.get(f"/api/analyses/{body['id']}/marks")
     assert len(calls) == 1
+
+
+def test_page_addresses_get_the_page(tmp_path):
+    """/projects/A/files/0 is not a file of the build: it gets index.html; unknown API paths and assets do not."""
+    from fastapi import FastAPI
+
+    from boq import api
+
+    (tmp_path / "assets").mkdir()
+    (tmp_path / "index.html").write_text("<title>page</title>")
+    (tmp_path / "assets" / "app.js").write_text("1")
+    web = FastAPI()
+    web.mount("/", api._WebApp(directory=tmp_path, html=True))
+    c = TestClient(web)
+    for path in ("/", "/projects/A", "/projects/A/files/0/table?item=5.1.4", "/samples/GAEB%20XML/x.x83"):
+        assert "page" in c.get(path).text, path
+    assert c.get("/assets/app.js").text == "1"
+    assert c.get("/assets/gone.js").status_code == 404
+    assert c.get("/api/nothing").status_code == 404

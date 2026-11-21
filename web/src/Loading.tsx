@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState, type CSSProperties } from "react";
 import { reviewProgress } from "./api";
-import type { ReviewProgress } from "./types";
+import { Sign } from "./components";
+import { LvText } from "./format";
+import { Fingerprint } from "./Projects";
+import { SEVERITIES, type ReviewProgress, type Severity } from "./types";
 
 /* Loading, the way a site says "not yet": two barrier tapes are pulled across the screen, one from each
    side, with what is being read running along them. They block the page until the work is done. */
@@ -27,6 +30,72 @@ export function LoadingTapes({ doing = "Reading the files", what }: { doing?: st
       </span>
       <Tape side="left" text={doing} />
       <Tape side="right" text={what} />
+    </div>
+  );
+}
+
+/** What the sheet says while a page is opened: what is being opened and, where the projects page has read
+    it already, the LV as a strip with its counts. Nothing on it is guessed: no numbers, no strip. */
+export interface GateInfo {
+  caption: string; // "Opening the LV"
+  title: string; // the project or LV, in its own words
+  sub?: string; // file, format, step
+  marks?: string; // one digit per item in LV order (ProjectDoc.marks)
+  counts?: Record<Severity, number>;
+  items?: number;
+}
+
+/** The way from one page to another: the band is the shutter (as in the opening, where the yellow rolls
+    up until what is left of it is the band). It is let down from under the band, its hazard stripe along
+    the foot, the page changes behind it, and it rolls up into the band again. `dir` "in" (into an LV or a
+    project) says what is being opened, "out" (back) is bare and quicker. `held`: it was down already. */
+export function Gate({ dir, phase, info, held }: { dir: "in" | "out"; phase: "closing" | "opening"; info: GateInfo | null; held: boolean }) {
+  const doing = info?.caption.replace(/^Opening/, "Reading") ?? "";
+  // the band's own height: the shutter hangs from its lower stripe and its foot is drawn like it
+  const [bandH, setBandH] = useState<number | null>(null);
+  useLayoutEffect(() => setBandH(document.querySelector<HTMLElement>(".band")?.offsetHeight ?? null), []);
+  return (
+    <div
+      className={`gate dir-${dir} is-${phase}${held ? " is-held" : ""}`}
+      role="status"
+      aria-live="polite"
+      style={bandH ? ({ "--band-h": `${bandH}px` } as CSSProperties) : undefined}
+    >
+      <div className="gate-sheet">
+        <div className="gate-foot" />
+        {info && (
+          <>
+            <div className="gate-sign" key={info.title}>
+              <span className="gate-caption">{info.caption}</span>
+              <strong className="gate-title" lang="de">
+                <LvText text={info.title} />
+              </strong>
+              {info.sub && (
+                <span className="gate-sub" lang="de">
+                  <LvText text={info.sub} />
+                </span>
+              )}
+              {info.marks && (
+                <div className="gate-strip">
+                  <Fingerprint marks={info.marks} />
+                </div>
+              )}
+              {info.counts && (
+                <p className="gate-counts">
+                  {SEVERITIES.map((sev) => (
+                    <span key={sev} className={info.counts![sev] === 0 ? "zero" : undefined}>
+                      <Sign severity={sev} size={18} />
+                      <b className="num">{info.counts![sev]}</b>
+                    </span>
+                  ))}
+                  {info.items !== undefined && <small>in {info.items.toLocaleString("de-DE")} items, as last read</small>}
+                </p>
+              )}
+            </div>
+            <Tape side="right" text={doing} />
+          </>
+        )}
+      </div>
     </div>
   );
 }
