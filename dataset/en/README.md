@@ -20,51 +20,100 @@ General files, valid for all projects, are at the top level:
 Each project folder holds the files of that project and its own `TRANSLATION_NOTES.md`: every error, typo,
 contradiction or oddity noticed in the source of those files and how it was carried over (2,022 entries in all).
 
+## What the files are
+
+A project has several files because the same bill of quantities (Leistungsverzeichnis, LV) changes hands several
+times during a tender, and in more than one format. The extension says both things.
+
+**Letter = format**
+
+- **D** (`.D83`, `.D84`, `.D86`): GAEB 90, the old exchange format. Plain text, fixed width, 80 characters per line.
+- **X** (`.X83`): GAEB XML, the newer format with the same content.
+- **PDF**: the printout of the same LV for people to read and sign, often bound together with the contract forms.
+
+**Number = phase of the tender**
+
+- **83** — invitation to tender: the client's empty LV. Items, quantities and texts, no prices.
+- **84** — bid: what the contractor sends back with its prices filled in.
+- **86** — award: the LV with the winning bidder's prices, as it goes into the contract.
+
+So a D83 and an X83 are the same phase in two formats; a D83 and a D86 are the same format in two phases. The GAEB
+files exist to be imported into estimating software; the PDF exists to be read, signed and sent with the forms.
+
+Item counts and totals below are from `docs/02-dataset.md`.
+
 ### `A_Maschinentechnik-Anlagenbau_8209.003/` — Mechanical engineering – plant construction (water utility)
+
+Mechanical and piping works for arsenic removal in a drinking-water plant.
 
 | File | What it is | German original |
 |---|---|---|
-| `8209.003_Leistungsverzeichnis_leer.D83` | tender | `dataset/02_gaeb_90/8209.003_Leistungsverzeichnis_leer.D83` |
-| `8209.003_Leistungsverzeichnis_leer.X83` | tender | `dataset/01_gaeb_xml/8209.003_Leistungsverzeichnis_leer.X83` |
-| `HEM2301-2_Gesamt-LV.pdf` | tender package | `dataset/04_pdf_tiefbau_sonstige/HEM2301-2_Gesamt-LV.pdf` |
-| `[ORT_024] LV24069.D86` | award | `dataset/02_gaeb_90/[ORT_024] LV24069.D86` |
+| `8209.003_Leistungsverzeichnis_leer.X83` | Empty tender LV, 159 items, no prices (GAEB XML). | `dataset/01_gaeb_xml/8209.003_Leistungsverzeichnis_leer.X83` |
+| `8209.003_Leistungsverzeichnis_leer.D83` | The same empty LV as GAEB 90; both parse to the same 159 items. | `dataset/02_gaeb_90/8209.003_Leistungsverzeichnis_leer.D83` |
+| `[ORT_024] LV24069.D86` | Award: priced, 197 items, 536.991,65 EUR net. | `dataset/02_gaeb_90/[ORT_024] LV24069.D86` |
+| `HEM2301-2_Gesamt-LV.pdf` | Complete tender package, 136 pages: invitation, conditions of participation, contract forms and the printed LV. | `dataset/04_pdf_tiefbau_sonstige/HEM2301-2_Gesamt-LV.pdf` |
+
+The award has 38 items more than the tender. They are optional items added by the bidder (surcharge for another
+make of valve, disposal surcharge and the like): they have a unit price but quantity 0, so they do not enter the
+total. The LV pages of the PDF carry "(8209.003)" and the heading "LV Maschinentechnik - Anlagenbau", which is why
+the PDF is filed under this project.
 
 ### `B_Ringschluss-Brunnenwasser/` — Ring connection well water (civil / pipeline)
 
+Well-water / cooling pipeline and civil works for a public client (2023).
+
 | File | What it is | German original |
 |---|---|---|
-| `Abgabe LV.pdf` | submitted bid | `dataset/04_pdf_tiefbau_sonstige/Abgabe LV.pdf` |
-| `Leistungsverzeichnis_leer.pdf` | tender | `dataset/04_pdf_tiefbau_sonstige/Leistungsverzeichnis_leer.pdf` |
-| `StBALV23040.D84` | bid | `dataset/02_gaeb_90/StBALV23040.D84` |
-| `StBALV23040.D86` | award | `dataset/02_gaeb_90/StBALV23040.D86` |
-| `[NUMMER_001]_leer.X83` | tender | `dataset/01_gaeb_xml/[NUMMER_001]_leer.X83` |
+| `[NUMMER_001]_leer.X83` | Empty tender LV, 248 items. | `dataset/01_gaeb_xml/[NUMMER_001]_leer.X83` |
+| `Leistungsverzeichnis_leer.pdf` | Printout of the same empty LV, 78 pages. | `dataset/04_pdf_tiefbau_sonstige/Leistungsverzeichnis_leer.pdf` |
+| `StBALV23040.D84` | Bid: prices and preliminary remarks only, no item texts or quantities. | `dataset/02_gaeb_90/StBALV23040.D84` |
+| `StBALV23040.D86` | Award: texts, quantities and prices together; 249 items, 897.305,45 EUR net. | `dataset/02_gaeb_90/StBALV23040.D86` |
+| `Abgabe LV.pdf` | Printout of the submitted bid with its forms, 91 pages. | `dataset/04_pdf_tiefbau_sonstige/Abgabe LV.pdf` |
+
+The bid PDF and the GAEB files do not agree: the PDF totals 835.804,22 EUR, the GAEB files 897.305,45 EUR (item
+1.1.1, for example, is 26.000 in the PDF and 16.000 in GAEB). Which one is the later version is not known.
 
 ### `C_Fernleitung_2024-001/` — Long-distance pipeline (civil / pipeline)
 
+Long-distance drinking-water transmission main.
+
 | File | What it is | German original |
 |---|---|---|
-| `Angebot AN24-0305.D84` | offer | `dataset/02_gaeb_90/Angebot AN24-0305.D84` |
-| `Angebot AN24-0305.pdf` | offer | `dataset/04_pdf_tiefbau_sonstige/Angebot AN24-0305.pdf` |
-| `LV-Positionen.docx` | list of items grouped by work package (not an LV) | `dataset/05_positionslisten/LV-Positionen.docx` |
-| `LV-Schachtbauwerk.pdf` | excerpt | `dataset/04_pdf_tiefbau_sonstige/LV-Schachtbauwerk.pdf` |
-| `Leistungsverzeichnis.pdf` | tender | `dataset/04_pdf_tiefbau_sonstige/Leistungsverzeichnis.pdf` |
+| `Leistungsverzeichnis.pdf` | Empty tender LV, 71 pages, 274 items. This project's tender LV exists only as PDF. | `dataset/04_pdf_tiefbau_sonstige/Leistungsverzeichnis.pdf` |
+| `LV-Schachtbauwerk.pdf` | 14-page excerpt of the same LV: the shaft structures. | `dataset/04_pdf_tiefbau_sonstige/LV-Schachtbauwerk.pdf` |
+| `Angebot AN24-0305.D84` | Contractor's offer (25.11.2024): prices, very little text; 988.913,89 EUR net. | `dataset/02_gaeb_90/Angebot AN24-0305.D84` |
+| `Angebot AN24-0305.pdf` | Printout of the same offer, 27 pages: short texts and prices. | `dataset/04_pdf_tiefbau_sonstige/Angebot AN24-0305.pdf` |
+| `LV-Positionen.docx` | Hand-made list that groups items by work package; not an LV. Filed here because all 40 item numbers and units match this project's LV (38 also by text). | `dataset/05_positionslisten/LV-Positionen.docx` |
 
 ### `D_Bachdurchlass_152516/` — Stream culvert (civil)
 
+Renewal of a stream culvert for a small municipality (2025). No priced file.
+
 | File | What it is | German original |
 |---|---|---|
-| `GAEB-[PROJEKT_004].X83` | tender | `dataset/01_gaeb_xml/GAEB-[PROJEKT_004].X83` |
-| `LV-Ausdruck-[PROJEKT_004].pdf` | tender | `dataset/04_pdf_tiefbau_sonstige/LV-Ausdruck-[PROJEKT_004].pdf` |
+| `GAEB-[PROJEKT_004].X83` | Empty tender LV, 50 items. | `dataset/01_gaeb_xml/GAEB-[PROJEKT_004].X83` |
+| `LV-Ausdruck-[PROJEKT_004].pdf` | Printout of the same LV, 22 pages. | `dataset/04_pdf_tiefbau_sonstige/LV-Ausdruck-[PROJEKT_004].pdf` |
 
 ### `E_Tiefbau-und-Verlegung_501-24-01/` — Civil works and laying (civil / pipeline)
 
 | File | What it is | German original |
 |---|---|---|
-| `501-24-01_GAEB-XML_sas.x83` | tender | `dataset/01_gaeb_xml/501-24-01_GAEB-XML_sas.x83` |
+| `501-24-01_GAEB-XML_sas.x83` | Empty tender LV, 296 items, of which 24 are provisional items (Bedarfspositionen) and 27 hourly-rate items. No prices, no PDF. | `dataset/01_gaeb_xml/501-24-01_GAEB-XML_sas.x83` |
 
 ### `F_Ausbildungszentrum-und-Buerogebaeude_79-222/` — Training centre and office building (27 building-trade LVs)
 
-The 27 trade LVs `LV_00_Roh_und_Erdauarbeiten.pdf` … `LV_23_Sanitaertrennwaende.pdf` (German originals in `dataset/03_pdf_hochbau_projekt/`), plus `TRANSLATION_NOTES.md`.
+The 27 trade LVs `LV_00_Roh_und_Erdauarbeiten.pdf` … `LV_23_Sanitaertrennwaende.pdf` (German originals in
+`dataset/03_pdf_hochbau_projekt/`), plus `TRANSLATION_NOTES.md`. Each PDF is one trade (structural works, screed,
+tiling, electrical, sanitary, roof waterproofing …): price inquiries ("Anfrage") from the general contractor to
+subcontractors, unpriced, about 1,100 items in total. There is no GAEB counterpart.
+
+### Why the mix is useful
+
+- **A, B and C have real prices** (about 720 priced items); the app's price suggestions rest on them.
+- **A, B and D have the same LV as GAEB and as PDF**, so the PDF parser can be scored against its GAEB twin.
+- **Differences between phases are findings in themselves**: the 38 added items in A, the price gap between bid PDF
+  and GAEB in B.
+- **F is the case of many trades that depend on each other** (screed ↔ floor covering ↔ underfloor heating).
 
 ## What was kept verbatim, and why
 
