@@ -398,6 +398,10 @@ export default function App() {
       )}
 
       {busy && <LoadingTapes what={busy} />}
+      {/* the AI review reads every section with Claude: seconds when cached, a minute or two otherwise */}
+      {!busy && ai === "running" && analysis && (
+        <LoadingTapes doing="AI review in progress" what={analysis.boq.name || analysis.boq.file} />
+      )}
       {error && (
         <div className="notice error" role="alert">
           <span>{error}</span>
