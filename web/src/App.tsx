@@ -426,16 +426,6 @@ export default function App() {
           <CraneIcon size={26} />
           LV Check
         </button>
-        {!project && !analysis && (
-          /* the projects page: the free length of the tape carries what the app looks for */
-          <div className="band-run" aria-hidden>
-            <div>
-              {Array.from({ length: 12 }, (_, i) =>
-                ["Errors", "Risks", "Change orders", "Bidder questions"].map((word) => <span key={`${i}${word}`}>{word}</span>),
-              )}
-            </div>
-          </div>
-        )}
         {project && !analysis && (
           <>
             <div className="doc">
@@ -519,7 +509,7 @@ export default function App() {
         </nav>
       )}
 
-      {intro !== "done" && <Opening phase={intro} />}
+      {(intro === "loading" || intro === "opening") && <Opening phase={intro} />}
       {/* while the new-project dialog is open it says itself that it is working */}
       {busy && !pending && <LoadingTapes what={busy} />}
       {/* the AI review reads every section with Claude: seconds when cached, a minute or two otherwise */}

@@ -352,9 +352,9 @@ Status: decided · 2026-11-21 (Atahan, after comparing three options each as a c
   on the slant; schedule rows are uncovered one after the other, a board card keeps a tape across it until
   its files are read. The one-off wipes also run with "reduce motion" set (the loops do not): a deliberate
   exception for the demo, to be reversed in `home.css` if the product is used for real.
-- **The band is the tape** (Atahan: the header fell behind the opening). Hazard stripes along both edges,
-  66px; the opening ends with one tape straightening into it; on the projects page its free length carries
-  the lettering.
+- **The band is a length of tape** (Atahan: the header fell behind the opening). Hazard stripes along both
+  edges, 66px, nothing on it but the brand and the page's controls. Tried and dropped the same day: words
+  running along the band (read as buttons) and the opening ending with a tape straightening into the band.
 - **Columns added to a table are added to an existing database on start** (`db._add_new_columns`); D-026's
   "a column change means a new database" still holds for every other change.
 

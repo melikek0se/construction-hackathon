@@ -243,54 +243,11 @@ input[type="search"]::placeholder {
   padding: 4px 20px;
   background: var(--yellow);
   /* the band is a length of barrier tape: hazard stripes along both edges, as on the tapes of the opening
-     and of loading, which is where it comes from (the opening lays its tape down as this band) */
+     and of loading; no lettering on it beyond the brand */
   border-block: 9px solid;
   border-image: repeating-linear-gradient(-45deg, var(--ink) 0 9px, var(--yellow) 9px 18px) 9;
 }
 
-/* on the projects page the free length of the tape carries its lettering */
-.band-run {
-  flex: 1;
-  min-width: 0;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  mask-image: linear-gradient(to right, transparent, #000 60px);
-}
-
-.band-run > div {
-  flex: none;
-  display: flex;
-  white-space: nowrap;
-  animation: band-run 90s linear infinite;
-}
-
-.band-run span {
-  padding: 0 22px;
-  font-family: var(--display);
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-
-.band-run span::after {
-  content: "";
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-left: 44px;
-  background: var(--ink);
-  vertical-align: 2px;
-}
-
-@keyframes band-run {
-  to {
-    transform: translateX(-50%);
-  }
-}
 
 .brand {
   font-family: var(--display);

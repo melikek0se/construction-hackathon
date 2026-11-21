@@ -357,9 +357,8 @@ container, button or badge is round or pill-shaped.
 
 ### Band
 The site, once per page, and a length of barrier tape: signal yellow, at least 66px high, a 9px hazard stripe
-along both edges (the same stripe as the loading tapes). The opening lays one of its tapes down as this band.
-On the projects page the free length carries the tape's lettering ("Errors", "Risks", "Change orders",
-"Bidder questions", Barlow Condensed 17px, drifting slowly). Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
+along both edges (the same stripe as the loading tapes). It carries no lettering beyond the brand: words
+running along it were tried and read as buttons. Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
 brand style; in the workspace the brand is the way back to the projects. Then the open project (15px, 600) over
 a file line (12.5px, yellow ink); a created project's name is an input that shows its frame only on hover and
 focus. Right: actions.
@@ -376,8 +375,8 @@ focus. Right: actions.
 - Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; `prefers-reduced-motion` removes all transitions.
 - The larger motions are the loading tapes (520ms pull-in, then a steady run along the tape) and the opening
   of the app: full yellow with two tapes while the projects are fetched, then the yellow is cut away on the
-  slant (900ms), one tape leaves, the other straightens into the band, and the schedule rows are un-taped one
-  after the other.
+  slant (900ms), the tapes are pulled out to their sides, and the schedule rows are un-taped one after the
+  other.
 
 ### Chips, tags and toggles
 - **File chip** (projects page) and **version button** (workspace bar): 24px high, white with a `line-2`

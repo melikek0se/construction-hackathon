@@ -112,9 +112,9 @@ const plateOf = (p: CatalogProject) => (p.source === "demo" ? p.id : (p.name.mat
 /* ------------------------------------------------------------------ the opening */
 
 /** The page opens the way a site does: barrier tape across full yellow while the projects are fetched,
- *  then the yellow is cut away on the slant, one tape leaves and the other straightens and is laid down
- *  as the band of the page. `phase`: "loading" holds, "opening" plays that, "entering" lets go of the tape. */
-export function Opening({ phase }: { phase: "loading" | "opening" | "entering" }) {
+ *  then the yellow is cut away on the slant and the tapes are pulled out to their sides.
+ *  `phase`: "loading" holds, "opening" plays the cut. */
+export function Opening({ phase }: { phase: "loading" | "opening" }) {
   const run = (text: string) => (
     <div className="open-run" aria-hidden>
       {Array.from({ length: 28 }, (_, i) => (
@@ -126,8 +126,8 @@ export function Opening({ phase }: { phase: "loading" | "opening" | "entering" }
     <div className={`opening is-${phase}`} role="status">
       <span className="visually-hidden">Reading the projects</span>
       <div className="open-sheet" />
-      <div className="open-tape a">{run("Reading the projects")}</div>
-      <div className="open-tape b">{run("LV Check")}</div>
+      <div className="open-tape a">{run("LV Check")}</div>
+      <div className="open-tape b">{run("Reading the projects")}</div>
     </div>
   );
 }
