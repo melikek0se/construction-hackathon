@@ -7,7 +7,8 @@
    - when the pointer comes close it leans in; over it, it looks at you and smiles with its eyes
    - click: it crouches, hops, lands with a squash; files dragged over the page: it bounces, excited
    - blinks at random, sometimes twice, and on big gaze shifts
-   - now and then, on its own, one of three bits (the turn-around most often, then the split, the strip least):
+   - now and then, on its own, one of four bits (the turn-around most often, then the split, the strip and the
+     treat least):
      it turns its back, in a three-quarter turn (the cheeks to one side, the face free on the other), shows two
      big round cheeks (the body itself swelling out, so the only line is the cleft between them) and bounces them up and down together (long on the way up, piled flat and wide at the
      bottom), looking
@@ -22,10 +23,17 @@
      bounces its cheeks against it while a hand slaps them twice, then faces you, blows a kiss (hearts), tips
      the hard hat with a hand, and the tube goes up again and the hands are gone
    Other code can make it react:
-   window.dispatchEvent(new CustomEvent("polier", { detail: "hop" | "excited" | "moon" | "strip" })).
+   window.dispatchEvent(new CustomEvent("polier", { detail: "hop" | "excited" | "moon" | "strip" | "split" | "goon" })).
    Typing "popo" anywhere on the page does the turn-around at once, typing "strip" the strip, typing "split"
    the split: it turns its back, the two hands take hold of the cheeks, squeeze, and pull them apart (sideways, at their own height;
    still together at the top and the bottom, an almond-shaped gap between), and there is a star between them, like the mark of an assistant at work, which squeezes to a dot once, slowly, and opens again; then they let go, the cheeks snap shut and wobble, and it turns round again.
+   Typing "goon" the treat: facing you, it slides forward and settles back, a hand comes up to its mouth and
+   the tongue wets it, the hand goes down to its low front and it rocks forwards and backwards against it,
+   faster and faster, blushing and trembling, its eyes two "x"; then a long arch, shaking hard, at the end of
+   which white drops fly up in three bursts and come down on itself: white splats on its face and hard hat,
+   each with a run down from it; it sinks with its eyes shut in a smile, draws a deep breath and lets it out
+   in a long sigh (the body going slack and wide), the mess goes, and it
+   sits up again.
    The system's "reduce motion" setting is not read anywhere in the app (D-038); `calm` below is the slow
    variant (only follows and blinks), kept switched off. */
 import { useEffect, useRef } from "react";
@@ -41,7 +49,7 @@ if (typeof window !== "undefined") {
     pointer.at = performance.now();
   });
   // the secret words, typed anywhere on the page: "popo" makes it turn its back at once, "strip" starts the strip
-  const WORDS: Record<string, string> = { popo: "moon", strip: "strip", split: "split" };
+  const WORDS: Record<string, string> = { popo: "moon", strip: "strip", split: "split", goon: "goon" };
   let typed = "";
   window.addEventListener("keydown", (e) => {
     if (e.key.length !== 1 || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -92,6 +100,30 @@ function buildRig() {
     eyePivot.add(e);
     eyes.push(e);
   }
+
+  // an "x" over each eye, in place of it at the height of the treat
+  const xEyes = [-0.3, 0.3].map((x) => {
+    const y = 0.02;
+    const n = new THREE.Vector3(x, y, Math.sqrt(1 - x * x - y * y));
+    const g = new THREE.Group();
+    for (const a of [Math.PI / 4, -Math.PI / 4]) {
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.065, 0.03), eyeMat);
+      bar.rotation.z = a;
+      g.add(bar);
+    }
+    g.position.copy(n).multiplyScalar(1.0);
+    g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
+    g.visible = false;
+    eyePivot.add(g);
+    return g;
+  });
+  // the tongue, out only while it wets its hand
+  const MOUTH = new THREE.Vector3(0, -0.3, Math.sqrt(1 - 0.09));
+  const tongue = new THREE.Mesh(new THREE.SphereGeometry(0.1, 24, 16), matte(0xff6f8f));
+  tongue.position.copy(MOUTH).multiplyScalar(0.99);
+  tongue.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), MOUTH);
+  tongue.visible = false;
+  eyePivot.add(tongue);
 
   // a blush under each eye, shown only with the look over the shoulder
   const blush = new THREE.MeshStandardMaterial({ color: 0xff7f9c, roughness: 0.9, transparent: true, opacity: 0 });
@@ -223,7 +255,7 @@ function buildRig() {
   hat.position.set(0, 0.34, -0.04);
   hat.rotation.set(-0.16, 0, 0.08);
   head.add(hat);
-  return { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross, pulseStar };
+  return { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross, pulseStar, xEyes, tongue };
 }
 
 /** A damped spring: moves `v` towards `to`, overshooting a little. */
@@ -286,7 +318,7 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       root.scale.setScalar(0.92);
       root.rotation.z = -0.08;
     }
-    const { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross, pulseStar } = buildRig();
+    const { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross, pulseStar, xEyes, tongue } = buildRig();
     root.add(rig);
 
     const calm = false as boolean;
@@ -367,6 +399,42 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
     const SPLIT_YAW = 2.9, SPLIT_EYES = -2.1, OPEN = 0.45;
     let cheekX = CHEEK.x, cheekY = CHEEK_Y; // where the right cheek's centre is now, for the hands
     let splitT = -1;
+    // the treat: K says when the hand is at the mouth, goes down, when it rocks, the height, the drops, and the rest after
+    const K = { lick: 0.9, down: 2.1, go: 2.6, peak: 5.6, burst: 7.0, after: 8.2, sigh: 9.1, end: 11.4 };
+    let keyfT = -1, rub = 0;
+    // the white at the end of the height: drops thrown up in three bursts, each coming down on itself and
+    // staying there as a splat (on the face, or on the hard hat) with a run down from it
+    const FLY = 0.55;
+    const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.18, emissive: 0x5a5a5a });
+    const dropGeo = new THREE.SphereGeometry(1, 20, 14);
+    const DOWN = new THREE.Vector3(0, -1, 0), Y = new THREE.Vector3(0, 1, 0), Z = new THREE.Vector3(0, 0, 1);
+    const mess = ([
+      // [x, y on the face (z from the sphere) | on the hat: x, y, z from its centre], size, when it leaves
+      [-0.5, 0.26, 0, 0.17, 0.0], [0.6, 1.0, 0.75, 0.2, 0.06], [0.14, 0.24, 0, 0.13, 0.12], [-0.45, 1.0, 0.8, 0.16, 0.18],
+      [0.58, 0.02, 0, 0.15, 0.42], [-0.1, -0.22, 0, 0.12, 0.48], [0.05, 1.0, 0.95, 0.19, 0.54],
+      [0.4, -0.45, 0, 0.14, 0.84], [-0.55, -0.3, 0, 0.13, 0.9], [-0.75, 0.75, 0.75, 0.15, 0.96],
+    ] as [number, number, number, number, number][]).map(([x, y, z, size, delay], i) => {
+      const onHat = z > 0;
+      const n = onHat ? new THREE.Vector3(x, y, z).normalize() : new THREE.Vector3(x, y, Math.sqrt(1 - x * x - y * y));
+      // the hat's dome: its centre, its radius, a little flatter than a ball
+      const at = onHat ? new THREE.Vector3(n.x * 1.08, 0.34 + n.y * 1.0, -0.04 + n.z * 1.12) : n.clone().multiplyScalar(1.0);
+      const g = new THREE.Group();
+      g.position.copy(at);
+      g.quaternion.setFromUnitVectors(Z, n);
+      const blob = new THREE.Mesh(dropGeo, white);
+      blob.scale.set(size, size * 0.9, size * 0.4);
+      // the run: down along the surface from the blob
+      const run = new THREE.Mesh(dropGeo, white);
+      const tan = DOWN.clone().addScaledVector(n, -DOWN.dot(n)).normalize().applyQuaternion(g.quaternion.clone().invert());
+      run.quaternion.setFromUnitVectors(Y, tan);
+      g.add(blob, run);
+      g.visible = false;
+      head.add(g);
+      const drop = new THREE.Mesh(dropGeo, white);
+      drop.visible = false;
+      root.add(drop);
+      return { g, run, tan, at, size, delay, drop, side: i % 2 ? 1 : -1, len: size * (1.1 + (i % 3) * 0.5) };
+    });
     const tmp = new THREE.Vector3();
     // the three bits it does on its own (the turn-around, the split, the strip): one clock for all of them,
     // counting only while none is playing, so the pause is between the end of one and the start of the next
@@ -379,10 +447,11 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       const what = (e as CustomEvent).detail;
       if (what === "hop") hop();
       if (what === "excited") bounceT = 2.5;
-      const free = moonT < 0 && stripT < 0 && splitT < 0;
+      const free = moonT < 0 && stripT < 0 && splitT < 0 && keyfT < 0;
       if (what === "moon" && !calm && free) moonT = 0;
       if (what === "strip" && !calm && free) stripT = 0;
       if (what === "split" && !calm && free) splitT = 0;
+      if (what === "goon" && !calm && free) keyfT = 0;
     };
     el.addEventListener("click", hop);
     window.addEventListener("polier", onEvent);
@@ -401,13 +470,14 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       const near = pointer.at > 0 && dist < 220;
 
       // where to look
-      const idle = moonT < 0 && stripT < 0 && splitT < 0;
+      const idle = moonT < 0 && stripT < 0 && splitT < 0 && keyfT < 0;
       if (idle) bitIn -= dt;
       if (bitIn <= 0 && idle && !calm && !dragging && bounceT <= 0 && hopT < 0 && !over) {
         const pick = Math.random(); // mostly the turn-around; the strip, the longest, least often
-        if (pick < 0.5) moonT = 0;
-        else if (pick < 0.8) splitT = 0;
-        else stripT = 0;
+        if (pick < 0.45) moonT = 0;
+        else if (pick < 0.7) splitT = 0;
+        else if (pick < 0.85) stripT = 0;
+        else keyfT = 0;
         bitIn = rand(30, 70);
       }
       if (moonT >= 0) {
@@ -443,6 +513,27 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
         if (splitT > S.end || dragging) splitT = -1;
       }
       const splitting = splitT >= 0, pT = splitting ? splitT : 0;
+      // the treat
+      if (keyfT >= 0) {
+        keyfT += dt;
+        if (keyfT > K.end || dragging) keyfT = -1;
+      }
+      const easing = keyfT >= 0, kT = easing ? keyfT : 0;
+      const recl = easing ? ss(kT, 0, 0.7) * (1 - ss(kT, K.end - 0.8, K.end - 0.1)) : 0; // slid forward, settled back
+      const lick = easing ? ss(kT, K.lick, K.lick + 0.3) * (1 - ss(kT, K.down - 0.1, K.down + 0.25)) : 0; // hand at the mouth
+      const low = easing ? ss(kT, K.down, K.down + 0.4) * (1 - ss(kT, K.after + 0.4, K.after + 0.9)) : 0; // hand on its low front
+      const going = easing ? ss(kT, K.go, K.go + 0.5) * (1 - ss(kT, K.peak + 0.5, K.peak + 1.0)) : 0;
+      rub = easing ? rub + dt * (7 + 10 * ss(kT, K.go, K.peak)) : 0; // faster and faster
+      const thrust = going * Math.sin(rub); // +1 forwards, -1 back
+      const arch = easing ? ss(kT, K.peak - 0.1, K.peak + 0.3) * (1 - ss(kT, K.after - 0.2, K.after + 0.3)) : 0; // the height: arched, and held
+      const shiver = easing ? 0.3 * ss(kT, K.go + 0.8, K.peak) * (1 - arch) + arch * 1.7 : 0;
+      const shake = shiver * Math.sin(t * 58), shake2 = shiver * Math.sin(t * 73 + 1);
+      const xOn = easing && kT > K.go + 0.9 && kT < K.after;
+      const glow = easing ? ss(kT, K.after - 0.05, K.after + 0.15) * (1 - ss(kT, K.end - 0.5, K.end - 0.1)) : 0; // after: eyes shut in a smile
+      // the sigh: a deep breath in, held a moment, and a long one out, going slack
+      const inhale = easing ? ss(kT, K.after + 0.15, K.sigh - 0.1) * (1 - ss(kT, K.sigh, K.sigh + 0.35)) : 0;
+      const exhale = easing ? ss(kT, K.sigh, K.sigh + 0.6) * (1 - ss(kT, K.end - 0.9, K.end - 0.2)) : 0;
+      const handsK = easing ? ss(kT, 0.4, 0.75) * (1 - ss(kT, K.end - 0.7, K.end - 0.3)) : 0;
       const back = splitting && pT < S.away + 0.1; // its back to you
       const handsOut = splitting ? ss(pT, 0.3, 0.6) * (1 - ss(pT, S.away + 0.15, S.away + 0.5)) : 0;
       const reach = splitting ? ss(pT, S.grab, S.grab + 0.3) * (1 - ss(pT, S.release + 0.1, S.away)) : 0; // hands on the cheeks
@@ -460,7 +551,9 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       flirt += ((stripping && sT < T.end - 0.6 ? 1 : 0) - flirt) * Math.min(1, dt * 8);
 
       let ty: number, tp: number, tr = 0;
-      if (back) {
+      if (easing) {
+        ty = 0; tp = -0.3 * recl; tr = 0.07 * recl; // facing you, settled back, the low front towards you
+      } else if (back) {
         ty = SPLIT_YAW; tp = -0.26 - apart * 0.06; // its back to you, the low end tipped up
       } else if (backup || mooning) {
         ty = MOON_YAW; tp = -0.2; tr = -0.12; // half away from you, the low end tipped up, the head to one side
@@ -515,7 +608,8 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       const eyeTo = back && pT > 0.35 ? SPLIT_EYES : stripping && sT > T.swing && sT < T.climb && Math.abs(facing) > 1.1 ? clamp(-facing * 0.95, -1.7, 1.7) /* over the shoulder */ : (mooning && moonT > 0.35) || (backup && sT > T.grind + 0.35) ? MOON_EYES : clamp((ty - hy) * 0.6, -0.22, 0.22);
       eyeYaw += (eyeTo - eyeYaw) * Math.min(1, dt * (mooning || backup || back || turned > 0.05 ? 9 : 22));
       eyePitch += (clamp((tp - hp) * 0.6, -0.15, 0.15) - eyePitch) * Math.min(1, dt * 22);
-      head.rotation.set(hp - wig * 0.035, hy + around, hr + flip);
+      head.rotation.set(hp - wig * 0.035 - thrust * 0.11 - arch * 0.14, hy + around, hr + flip + shake * 0.05);
+      head.rotation.x += -inhale * 0.1 + exhale * 0.08; // chin up with the breath in, sinking with the breath out
       // both cheeks go up and down together: stretched long on the way up, piled flat and wide at the bottom
       cross.visible = apart > 0.02;
       // one slow squeeze while the cheeks are held apart: in, then out again
@@ -534,7 +628,7 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
           a,
         );
       }
-      blush.opacity = Math.max(turned * 0.6, flirt * 0.6);
+      blush.opacity = Math.max(turned * 0.6, flirt * 0.6, recl * 0.75);
       eyePivot.rotation.set(eyePitch, eyeYaw, 0);
       hat.rotation.set(-0.16 + clamp(-pitch.vel * 0.03, -0.08, 0.08), clamp(-yaw.vel * 0.05, -0.12, 0.12), 0.08 + clamp(yaw.vel * 0.02, -0.06, 0.06));
 
@@ -569,9 +663,16 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       pole.visible = stage > 0.001;
       pole.position.y = (1 - stage) * 13;
       rig.position.y = lift;
+      // the treat: sunk and wide, rocking, stretched in the arch
+      lift += -recl * 0.05 + thrust * 0.035 + arch * 0.06 + shake2 * 0.014 + inhale * 0.06 - exhale * 0.05;
+      sy *= 1 - recl * 0.06 + arch * 0.09 + inhale * 0.08 - exhale * 0.07;
+      sx *= 1 + recl * 0.04 - arch * 0.04 - inhale * 0.035 + exhale * 0.055;
+      rig.position.x += shake * 0.03;
+      rig.position.y = lift;
       rig.scale.set(sx, sy, sx);
       const away = Math.min(1, Math.hypot(rig.position.x, rig.position.z) * 2 + climb);
       shade.position.set(rig.position.x, -1.02, rig.position.z);
+      rig.position.z += recl * 0.12 + thrust * 0.1; // forwards and back (after the shadow: it has not left its corner)
       shade.scale.setScalar(Math.max(0.3, 1 - lift * 0.3));
       shadeMat.opacity = away;
       el.style.setProperty("--shade", (1 - away).toFixed(3));
@@ -618,14 +719,52 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
         L = mix(L, hold(1), reach);
         R = mix(R, hold(-1), reach);
       }
-      const shown = Math.max(stage, handsOut);
+      if (easing) {
+        // in the head's own space, so the hands go with every rock and shudder
+        head.updateMatrix();
+        rig.updateMatrix();
+        const at = (x: number, y: number, z: number): V3 => {
+          tmp.set(x, y, z).applyMatrix4(head.matrix).applyMatrix4(rig.matrix);
+          return [tmp.x, tmp.y, tmp.z];
+        };
+        const lap = Math.sin(kT * 10) * lick; // up and down under the tongue
+        R = mix(mix(R, at(0.1, -0.52 + lap * 0.09, 1.1), lick), at(0.05, -0.76 + Math.sin(rub) * 0.08 * going, 0.84), low);
+        L = mix(L, [bx - 1.14, by - 0.74, bz + 0.3], recl); // propped beside it
+        tongue.scale.set(1, 1.25 - lap * 0.3, 0.5).multiplyScalar(Math.max(0.001, lick));
+      }
+      tongue.visible = lick > 0.02;
+      const shown = Math.max(stage, handsOut, handsK);
       [L, R].forEach((to, i) => {
         const h = hands[i];
         h.m.position.set(h.sp[0].step(to[0], dt), h.sp[1].step(to[1], dt), h.sp[2].step(to[2], dt));
         h.m.visible = shown > 0.001;
         h.m.scale.setScalar(Math.max(0.001, shown));
       });
-
+      if (easing && kT > K.burst) {
+        head.updateMatrix();
+        rig.updateMatrix();
+      }
+      const wiped = 1 - ss(kT, K.end - 0.7, K.end - 0.15);
+      for (const d of mess) {
+        const k = easing ? (kT - K.burst - d.delay) / FLY : -1; // 0..1 in the air, then it has landed
+        d.drop.visible = k > 0 && k < 1;
+        d.g.visible = k >= 1;
+        if (d.drop.visible) {
+          // from its low front, up in an arc, down onto where it will stay
+          tmp.copy(d.at).applyMatrix4(head.matrix).applyMatrix4(rig.matrix);
+          const e = k * k * (3 - 2 * k);
+          d.drop.position.set(tmp.x * e + d.side * 0.5 * Math.sin(Math.PI * k), -0.8 + (tmp.y + 0.8) * e + 1.5 * Math.sin(Math.PI * k), 1.15 + (tmp.z + 0.1 - 1.15) * e + 0.5 * Math.sin(Math.PI * k));
+          d.drop.scale.setScalar(d.size * 0.6 * ss(k, 0, 0.1));
+        }
+        if (d.g.visible) {
+          const since = (k - 1) * FLY;
+          const pop = (1 + 0.35 * Math.exp(-9 * since) * Math.cos(since * 22)) * wiped; // lands with a wobble
+          d.g.scale.setScalar(Math.max(0.001, pop));
+          const len = d.len * (1 - Math.exp(-1.6 * since));
+          d.run.scale.set(d.size * 0.3, Math.max(0.001, len / 2 + d.size * 0.2), d.size * 0.3);
+          d.run.position.copy(d.tan).multiplyScalar(len / 2);
+        }
+      }
       // the hearts leave the hand, rise, and fade
       for (const h of hearts) {
         const k = stripping ? (sT - (T.kiss + 0.8) - h.delay) / 1.25 : -1;
@@ -650,14 +789,20 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
         else if (blinkTwice) { blinkTwice = false; blinkT = 0; }
         else blinkT = -1;
       }
-      const sq = 1 - happy * 0.62;
+      const sq = 1 - Math.max(happy, glow) * 0.62;
       // over the shoulder: lids half down, and one slow wink with the eye nearer to you
-      const lid = 1 - Math.max(turned, flirt) * 0.42;
+      const lid = 1 - Math.max(turned, flirt, recl) * 0.42;
       const wink = stripping ? 1 - THREE.MathUtils.smoothstep(sT, T.kiss + 0.75, T.kiss + 0.9) + THREE.MathUtils.smoothstep(sT, T.kiss + 1.3, T.kiss + 1.5)
         : splitting ? 1 - THREE.MathUtils.smoothstep(pT, 2.3, 2.45) + THREE.MathUtils.smoothstep(pT, 2.9, 3.1)
         : mooning ? 1 - THREE.MathUtils.smoothstep(moonT, 2.0, 2.15) + THREE.MathUtils.smoothstep(moonT, 2.6, 2.8) : 1;
       eyes[0].scale.y = open * sq * lid * Math.max(0.08, wink);
       eyes[1].scale.y = open * sq * lid;
+      // the "x" eyes of the treat, quivering
+      eyes.forEach((e, i) => {
+        e.visible = !xOn;
+        xEyes[i].visible = xOn;
+        if (xOn) xEyes[i].scale.setScalar(1 + shake * 0.12 + arch * 0.25);
+      });
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(frame);
