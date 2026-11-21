@@ -1037,8 +1037,13 @@ def prices(analysis_id: str):
 
 @app.post("/api/analyses/{analysis_id}/whatif")
 def whatif(analysis_id: str, scenario: Scenario):
-    """Total of a priced LV under changed unit prices, changed quantities or dropped optional items."""
-    return what_if(_analysis(analysis_id)[0], scenario)
+    """Total of the bid as it stands (the prices entered, or the file's own) under changed unit prices,
+    changed quantities, the client's corrected quantities or dropped optional items."""
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    # no suggestions needed: a suggested price is not in the bid until the estimator takes it
+    state = bid.sheet(boq, None, amendments.about(project_id, boq.file), bid.entered(project_id, boq.file))
+    return what_if(boq, scenario, state)
 
 
 @app.get("/api/analyses/{analysis_id}/report")

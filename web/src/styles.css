@@ -2008,6 +2008,23 @@ a.btn:hover {
   border-top: 1px solid #cdd0c7;
 }
 
+.whatif-optional label.whole {
+  grid-template-columns: auto 1fr;
+}
+
+.whatif-answered .row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto 130px;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-top: 1px solid #cdd0c7;
+}
+
+.whatif-answered .quiet {
+  margin: 8px 0 0;
+}
+
 /* ---------------------------------------------------------------- project */
 
 .trade-graph {

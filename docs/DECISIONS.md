@@ -765,3 +765,14 @@ that evening). Builds on D-042 and D-044.
 
 Revisit if: bands can be measured (quotes against what was paid); unanswered points of a supplier's question
 should become bidder questions to the client by a click.
+
+## D-046 — What-if varies the bid as it stands, not only a priced file
+Status: decided · 2026-11-21
+
+`what_if` takes the bid sheet (`bid.sheet`) as its base: per item the unit price entered with the accepted
+allowance in it, times the file's quantity; a bid or award file with nothing entered on it keeps its own
+totals. Items without a price count as nothing and the result says how many they are, instead of the view
+refusing an LV that came without prices. A quantity the client corrected in an answer stays out of the base
+(the bid keeps the file's quantity, D-040) and is one switch of the scenario. Suggested prices are not in the
+base: a suggestion is not a price until the estimator takes it.
+Revisit if: the bid gets overheads or surcharges on the whole bid — they then belong into the base as well.

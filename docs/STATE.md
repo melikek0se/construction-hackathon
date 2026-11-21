@@ -10,7 +10,7 @@ Upload → parse → rule findings → table works end to end for GAEB files: Py
 rule checks, missing-item check, CLI, FastAPI) and a React screen in `web/`. GAEB XML, GAEB 90 and PDF are
 parsed, the LLM checks run against the Claude API, and the findings can be exported as a risk report and a
 list of bidder questions. Excel LVs are imported, unit prices are suggested from the three priced bids (with
-very low coverage, see below), and a what-if view varies the total of a priced LV.
+very low coverage, see below), and a what-if view varies the total of the bid in progress (or of a priced file).
 
 ## Done
 
@@ -338,8 +338,8 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   read back: phase 84, 50 items, the two prices). Known limits: project D gets one suggestion out of 50
   items (the history is thin); the X84 is not validated against the GAEB schema or opened in a GAEB
   program; an incomplete bid can be downloaded (the view says how many items lack a price); no overheads
-  or surcharges on the whole bid; the what-if and the risk report still read prices from priced files
-  only, not from the bid in progress.
+  or surcharges on the whole bid; the risk report still reads prices from priced files
+  only, not from the bid in progress (the what-if does since 2026-11-21, see What-if below).
   Since then (2026-11-21, late): a real reply was found in a real Gmail inbox and read. It showed a bug —
   one reply was read into all three messages that shared subject and address — fixed: a reply belongs to
   the message it names, else to the newest earlier message without a Message-ID on record
@@ -359,8 +359,16 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   history, 310 of 682 get a price at 6 % median error — the number to expect once similar projects are in.
 - What-if (`src/boq/whatif.py`, `POST /api/analyses/{id}/whatif`, view tab "What-if"): change unit prices or
   quantities of the items in a section and/or containing a word, leave alternative / contingency items out;
-  returns new total, per-section and per-item differences. Works on priced files only. The files carry no
+  returns new total, per-section and per-item differences. The files carry no
   labour / material split, so a change applies to the whole unit price, and the view says so.
+  Since 2026-11-21 the total that is varied is the bid as it stands (`bid.sheet`): the unit prices entered in
+  the Bid view with the accepted allowances in them, on an LV without prices too; a bid or award file still
+  uses its own prices. The view says how many items have no price yet (they count as nothing) and links to
+  the bid; the quantities the client corrected in its answers are listed with what each would move, and one
+  tick counts with them (the bid itself keeps the file's quantities, D-040). Tried in the browser on project
+  D with 35 of 50 items priced, one allowance and two corrected quantities (one on an unpriced item), and on
+  E with no price at all; `tests/test_whatif.py`. Not done: a scenario is not kept, no P50 / P80 range here (the Bid view has one, `risk.py`, D-045), and
+  the risk report still reads prices from priced files only.
 - Excel import (`src/boq/parsers/excel.py`, .xlsx and .xls): finds the header row by the usual German column
   names, reads titles, items, position types, prices. Tried on four public LV templates (11–13 sample items
   each; a fifth, a calculation sheet, has no LV in it); tests build their own workbooks in those layouts.

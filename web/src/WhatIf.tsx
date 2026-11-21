@@ -8,19 +8,22 @@ import type { Adjustment, WhatIfResult } from "./types";
 const START: Adjustment = { kind: "price", percent: 10, section: null, keyword: "" };
 
 /**
- * What-if on a priced LV: change unit prices or quantities of a group of items, leave optional items
- * out, and read the new total. The server does the arithmetic; this view is the form and the readout.
+ * What-if on the bid as it stands (the unit prices entered in the Bid view, or the file's own on a bid
+ * or an award): change unit prices or quantities of a group of items, count with the quantities the
+ * client corrected, leave optional items out, and read the new total. The server does the arithmetic;
+ * this view is the form and the readout.
  */
-export function WhatIfView({ analysisId, sections }: { analysisId: string; sections: Section[] }) {
+export function WhatIfView({ analysisId, sections, onBid }: { analysisId: string; sections: Section[]; onBid: () => void }) {
   const [rows, setRows] = useState<Adjustment[]>([START]);
   const [excluded, setExcluded] = useState<string[]>([]);
+  const [answered, setAnswered] = useState(false);
   const [result, setResult] = useState<WhatIfResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let current = true;
     const timer = setTimeout(() => {
-      runWhatIf(analysisId, { adjustments: rows.filter((r) => Number.isFinite(r.percent)), exclude: excluded })
+      runWhatIf(analysisId, { adjustments: rows.filter((r) => Number.isFinite(r.percent)), exclude: excluded, answered_quantities: answered })
         .then((r) => {
           if (current) {
             setResult(r);
@@ -33,7 +36,7 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
       current = false;
       clearTimeout(timer);
     };
-  }, [analysisId, rows, excluded]);
+  }, [analysisId, rows, excluded, answered]);
 
   const update = (i: number, patch: Partial<Adjustment>) =>
     setRows((rs) => rs.map((r, n) => (n === i ? { ...r, ...patch } : r)));
@@ -42,8 +45,11 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
     return (
       <div className="whatif">
         <p className="quiet none">
-          This file has no prices, so there is no total to vary. Open a bid or an award (GAEB 84 / 86, or a
-          priced PDF).
+          No item has a price yet, so there is no total to vary. Enter unit prices in the bid, and the total
+          here is the bid as it stands.{" "}
+          <button className="text-link" onClick={onBid}>
+            Open the bid
+          </button>
         </p>
       </div>
     );
@@ -111,7 +117,7 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
         <div className="whatif-result">
           <p className="whatif-total">
             <span>
-              <small>Total in the file</small>
+              <small>{result.basis === "bid" ? "The bid as it stands" : "Total in the file"}</small>
               <b className="num">{eur(result.before)}</b>
             </span>
             <span>
@@ -129,7 +135,7 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
           </p>
           <div className="bars whatif-bars" aria-hidden>
             {[
-              ["In the file", result.before],
+              [result.basis === "bid" ? "The bid" : "In the file", result.before],
               ["With changes", result.after],
             ].map(([label, value], i) => (
               <div key={label} className={`bar-row${i === 1 ? " strong" : ""}`}>
@@ -138,7 +144,20 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
               </div>
             ))}
           </div>
+          {result.unpriced_items > 0 && (
+            <p className="quiet none">
+              {result.priced_items} of {result.priced_items + result.unpriced_items} items have a price. The{" "}
+              {result.unpriced_items} without one count as nothing, so both totals are short by them.{" "}
+              <button className="text-link" onClick={onBid}>
+                Open the bid
+              </button>
+            </p>
+          )}
           <p className="quiet">
+            {result.basis === "bid" &&
+              (result.allowances > 0
+                ? `The prices are the ones entered in the bid; ${eur(result.allowances)} of the total is accepted allowance. `
+                : "The prices are the ones entered in the bid. ")}
             The file gives one unit price per item and no split into labour and material, so a change applies to
             the whole unit price of every matching item.
             {result.quantity_beyond_10_percent &&
@@ -199,6 +218,40 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
               </table>
             )}
           </div>
+
+          {(result.answered.length > 0 || result.answered_unpriced > 0) && (
+            <fieldset className="whatif-optional whatif-answered">
+              <legend>Quantities the client corrected in its answers</legend>
+              {result.answered.length > 0 && (
+                <label className="whole">
+                  <input type="checkbox" checked={answered} onChange={(e) => setAnswered(e.target.checked)} />
+                  <span>
+                    Count with them. The bid keeps the quantities of the file until the client sends a corrected LV.
+                  </span>
+                </label>
+              )}
+              {result.answered.map((a) => (
+                <div className="row" key={a.item_oz}>
+                  <b className="num">{a.item_oz}</b>
+                  <span lang="de">
+                    <LvText text={a.label.slice(0, 80)} />
+                  </span>
+                  <span className="num">
+                    {a.qty.toLocaleString("de-DE")} → {a.qty_answered.toLocaleString("de-DE")} {a.unit}
+                  </span>
+                  <span className="r">
+                    {a.delta > 0 ? "+" : ""}
+                    {eur(a.delta)}
+                  </span>
+                </div>
+              ))}
+              {result.answered_unpriced > 0 && (
+                <p className="quiet">
+                  {result.answered_unpriced} more on items without a price: they move nothing until the item is priced.
+                </p>
+              )}
+            </fieldset>
+          )}
 
           {result.optional_items.length > 0 && (
             <fieldset className="whatif-optional">

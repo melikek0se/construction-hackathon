@@ -117,7 +117,15 @@ export interface Adjustment {
 }
 
 export interface WhatIfResult {
-  priced: boolean; // false: the LV has no prices, the other fields are absent
+  priced: boolean; // false: no item has a price, in the file or in the bid; the other fields are absent
+  basis: "bid" | "file"; // whose prices: the bid in progress, or the file's own
+  priced_items: number;
+  unpriced_items: number; // items with a quantity and no price: they count as nothing
+  allowances: number; // of the total, what the accepted allowances add
+  answered_quantities: boolean;
+  // quantities the client corrected in an answer; the bid keeps the file's, `delta` is what they would move
+  answered: { item_oz: string; label: string; unit: string; qty: number; qty_answered: number; total: number; delta: number }[];
+  answered_unpriced: number; // corrected quantities on items without a price
   before: number;
   after: number;
   delta: number;

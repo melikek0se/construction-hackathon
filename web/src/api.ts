@@ -131,7 +131,7 @@ export async function loadPrices(id: string): Promise<Prices | null> {
 }
 
 /** Total of a priced LV under changed prices or quantities, or with optional items left out. */
-export async function runWhatIf(id: string, scenario: { adjustments: Adjustment[]; exclude: string[] }): Promise<WhatIfResult> {
+export async function runWhatIf(id: string, scenario: { adjustments: Adjustment[]; exclude: string[]; answered_quantities: boolean }): Promise<WhatIfResult> {
   return read(
     await fetch(`/api/analyses/${id}/whatif`, {
       method: "POST",

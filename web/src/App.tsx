@@ -1253,7 +1253,7 @@ export default function App() {
                 onDirectory={() => setDirectoryOpen(true)}
               />
             )}
-            {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} />}
+            {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} onBid={() => setView("bid")} />}
             {view === "questions" && (
               <QuestionsView
                 key={analysis.id}

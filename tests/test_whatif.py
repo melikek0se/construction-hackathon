@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from boq import api
+from boq import api, db
 from boq.parsers import parse_file
 from boq.whatif import Adjustment, Scenario, what_if
 
@@ -64,3 +64,37 @@ def test_api_and_unpriced_lv():
     with open(tender, "rb") as fh:
         unpriced = client.post("/api/analyze", files={"file": (tender.name, fh)}).json()["id"]
     assert client.post(f"/api/analyses/{unpriced}/whatif", json={}).json() == {"priced": False}
+
+
+def test_the_bid_in_progress_is_what_is_varied(database):
+    """An LV without prices: the unit prices entered in the bid, the accepted allowance in them, and the
+    quantity the client corrected, which the bid itself does not count with."""
+    client = TestClient(api.app)
+    analysis_id = client.get("/api/catalog/D/files/0").json()["id"]
+    assert client.post(f"/api/analyses/{analysis_id}/whatif", json={}).json() == {"priced": False}
+    sheet = client.get(f"/api/analyses/{analysis_id}/bid").json()
+    first, second = sheet["rows"][0], sheet["rows"][1]
+    client.put(f"/api/analyses/{analysis_id}/bid", json={"prices": {first["item_oz"]: "1.000,00", second["item_oz"]: "20"}})
+    with db.engine().begin() as conn:
+        conn.execute(db.amendments.insert().values(
+            id="a1", project_id="D", file=sheet["file"], item_oz=first["item_oz"], kind="allowance",
+            value={"percent": "10", "note": ""}, quote="", mail_id="m", key="k", status="accepted", created=db.now()))
+        conn.execute(db.amendments.insert().values(
+            id="a2", project_id="D", file=sheet["file"], item_oz=second["item_oz"], kind="quantity",
+            value={"to": "36", "number": "36"}, quote="", mail_id="m", key="k2", status="accepted", created=db.now()))
+    net = client.get(f"/api/analyses/{analysis_id}/bid").json()["net"]
+    assert net == round(1100 * first["qty"] + 20 * second["qty"], 2)
+
+    r = client.post(f"/api/analyses/{analysis_id}/whatif", json={}).json()
+    assert r["priced"] and r["basis"] == "bid" and r["before"] == r["after"] == net
+    assert (r["priced_items"], r["unpriced_items"]) == (2, 48) and r["allowances"] == round(100 * first["qty"], 2)
+    assert [(a["item_oz"], a["qty_answered"]) for a in r["answered"]] == [(second["item_oz"], 36)]
+
+    up = client.post(f"/api/analyses/{analysis_id}/whatif", json={"adjustments": [{"kind": "price", "percent": 10}]}).json()
+    assert abs(up["after"] - net * 1.1) < 0.02 and up["adjustments"][0]["items"] == 2
+    corrected = client.post(f"/api/analyses/{analysis_id}/whatif", json={"answered_quantities": True}).json()
+    assert abs(corrected["delta"] - 20 * (36 - second["qty"])) < 0.01 and corrected["delta"] == r["answered"][0]["delta"]
+    assert corrected["changed_items"] == 1 and corrected["before"] == net
+
+    # a priced file with nothing entered on it is still read from the file
+    assert what_if(C, Scenario())["basis"] == "file" and what_if(C, Scenario())["unpriced_items"] == 0
