@@ -354,7 +354,21 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   a read day the project does not use as "not used". Walked through in headless Chrome at 1440 wide with
   A's English copies: X83 alone (six empty fields), plus the package PDF (five filled), create (plan kept).
   Not seen in a browser: the fields when adding to a project, a hand-set date on a card, narrow widths.
-  The schedule still draws only questions, submission, sent and binding.
+  Revised again (2026-11-21): dates are no longer set on the schedule or taken over on the card. The card
+  has only a "Dates" button: it opens the schedule, moves it to that tender's dates (awarded ones shown
+  while asked for) and lists them under its row with their source. The schedule moves by two weeks
+  (arrows, "Today"); a date outside the eight weeks is a button that goes there. Rows use the project's
+  dates, else the ones its files state without doubt. The band's switch is a signboard: running count on
+  an ink plate, and the next date due. Builds; not seen in a browser (extension was not connected).
+  The schedule has no heading line any more (only the arrows and the range) and slides open and shut
+  (height 0fr→1fr, 320 ms); it stays mounted, inert while shut, so its position is kept.
+  Each row now draws every date the tender has (questions, submission, bid opening when it is another
+  day, sent, binding until, work start and end with the work as a yellow bar); a label that would run
+  into another goes a line lower and the row grows. At each edge one pointer to the nearest date outside
+  the eight weeks ("+n" for more).
+  The schedule shows 8 weeks, 6 months (the default) or 1 year, switched beside the arrows on one line; a quarter of the
+  span lies before today and the arrows move a quarter. 8 weeks is read by calendar week with weekends
+  shaded, the longer spans by month (January lines darker). Not seen in a browser.
 
 ## In progress
 

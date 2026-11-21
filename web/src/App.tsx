@@ -15,7 +15,7 @@ import {
   setFileStep,
   runLlmReview,
 } from "./api";
-import { HardHatIcon, Opening, ProjectsPage, runningTenders } from "./Projects";
+import { HardHatIcon, Opening, ProjectsPage, ScheduleSwitch } from "./Projects";
 import { Mascot } from "./Mascot";
 import { LoadingTapes, ReviewTapes } from "./Loading";
 import { ProjectView } from "./ProjectView";
@@ -463,22 +463,7 @@ export default function App() {
         </button>
         {!project && (!analysis || !stats) && catalog.length > 0 && (
           <div className="actions">
-            <button
-              className="btn band-toggle"
-              aria-expanded={scheduleOpen}
-              aria-controls="schedule"
-              onClick={() => setScheduleOpen(!scheduleOpen)}
-              title={scheduleOpen ? "Close the schedule" : "Open the schedule"}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden>
-                <path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" strokeWidth="2" />
-              </svg>
-              Schedule
-              <span className="num">{runningTenders(catalog)}</span>
-              <svg className="chev" width="11" height="11" viewBox="0 0 12 12" aria-hidden>
-                <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            </button>
+            <ScheduleSwitch projects={catalog} summaries={summaries} open={scheduleOpen} onToggle={() => setScheduleOpen(!scheduleOpen)} />
           </div>
         )}
         {project && !analysis && (
@@ -600,6 +585,7 @@ export default function App() {
         <ProjectsPage
           projects={catalog}
           scheduleOpen={scheduleOpen}
+          onShowSchedule={() => setScheduleOpen(true)}
           summaries={summaries}
           busy={busy !== null}
           pending={pending}

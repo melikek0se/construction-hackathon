@@ -81,13 +81,61 @@
 }
 
 .sched-head {
-  height: 40px;
+  height: 46px;
   align-items: end;
   border-bottom: 1px solid var(--ink);
 }
 
-.sched-head h2 {
-  padding: 0 10px 9px;
+.sched-title {
+  padding: 0 16px 8px 10px;
+}
+
+/* one line: the arrows that move the schedule, then how much of the calendar it shows */
+.sched-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sched-nav .btn-ghost.small {
+  min-width: 30px;
+  font-size: 12px;
+}
+
+/* how much of the calendar is shown */
+.sched-zoom {
+  display: inline-flex;
+  margin-left: 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+}
+
+.sched-zoom button {
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  background: #fff;
+  color: var(--mute);
+  font-family: var(--text);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sched-zoom button + button {
+  border-left: 1px solid var(--line-2);
+}
+
+.sched-zoom button:hover {
+  color: var(--ink);
+}
+
+.sched-zoom button[aria-pressed="true"] {
+  background: var(--ink);
+  color: #fff;
 }
 
 .weeks {
@@ -113,7 +161,7 @@
   position: absolute;
   left: 0;
   bottom: -9px;
-  height: 40px;
+  height: 46px;
   border-left: 1px solid var(--rule);
 }
 
@@ -144,7 +192,7 @@
 
 .sched-left {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
   padding: 10px 16px 9px 10px;
@@ -160,68 +208,84 @@
   white-space: nowrap;
 }
 
-.day-fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 14px;
-  margin-top: 5px;
+.sched-next {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--mute);
 }
 
-.day-field {
-  display: grid;
-  gap: 1px;
-}
-
-.day-field > span {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--dim);
-}
-
-.day-field .sel {
-  width: 132px;
+/* opens the row's dates under it and moves the schedule to them */
+.sched-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   height: 26px;
-  margin-left: -5px;
-  padding: 0 5px 0 4px;
-  background: transparent;
-  border-color: transparent;
-}
-
-/* a set date is plain text until it is pointed at; the calendar sign shows with the frame */
-.day-field .sel > svg {
-  opacity: 0;
-}
-
-.day-field .sel.unset {
-  border-color: var(--line-2);
+  padding: 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
   background: #fff;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
-.day-field .sel:hover:not(:disabled),
-.day-field .sel:focus-visible,
-.day-field .sel[aria-expanded="true"] {
+.sched-go svg {
+  transition: rotate 160ms var(--ease);
+}
+
+.sched-go:hover,
+.sched-go:focus-visible {
   border-color: var(--ink);
-  background: #fff;
 }
 
-.day-field .sel.unset > svg,
-.day-field .sel:hover:not(:disabled) > svg,
-.day-field .sel:focus-visible > svg,
-.day-field .sel[aria-expanded="true"] > svg {
-  opacity: 1;
+.sched-go[aria-expanded="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.sched-go[aria-expanded="true"] svg {
+  rotate: 180deg;
+}
+
+.sched-row.shown {
+  background: var(--hover);
+  box-shadow: inset 4px 0 0 var(--ink);
+}
+
+.sched-detail {
+  grid-column: 1 / -1;
+  padding: 4px 20px 14px 52px;
+  cursor: default;
 }
 
 .lane {
   position: relative;
   min-height: 78px;
-  background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px);
-  background-size: 12.5% 100%; /* eight weeks */
 }
 
 .lane i {
   font-style: normal;
+}
+
+.lane .tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--rule);
+}
+
+.lane .tick.strong,
+.weeks span.strong::before {
+  border-left-color: var(--line-2);
+}
+
+.weeks span.strong {
+  color: var(--ink);
 }
 
 .lane .wkend {
@@ -262,6 +326,14 @@
   background: repeating-linear-gradient(-45deg, transparent 0 5px, var(--line-2) 5px 6px) #fff;
 }
 
+/* the work itself, from start to finish */
+.gbar.work {
+  top: 24px;
+  height: 10px;
+  background: var(--yellow);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
 .gbar.wait {
   top: 28px;
   height: 0;
@@ -278,7 +350,7 @@
 .gmark span {
   position: absolute;
   left: 5px;
-  top: 30px;
+  top: calc(30px + var(--tier, 0) * 28px);
   font-size: 11.5px;
   font-weight: 600;
   line-height: 1.25;
@@ -322,10 +394,24 @@
 
 .goff {
   position: absolute;
-  top: 50px;
+  top: 46px;
+  z-index: 1;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  background: #fff;
+  font-family: var(--text);
   font-size: 11.5px;
   color: var(--mute);
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.goff:hover,
+.goff:focus-visible {
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
 .goff.before {
@@ -476,7 +562,7 @@
 
 .card > header {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: start;
 }
@@ -1339,10 +1425,6 @@
     --left: 250px;
   }
 
-  .day-field .sel {
-    width: 118px;
-  }
-
   .board {
     grid-template-columns: repeat(5, 236px);
     overflow-x: auto;
@@ -1406,37 +1488,52 @@
 
 /* ------------------------------------------------------------------ schedule under the band, full width */
 
-.register > .sched {
+.register .sched {
   border-top: 0;
   border-bottom: 2px solid var(--ink);
 }
 
-.register > .sched .sched-head h2 {
+.register .sched .sched-title {
   padding-left: 20px;
 }
 
-.register > .sched .sched-left {
+.register .sched .sched-left {
   padding-left: 20px;
 }
 
-.register > .sched .sched-body {
+.register .sched .sched-body {
   border-bottom: 0;
 }
 
-.register > .sched .sched-note {
+.register .sched .sched-note {
   padding: 0 20px 8px;
 }
 
-/* opens downwards out of the band */
-.register > .sched {
-  animation: sched-in 220ms var(--ease);
+/* slides open downwards out of the band and shut again: the row height runs from 0 to the schedule's own */
+.sched-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms var(--ease);
 }
 
-@keyframes sched-in {
-  from {
-    opacity: 0;
-    translate: 0 -10px;
-  }
+.sched-wrap.open {
+  grid-template-rows: 1fr;
+}
+
+.sched-wrap > div {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sched-wrap .sched {
+  opacity: 0;
+  translate: 0 -12px;
+  transition: opacity 200ms var(--ease), translate 320ms var(--ease);
+}
+
+.sched-wrap.open .sched {
+  opacity: 1;
+  translate: 0 0;
 }
 
 /* the board under it, headed Projects with the New project button */
@@ -1456,54 +1553,32 @@
 
 /* ------------------------------------------------------------------ dates read from the files */
 
+/* under a schedule row: every date the tender has, each with where it was read */
 .found-dates {
   display: grid;
-  gap: 5px;
-  padding-top: 9px;
-  border-top: 1px solid var(--rule);
-  min-width: 0;
-}
-
-.np-fields .found-dates {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.found-dates > p {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px 24px;
   margin: 0;
-  min-height: 22px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
 }
 
-.found-dates > p > span {
-  margin-right: auto;
-  white-space: nowrap;
+.found-dates > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: baseline;
+  min-width: 0;
+  font-size: 13px;
+  cursor: help;
+}
+
+.found-dates dt {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dim);
-}
-
-.found-dates dl {
-  display: grid;
-  gap: 3px;
-  margin: 0;
-}
-
-.found-dates dl > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 8px;
-  align-items: baseline;
-  font-size: 12.5px;
-  cursor: help;
-}
-
-.found-dates dt {
-  color: var(--mute);
 }
 
 .found-dates dd {
@@ -1521,10 +1596,43 @@
   text-overflow: ellipsis;
 }
 
-.found-dates dl > .other dd,
-.found-dates dl > .other dt {
+.found-dates > .other dd,
+.found-dates > .other dt {
   font-weight: 400;
   color: var(--dim);
+}
+
+.found-none {
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+  color: var(--mute);
+}
+
+/* the card's way to its dates: they live on the schedule */
+.card-dates {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.card-dates:hover:not(:disabled),
+.card-dates:focus-visible {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--yellow);
 }
 
 /* a date field's evidence: the quoted line it was read from, kept to three lines (all of it on hover) */

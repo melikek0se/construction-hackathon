@@ -6,7 +6,8 @@ import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Dat
 import "./home.css";
 
 /* The projects page: the running tenders on a schedule (their dates and nothing else), and under it
-   every tender on a board by the stage it is in (what is open on it and nothing about dates). */
+   every tender on a board by the stage it is in (what is open on it; its dates only behind a button that
+   opens the schedule at them). */
 
 /* A tender's files belong to one of three steps (the GAEB exchange phases 83, 84, 86). */
 const STEPS = ["tender", "bid", "award"] as const;
@@ -60,12 +61,12 @@ function isoWeek(d: Date): number {
 }
 
 /** The next hard date of a running tender: the question deadline or the submission, whichever comes first. */
-function nextDate(p: CatalogProject, today: Date): { what: string; day: Date; days: number } | null {
+function nextDate(p: CatalogProject, plan: Plan, today: Date): { what: string; day: Date; days: number } | null {
   if (stageOf(p) === "award") return null;
   const dates: [string, Date | null][] =
     stageOf(p) === "submitted"
-      ? [["binding period ends", parseDay(p.plan.binding_until)]]
-      : [["questions close", parseDay(p.plan.questions_due)], ["submission", parseDay(p.plan.due)]];
+      ? [["binding period ends", parseDay(plan.binding_until)]]
+      : [["questions close", parseDay(plan.questions_due)], ["submission", parseDay(plan.due)]];
   const ahead = dates.flatMap(([what, day]) => (day && daysBetween(today, day) >= 0 ? [{ what, day, days: daysBetween(today, day) }] : []));
   return ahead.sort((a, b) => a.days - b.days)[0] ?? null;
 }
@@ -115,44 +116,32 @@ function planOf(dates: FoundDate[]): Pick<Plan, TenderDate> {
   };
 }
 
-/** A tender's dates on its card: the ones it is planned by, and what its files state, each with its
- *  evidence on hover. A day the files state and the project does not have is taken over with one click. */
-function FoundDates({ dates, plan, disabled, onTake }: { dates: FoundDate[]; plan: Plan; disabled?: boolean; onTake?: (change: Change) => void }) {
-  const read = planOf(dates);
-  const open = PLANNED.map((f) => f.kind).filter((k) => read[k] && read[k] !== plan[k]);
+/** A tender's dates under its row on the schedule: the ones it is planned by and what its files state,
+ *  each with where it was read (the evidence, in full on hover). Read only. */
+function FoundDates({ dates, plan }: { dates: FoundDate[]; plan: Plan }) {
   // a day of the project that no file states: entered by hand
   const byHand = PLANNED.filter((f) => plan[f.kind] && !dates.some((d) => d.kind === f.kind && d.date === plan[f.kind]));
-  if (dates.length === 0 && byHand.length === 0) return null;
+  if (dates.length === 0 && byHand.length === 0) return <p className="found-none">Its files state no date, and none was entered.</p>;
   const rows = [
     ...dates.map((d) => ({ kind: d.kind as DateKind, day: d.date, found: d as FoundDate | null })),
     ...byHand.map((f) => ({ kind: f.kind as DateKind, day: plan[f.kind]!, found: null })),
   ].sort((a, b) => DATE_ORDER.indexOf(a.kind) - DATE_ORDER.indexOf(b.kind) || a.day.localeCompare(b.day));
   return (
-    <div className="found-dates" onClick={(e) => e.stopPropagation()}>
-      <p>
-        <span>Dates</span>
-        {onTake && open.length > 0 && (
-          <button className="btn-ghost small" disabled={disabled} title="Plan this tender by the dates its files state" onClick={() => onTake(Object.fromEntries(open.map((k) => [k, read[k]])))}>
-            Use these
-          </button>
-        )}
-      </p>
-      <dl>
-        {rows.map(({ kind, day, found }) => {
-          // the files state another day than the one the project is planned by
-          const other = found && kind !== "sent_out" && plan[kind] && plan[kind] !== day;
-          return (
-            <div key={kind + day} className={other ? "other" : undefined} title={found ? `Read from ${readFrom(found)}` : "Entered by hand"}>
-              <dt>{DATE_LABEL[kind]}</dt>
-              <dd className="num">{found ? dayText(found) : dmy(day)}</dd>
-              <dd className="src" lang={found ? "de" : undefined}>
-                {found ? `${other ? "not used: " : ""}${found.sources[0].file}, ${found.sources[0].where}${found.sources.length > 1 ? ` +${found.sources.length - 1}` : ""}` : "entered by hand"}
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
-    </div>
+    <dl className="found-dates">
+      {rows.map(({ kind, day, found }) => {
+        // the files state another day than the one the project is planned by
+        const other = found && kind !== "sent_out" && plan[kind] && plan[kind] !== day;
+        return (
+          <div key={kind + day} className={other ? "other" : undefined} title={found ? `Read from ${readFrom(found)}` : "Entered by hand"}>
+            <dt>{DATE_LABEL[kind]}</dt>
+            <dd className="num">{found ? dayText(found) : dmy(day)}</dd>
+            <dd className="src" lang={found ? "de" : undefined}>
+              {found ? `${other ? "not used: " : ""}${found.sources[0].file}, ${found.sources[0].where}${found.sources.length > 1 ? ` +${found.sources.length - 1}` : ""}` : "entered by hand"}
+            </dd>
+          </div>
+        );
+      })}
+    </dl>
   );
 }
 
@@ -232,103 +221,297 @@ export function Opening({ phase }: { phase: "loading" | "opening" }) {
 
 /* ------------------------------------------------------------------ schedule */
 
-const SPAN = 56; // days on the schedule: two weeks back, six ahead
+/* How much of the calendar the schedule shows. A quarter of it lies before today; the arrows move it by a
+   quarter. Eight weeks are read by calendar week, the longer spans by month. */
+const ZOOMS = [
+  { key: "8w", label: "8 wk", title: "8 weeks", days: 56 },
+  { key: "6m", label: "6 mo", title: "6 months", days: 182 },
+  { key: "1y", label: "1 yr", title: "1 year", days: 364 },
+] as const;
+type Zoom = (typeof ZOOMS)[number];
+const TIER = 28; // px: one line of date labels on a row
 
-/** A date of a tender, set in place: it shows a frame only when pointed at or focused. */
-function DayField({ label, value, disabled, onSet }: { label: string; value?: string; disabled: boolean; onSet: (v: string | null) => void }) {
-  return (
-    <label className={`day-field${value ? "" : " unset"}`}>
-      <span>{label}</span>
-      <DateField label={label} value={value ?? ""} disabled={disabled} onChange={(v) => onSet(v || null)} />
-    </label>
-  );
+const monday = (d: Date) => {
+  const m = startOfDay(d);
+  m.setDate(m.getDate() - ((m.getDay() + 6) % 7));
+  return m;
+};
+const homeStart = (span: number) => monday(new Date(startOfDay(new Date()).getTime() - Math.round(span / 4) * DAY));
+const stepOfZoom = (span: number) => Math.round(span / 4 / 7) * 7; // a quarter of the span, in whole weeks
+
+/** The lines across the schedule and their labels: a Monday per week on eight weeks, else the first of each month. */
+function ticks(start: Date, span: number): { day: Date; label: string; strong?: boolean }[] {
+  const out: { day: Date; label: string; strong?: boolean }[] = [];
+  if (span <= 70) {
+    for (let w = 0; w * 7 < span; w++) {
+      const d = new Date(start.getTime() + w * 7 * DAY);
+      out.push({ day: d, label: `KW ${isoWeek(d)} · ${dm(d)}` });
+    }
+    return out;
+  }
+  const d = new Date(start.getFullYear(), start.getMonth() + (start.getDate() > 1 ? 1 : 0), 1);
+  for (; daysBetween(start, d) < span; d.setMonth(d.getMonth() + 1)) {
+    const month = d.toLocaleDateString("en-GB", { month: "short" });
+    out.push({ day: new Date(d), label: d.getMonth() === 0 || out.length === 0 ? `${month} ${d.getFullYear()}` : month, strong: d.getMonth() === 0 });
+  }
+  return out;
+}
+
+/** The dates a tender is planned by: what was set on the project, else what its files state without doubt. */
+function datesOf(p: CatalogProject, s: ProjectSummary | "failed" | undefined): Plan {
+  const read = s && s !== "failed" ? planOf(s.dates ?? []) : {};
+  const out: Plan = { ...p.plan };
+  for (const [k, v] of Object.entries(read) as [TenderDate, string | undefined][]) if (v && !out[k]) out[k] = v;
+  return out;
+}
+
+/** The days a tender's row shows: question deadline and submission while it runs, sent and binding period after. */
+function laneDays(p: CatalogProject, plan: Plan): Date[] {
+  const keys: (keyof Plan)[] = stageOf(p) === "check" || stageOf(p) === "questions" || stageOf(p) === "pricing" ? ["questions_due", "due"] : ["sent", "binding_until", "due"];
+  const days = keys.map((k) => parseDay(plan[k] as string | undefined)).filter((d): d is Date => d !== null);
+  if (days.length) return days;
+  return (["opening", "exec_start", "exec_end"] as const).map((k) => parseDay(plan[k])).filter((d): d is Date => d !== null);
 }
 
 /** Tenders on the schedule: everything not yet awarded. */
 export const runningTenders = (projects: CatalogProject[]) => projects.filter((p) => stageOf(p) !== "award").length;
 
-function Schedule({
+/** The schedule's switch in the band: what is due next, and how many tenders run. Ink while the schedule is open. */
+export function ScheduleSwitch({
   projects,
-  busy,
-  onOpen,
-  onChange,
+  summaries,
+  open,
+  onToggle,
 }: {
   projects: CatalogProject[];
-  busy: boolean;
-  onOpen: (p: CatalogProject) => void;
-  onChange: (p: CatalogProject, change: Change) => void;
+  summaries: Record<string, ProjectSummary | "failed">;
+  open: boolean;
+  onToggle: () => void;
 }) {
   const today = startOfDay(new Date());
-  const start = new Date(today.getTime() - 14 * DAY);
-  start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // back to a Monday
+  const next = projects
+    .flatMap((p) => {
+      const n = nextDate(p, datesOf(p, summaries[p.id]), today);
+      return n ? [{ p, ...n }] : [];
+    })
+    .sort((a, b) => a.days - b.days)[0];
+  return (
+    <button
+      className={`sched-switch${next && next.days <= 3 ? " soon" : ""}`}
+      aria-expanded={open}
+      aria-controls="schedule"
+      onClick={onToggle}
+      title={open ? "Close the schedule" : "Open the schedule"}
+    >
+      <span className="ss-cal" aria-hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24">
+          <path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" strokeWidth="2" />
+        </svg>
+        <b className="num">{runningTenders(projects)}</b>
+      </span>
+      <span className="ss-text">
+        <small>Schedule</small>
+        {next ? (
+          <span>
+            <span className="ss-plate">{plateOf(next.p)}</span>
+            {next.what} <b>{inDays(next.days)}</b>
+          </span>
+        ) : (
+          <span>Nothing due</span>
+        )}
+      </span>
+      <svg className="ss-chev" width="11" height="11" viewBox="0 0 12 12" aria-hidden>
+        <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
+      </svg>
+    </button>
+  );
+}
+
+/** Which project's dates the schedule shows, asked for from its card; `n` counts the asks, so the same card
+ *  asked twice goes there again after the user moved away. */
+export type Focus = { id: string; n: number } | null;
+
+function Schedule({
+  projects,
+  summaries,
+  busy,
+  focus,
+  onFocus,
+  onOpen,
+}: {
+  projects: CatalogProject[];
+  summaries: Record<string, ProjectSummary | "failed">;
+  busy: boolean;
+  focus: Focus;
+  onFocus: (id: string | null) => void;
+  onOpen: (p: CatalogProject) => void;
+}) {
+  const today = startOfDay(new Date());
+  const [zoom, setZoom] = useState<Zoom>(ZOOMS[1]);
+  const SPAN = zoom.days;
+  const [start, setStart] = useState(() => homeStart(ZOOMS[1].days));
+  const lines = ticks(start, SPAN);
+  const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const pos = (d: Date) => (daysBetween(start, d) / SPAN) * 100;
   const x = (d: Date) => Math.max(0, Math.min(100, pos(d)));
+  const planned = new Map(projects.map((p) => [p.id, datesOf(p, summaries[p.id])]));
+  // an awarded tender is shown only while its dates were asked for
   const running = projects
-    .filter((p) => stageOf(p) !== "award")
-    .sort((a, b) => (nextDate(a, today)?.days ?? 9999) - (nextDate(b, today)?.days ?? 9999));
-  const closed = projects.length - running.length;
+    .filter((p) => stageOf(p) !== "award" || p.id === focus?.id)
+    .sort((a, b) => (nextDate(a, planned.get(a.id)!, today)?.days ?? 9999) - (nextDate(b, planned.get(b.id)!, today)?.days ?? 9999));
+  const closed = projects.filter((p) => stageOf(p) === "award" && p.id !== focus?.id).length;
+
+  /** Moves the schedule so a day stands an eighth of it in from its left edge. */
+  const goTo = (day: Date) => setStart(monday(new Date(day.getTime() - Math.max(7, Math.round(SPAN / 8)) * DAY)));
+  /** Moves the schedule to a tender's dates: a little before the first of them. */
+  const goToProject = (p: CatalogProject) => {
+    const days = laneDays(p, planned.get(p.id)!);
+    if (days.length) goTo(new Date(Math.min(...days.map((d) => d.getTime()))));
+  };
+
+  // the dates of a project were asked for from its card: go there and bring its row into view
+  useEffect(() => {
+    if (!focus) return;
+    const p = projects.find((q) => q.id === focus.id);
+    if (!p) return;
+    goToProject(p);
+    requestAnimationFrame(() => rowRefs.current.get(p.id)?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
 
   const bar = (kind: string, from: Date, to: Date) =>
     x(to) > x(from) && <i className={`gbar ${kind}`} style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%` }} />;
-  /** Which way each of a row's two labels opens. Two dates less than eight days apart would put their labels
-   *  on top of each other: the earlier one then opens to the left of its line, the later one to the right. */
-  const sides = (a: Date | null, b: Date | null): ["left" | "right" | undefined, "left" | "right" | undefined] => {
-    if (!a || !b || Math.abs(daysBetween(a, b)) >= 8) return [undefined, undefined];
-    return a.getTime() <= b.getTime() ? ["left", "right"] : ["right", "left"];
+  type Mark = { day: Date; label: string; flag?: boolean };
+  /** A row's dates on the axis. A label takes about eight days of width; one that would run into another
+   *  goes a line lower. Near the right edge a label opens to the left of its line. */
+  const marks = (list: Mark[]) => {
+    const seen = list.filter((m) => pos(m.day) >= 0 && pos(m.day) <= 100).sort((a, b) => a.day.getTime() - b.day.getTime());
+    const tiers: [number, number][][] = [];
+    const placed = seen.map((m) => {
+      const d = daysBetween(start, m.day);
+      const left = pos(m.day) > 80;
+      const w = SPAN / 7; // a label's width in days: about a seventh of the schedule
+      const span: [number, number] = left ? [d - w, d] : [d, d + w];
+      let tier = tiers.findIndex((t) => t.every(([a, b]) => span[1] <= a || span[0] >= b));
+      if (tier < 0) tier = tiers.push([]) - 1;
+      tiers[tier].push(span);
+      return { ...m, left, tier };
+    });
+    const nodes = placed.map(({ day, label, flag, left, tier }) => {
+      const n = daysBetween(today, day);
+      return (
+        <i
+          key={label}
+          className={`gmark${flag ? " flag" : ""}${n >= 0 && n <= 3 ? " soon" : ""}${left ? " left" : ""}`}
+          style={{ left: `${pos(day)}%`, height: 34 + tier * TIER, ["--tier" as string]: tier }}
+        >
+          <span>
+            {label}
+            <small>
+              {wd(day)} · {inDays(n)}
+            </small>
+          </span>
+        </i>
+      );
+    });
+    return { nodes, tiers: Math.max(1, tiers.length) };
   };
-  const mark = (day: Date | null, label: string, flag = false, side?: "left" | "right") => {
-    if (!day || pos(day) < 0 || pos(day) > 100) return null;
-    const n = daysBetween(today, day);
-    const left = side ? side === "left" : pos(day) > 80; // near the right edge a label opens to the left
-    return (
-      <i className={`gmark${flag ? " flag" : ""}${n >= 0 && n <= 3 ? " soon" : ""}${left ? " left" : ""}`} style={{ left: `${pos(day)}%` }}>
-        <span>
-          {label}
-          <small>
-            {wd(day)} · {inDays(n)}
-          </small>
-        </span>
-      </i>
-    );
+  /** The dates outside the eight weeks shown: at each edge a pointer to the nearest one, that moves the schedule there. */
+  const offs = (list: Mark[]) => {
+    const before = list.filter((m) => pos(m.day) < 0).sort((a, b) => b.day.getTime() - a.day.getTime());
+    const after = list.filter((m) => pos(m.day) > 100).sort((a, b) => a.day.getTime() - b.day.getTime());
+    const one = (m: Mark | undefined, side: "before" | "after", more: number) =>
+      m && (
+        <button
+          key={side}
+          className={`goff ${side}`}
+          title={`Go to ${dm(m.day)}.${m.day.getFullYear()}`}
+          onClick={(e) => (e.stopPropagation(), goTo(m.day))}
+        >
+          {side === "before" && "← "}
+          {m.label.toLowerCase()} {dm(m.day)}
+          {m.day.getFullYear() !== today.getFullYear() ? `.${m.day.getFullYear()}` : ""}
+          {more > 0 && ` +${more}`}
+          {side === "after" && " →"}
+        </button>
+      );
+    return [one(before[0], "before", before.length - 1), one(after[0], "after", after.length - 1)];
   };
-  const off = (day: Date | null, label: string) =>
-    day && (pos(day) < 0 || pos(day) > 100) ? (
-      <span className={`goff ${pos(day) < 0 ? "before" : "after"}`}>
-        {label} {dm(day)}
-        {day.getFullYear() !== today.getFullYear() ? day.getFullYear() : ""}
-      </span>
-    ) : null;
+  const atHome = start.getTime() === homeStart(SPAN).getTime();
+  const step = stepOfZoom(SPAN);
+  const stepText = step % 28 === 0 && step >= 28 ? `${step / 28} month${step > 28 ? "s" : ""}` : `${step / 7} weeks`;
 
   return (
     <section id="schedule" className="sched" aria-label="Schedule of the running tenders">
       <div className="sched-head">
-        <h2>
-          Schedule
-          <small>{running.length === 0 ? "no running tender" : `${running.length} running, next date first`}</small>
-        </h2>
+        <div className="sched-title">
+          <div className="sched-nav" role="group" aria-label="Move the schedule">
+            <button className="btn-ghost small" aria-label={`${stepText} back`} title={`${stepText} back`} onClick={() => setStart(new Date(start.getTime() - step * DAY))}>
+              ←
+            </button>
+            <button className="btn-ghost small" disabled={atHome} onClick={() => setStart(homeStart(SPAN))} title="Back to this week">
+              Today
+            </button>
+            <button className="btn-ghost small" aria-label={`${stepText} ahead`} title={`${stepText} ahead`} onClick={() => setStart(new Date(start.getTime() + step * DAY))}>
+              →
+            </button>
+            <span className="sched-zoom" role="group" aria-label="How much the schedule shows">
+              {ZOOMS.map((z) => (
+                <button
+                  key={z.key}
+                  aria-pressed={z.key === zoom.key}
+                title={`Show ${z.title}`}
+                  onClick={() => {
+                    // keep the middle of what is shown where it is
+                    const mid = start.getTime() + (SPAN / 2) * DAY;
+                    setZoom(z);
+                    setStart(z.key === zoom.key ? start : monday(new Date(mid - (z.days / 2) * DAY)));
+                  }}
+                >
+                  {z.label}
+                </button>
+              ))}
+            </span>
+          </div>
+        </div>
         <div className="weeks" aria-hidden>
-          {Array.from({ length: SPAN / 7 }, (_, w) => {
-            const d = new Date(start.getTime() + w * 7 * DAY);
-            return (
-              <span key={w} style={{ left: `${(w / (SPAN / 7)) * 100}%` }}>
-                KW {isoWeek(d)} · {dm(d)}
-              </span>
-            );
-          })}
+          {lines.map((t) => (
+            <span key={t.day.getTime()} className={t.strong ? "strong" : undefined} style={{ left: `${pos(t.day)}%` }}>
+              {t.label}
+            </span>
+          ))}
         </div>
       </div>
       <div className="sched-body">
         {running.map((p) => {
           const stage = stageOf(p);
+          const plan = planned.get(p.id)!;
+          const s = summaries[p.id];
+          const shown = focus?.id === p.id;
           const received = parseDay(p.created) ?? today;
-          const due = parseDay(p.plan.due), q = parseDay(p.plan.questions_due);
-          const sent = parseDay(p.plan.sent), bind = parseDay(p.plan.binding_until);
-          const dated = stage === "submitted" ? sent || bind : due || q;
-          const [sentSide, bindSide] = sides(sent, bind), [qSide, dueSide] = sides(q, due);
+          const due = parseDay(plan.due), q = parseDay(plan.questions_due), opening = parseDay(plan.opening);
+          const sent = parseDay(plan.sent), bind = parseDay(plan.binding_until);
+          const workFrom = parseDay(plan.exec_start), workTo = parseDay(plan.exec_end);
+          const late = stage === "submitted" || stage === "award";
+          const next = nextDate(p, plan, today);
+          const days = laneDays(p, plan);
+          // every date the tender has, in the order it runs; the opening only where it is not the deadline's day
+          const all: Mark[] = [
+            q && { day: q, label: "Questions close" },
+            due && { day: due, label: "Submission", flag: !late },
+            opening && (!due || daysBetween(due, opening) !== 0) && { day: opening, label: "Bid opening" },
+            sent && { day: sent, label: "Bid sent", flag: true },
+            bind && { day: bind, label: "Binding until" },
+            workFrom && { day: workFrom, label: "Work starts" },
+            workTo && { day: workTo, label: "Work done by" },
+          ].filter((m): m is Mark => !!m);
+          const drawn = marks(all);
+          const waitFrom = sent ?? due;
           return (
             <div
               key={p.id}
-              className="sched-row"
+              ref={(el) => void (el ? rowRefs.current.set(p.id, el) : rowRefs.current.delete(p.id))}
+              className={`sched-row${shown ? " shown" : ""}`}
               tabIndex={0}
               aria-disabled={busy}
               onClick={() => !busy && onOpen(p)}
@@ -338,60 +521,65 @@ function Schedule({
                 <span className="plate">{plateOf(p)}</span>
                 <div>
                   <b lang="de">{p.name}</b>
-                  <div className="day-fields">
-                    {stage === "submitted" ? (
-                      <>
-                        <DayField label="Sent" value={p.plan.sent} disabled={busy} onSet={(v) => onChange(p, { sent: v })} />
-                        <DayField label="Binding until" value={p.plan.binding_until} disabled={busy} onSet={(v) => onChange(p, { binding_until: v })} />
-                      </>
-                    ) : (
-                      <>
-                        <DayField label="Questions until" value={p.plan.questions_due} disabled={busy} onSet={(v) => onChange(p, { questions_due: v })} />
-                        <DayField label="Submission" value={p.plan.due} disabled={busy} onSet={(v) => onChange(p, { due: v })} />
-                      </>
-                    )}
-                  </div>
+                  <small className="sched-next">
+                    {next ? `${next.what[0].toUpperCase()}${next.what.slice(1)} ${inDays(next.days)}` : stage === "award" ? "Awarded" : days.length ? "No date ahead" : "No date in its files"}
+                  </small>
                 </div>
+                <button
+                  className="sched-go"
+                  aria-expanded={shown}
+                  title={shown ? "Hide its dates" : "Go to its dates and list them with where they were read"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (shown) return onFocus(null);
+                    onFocus(p.id);
+                  }}
+                >
+                  Dates
+                  <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden>
+                    <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                </button>
               </div>
-              <div className="lane">
-                {Array.from({ length: SPAN / 7 }, (_, w) => (
-                  <i key={w} className="wkend" style={{ left: `${((w * 7 + 5) / SPAN) * 100}%`, width: `${(2 / SPAN) * 100}%` }} />
+              <div className="lane" style={{ minHeight: 78 + (drawn.tiers - 1) * TIER }}>
+                {lines.map((t) => (
+                  <i key={t.day.getTime()} className={`tick${t.strong ? " strong" : ""}`} style={{ left: `${pos(t.day)}%` }} />
                 ))}
-                {!dated && <span className="lane-none">No date yet. Enter them on the left, or take the ones its files state from its card.</span>}
-                {stage === "submitted" ? (
-                  <>
-                    {sent && bar("past", received, sent)}
-                    {sent && bind && bar("wait", sent, bind)}
-                    {mark(sent, "Bid sent", true, sentSide)}
-                    {mark(bind, "Binding until", false, bindSide)}
-                    {off(sent, "sent")}
-                    {off(bind, "binding until")}
-                  </>
-                ) : (
-                  dated && (
-                    <>
-                      {bar("past", received, today)}
-                      {due && bar("todo", today, due)}
-                      {mark(q, "Questions close", false, qSide)}
-                      {mark(due, "Submission", true, dueSide)}
-                      {off(due, "submission")}
-                    </>
-                  )
-                )}
+                {/* weekends are told apart only where a day is wide enough to see */}
+                {SPAN <= 70 &&
+                  Array.from({ length: SPAN / 7 }, (_, w) => (
+                    <i key={w} className="wkend" style={{ left: `${((w * 7 + 5) / SPAN) * 100}%`, width: `${(2 / SPAN) * 100}%` }} />
+                  ))}
+                {all.length === 0 && <span className="lane-none">Its files state no date.</span>}
+                {/* time gone until today (or until the bid went out), what is left until submission, waiting
+                    for the client through the binding period, and the work itself */}
+                {all.length > 0 && bar("past", received, late && sent ? sent : today)}
+                {!late && due && bar("todo", today, due)}
+                {waitFrom && bind && bar("wait", waitFrom, bind)}
+                {workFrom && workTo && bar("work", workFrom, workTo)}
+                {drawn.nodes}
+                {offs(all)}
               </div>
+              {shown && (
+                <div className="sched-detail" onClick={(e) => e.stopPropagation()}>
+                  {s && s !== "failed" ? <FoundDates dates={s.dates ?? []} plan={p.plan} /> : <p className="found-none">{s === "failed" ? "Its files could not be read." : "Reading its files"}</p>}
+                </div>
+              )}
             </div>
           );
         })}
         {running.length === 0 && <p className="sched-empty">Nothing is running. A tender appears here as soon as its files are dropped, and stays until it is awarded.</p>}
-        <div className="today-wrap" aria-hidden>
-          <i className="today" style={{ left: `${x(today)}%` }}>
-            <b>Today</b>
-          </i>
-        </div>
+        {pos(today) >= 0 && pos(today) <= 100 && (
+          <div className="today-wrap" aria-hidden>
+            <i className="today" style={{ left: `${x(today)}%` }}>
+              <b>Today</b>
+            </i>
+          </div>
+        )}
       </div>
       {closed > 0 && (
         <p className="sched-note">
-          {closed} awarded tender{closed > 1 ? "s are" : " is"} not on the schedule.
+          {closed} awarded tender{closed > 1 ? "s are" : " is"} not on the schedule. Their dates open from their cards.
         </p>
       )}
     </section>
@@ -435,6 +623,7 @@ function Card({
   onDelete,
   onSetStep,
   onChange,
+  onDates,
 }: {
   p: CatalogProject;
   s: ProjectSummary | "failed" | undefined;
@@ -446,6 +635,7 @@ function Card({
   onDelete: (p: CatalogProject) => void;
   onSetStep: (p: CatalogProject, index: number, step: Step) => void;
   onChange: (p: CatalogProject, change: Change) => void;
+  onDates: (p: CatalogProject) => void;
 }) {
   const ready = s !== undefined && s !== "failed";
   // A card whose files are still being read is closed off with tape; the tape is pulled once its numbers
@@ -502,6 +692,13 @@ function Card({
           <b lang="de">{p.name}</b>
           <small>{[p.name.startsWith(p.number) ? "" : p.number, p.trade].filter(Boolean).join(" · ") || (p.kind === "trades" ? `${p.files.length} trade LVs` : "one LV")}</small>
         </div>
+        {/* the dates live on the schedule; this opens it at this tender's */}
+        <button className="card-dates" disabled={busy} title="Show this tender's dates on the schedule" aria-label={`Dates of ${p.name}`} onClick={(e) => (e.stopPropagation(), onDates(p))}>
+          <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden>
+            <path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" strokeWidth="2" />
+          </svg>
+          Dates
+        </button>
       </header>
 
       {!ready && <p className="card-wait">{s === "failed" ? "The files could not be read." : "Reading the files"}</p>}
@@ -516,7 +713,6 @@ function Card({
           ))}
         </ul>
       )}
-      {ready && <FoundDates dates={s.dates ?? []} plan={p.plan} disabled={busy} onTake={stage === "award" ? undefined : (change) => onChange(p, change)} />}
       {ready && s.net !== null && (
         <p className="card-net">
           <span>{s.net_from === "award" ? "Award" : s.net_from === "offer" ? "Offer" : "Bid"}, net</span>
@@ -898,6 +1094,7 @@ export function ProjectsPage({
   onSetStep,
   onChange,
   scheduleOpen,
+  onShowSchedule,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
@@ -915,11 +1112,27 @@ export function ProjectsPage({
   onSetStep: (project: CatalogProject, index: number, step: Step) => void;
   onChange: (project: CatalogProject, change: Change) => void;
   scheduleOpen: boolean; // opened and closed from the band
+  onShowSchedule: () => void;
 }) {
+  const [focus, setFocus] = useState<Focus>(null);
   return (
     <main className="register">
       {/* the schedule runs the full width of the window, straight under the band, which opens and closes it */}
-      {scheduleOpen && projects.length > 0 && <Schedule projects={projects} busy={busy} onOpen={onOpen} onChange={onChange} />}
+      {/* always there, so it can slide open and shut; closed it is out of the tab order */}
+      {projects.length > 0 && (
+        <div className={`sched-wrap${scheduleOpen ? " open" : ""}`} inert={!scheduleOpen} aria-hidden={!scheduleOpen}>
+          <div>
+        <Schedule
+          projects={projects}
+          summaries={summaries}
+          busy={busy}
+          focus={focus}
+          onFocus={(id) => setFocus(id ? { id, n: (focus?.n ?? 0) + 1 } : null)}
+          onOpen={onOpen}
+        />
+          </div>
+        </div>
+      )}
 
       <div className="register-body">
       {pending && (
@@ -972,6 +1185,11 @@ export function ProjectsPage({
                     onDelete={onDelete}
                     onSetStep={onSetStep}
                     onChange={onChange}
+                    onDates={(p) => {
+                      setFocus({ id: p.id, n: (focus?.n ?? 0) + 1 });
+                      onShowSchedule();
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                   />
                 ))}
                 {here.length === 0 && <p className="col-empty">{STAGE_EMPTY[stage]}</p>}
