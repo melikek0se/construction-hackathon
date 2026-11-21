@@ -14,6 +14,7 @@ import {
   deleteProject,
   setFileStep,
   runLlmReview,
+  getQuestions,
 } from "./api";
 import { HardHatIcon, Opening, ProjectsPage, ScheduleSwitch } from "./Projects";
 import { Mascot } from "./Mascot";
@@ -24,19 +25,22 @@ import { LvText, eur, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
 import { Chat } from "./Chat";
 import "./chat.css";
+import "./questions.css";
 import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
+import { QuestionsView } from "./Questions";
 import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type Route } from "./router";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate } from "./types";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState } from "./types";
 
-type View = "plan" | "table" | "remarks" | "whatif" | "pdf";
+type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions";
 const VIEWS: [View, string][] = [
   ["plan", "LV map"],
   ["table", "Item table"],
   ["remarks", "Remarks"],
   ["whatif", "What-if"],
   ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
+  ["questions", "Questions"], // bidder questions: asked by e-mail, the client's reply read back in
 ];
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
 const ALL = new Set<Severity>(SEVERITIES);
@@ -88,6 +92,27 @@ export default function App() {
   const [sample, setSample] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
+  // The bidder questions of the open LV and where each stands (asked, sent, answered); read again when the
+  // findings change, since the AI review writes most of them.
+  const [questions, setQuestions] = useState<QuestionsState | null>(null);
+  const openId = analysis?.id ?? null;
+  const loadQuestions = useCallback(() => {
+    if (!openId) return;
+    getQuestions(openId).then(
+      (q) => setQuestions(q),
+      () => undefined, // the view says that it is still reading; the next change asks again
+    );
+  }, [openId]);
+  useEffect(() => {
+    setQuestions(null);
+    loadQuestions();
+  }, [loadQuestions, ai]);
+  // A finding's question to the client, by the finding (check | item | evidence), once it is in a message.
+  const askedByFinding = useMemo(() => {
+    const map = new Map<string, QuestionsState["questions"][number]>();
+    for (const q of questions?.questions ?? []) if (q.status !== "new") for (const f of q.findings) map.set(f, q);
+    return map;
+  }, [questions]);
   // The right pane: the findings (list or item sheet), or the questions about the project. A conversation
   // belongs to the project, so it stays when another file of the project is opened from an answer.
   const [side, setSide] = useState<"findings" | "ask">("findings");
@@ -731,9 +756,9 @@ export default function App() {
               <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
                 Risk report
               </a>
-              <a className="btn" href={`/api/analyses/${analysis.id}/bieterfragen.txt`} download>
+              <button className="btn" onClick={() => setView("questions")}>
                 Bidder questions
-              </a>
+              </button>
               {project && (
                 <button className="btn" onClick={() => leave(() => setAnalysis(null))}>
                   Back to project
@@ -936,6 +961,16 @@ export default function App() {
               <p className="pdf-status">This PDF was uploaded on its own and not kept, so there are no pages to show. Add it to a project to read it here.</p>
             )}
             {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} />}
+            {view === "questions" && (
+              <QuestionsView
+                key={analysis.id}
+                analysisId={analysis.id}
+                state={questions}
+                onState={setQuestions}
+                onReload={loadQuestions}
+                onItem={(oz) => setSelection({ oz, finding: null })}
+              />
+            )}
           </main>
 
           <aside className="right">
@@ -964,6 +999,8 @@ export default function App() {
                 findingsByOz={findingsByOz}
                 price={selection.oz ? priceByOz.get(selection.oz) : undefined}
                 selection={selection}
+                asked={askedByFinding}
+                onAsked={() => setView("questions")}
                 onSelect={setSelection}
                 onBack={() => setSelection(NONE)}
                 onShowInTable={showInTable}

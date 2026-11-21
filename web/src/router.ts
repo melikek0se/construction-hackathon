@@ -12,8 +12,8 @@
 // An LV takes ?item=5.1.4 (the item that is open), ?page=2 (item table) and ?fpage=2 (findings list).
 // Item numbers and file names contain dots, so they stay out of the path of project URLs: the dev server
 // answers a last path segment with a dot as a file.
-export type LvView = "plan" | "table" | "remarks" | "whatif" | "pdf";
-const LV_VIEWS: readonly string[] = ["plan", "table", "remarks", "whatif", "pdf"];
+export type LvView = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions";
+const LV_VIEWS: readonly string[] = ["plan", "table", "remarks", "whatif", "pdf", "questions"];
 
 /** What an LV page shows beyond the file itself. */
 export interface LvPlace {

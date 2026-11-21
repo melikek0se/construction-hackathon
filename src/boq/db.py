@@ -54,6 +54,28 @@ analyses = Table(
     Column("boq", JSON, nullable=False),
     Column("findings", JSON, nullable=False),
     Column("llm_findings", JSON),  # set once the AI review has run
+    Column("project_id", String(32)),  # the project the file was opened from, if any
+)
+
+# Mail the estimator writes from the app, and the answer that came back. One row is one message with what
+# it is about: `kind` says which traffic it belongs to. Bidder questions to the client are the first kind;
+# price inquiries to suppliers are meant to be the second, on the same columns (see boq.mail).
+mails = Table(
+    "mails", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("kind", String(32), nullable=False),  # "bidder_questions"
+    Column("project_id", String(32), index=True),  # no foreign key: a file opened on its own has none
+    Column("file", Text, nullable=False),  # the LV file the message is about, by name
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("to", Text, nullable=False),
+    Column("subject", Text, nullable=False),
+    Column("body", Text, nullable=False),
+    Column("via", String(16), nullable=False),  # "draft": opened in the user's mail program; "smtp": sent by the app
+    Column("sent_at", DateTime(timezone=True)),  # unset: a draft the user has not confirmed as sent
+    Column("items", JSON, nullable=False),  # what was asked, as it stood then (for questions: key, item, text)
+    Column("reply", Text),  # the answer as it came back, pasted in
+    Column("reply_at", DateTime(timezone=True)),
+    Column("answers", JSON),  # the reply read against the items: per key a status and the passage of the reply
 )
 
 llm_cache = Table(

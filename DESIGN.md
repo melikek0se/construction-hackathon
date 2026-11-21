@@ -486,6 +486,16 @@ rule. Hover and the selected row are pale yellow. In what-if only the difference
 yellow; totals are in the figure style with labels above, the difference in red when the bid gets dearer, and
 two 14px bars compare before and after.
 
+### Questions view
+Two columns under a line with the counts and the question deadline: the questions on the left (checkbox,
+item number as a link, the German question in 600, the quoted LV passage on the quiet fill, a status tag at
+the right: outline for not asked and draft, ink for sent, yellow for answered), the message on the right in a
+2px ink plate (To, Subject, Signature, Text, then "Open in mail program" as the ink button and "Send
+from …" in yellow with an ink line when the server has an account). Each message that went out is a plate
+under it, dashed while it is a draft, with the place for the client's reply. An answer stands under its
+question behind a 4px yellow rule: the passage of the reply, then what it means. The same block closes the
+finding card of an item whose question was asked.
+
 ### Notice
 A bar under the band: red with white text, 13px 500, for an error and for the service not answering. It is not
 used for loading.

@@ -1,5 +1,6 @@
 # Dev environment in one command:
-#   docker compose up --watch    → UI http://localhost:5173 (hot reload), API :8000 (auto-reload), Postgres :5432
+#   docker compose up --watch    → UI http://localhost:5173 (hot reload), API :8000 (auto-reload), Postgres :5432,
+#                                  mail caught at http://localhost:8025 (Mailpit: nothing leaves the laptop)
 #                                  (--watch adds: new Python or npm packages are picked up without a restart)
 # The production image on this laptop (what Render runs, Postgres in place of Neon):
 #   docker compose --profile prod up --build   → http://localhost:8080, password "demo"
@@ -18,6 +19,11 @@ services:
       interval: 2s
       retries: 20
 
+  # Every mail the app sends in development lands here and goes no further: read it at http://localhost:8025.
+  mail:
+    image: axllent/mailpit:latest
+    ports: ["8025:8025", "1025:1025"]  # web page, SMTP
+
   api:
     build: {context: ., target: dev}
     depends_on:
@@ -25,6 +31,12 @@ services:
     env_file: [.env]  # ANTHROPIC_API_KEY, ELEVENLABS_*; the lines below win over it
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
+      # "Send from …" (bidder questions): Mailpit above, unless .env names a real account (SMTP_HOST=…).
+      SMTP_HOST: ${SMTP_HOST:-mail}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-kalkulation@polier.test}
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests

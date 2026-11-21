@@ -372,3 +372,53 @@ export interface ReviewProgress {
   reading?: string[]; // the sections being read now: title and item range
   found?: Record<string, number>; // findings so far per check, as they will be listed
 }
+
+/** A passage of the client's reply that answers a bidder question, and what it settles. */
+export interface QuestionAnswer {
+  status: "answered" | "partly" | "not_answered";
+  quote: string; // word for word from the reply
+  meaning: string; // English, for the estimator
+}
+
+/** A bidder question (Bieterfrage) and where it stands. */
+export interface BidderQuestion {
+  no: number;
+  key: string; // the same question about the same item keeps its key across analyses of the file
+  item_oz: string | null;
+  related_oz: string[];
+  item_label: string;
+  page: number | null;
+  question: string; // German, as it is sent
+  evidence: string;
+  severity: Severity;
+  origin: "rule" | "llm";
+  findings: string[]; // the findings it comes from, as `check | item | evidence`
+  status: "new" | "drafted" | "sent" | "partly" | "answered";
+  mail_id: string | null;
+  sent_at: string | null;
+  answer: QuestionAnswer | null;
+}
+
+/** A message with bidder questions: a draft opened in the mail program, or one sent by the app. */
+export interface QuestionMail {
+  id: string;
+  to: string;
+  subject: string;
+  body: string;
+  via: "draft" | "smtp";
+  created: string;
+  sent_at: string | null;
+  items: { no: number; key: string; item_oz: string | null; question: string; evidence: string }[]; // as asked
+  reply: string | null;
+  reply_at: string | null;
+  answers: Record<string, QuestionAnswer> | null;
+}
+
+/** GET /api/analyses/{id}/questions */
+export interface QuestionsState {
+  lv: { name: string; file: string; number: string; client: string };
+  questions_due: string | null; // last day for bidder questions, if the project has it
+  questions: BidderQuestion[];
+  mails: QuestionMail[];
+  account: string | null; // the address the app can send from; null: drafts only
+}

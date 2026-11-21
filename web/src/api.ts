@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, ReviewProgress, Sample, WhatIfResult, TenderDate } from "./types";
+import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Sample, WhatIfResult, TenderDate } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -172,4 +172,43 @@ export async function locatePassage(id: string, oz: string, quote: string): Prom
       body: JSON.stringify({ oz, quote }),
     }),
   );
+}
+
+/** The bidder questions of an LV with where each stands, and the messages about them. */
+export async function getQuestions(id: string): Promise<QuestionsState> {
+  return read(await fetch(`/api/analyses/${id}/questions`));
+}
+
+const json = (method: string, body: unknown) => ({
+  method,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+/** The German message with these questions, to read and change before it goes out. */
+export async function composeQuestions(id: string, keys: string[], sender: string): Promise<{ subject: string; body: string }> {
+  return read(await fetch(`/api/analyses/${id}/questions/compose`, json("POST", { keys, sender })));
+}
+
+/** Keep a message with these questions; via "smtp" the app sends it, via "draft" the user does. */
+export async function mailQuestions(
+  id: string,
+  message: { keys: string[]; to: string; subject: string; body: string; via: "draft" | "smtp" },
+): Promise<QuestionsState> {
+  return read(await fetch(`/api/analyses/${id}/questions/mails`, json("POST", message)));
+}
+
+/** A draft was sent from the mail program (or was not, after all). */
+export async function markMailSent(mailId: string, sent: boolean): Promise<QuestionMail> {
+  return read(await fetch(`/api/mails/${mailId}`, json("PATCH", { sent })));
+}
+
+export async function discardMail(mailId: string): Promise<void> {
+  const response = await fetch(`/api/mails/${mailId}`, { method: "DELETE" });
+  if (!response.ok) await read(response);
+}
+
+/** The client's reply, pasted in: read against the questions of the message. */
+export async function readReply(mailId: string, text: string): Promise<QuestionMail & { dropped: number }> {
+  return read(await fetch(`/api/mails/${mailId}/reply`, json("POST", { text })));
 }
