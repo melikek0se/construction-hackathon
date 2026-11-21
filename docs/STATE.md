@@ -91,6 +91,11 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   decide · price inquiries to send). No net and no "bid ready" on the card: both need the LV read (the Bid
   view has them). `tests/test_card_tallies.py`; seen in headless Chrome on a1344a2b6dbc with rows put in
   for the look and taken out again. A project without a run shows neither (they ride on the run view).
+  The opening waits for the cards (Atahan: one loading screen, not two): the shutter stays down until
+  every project's summary is there, at most 8 s (`allIn` in `App.tsx`), and a card whose numbers came
+  behind it shows no tape (`covered` on `ProjectsPage` and `Card`). Measured in headless Chrome against
+  the dev database: six cards taped under the shutter, the shutter lifts when the last is read (about
+  4.3 s cold), no card taped or untaping after it. Not checked: the 8 s cap with a slow project.
   Not built (shown in the prototype with made-up data): worst item per project, "new version, not
   checked".
 

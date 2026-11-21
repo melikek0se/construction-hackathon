@@ -1084,6 +1084,7 @@ export default function App() {
           summaries={summaries}
           runs={runs}
           busy={busy !== null}
+          covered={intro === "loading"}
           pending={pending}
           error={error}
           onChange={(p, change) => void changePlan(p, change)}

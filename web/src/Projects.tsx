@@ -757,6 +757,7 @@ function Card({
   stage,
   busy,
   pinned,
+  covered,
   onOpen,
   onDropFiles,
   onChange,
@@ -769,6 +770,7 @@ function Card({
   stage: Stage;
   busy: boolean;
   pinned: boolean; // its dates are held open on the schedule
+  covered: boolean; // the opening is still across the page
   onOpen: (p: CatalogProject, file?: number) => void;
   onDropFiles: (files: FileList, target: string) => void;
   onChange: (p: CatalogProject, change: Change) => void;
@@ -777,8 +779,10 @@ function Card({
 }) {
   const ready = s !== undefined && s !== "failed";
   // A card whose files are still being read is closed off with tape; the tape is pulled once its numbers
-  // are there. A card that arrives with its numbers was never taped and just stands there.
-  const taped = useRef(!ready);
+  // are there. A card that arrives with its numbers was never taped and just stands there; so does one
+  // whose numbers came while the opening still covered the page: nobody saw its tape.
+  const taped = useRef(false);
+  if (!ready && !covered) taped.current = true;
   const [over, setOver] = useState(false);
   const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -1373,6 +1377,7 @@ export function ProjectsPage({
   summaries,
   runs,
   busy,
+  covered,
   pending,
   error,
   onOpen,
@@ -1387,6 +1392,7 @@ export function ProjectsPage({
   summaries: Record<string, ProjectSummary | "failed">;
   runs: Run[]; // the pipeline runs: a card whose project is being checked says so
   busy: boolean;
+  covered: boolean; // the opening is still across the page: what loads behind it shows no tape of its own
   pending: Pending | null;
   error: string | null; // shown in the dialog while it is open: it covers the notice bar
   onOpen: (project: CatalogProject, file?: number) => void;
@@ -1470,6 +1476,7 @@ export function ProjectsPage({
                     onDropFiles={onDropFiles}
                     onChange={onChange}
                     pinned={focus?.id === p.id}
+                    covered={covered}
                     onDates={(p) => setFocus(focus?.id === p.id ? null : { id: p.id, n: (focus?.n ?? 0) + 1 })}
                     onPoint={point}
                   />
