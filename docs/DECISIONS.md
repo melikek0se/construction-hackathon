@@ -199,7 +199,8 @@ in `07-user-flows.md`).
 ## D-022 — `dataset/en/` is an English reading copy of the dataset, never app input
 Status: decided · 2026-11-21
 
-Every file of `dataset/` exists a second time under `dataset/en/` (same subfolders, same names, same formats),
+Every file of `dataset/` exists a second time under `dataset/en/` (same names, same formats; sorted by project A–F instead of by format,
+with the general files README, GLOSSARY and TRANSLATION_NOTES at the top level),
 translated 1:1 so that a non-German speaker can read what the originals say. Errors, contradictions, typos and
 anonymisation tokens of the source are kept on purpose (`dataset/en/TRANSLATION_NOTES.md` lists what was noticed).
 The copy is not input for the app: the rule checks, the companion rules, the unit and risk-wording lists and the

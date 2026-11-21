@@ -1,14 +1,70 @@
 # `dataset/en/` — English reading copy of the dataset
 
-Every file of `dataset/` once more, in English: same subfolders, same file names, same formats (GAEB XML, GAEB 90,
-PDF, DOCX). It is for a reader who does not know German and wants to see exactly what the original says.
+Every file of `dataset/` once more, in English, with the same file names and formats (GAEB XML, GAEB 90, PDF,
+DOCX). It is for a reader who does not know German and wants to see exactly what the original says.
 
 **It is a reading aid, not input for the app.** The checks key on German wording (decision D-022 in
 `docs/DECISIONS.md`); the app's sample list and `scripts/inspect_dataset.py` skip this folder.
 
+## Layout
+
+`dataset/` sorts the files by format; this folder sorts them **by project**, following the project list of the app
+(`src/boq/catalog.py`, described in `docs/02-dataset.md`). The tables below give the German original of every file.
+
+General files, valid for all projects, are at the top level:
+
+- `README.md` — this file: layout, method, checks, limitations.
 - `GLOSSARY.md` — the one German → English term list used for all files, and the codes that stay German.
-- `TRANSLATION_NOTES.md` — per file, every error, typo, contradiction or oddity noticed in the source and how it was
-  carried over (2,022 entries).
+- `TRANSLATION_NOTES.md` — what applies to all files, and an index of the notes per project.
+
+Each project folder holds the files of that project and its own `TRANSLATION_NOTES.md`: every error, typo,
+contradiction or oddity noticed in the source of those files and how it was carried over (2,022 entries in all).
+
+### `A_Maschinentechnik-Anlagenbau_8209.003/` — Mechanical engineering – plant construction (water utility)
+
+| File | What it is | German original |
+|---|---|---|
+| `8209.003_Leistungsverzeichnis_leer.D83` | tender | `dataset/02_gaeb_90/8209.003_Leistungsverzeichnis_leer.D83` |
+| `8209.003_Leistungsverzeichnis_leer.X83` | tender | `dataset/01_gaeb_xml/8209.003_Leistungsverzeichnis_leer.X83` |
+| `HEM2301-2_Gesamt-LV.pdf` | tender package | `dataset/04_pdf_tiefbau_sonstige/HEM2301-2_Gesamt-LV.pdf` |
+| `[ORT_024] LV24069.D86` | award | `dataset/02_gaeb_90/[ORT_024] LV24069.D86` |
+
+### `B_Ringschluss-Brunnenwasser/` — Ring connection well water (civil / pipeline)
+
+| File | What it is | German original |
+|---|---|---|
+| `Abgabe LV.pdf` | submitted bid | `dataset/04_pdf_tiefbau_sonstige/Abgabe LV.pdf` |
+| `Leistungsverzeichnis_leer.pdf` | tender | `dataset/04_pdf_tiefbau_sonstige/Leistungsverzeichnis_leer.pdf` |
+| `StBALV23040.D84` | bid | `dataset/02_gaeb_90/StBALV23040.D84` |
+| `StBALV23040.D86` | award | `dataset/02_gaeb_90/StBALV23040.D86` |
+| `[NUMMER_001]_leer.X83` | tender | `dataset/01_gaeb_xml/[NUMMER_001]_leer.X83` |
+
+### `C_Fernleitung_2024-001/` — Long-distance pipeline (civil / pipeline)
+
+| File | What it is | German original |
+|---|---|---|
+| `Angebot AN24-0305.D84` | offer | `dataset/02_gaeb_90/Angebot AN24-0305.D84` |
+| `Angebot AN24-0305.pdf` | offer | `dataset/04_pdf_tiefbau_sonstige/Angebot AN24-0305.pdf` |
+| `LV-Positionen.docx` | list of items grouped by work package (not an LV) | `dataset/05_positionslisten/LV-Positionen.docx` |
+| `LV-Schachtbauwerk.pdf` | excerpt | `dataset/04_pdf_tiefbau_sonstige/LV-Schachtbauwerk.pdf` |
+| `Leistungsverzeichnis.pdf` | tender | `dataset/04_pdf_tiefbau_sonstige/Leistungsverzeichnis.pdf` |
+
+### `D_Bachdurchlass_152516/` — Stream culvert (civil)
+
+| File | What it is | German original |
+|---|---|---|
+| `GAEB-[PROJEKT_004].X83` | tender | `dataset/01_gaeb_xml/GAEB-[PROJEKT_004].X83` |
+| `LV-Ausdruck-[PROJEKT_004].pdf` | tender | `dataset/04_pdf_tiefbau_sonstige/LV-Ausdruck-[PROJEKT_004].pdf` |
+
+### `E_Tiefbau-und-Verlegung_501-24-01/` — Civil works and laying (civil / pipeline)
+
+| File | What it is | German original |
+|---|---|---|
+| `501-24-01_GAEB-XML_sas.x83` | tender | `dataset/01_gaeb_xml/501-24-01_GAEB-XML_sas.x83` |
+
+### `F_Ausbildungszentrum-und-Buerogebaeude_79-222/` — Training centre and office building (27 building-trade LVs)
+
+The 27 trade LVs `LV_00_Roh_und_Erdauarbeiten.pdf` … `LV_23_Sanitaertrennwaende.pdf` (German originals in `dataset/03_pdf_hochbau_projekt/`), plus `TRANSLATION_NOTES.md`.
 
 ## What was kept verbatim, and why
 
@@ -94,7 +150,7 @@ are footnote marks ("Anlagen²"): the digit is on the English page, at its origi
 - **PDF layout.** English is written into the box of the German paragraph. It is usually shorter, so paragraphs end
   earlier and leave white space; where it is longer the text is shrunk. No page was added and no text was left out.
   The 96 boxes shrunk below 72 % of the original size (mostly short labels in front of a value; the smallest is
-  56 %, about 5.6 pt) are listed per file in `TRANSLATION_NOTES.md`. The English PDFs are larger
+  56 %, about 5.6 pt) are listed per file in the project's `TRANSLATION_NOTES.md`. The English PDFs are larger
   than the originals (35 MB against 21 MB) because the fonts of the new text are embedded. Fonts are a standard sans-serif (monospace where the source uses Courier), not the
   originals.
 - **PDF tables and forms.** A label next to a value, a bullet and its text, and table cells are translated as

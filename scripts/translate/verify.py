@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import fitz  # noqa: E402
 
 from boq.parsers import parse_file  # noqa: E402
-from common import DATASET, OUT, TOKEN, WORK  # noqa: E402
+from common import DATASET, OUT, TOKEN, WORK, out_path  # noqa: E402
 from gaeb90_fmt import codec_of  # noqa: E402
 from pipeline import FORMATS, files  # noqa: E402
 
@@ -151,7 +151,7 @@ def main():
     names = [a for a in args if not a.startswith("--")]
     results, failed = {}, 0
     for p in files(names):
-        dst = OUT / p.relative_to(DATASET)
+        dst = out_path(p)
         if not dst.exists():
             print("MISSING", dst.relative_to(DATASET))
             failed += 1

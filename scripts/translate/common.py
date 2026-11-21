@@ -17,6 +17,37 @@ OUT = DATASET / "en"
 WORK = ROOT / "data" / "processed" / "translation"
 TRANSLATIONS = WORK / "translations.json"
 
+# dataset/en is sorted by project (the mapping of src/boq/catalog.py), not by format like dataset/
+PROJECT_DIRS = {
+    "A": "A_Maschinentechnik-Anlagenbau_8209.003",
+    "B": "B_Ringschluss-Brunnenwasser",
+    "C": "C_Fernleitung_2024-001",
+    "D": "D_Bachdurchlass_152516",
+    "E": "E_Tiefbau-und-Verlegung_501-24-01",
+    "F": "F_Ausbildungszentrum-und-Buerogebaeude_79-222",
+}
+# files that are part of a project although the app's catalogue does not list them (not an LV)
+EXTRA_FILES = {"05_positionslisten/LV-Positionen.docx": "C"}
+
+
+def project_of(src) -> str:
+    """Project letter of a dataset file."""
+    from boq.catalog import DATASET_PROJECTS
+
+    rel = Path(src).relative_to(DATASET).as_posix()
+    if rel in EXTRA_FILES:
+        return EXTRA_FILES[rel]
+    for p in DATASET_PROJECTS:
+        if rel in [f for f, _ in p.get("files", [])] or ("folder" in p and rel.startswith(p["folder"] + "/")):
+            return p["id"]
+    raise KeyError(f"{rel} belongs to no project: add it to boq.catalog or EXTRA_FILES")
+
+
+def out_path(src) -> Path:
+    """Where the English copy of a dataset file lives: dataset/en/<project>/<file name>."""
+    return OUT / PROJECT_DIRS[project_of(src)] / Path(src).name
+
+
 TOKEN = re.compile(r"\[?[A-Z]{2,}_\d+\]?")
 UNITS = {
     "m", "lfm", "lfdm", "m2", "m²", "qm", "m3", "m³", "cbm", "st", "stk", "stck", "psch", "pau", "h", "std", "t", "to",

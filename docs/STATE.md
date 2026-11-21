@@ -149,9 +149,9 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   192,356-character line (embedded image); lines over 2,000 characters are now skipped for that scan.
 
 - English reading copy of the dataset (`dataset/en/`, D-022, 2026-11-21): all 44 files translated 1:1 in their own
-  format, source errors, contradictions and anonymisation tokens kept; `GLOSSARY.md`, `README.md` (method, limits)
-  and `TRANSLATION_NOTES.md` (2,022 source defects noticed while translating, per file with OZ or page) next to
-  them. Made with `scripts/translate/` (`pipeline.py extract | batch | ingest | rebuild`, `verify.py`,
+  format and sorted by project (A–F, one folder each; `dataset/` itself stays sorted by format), source errors, contradictions and anonymisation tokens kept; `GLOSSARY.md`, `README.md` (method, limits)
+  and `TRANSLATION_NOTES.md` at the top level, and one `TRANSLATION_NOTES.md` per project folder (2,022 source
+  defects noticed while translating, per file with OZ or page). Made with `scripts/translate/` (`pipeline.py extract | batch | ingest | rebuild`, `verify.py`,
   `build_notes.py`; 57 batches translated by subagents). Verified by script: the nine GAEB files parse to identical
   items (OZ, quantity, unit, unit price, total), XML markup identical outside text nodes, every PDF page has the
   same numbers and tokens as its source. Rendered pages were looked at for a sample only. A second pass compared every file pair for lost content

@@ -16,7 +16,7 @@ import docx_fmt  # noqa: E402
 import gaeb90_fmt  # noqa: E402
 import pdf_fmt  # noqa: E402
 import xml_fmt  # noqa: E402
-from common import DATASET, OUT, WORK, flat, key_of, load_translations, save_translations, validate  # noqa: E402
+from common import DATASET, OUT, WORK, flat, key_of, load_translations, out_path, save_translations, validate  # noqa: E402
 
 FORMATS = {".x83": xml_fmt, ".d83": gaeb90_fmt, ".d84": gaeb90_fmt, ".d86": gaeb90_fmt, ".pdf": pdf_fmt, ".docx": docx_fmt}
 PILOT = ["8209.003_Leistungsverzeichnis_leer.X83", "StBALV23040.D86", "LV_02_PVC_Fussbodenbelag.pdf", "LV-Positionen.docx"]
@@ -161,7 +161,7 @@ def cmd_rebuild(names):
     notes = {}
     for p in files(names):
         segs = load_segs(p)
-        out = OUT / p.relative_to(DATASET)
+        out = out_path(p)
         out.parent.mkdir(parents=True, exist_ok=True)
         todo = sum(1 for s in segs if s["key"] not in tr)
         res = FORMATS[p.suffix.lower()].rebuild(str(p), segs, lambda s: tr.get(s["key"]), str(out))

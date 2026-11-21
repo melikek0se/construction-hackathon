@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import fitz  # noqa: E402
 
 from boq.parsers import parse_file  # noqa: E402
-from common import DATASET, OUT, TOKEN, WORK, flat, load_translations, needs_translation  # noqa: E402
+from common import DATASET, OUT, TOKEN, WORK, flat, load_translations, needs_translation, out_path  # noqa: E402
 from pipeline import files, load_segs  # noqa: E402
 
 DIG = re.compile(r"\d+")
@@ -183,7 +183,7 @@ def main():
     report, segs_by_key = {}, {}
     for p in files([]):
         rel = p.relative_to(DATASET).as_posix()
-        dst = OUT / rel
+        dst = out_path(p)
         segs = load_segs(p)
         for s in segs:
             segs_by_key.setdefault(s["key"], s)

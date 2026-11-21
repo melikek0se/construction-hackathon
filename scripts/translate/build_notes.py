@@ -10,10 +10,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from common import OUT, WORK, flat, load_translations, validate  # noqa: E402
+from common import DATASET, OUT, PROJECT_DIRS, WORK, flat, load_translations, out_path, project_of, validate  # noqa: E402
 from pipeline import SEG_DIR, files, load_segs  # noqa: E402
 
 HEAD = """# Translation notes
+
+This file holds what applies to all files. The notes themselves are split by project: each project folder has its
+own `TRANSLATION_NOTES.md` (index at the end of this file).
 
 Per file: every error, typo, contradiction or oddity noticed in the German source while translating, and how it was
 carried over. Nothing listed here was fixed: the English copy has the same defect in the same place. The notes come
@@ -74,10 +77,13 @@ def main():
                 moved += 1
     print(f"{moved} notes re-attached to re-cut segments")
     tight = json.loads((WORK / "pdf_tight.json").read_text()) if (WORK / "pdf_tight.json").exists() else {}
-    out = [HEAD]
+    per_project = {k: [] for k in PROJECT_DIRS}
+    counts = {k: [0, 0] for k in PROJECT_DIRS}  # files, notes
     total = 0
     for p in files([]):
-        rel = p.relative_to(OUT.parent).as_posix()
+        rel = p.relative_to(DATASET).as_posix()
+        proj = project_of(p)
+        out = per_project[proj]
         segs = load_segs(p)
         rows, seen = [], set()
         for s in segs:
@@ -95,7 +101,8 @@ def main():
                     residue.append(f"| {where(s)} | {cell(flat(s['src']))} | {cell(flat(tr[s['key']]))} | accepted although the automatic check reported: {cell('; '.join(errs), 200)} |")
                     seen.add(s["key"])
         missing = sum(1 for s in segs if s["key"] not in tr)
-        out.append(f"## `{rel}`\n")
+        out.append(f"## `{p.name}`\n")
+        out.append(f"German original: `dataset/{rel}`\n")
         if missing:
             out.append(f"**{missing} segments are not translated and are still German in the English file.**\n")
         if rows or residue:
@@ -109,8 +116,16 @@ def main():
             for t in tight[rel]:
                 out.append(f"- p. {t['page']}, scale {t['scale']}: {cell(t['text'], 90)}")
             out.append("")
+        counts[proj][0] += 1
+        counts[proj][1] += len(rows) + len(residue)
         total += len(rows) + len(residue)
-    (OUT / "TRANSLATION_NOTES.md").write_text("\n".join(out))
+    index = [HEAD, "## Notes per project\n", "| Project | Files | Notes | Where |", "|---|---|---|---|"]
+    for proj, folder in PROJECT_DIRS.items():
+        head = (f"# Translation notes — project {proj}\n\nSource defects noticed in the files of this project and how "
+                f"they were carried over. What applies to all files is in `../TRANSLATION_NOTES.md`.\n")
+        (OUT / folder / "TRANSLATION_NOTES.md").write_text("\n".join([head] + per_project[proj]))
+        index.append(f"| {proj} | {counts[proj][0]} | {counts[proj][1]} | [`{folder}/TRANSLATION_NOTES.md`]({folder}/TRANSLATION_NOTES.md) |")
+    (OUT / "TRANSLATION_NOTES.md").write_text("\n".join(index) + "\n")
     print(f"{total} notes written")
 
 
