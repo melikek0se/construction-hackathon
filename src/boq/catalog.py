@@ -128,6 +128,13 @@ def remove_file(project_id: str, doc_id: int) -> bool:
     return bool(done)
 
 
+def set_role(project_id: str, doc_id: int, role: str) -> None:
+    with db.engine().begin() as conn:
+        conn.execute(update(db.documents).where(db.documents.c.id == doc_id,
+                                                db.documents.c.project_id == project_id).values(role=role))
+        conn.execute(update(db.projects).where(db.projects.c.id == project_id).values(summary=None))
+
+
 def set_kind(project_id: str, kind: str) -> None:
     with db.engine().begin() as conn:
         conn.execute(update(db.projects).where(db.projects.c.id == project_id).values(kind=kind))

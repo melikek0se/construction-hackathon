@@ -195,10 +195,31 @@ export interface CatalogProject {
 }
 
 /** What a set of dropped files is, before anything is kept. */
+export type Step = "tender" | "bid" | "award";
+
+/** One dropped file as the server read it (src/boq/intake.py). */
+export interface IntakeFile {
+  index: number; // its place among the dropped files
+  name: string;
+  format: BoQ["format"];
+  title: string;
+  items: number;
+  lv: number; // files with the same number are versions of one LV
+  role: string; // tender, tender package, excerpt, bid, submitted bid, award
+  step: Step;
+  certain: boolean; // false: the step is inferred, the user should look
+  evidence: string[]; // what the step was read from
+}
+
 export interface Intake {
-  name: string; // the project name the LV itself carries, or ""
+  number: string; // the tender's number as the files state it, or ""
+  name: string; // number and name read from the files, or ""
+  client: string;
+  source: { file: string; where: string } | null; // where the name was read
   lvs: number; // how many different LVs the files are
-  files: { name: string; format: BoQ["format"]; role: string; title: string; items: number; lv: number }[];
+  suggested: { id: string; reason: string } | null; // the project these files probably belong to
+  files: IntakeFile[];
+  left_out: { name: string; reason: string }[]; // dropped files that are not LVs
 }
 
 export interface ProjectSummary {

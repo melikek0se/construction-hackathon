@@ -163,6 +163,65 @@ def _body(pages: list[tuple[list[Line], float]]) -> tuple[list[Line], dict[str, 
     return body, titles
 
 
+_FIELD = re.compile(r"^(Projekt|Bauvorhaben|Baumaßnahme|LV|Bauherr|Auftraggeber|Projekt-Nr\.?|DV-Nr\. AG|"
+                    r"Vergabenummer|Vergabe-Nr\.?)\s*:\s*(.*)$")
+_FIELD_KEY = {"Projekt": "project", "Bauvorhaben": "project", "Baumaßnahme": "project", "LV": "lv",
+              "Bauherr": "client", "Auftraggeber": "client"}  # every other label is a number
+_OTHER_FIELD = re.compile(r"^[^\s:]+(\s[^\s:]+)?:|^(Seite|Datum)\b")  # "Währung: EUR", "Seite 4"
+_NUMBER_TOKEN = re.compile(r"^[\w./-]*\d[\w./-]*$")
+_HEADING = re.compile(r"^(Anfrage|Preisanfrage|Angebotsaufforderung|Angebot|Nachtragsangebot|Auftrag|Auftrags-LV|"
+                      r"Auftragsbestätigung|Auftragsleistungsverzeichnis|Bestellung)$")
+_CALL_FOR_BIDS = "Aufforderung zur Abgabe eines Angebots"  # VHB form 211, the cover of a public tender
+_PRINTED_FOR = re.compile(r"^(.*?)\s*\(([\w./-]*\d[\w./-]*)\)$")  # "<project> (8209.003)"
+
+
+def _heads(pages: list[tuple[list[Line], float]]) -> list[int | None]:
+    return [next((i for i, l in enumerate(lines[:25]) if _COLUMN_HEAD.search(l.text)
+                  and _COLUMN_HEAD_WORDS.search(l.text)), None) for lines, _ in pages]
+
+
+def _about(boq: BoQ, pages: list[tuple[list[Line], float]]) -> None:
+    """What the print-out says about itself above the column header: project, number, LV, client and
+    the word it is headed with. Read from the first LV pages; the value most pages agree on wins."""
+    heads = _heads(pages)
+    found: dict[str, collections.Counter] = collections.defaultdict(collections.Counter)
+    lv_pages = [(lines, head) for (lines, _), head in zip(pages, heads) if head is not None][:3]
+    for lines, head in lv_pages:
+        for l in lines[:head]:
+            texts = [t for _, t, _ in l.spans]
+            if _HEADING.match(l.text):
+                found["heading"][l.text] += 1
+            if texts[0] == "Leistungsverzeichnis" and len(texts) == 2 and (m := _PRINTED_FOR.match(texts[1])):
+                found["project"][m.group(1)] += 1
+                found["number"][m.group(2)] += 1
+            for i, t in enumerate(texts):
+                m = _FIELD.match(t)
+                if not m:
+                    continue
+                parts = [m.group(2)] if m.group(2) else []
+                for nxt in texts[i + 1:]:
+                    if _OTHER_FIELD.match(nxt):
+                        break
+                    parts.append(nxt)
+                key = _FIELD_KEY.get(m.group(1), "number")
+                if key in ("project", "lv") and len(parts) > 1 and _NUMBER_TOKEN.match(parts[0]):
+                    if key == "project":
+                        found["number"][parts[0]] += 2  # the number printed with the project, before any other
+                    parts = parts[1:]
+                if parts:
+                    found[key][" ".join(parts)] += 1
+
+    def best(key: str) -> str:
+        return max(found[key].items(), key=lambda kv: (kv[1], len(kv[0])))[0] if found[key] else ""
+
+    boq.project, boq.project_no, boq.lv_label, boq.client = best("project"), best("number"), best("lv"), best("client")
+    boq.heading = best("heading")
+    forms = [lines for (lines, _), head in zip(pages, heads) if head is None and any("VHB" in l.text for l in lines)]
+    boq.forms = len(forms)
+    if not boq.heading and any(_CALL_FOR_BIDS in l.text for lines in forms[:10] for l in lines):
+        boq.heading = _CALL_FOR_BIDS
+
+
 def _oz_column(body: list[Line]) -> float | None:
     """x of the item-number column: the leftmost position where item numbers start lines."""
     xs = collections.Counter(round(l.x / 4) for l in body if _OZ.match(l.spans[0][1].split()[0]))
@@ -247,6 +306,7 @@ def parse_pdf(path: str) -> BoQ:
     oz_x = _oz_column(body)
     if oz_x is None:
         return boq
+    _about(boq, pages)
     entries, preface = _entries(body, oz_x)
     if preface and _text(preface):
         boq.remarks.append(Remark(text=_text(preface)))

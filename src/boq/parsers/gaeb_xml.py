@@ -118,6 +118,10 @@ def _item(el, oz_parts, path, file) -> Item:
     return item
 
 
+def _child_text(el, name: str) -> str:
+    return next(((c.text or "").strip() for c in el if _local(c) == name), "")
+
+
 def parse_gaeb_xml(path: str) -> BoQ:
     root = ET.parse(path).getroot()
     boq = BoQ(file=os.path.basename(path), format="gaeb_xml")
@@ -127,6 +131,10 @@ def parse_gaeb_xml(path: str) -> BoQ:
             boq.phase = (el.text or "").strip()
         elif name == "LblBoQ" and not boq.name:
             boq.name = (el.text or "").strip()
+        elif name == "PrjInfo":
+            boq.project_no, boq.project = _child_text(el, "NamePrj"), _child_text(el, "LblPrj")
+        elif name == "OWN" and not boq.client:
+            boq.client = next((_child_text(a, "Name1") for a in el if _local(a) == "Address"), "")
         elif name == "AddText":
             _remark(el, [], boq)
     for el in root.iter():

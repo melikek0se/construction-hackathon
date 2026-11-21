@@ -303,3 +303,30 @@ interface statements and trade graph of `project.py` as a second way to pull lin
 Revisit if: answers miss passages that reading everything finds (then add the graph edges or embeddings);
 projects grow past what an in-memory index handles.
 
+## D-028 — Intake reads the tender and each file's step from the files, shows its evidence, and can be corrected
+Status: decided · 2026-11-21 (Atahan: rethink the flow from how an estimator works); refines D-021, which stands
+
+An estimator works on a tender, not on a file, and comes to the app at four moments: the tender arrives (a
+folder: forms, LV as PDF and GAEB, plans — nearly every upload), an addendum arrives, the bid has gone out,
+the award comes. The step of a file is therefore not something to fill in per file: it follows from who wrote
+the document, whether it carries prices and what the project already holds (`src/boq/intake.py`, no LLM).
+- **Step**, first rule that applies: GAEB phase; a priced PDF with the same prices as a GAEB bid or award of
+  the same LV; the word the PDF is headed with ("Anfrage", "Angebot", "Auftrag", VHB form 211); prices or
+  none. No prices is a tender. A priced PDF that names nothing is taken for a bid and marked "check".
+- **Qualifier** in the hand mapping's words: contract-form pages make a "tender package" or "submitted bid";
+  an LV whose items are part of a larger one with the same heading is an "excerpt".
+- **Project**: number and name from the GAEB project fields (`PrjInfo`, records 00 / 02) or the PDF page
+  header ("Projekt:", "Bauvorhaben:"), before the LV's own label, which names the trade and is used only for
+  a project of one LV. A label that is only an anonymisation token ranks last. The name is `number name`.
+- Print-outs headed as different LVs are different LVs even when their items coincide (F: 27 LVs, was 26).
+- A file that is not an LV is listed as left out and no longer fails the whole drop.
+- The destination is suggested when the number or name matches an existing project (not by items: that
+  would mean parsing every project at each intake).
+- The user corrects a step with one click in the intake; `PATCH /api/catalog/{id}/files/{n}` does it later
+  ("Move to…" next to the selected file on the project row).
+`BoQ.phase` of a PDF is unchanged ("84" when priced); the role kept with the document is what the UI shows.
+Scored against the hand mapping in `catalog.py` by `scripts/eval_intake.py`: step 43/43, qualifier 43/43,
+number 4/6 (B has none by hand, E's is inside its LV title), name 5/6 (D's is only a token).
+Revisit if: real tenders use headers the label list does not know (then a model reads the first page as a
+fallback), deadlines are wanted (form 211 is blank in the dataset), or ZIP / folder drops are needed.
+

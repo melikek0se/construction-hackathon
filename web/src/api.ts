@@ -46,19 +46,28 @@ export async function openCatalogProject(id: string): Promise<Project> {
   return read(await fetch(`/api/catalog/${id}/project`));
 }
 
-/** What these files are: role, which of them are the same LV, the name the LV carries. Keeps nothing. */
-export async function intakeFiles(files: File[]): Promise<Intake> {
+/** What these files are: the tender they belong to, which of them are the same LV, the step of each
+ *  with its evidence. `onto`: the project they were dropped on. Keeps nothing. */
+export async function intakeFiles(files: File[], onto?: string | null): Promise<Intake> {
   const form = new FormData();
   for (const file of files) form.append("files", file);
+  if (onto) form.append("project", onto);
   return read(await fetch("/api/intake", { method: "POST", body: form }));
 }
 
-/** Keep files as a new project, or add them to a project created earlier. */
-export async function createProject(files: File[], name?: string, addTo?: string | null): Promise<{ id: string }> {
+/** Keep files as a new project, or add them to a project created earlier. `roles`: one entry per file,
+ *  set where the user corrected the step the server read. */
+export async function createProject(
+  files: File[],
+  name?: string,
+  addTo?: string | null,
+  roles?: (string | null)[],
+): Promise<{ id: string }> {
   const form = new FormData();
   for (const file of files) form.append("files", file);
   if (name) form.append("name", name);
   if (addTo) form.append("project", addTo);
+  if (roles?.some((r) => r !== null)) form.append("roles", JSON.stringify(roles));
   return read(await fetch("/api/projects", { method: "POST", body: form }));
 }
 
@@ -68,6 +77,17 @@ export async function renameProject(id: string, name: string): Promise<CatalogPr
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
+    }),
+  );
+}
+
+/** Say that a file of a project belongs to another step of the tender than was read from it. */
+export async function setFileStep(id: string, index: number, step: string): Promise<CatalogProject> {
+  return read(
+    await fetch(`/api/catalog/${id}/files/${index}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ step }),
     }),
   );
 }

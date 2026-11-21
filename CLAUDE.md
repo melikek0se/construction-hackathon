@@ -72,12 +72,14 @@ uv run python scripts/eval_pdf_parser.py -v   # PDF parser score against the GAE
 uv run python scripts/eval_prices.py -v       # back-test of the price suggestions; run after touching prices.py
 python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
 docker compose up --build             # production setup locally: same image + Postgres 17, :8080, password "demo"
+uv run python scripts/eval_intake.py -v       # intake (project name, step per file) against the hand mapping; run after touching intake.py or a parser
 docker compose up db                   # only Postgres, for hot reload; .env: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boq
 ```
 
 Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src/boq/checks` (`rules.py` per item,
 `companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/report.py` (risk report, bidder questions), `src/boq/prices.py` (price suggestions), `src/boq/whatif.py`,
-`src/boq/project.py` (several trade LVs: interfaces, dependency graph, cross-LV findings) → `src/boq/api.py`
+`src/boq/project.py` (several trade LVs: interfaces, dependency graph, cross-LV findings),
+`src/boq/intake.py` (what dropped files are: same LV, project name, step per file) → `src/boq/api.py`
 (storage in `src/boq/db.py`: projects, documents, analyses, LLM cache; `DATABASE_URL`, SQLite by default) → `web/` (Vite + React, one screen:
 `web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`, the original PDF pages with
 findings marked on them in `PdfView.tsx`, positions from `src/boq/pdfmarks.py`, pages for LVs without a PDF

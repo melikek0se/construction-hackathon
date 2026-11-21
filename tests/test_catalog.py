@@ -69,7 +69,9 @@ def test_intake_says_what_the_files_are():
     body = client.post("/api/intake", files=files).json()
     assert [f["role"] for f in body["files"]] == ["tender", "award", "tender"]
     assert [f["lv"] for f in body["files"]] == [0, 0, 1] and body["lvs"] == 2  # tender and award are one LV
-    assert body["name"] == "Maschinentechnik - Anlagenbau"
+    assert body["name"] == "8209.003 [PROJEKT_002]" and body["number"] == "8209.003"  # two LVs: no LV title
+    assert body["files"][1]["evidence"] == ["GAEB phase 86"] and body["files"][1]["certain"]
+    assert body["suggested"] == {"id": "A", "reason": "same project number 8209.003"}
     assert client.get("/api/catalog").json()[0]["source"] == "demo"  # an intake keeps nothing
 
 
@@ -77,7 +79,7 @@ def test_one_file_is_a_project_and_takes_a_later_version():
     tender = DATASET / "01_gaeb_xml" / "8209.003_Leistungsverzeichnis_leer.X83"
     award = DATASET / "02_gaeb_90" / "[ORT_024] LV24069.D86"
     created = client.post("/api/projects", files=[("files", (tender.name, tender.read_bytes()))]).json()
-    assert created["kind"] == "versions" and created["name"] == "Maschinentechnik - Anlagenbau"
+    assert created["kind"] == "versions" and created["name"] == "8209.003 Maschinentechnik - Anlagenbau"
     added = client.post("/api/projects", files=[("files", (award.name, award.read_bytes()))],
                         data={"project": created["id"]}).json()
     assert added["id"] == created["id"] and added["kind"] == "versions"
@@ -184,3 +186,32 @@ def test_without_a_print_out_the_pages_are_drawn_and_a_pdf_shows_itself():
     assert alone["pdf"] is True and alone["pdf_generated"] is True and alone["pdf_file"] is None
     itself = client.get("/api/catalog/C/files/0").json()
     assert itself["pdf"] is True and itself["pdf_generated"] is False and itself["pdf_file"] is None
+
+
+def test_intake_reads_pdfs_and_leaves_out_what_is_no_lv():
+    """A PDF says what it is in its page header; a file that is not an LV does not stop the others."""
+    folder = DATASET / "04_pdf_tiefbau_sonstige"
+    files = [("files", (p.name, p.read_bytes())) for p in (
+        folder / "Leistungsverzeichnis.pdf", folder / "LV-Schachtbauwerk.pdf", folder / "Angebot AN24-0305.pdf")]
+    files.append(("files", ("Lageplan.dwg", b"not an LV")))
+    body = client.post("/api/intake", files=files).json()
+    assert body["name"] == "2024-001 Fernleitung" and body["source"]["where"] == "project name, page header"
+    assert [(f["role"], f["certain"]) for f in body["files"]] == [("tender", True), ("excerpt", True), ("bid", True)]
+    assert body["files"][2]["evidence"][0] == 'headed "Angebot"'
+    assert body["left_out"] == [{"name": "Lageplan.dwg", "reason": ".dwg is not an LV format"}]
+    assert client.post("/api/intake", files=files[3:]).status_code == 422  # nothing readable at all
+
+
+def test_a_priced_pdf_that_says_nothing_is_a_bid_to_check_and_the_user_can_correct_it():
+    bid = DATASET / "04_pdf_tiefbau_sonstige" / "Abgabe LV.pdf"
+    files = [("files", (bid.name, bid.read_bytes()))]
+    read = client.post("/api/intake", files=files).json()["files"][0]
+    assert (read["role"], read["certain"]) == ("submitted bid", False)
+    onto_b = client.post("/api/intake", files=files, data={"project": "B"}).json()["files"][0]
+    assert onto_b["certain"] and onto_b["evidence"][0] == "same prices as StBALV23040.D84"
+    created = client.post("/api/projects", files=files, data={"roles": '["award"]'}).json()
+    saved = client.get("/api/catalog").json()[0]
+    assert saved["id"] == created["id"] and saved["files"][0]["role"] == "award"
+    changed = client.patch(f"/api/catalog/{created['id']}/files/0", json={"step": "bid"}).json()
+    assert changed["files"][0]["role"] == "bid"
+    assert client.patch(f"/api/catalog/{created['id']}/files/0", json={"step": "draft"}).status_code == 422

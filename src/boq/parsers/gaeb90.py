@@ -95,9 +95,14 @@ def parse_gaeb90(path: str) -> BoQ:
         kind = l[:2]
         if kind == "00":
             boq.phase = l[10:12]
+            boq.project_no = l[28:62].strip()
             widths = _oz_widths(l[50:74])
         elif kind == "01":
             boq.name = l[2:42].strip()
+        elif kind == "02":
+            boq.project = l[2:62].strip()
+        elif kind == "03":
+            boq.client = l[2:62].strip()
         elif kind in ("T0", "T1", "20", "41", "42"):  # text block before or between items
             if kind != "T1":
                 close_remark()

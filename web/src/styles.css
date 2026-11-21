@@ -650,6 +650,29 @@ input[type="search"]::placeholder {
   color: #fff;
 }
 
+.move-step {
+  height: 24px;
+  max-width: 92px;
+  padding: 0 2px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--dim);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.move-step:hover,
+.move-step:focus-visible {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.move-step:focus-visible {
+  outline: 2px solid var(--yellow);
+}
+
 .step-strip {
   display: block;
   width: 100%;
@@ -942,47 +965,117 @@ button.doc-line:hover .fp-base {
   color: var(--ink);
 }
 
+.intake > header em {
+  margin-left: 12px;
+  padding: 1px 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+
 .intake-files li {
   display: grid;
-  grid-template-columns: minmax(180px, 1.6fr) 84px minmax(140px, 1fr) minmax(160px, 1.4fr);
-  column-gap: 14px;
+  grid-template-columns: minmax(120px, 1fr) minmax(200px, 1.5fr) auto minmax(200px, 1.7fr);
+  column-gap: 16px;
   align-items: center;
-  min-height: 36px;
+  min-height: 44px;
   padding: 5px 14px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--rule);
   font-size: 13px;
 }
 
-.intake-name {
+.intake-files li.new-lv {
+  border-top: 1px solid var(--ink);
+}
+
+.intake-files li.left-out,
+.intake-files li.reading {
+  min-height: 32px;
+  color: var(--dim);
+}
+
+.intake-files li.left-out .intake-why,
+.intake-files li.reading .intake-why {
+  grid-column: 3 / -1;
+}
+
+.intake-lv {
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.intake-files i {
-  justify-self: start;
+.intake-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.intake-what {
+.intake-name small {
+  display: block;
+  font-size: 11.5px;
   color: var(--mute);
   font-variant-numeric: tabular-nums;
 }
 
-.intake-lv {
+.intake-step {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-  font-weight: 600;
-  white-space: nowrap;
 }
 
-.intake-lv small {
-  font-size: 12px;
-  font-weight: 400;
+.intake-step button {
+  height: 26px;
+  padding: 0 10px;
+  margin-left: -1px;
+  background: #fff;
+  border: 1px solid var(--line-2);
   color: var(--mute);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.intake-step button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.intake-step button[aria-pressed="true"] {
+  position: relative;
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.intake-step button:focus-visible {
+  position: relative;
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.intake-why {
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.intake-why i {
+  margin-right: 8px;
+  border-color: var(--red);
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.intake label small {
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mute);
 }
 
 .intake > footer {
@@ -1091,7 +1184,17 @@ button.doc-line:hover .fp-base {
 
   .intake-files li {
     grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 2px;
+    row-gap: 4px;
+  }
+
+  .intake-lv:empty,
+  .intake-files li > span:empty {
+    display: none;
+  }
+
+  .intake-lv,
+  .intake-why {
+    grid-column: 1 / -1;
   }
 
   .intake > footer {

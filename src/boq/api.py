@@ -3,6 +3,7 @@
     uv run uvicorn boq.api:app --reload --port 8000
 """
 import base64
+import json
 import os
 import secrets
 import tempfile
@@ -20,6 +21,7 @@ from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
 from boq import catalog, chat, db, retrieve
+from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
@@ -297,63 +299,33 @@ def get_analysis(analysis_id: str):
     return _dump(analysis_id, boq, sort_findings(findings + _llm_findings(analysis_id)))
 
 
-ROLE = {"83": "tender", "84": "bid", "86": "award"}  # GAEB exchange phase -> what the file is in a tender
-
-
-async def _read_uploads(files: list[UploadFile]) -> list[tuple[str, bytes, BoQ]]:
-    """Every uploaded file parsed. Nothing is kept unless all of them can be read."""
-    out = []
+async def _read_uploads(files: list[UploadFile]) -> tuple[list[tuple[int, str, bytes, BoQ]], list[dict]]:
+    """The uploaded files that are LVs, parsed, each with its place among the uploads; and the ones left
+    out, each with the reason. A tender package holds plans, forms and letters next to the LV: a file that
+    is not an LV must not stop the others."""
+    read, left_out = [], []
     for n, file in enumerate(files):
         filename = Path(file.filename or f"upload{n}").name
         suffix = Path(filename).suffix.lower()
         if suffix not in SUPPORTED:
-            raise HTTPException(415, f"{filename}: {suffix or 'this file type'} is not supported. "
-                                     f"Use GAEB, PDF or Excel: {', '.join(sorted(SUPPORTED))}.")
+            left_out.append({"name": filename, "reason": f"{suffix or 'this file type'} is not an LV format"})
+            continue
         data = await file.read(MAX_BYTES + 1)
         if len(data) > MAX_BYTES:
-            raise HTTPException(413, f"{filename} is larger than 30 MB.")
-        out.append((filename, data, _parse_bytes(data, filename)))
-    return out
+            left_out.append({"name": filename, "reason": "larger than 30 MB"})
+            continue
+        try:
+            read.append((n, filename, data, _parse_bytes(data, filename)))
+        except HTTPException as exc:
+            reason = "no LV items found" if "No LV items" in str(exc.detail) else "could not be read"
+            left_out.append({"name": filename, "reason": reason})
+    if not read:
+        raise HTTPException(422, "None of these files is an LV: " + "; ".join(
+            f"{f['name']} ({f['reason']})" for f in left_out) + f". Use GAEB, PDF or Excel: {', '.join(sorted(SUPPORTED))}.")
+    return read, left_out
 
 
-def _shared(a: BoQ, b: BoQ) -> int:
-    """Items of `a` that `b` has under the same number with the same unit and quantity. A field one file
-    lacks does not count against it: a GAEB 84 bid carries prices only, no units or quantities."""
-    other = {i.oz: i for i in b.items}
-    return sum(1 for i in a.items if (o := other.get(i.oz)) is not None
-               and (i.qty is None or o.qty is None or i.qty == o.qty)
-               and (not i.unit or not o.unit or i.unit == o.unit))
-
-
-def _same_lv(boqs: list[BoQ], whole: bool = False) -> list[int]:
-    """Which files are the same LV: files that share most items (number, unit and quantity) are versions
-    of one LV (tender, print-out, bid, award); others are other LVs (trades, lots).
-
-    Item numbers alone are not enough: the trade LVs of one building restart at 1.1.10 each (project F
-    has 8 of 27 that would pair up). Each file is compared with every file of a group, not with the
-    group's union, so pairs cannot chain. `whole` asks for most of BOTH files: an LV that repeats part
-    of another (F: 01 Fertigteiltreppen inside 00 Rohbau) is then a separate LV, which the comparison
-    between LVs must see; otherwise an excerpt (C: LV-Schachtbauwerk) belongs to its LV."""
-    groups: list[list[BoQ]] = []
-    index = []
-    for boq in boqs:
-        for g, members in enumerate(groups):
-            if any(_versions(boq, m, whole) for m in members):
-                members.append(boq)
-                index.append(g)
-                break
-        else:
-            groups.append([boq])
-            index.append(len(groups) - 1)
-    return index
-
-
-def _versions(a: BoQ, b: BoQ, whole: bool) -> bool:
-    n, m = len(a.items), len(b.items)
-    if not n or not m:
-        return False
-    shared = _shared(a, b) if n <= m else _shared(b, a)
-    return shared >= 0.7 * (max(n, m) if whole else min(n, m))
+_shared, _versions, _same_lv = intake_rules.shared, intake_rules.versions, intake_rules.same_lv
 
 
 def _one_per_lv(boqs: list[BoQ]) -> list[BoQ]:
@@ -370,41 +342,57 @@ def _one_per_lv(boqs: list[BoQ]) -> list[BoQ]:
 
 
 @app.post("/api/intake")
-async def intake(files: list[UploadFile]):
-    """What a set of dropped files is, before anything is kept: each file's role, which files are the
-    same LV, and the project name the LV itself carries."""
-    uploads = await _read_uploads(files)
-    boqs = [boq for _, _, boq in uploads]
+async def intake(files: list[UploadFile], project: str | None = Form(None)):
+    """What a set of dropped files is, before anything is kept: the tender they belong to (number, name,
+    client, read from the files), which files are the same LV, the step of each file with its evidence,
+    the project they probably belong to, and the files that are not LVs. `project`: the project they were
+    dropped on, whose files then count as evidence too."""
+    uploads, left_out = await _read_uploads(files)
+    boqs = [boq for _, _, _, boq in uploads]
+    existing = catalog.all_projects()
+    target = next((p for p in existing if p["id"] == project), None)
+    known = [_parse_doc(f) for f in target["files"]] if target else []
     groups = _same_lv(boqs)
-    names = [b.name for b in boqs if b.name and b.name != Path(b.file).stem]
-    return {"name": max(set(names), key=names.count) if names else "",
+    found = intake_rules.identity(boqs)
+    return {**found,
             "lvs": len(set(groups)),
-            "files": [{"name": name, "format": boq.format, "role": ROLE.get(boq.phase, "LV"), "title": lv_name(boq),
-                       "items": len(boq.items), "lv": g}
-                      for (name, _, boq), g in zip(uploads, groups)]}
+            "suggested": None if target else intake_rules.suggest(found, existing),
+            "files": [{"index": n, "name": name, "format": boq.format, "title": lv_name(boq),
+                       "items": len(boq.items), "lv": g, **intake_rules.classify(boq, boqs + known)}
+                      for (n, name, _, boq), g in zip(uploads, groups)],
+            "left_out": left_out}
 
 
 @app.post("/api/projects")
-async def create_project(files: list[UploadFile], name: str | None = Form(None), project: str | None = Form(None)):
+async def create_project(files: list[UploadFile], name: str | None = Form(None), project: str | None = Form(None),
+                         roles: str | None = Form(None)):
     """Keep files as a new project, or add them to an existing one.
 
     One LV in several versions and several trade LVs are both projects; which it is follows from the
-    item numbers of the files. Several LVs are also analysed against each other, as before.
+    item numbers of the files. Several LVs are also analysed against each other, as before. What each
+    file is (tender, bid, award) is read from the files as in the intake; `roles`, a JSON list with one
+    entry per uploaded file (null = as read), is what the user corrected there.
     """
-    uploads = await _read_uploads(files)
-    stored = [(filename, data, ROLE.get(boq.phase, "LV")) for filename, data, boq in uploads]
-    boqs = [boq for _, _, boq in uploads]
-    if project:
-        existing = _catalog(project)
-        boqs = [_parse_doc(f) for f in existing["files"]] + boqs
-        kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
+    uploads, _ = await _read_uploads(files)
+    new = [boq for _, _, _, boq in uploads]
+    try:
+        said = json.loads(roles) if roles else []
+    except ValueError:
+        raise HTTPException(422, "roles must be a JSON list.") from None
+    if not isinstance(said, list) or any(r is not None and r not in intake_rules.ROLES for r in said):
+        raise HTTPException(422, f"A role is one of: {', '.join(intake_rules.ROLES)}.")
+    existing = _catalog(project) if project else None
+    boqs = ([_parse_doc(f) for f in existing["files"]] if existing else []) + new
+    stored = [(filename, data, (said[n] if n < len(said) else None) or intake_rules.classify(boq, boqs)["role"])
+              for n, filename, data, boq in uploads]
+    kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
+    if existing:
         catalog.add_files(project, stored, kind)
         project_id, title = project, existing["name"]
     else:
-        kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
-        named = [b.name for b in boqs if b.name and b.name != Path(b.file).stem]
-        title = (name or "").strip()[:80] or (named[0][:80] if named else f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}")
-        project_id = catalog.save_project(title, stored, kind)
+        found = intake_rules.identity(new)
+        title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
+        project_id = catalog.save_project(title, stored, kind, number=found["number"])
     if kind == "trades":
         # where the uploads are now; by position, not by name: trade LVs often share a file name
         sources = {id(b): _doc_path(f) for b, f in zip(boqs, _catalog(project_id)["files"]) if _is_pdf(f)}
@@ -494,6 +482,22 @@ def remove_project_file(project_id: str, index: int):
     catalog.remove_file(project_id, files[index]["id"])
     rest = [_parse_doc(f) for i, f in enumerate(files) if i != index]
     catalog.set_kind(project_id, "trades" if len(set(_same_lv(rest))) > 1 else "versions")
+class FileRole(BaseModel):
+    step: str
+
+
+@app.patch("/api/catalog/{project_id}/files/{index}")
+def set_file_step(project_id: str, index: int, body: FileRole):
+    """Say that a file belongs to another step of the tender (tender, bid, award) than was read from it."""
+    files = _catalog(project_id)["files"]
+    if not 0 <= index < len(files):
+        raise HTTPException(404, f"Project {project_id} has no file {index}.")
+    if body.step not in intake_rules.STEPS:
+        raise HTTPException(422, f"A step is one of: {', '.join(intake_rules.STEPS)}.")
+    catalog.set_role(project_id, files[index]["id"], intake_rules.with_step(files[index]["role"], body.step))
+    return _catalog(project_id)
+
+
     return _catalog(project_id)
 
 

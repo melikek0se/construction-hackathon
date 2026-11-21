@@ -266,6 +266,19 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   Spent on live chat tests on 2026-11-21, estimated from token counts: about 5 USD, most of it before this change.
 
 ## In progress
+- Intake rebuilt (D-028; `src/boq/intake.py`, `POST /api/intake`, `POST /api/projects` with `roles`,
+  `PATCH /api/catalog/{id}/files/{n}`, `IntakePanel` in `web/src/Projects.tsx`): the project number, name and
+  client and each file's step (tender / bid / award, with "package", "excerpt", "as submitted") are read from
+  the files — GAEB header fields, the PDF page header, prices, a GAEB twin with the same prices — and shown
+  with their evidence; a step that is only inferred is marked "check" and any step is corrected with one
+  click; the destination project is suggested by number or name; a file that is no LV is left out instead of
+  failing the drop. Score against the hand mapping (`scripts/eval_intake.py`): step 43/43, qualifier 43/43,
+  number 4/6, name 5/6. Seen in headless Chrome at 1440x900 through a script: B's five files plus a Word
+  file, F's 27 PDFs (name "79-222 Ausbildungszentrum und Bürogebäude -AK Juni 21", 27 LVs), a lone priced PDF
+  marked "check" and set to award, the award of A dropped after its tender (destination suggested).
+  Not seen: narrow widths, a real mouse drag. A file is moved to another step from the project row ("Move to…" beside the selected file; seen once in
+  headless Chrome: a PDF bid moved to Award). Not built: ZIP / folders, deadline. Untested on tenders outside the dataset: the header labels are the ones these six projects use.
+
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against
   the LV text, quantities and remarks by reading, not by an engineer:

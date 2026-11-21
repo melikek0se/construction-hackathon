@@ -108,9 +108,27 @@ named. Splitting one project by step and another by LV was tried and rejected as
 Flows 1, 2 and 3: intake panel with detected role and LV grouping per file, name taken from the LV,
 destination "new project" or an existing created project; "Add files" on created projects.
 
+## Intake rebuilt around the tender (2026-11-21, D-028)
+
+When the estimator comes to the app, and what the intake must do then:
+
+| Moment | In hand | Wants |
+|--------|---------|-------|
+| The tender arrives (most uploads) | a folder from the portal or an e-mail: forms, LV as PDF and GAEB, plans; all from the client | which tender is this, what is in it, then the findings |
+| An addendum arrives | a changed LV, answers | into the same tender |
+| The bid has gone out | the own priced LV (D84, PDF) | kept; price history |
+| The award comes | D86, an order | the contract version |
+
+So the intake answers three questions from the files and shows what each answer rests on: which files are
+the same LV, which tender they are (number, name, client), which step each one is. Rules and their order are
+in D-028 and `src/boq/intake.py`. What the dataset showed first: none of the 34 PDFs has a metadata title, so
+a PDF-only project used to be named "27 LVs, <date>" although every page header prints the project; the GAEB
+field used for the name was the LV label (the trade), not the project; a PDF's step was "has any price".
+
 ## Not built
 
-- Suggesting the destination: recognising that dropped files belong to a project that already exists.
+- Suggesting the destination by the items (it is suggested by project number or name, D-028).
+- Deadline and client on the project. (A file's step is changed from the project row, "Move to…".)
 - Adding files to the six dataset projects (they are a fixed mapping in `src/boq/catalog.py`).
 - A project view that shows LVs × versions as a grid, and a comparison between two versions of one LV
   (what changed between the tender and the re-issued tender) — the flow the sources stress most (point 3).

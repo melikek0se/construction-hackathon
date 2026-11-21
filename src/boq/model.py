@@ -50,6 +50,13 @@ class BoQ(BaseModel):
     file: str
     format: Literal["gaeb_xml", "gaeb_90", "pdf", "excel"]
     phase: str = ""  # 83 tender, 84 bid, 86 award
+    # What the file says about itself, for the intake (boq.intake); empty where it says nothing.
+    project_no: str = ""  # the tender's number: GAEB NamePrj, "Projekt: 79-222" in a page header
+    project: str = ""  # the project's name, as opposed to `name`, which is the LV's own label
+    lv_label: str = ""  # PDF only: the LV label of the page header (`name` stays the file name there)
+    client: str = ""
+    heading: str = ""  # PDF only: what the document calls itself ("Anfrage", "Angebot", ...)
+    forms: int = 0  # PDF only: pages of contract forms (VHB), i.e. a package and not a bare LV
     items: list[Item] = Field(default_factory=list)
     remarks: list[Remark] = Field(default_factory=list)
 

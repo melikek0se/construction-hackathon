@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Sign } from "./components";
 import { eur } from "./format";
-import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Intake, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
+import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Intake, type IntakeFile, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
 
 /* The projects page: a dense register of every project the app knows. */
 
 /* A tender moves through steps, and each step leaves documents: the tender itself (GAEB phase 83, its
    print-out, the tender package), our bid (84, the submitted bid, an offer), the award (86). */
 const STEPS = ["tender", "bid", "award"] as const;
-type Step = (typeof STEPS)[number];
+type Step = (typeof STEPS)[number]; // the same three as `Step` in types.ts
 const STEP_LABEL: Record<Step, string> = { tender: "Tender", bid: "Bid", award: "Award" };
 
 function stepOf(role: string): Step {
@@ -61,11 +61,13 @@ function StepLine({
   docs,
   onOpenFile,
   onOpenProject,
+  onSetStep,
 }: {
   step: Step;
   docs: ProjectDoc[];
   onOpenFile?: (index: number) => void;
   onOpenProject?: () => void;
+  onSetStep?: (index: number, step: Step) => void; // the selected file belongs to another step
 }) {
   const [picked, setPicked] = useState(0);
   if (docs.length === 0) {
@@ -113,6 +115,24 @@ function StepLine({
             {g.docs.length > 1 && <small>{g.docs.length} LVs</small>}
           </button>
         ))}
+        {onSetStep && !several && (
+          /* the step was read from the file (D-028); this is where a wrong one is put right */
+          <select
+            className="move-step"
+            value=""
+            aria-label={`Move ${group.docs[0].name} to another step`}
+            title={`${group.docs[0].name} is filed under ${STEP_LABEL[step]}. Move it if that is wrong.`}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => e.target.value && onSetStep(group.docs[0].index, e.target.value as Step)}
+          >
+            <option value="">Move to…</option>
+            {STEPS.filter((other) => other !== step).map((other) => (
+              <option key={other} value={other}>
+                {STEP_LABEL[other]}
+              </option>
+            ))}
+          </select>
+        )}
       </span>
       {read.length > 0 ? (
         <>
@@ -194,7 +214,9 @@ interface Pending {
   target: string | null; // the project the files were dropped on, if any
 }
 
-/** Dropped files, read but not yet kept: what each one is, and the one decision of where they go. */
+/** Dropped files, read but not yet kept. The server has read which tender they belong to and which step
+ *  of it each file is; the panel shows that with its evidence, so the user checks instead of filling in.
+ *  Only what was inferred asks for a look, and every step can be corrected with one click. */
 function IntakePanel({
   pending,
   projects,
@@ -205,13 +227,30 @@ function IntakePanel({
   pending: Pending;
   projects: CatalogProject[];
   busy: boolean;
-  onConfirm: (name: string, target: string | null) => void;
+  onConfirm: (name: string, target: string | null, roles: (string | null)[]) => void;
   onCancel: () => void;
 }) {
   const { info, files } = pending;
   const [name, setName] = useState("");
   const [target, setTarget] = useState<string | null>(pending.target);
-  useEffect(() => setName(info?.name ?? ""), [info]);
+  const [steps, setSteps] = useState<Record<number, Step>>({}); // the user's corrections, by file index
+  useEffect(() => {
+    setName(info?.name ?? "");
+    if (info?.suggested && pending.target === null) setTarget(info.suggested.id);
+  }, [info, pending.target]);
+
+  const rows: IntakeFile[] = [...(info?.files ?? [])].sort((a, b) => a.lv - b.lv || a.index - b.index);
+  const stepNow = (f: IntakeFile) => steps[f.index] ?? f.step;
+  const present = STEPS.filter((s) => rows.some((f) => stepNow(f) === s));
+  const toCheck = rows.filter((f) => !f.certain && steps[f.index] === undefined).length;
+  const into = projects.find((p) => p.id === target);
+
+  function confirm() {
+    if (!info) return;
+    const roles: (string | null)[] = files.map(() => null);
+    for (const f of info.files) if (stepNow(f) !== f.step) roles[f.index] = stepNow(f);
+    onConfirm(name.trim(), target, roles);
+  }
 
   return (
     <section className="intake" aria-label="Files waiting to be kept">
@@ -219,8 +258,15 @@ function IntakePanel({
         <b>Intake</b>
         {info ? (
           <span>
-            {files.length} file{files.length > 1 ? "s" : ""}, {info.lvs === 1 ? "one LV" : `${info.lvs} different LVs`}
-            {info.lvs === 1 && files.length > 1 && " in several versions"}
+            {into ? `Adds to ${into.name}: ` : "New tender: "}
+            {info.lvs === 1 ? "one LV" : `${info.lvs} LVs`} in {rows.length} file{rows.length > 1 ? "s" : ""} (
+            {present.map((s) => STEP_LABEL[s].toLowerCase()).join(", ")})
+            {info.left_out.length > 0 && `, ${info.left_out.length} left out`}
+            {toCheck > 0 && (
+              <em>
+                {toCheck} step{toCheck > 1 ? "s" : ""} to check
+              </em>
+            )}
           </span>
         ) : (
           <span>
@@ -229,23 +275,59 @@ function IntakePanel({
         )}
       </header>
       <ul className="intake-files">
-        {(info?.files ?? files.map((f) => ({ name: f.name, format: null, role: "", title: "", items: 0, lv: 0 }))).map((f, i) => (
-          <li key={i}>
-            <span className="intake-name">{f.name}</span>
-            {f.format ? (
-              <>
-                <i>{f.role}</i>
-                <span className="intake-what">
+        {!info &&
+          files.map((f, i) => (
+            <li key={i} className="reading">
+              <span />
+              <span className="intake-name">{f.name}</span>
+              <span className="intake-why">being read</span>
+            </li>
+          ))}
+        {rows.map((f, i) => {
+          const first = i === 0 || rows[i - 1].lv !== f.lv;
+          const corrected = steps[f.index] !== undefined && steps[f.index] !== f.step;
+          return (
+            <li key={f.index} className={first && i > 0 ? "new-lv" : undefined}>
+              <span className="intake-lv" lang="de" title={f.title}>
+                {first ? f.title : ""}
+              </span>
+              <span className="intake-name" title={f.name}>
+                {f.name}
+                <small>
                   {FORMAT_LABEL[f.format]} · {f.items.toLocaleString("de-DE")} items
-                </span>
-                <span className="intake-lv">
-                  LV {f.lv + 1}
-                  <small lang="de">{f.title}</small>
-                </span>
-              </>
-            ) : (
-              <span className="intake-what">being read</span>
-            )}
+                  {qualifier(f.role) && !corrected && ` · ${qualifier(f.role)}`}
+                </small>
+              </span>
+              <span className="intake-step" role="group" aria-label={`Step of ${f.name}`}>
+                {STEPS.map((s) => (
+                  <button
+                    key={s}
+                    aria-pressed={stepNow(f) === s}
+                    disabled={busy}
+                    onClick={() => setSteps((old) => ({ ...old, [f.index]: s }))}
+                  >
+                    {STEP_LABEL[s]}
+                  </button>
+                ))}
+              </span>
+              <span className="intake-why">
+                {corrected ? (
+                  "set by you"
+                ) : (
+                  <>
+                    {!f.certain && steps[f.index] === undefined && <i>check</i>}
+                    {f.evidence.join(" · ")}
+                  </>
+                )}
+              </span>
+            </li>
+          );
+        })}
+        {info?.left_out.map((f, i) => (
+          <li key={`out${i}`} className="left-out">
+            <span />
+            <span className="intake-name">{f.name}</span>
+            <span className="intake-why">left out: {f.reason}</span>
           </li>
         ))}
       </ul>
@@ -260,6 +342,7 @@ function IntakePanel({
               </option>
             ))}
           </select>
+          <small>{info?.suggested && target === info.suggested.id ? `suggested: ${info.suggested.reason}` : " "}</small>
         </label>
         {target === null && (
           <label className="grow">
@@ -271,12 +354,19 @@ function IntakePanel({
               onChange={(e) => setName(e.target.value)}
               disabled={!info || busy}
             />
+            <small>
+              {info?.source && name === info.name
+                ? `read from ${info.source.file}: ${info.source.where}`
+                : info && !info.name
+                  ? "the files do not name their project"
+                  : " "}
+            </small>
           </label>
         )}
         <button className="btn-ghost" onClick={onCancel} disabled={busy}>
           Discard
         </button>
-        <button className="btn-new" onClick={() => onConfirm(name.trim(), target)} disabled={!info || busy}>
+        <button className="btn-new" onClick={confirm} disabled={!info || busy}>
           {target ? "Add to project" : "Create project"}
         </button>
       </footer>
@@ -295,6 +385,7 @@ export function ProjectsPage({
   onConfirm,
   onCancel,
   onDelete,
+  onSetStep,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
@@ -303,9 +394,10 @@ export function ProjectsPage({
   onOpen: (project: CatalogProject, file?: number) => void;
   onChooseFiles: (target: string | null) => void;
   onDropFiles: (files: FileList, target: string | null) => void;
-  onConfirm: (name: string, target: string | null) => void;
+  onConfirm: (name: string, target: string | null, roles: (string | null)[]) => void;
   onCancel: () => void;
   onDelete: (project: CatalogProject) => void;
+  onSetStep: (project: CatalogProject, index: number, step: Step) => void;
 }) {
   const [doomed, setDoomed] = useState<string | null>(null); // the project whose Delete was clicked once
   const [over, setOver] = useState<string | null>(null); // the project row files are being dragged onto
@@ -397,7 +489,7 @@ export function ProjectsPage({
               <span role="cell" className="reg-name">
                 <b lang="de">{p.name}</b>
                 <small>
-                  {[p.number, p.trade].filter(Boolean).join(" · ") ||
+                  {[p.name.startsWith(p.number) ? "" : p.number, p.trade].filter(Boolean).join(" · ") ||
                     (p.created
                       ? `Created ${new Date(p.created).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}`
                       : "")}
@@ -451,6 +543,7 @@ export function ProjectsPage({
                         docs={s.docs.filter((d) => stepOf(d.role) === step)}
                         onOpenFile={busy ? undefined : (index) => onOpen(p, index)}
                         onOpenProject={busy ? undefined : () => onOpen(p)}
+                        onSetStep={busy ? undefined : (index, to) => onSetStep(p, index, to)}
                       />
                     ))}
                   </span>

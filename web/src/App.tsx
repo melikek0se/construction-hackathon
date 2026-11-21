@@ -11,6 +11,7 @@ import {
   openCatalogProject,
   renameProject,
   deleteProject,
+  setFileStep,
   runLlmReview,
 } from "./api";
 import { CraneIcon, ProjectsPage } from "./Projects";
@@ -213,7 +214,7 @@ export default function App() {
     setCurrent(null);
     setError(null);
     setPending({ files: list, info: null, target });
-    intakeFiles(list).then(
+    intakeFiles(list, target).then(
       (info) => setPending((p) => (p && p.files === list ? { ...p, info } : p)),
       (e) => {
         setPending((p) => (p && p.files === list ? null : p));
@@ -222,12 +223,12 @@ export default function App() {
     );
   }, []);
 
-  async function confirmIntake(name: string, target: string | null) {
+  async function confirmIntake(name: string, target: string | null, roles: (string | null)[]) {
     if (!pending) return;
     setBusy(target ? "the added files" : name || "the new project");
     setError(null);
     try {
-      const { id } = await createProject(pending.files, name, target);
+      const { id } = await createProject(pending.files, name, target, roles);
       asked.current.delete(id); // its numbers have changed
       setSummaries(({ [id]: _old, ...rest }) => rest);
       const saved = (await refreshCatalog()).find((p) => p.id === id);
@@ -245,6 +246,18 @@ export default function App() {
     try {
       await deleteProject(p.id);
       asked.current.delete(p.id);
+      setSummaries(({ [p.id]: _old, ...rest }) => rest);
+      await refreshCatalog();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  async function moveFile(p: CatalogProject, index: number, step: string) {
+    setError(null);
+    try {
+      await setFileStep(p.id, index, step);
+      asked.current.delete(p.id); // the row's step lines are worked out again
       setSummaries(({ [p.id]: _old, ...rest }) => rest);
       await refreshCatalog();
     } catch (e) {
@@ -413,7 +426,13 @@ export default function App() {
               </strong>
               <span>
                 {analysis.boq.file} · {FORMAT_LABEL[analysis.boq.format]}
-                {PHASE_LABEL[analysis.boq.phase] ? ` · ${PHASE_LABEL[analysis.boq.phase]}` : ""} ·{" "}
+                {/* what the project says the file is (read at intake, or corrected there) before the parser's phase */}
+                {current && !project && current.project.files[current.file]
+                  ? ` · ${current.project.files[current.file].role.replace(/^./, (c) => c.toUpperCase())}`
+                  : PHASE_LABEL[analysis.boq.phase]
+                    ? ` · ${PHASE_LABEL[analysis.boq.phase]}`
+                    : ""}{" "}
+                ·{" "}
                 {stats.priced ? `${eur(stats.net)} net` : "no prices in this file"}
               </span>
             </div>
@@ -501,9 +520,10 @@ export default function App() {
             fileInput.current?.click();
           }}
           onDropFiles={upload}
-          onConfirm={(name, target) => void confirmIntake(name, target)}
+          onConfirm={(name, target, roles) => void confirmIntake(name, target, roles)}
           onCancel={() => setPending(null)}
           onDelete={(p) => void removeProject(p)}
+          onSetStep={(p, index, step) => void moveFile(p, index, step)}
         />
       ) : (
         <div className="work">
