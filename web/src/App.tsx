@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { analyzeFile, listSamples, loadPrices, loadSample, runLlmReview } from "./api";
+import {
+  analyzeFile,
+  createProject,
+  listSampleProjects,
+  listSamples,
+  loadAnalysis,
+  loadPrices,
+  loadSample,
+  openSampleProject,
+  runLlmReview,
+} from "./api";
+import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, eur, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
 import { LvMap } from "./LvMap";
 import { WhatIfView } from "./WhatIf";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, sampleKind, type Analysis, type Finding, type Item, type Prices, type Sample, type Severity } from "./types";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, sampleKind, type Analysis, type Finding, type Item, type Prices, type Project, type Sample, type Severity } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif";
 const VIEWS: [View, string][] = [
@@ -21,6 +32,9 @@ export default function App() {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [apiDown, setApiDown] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  // A project (several trade LVs) is shown when no single LV is open; an LV opened from it keeps it.
+  const [project, setProject] = useState<Project | null>(null);
+  const [projectFolders, setProjectFolders] = useState<{ folder: string; files: number }[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<View>("plan");
@@ -35,6 +49,20 @@ export default function App() {
 
   useEffect(() => {
     listSamples().then(setSamples, () => setApiDown(true));
+    listSampleProjects().then(setProjectFolders, () => undefined);
+  }, []);
+
+  const runProject = useCallback(async (label: string, job: () => Promise<Project>) => {
+    setBusy(label);
+    setError(null);
+    try {
+      setProject(await job());
+      setAnalysis(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(null);
+    }
   }, []);
 
   const run = useCallback(async (label: string, job: () => Promise<Analysis>) => {
@@ -57,6 +85,11 @@ export default function App() {
   // ?sample=<folder>/<file>[&view=table|remarks][&item=5.1.4] reopens the same LV after a reload.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+    const folder = params.get("project"); // ?project=03_pdf_hochbau_projekt opens a dataset project
+    if (folder) {
+      void runProject(folder, () => openSampleProject(folder));
+      return;
+    }
     const id = params.get("sample");
     if (!id) return;
     void run(id.split("/").pop() ?? id, () => loadSample(id)).then(() => {
@@ -65,7 +98,7 @@ export default function App() {
       const oz = params.get("item");
       if (oz) setSelection({ oz, finding: null });
     });
-  }, [run]);
+  }, [run, runProject]);
 
   // The AI review adds findings to the same list; rule findings stay first within each severity.
   async function review() {
@@ -83,11 +116,18 @@ export default function App() {
     }
   }
 
+  // One file is an LV; several files are the trade LVs of one project.
   const upload = useCallback(
-    (file: File | undefined) => {
-      if (file) void run(file.name, () => analyzeFile(file));
+    (files: FileList | null | undefined) => {
+      const list = [...(files ?? [])];
+      if (list.length === 1) {
+        setProject(null);
+        void run(list[0].name, () => analyzeFile(list[0]));
+      } else if (list.length > 1) {
+        void runProject(`${list.length} LVs`, () => createProject(list));
+      }
     },
-    [run],
+    [run, runProject],
   );
 
   // Price suggestions arrive after the LV is on screen; the item sheet shows them when they are there.
@@ -181,22 +221,36 @@ export default function App() {
       onDrop={(e) => {
         e.preventDefault();
         setDragging(false);
-        upload(e.dataTransfer.files[0]);
+        upload(e.dataTransfer.files);
       }}
     >
       <input
         ref={fileInput}
         type="file"
         hidden
+        multiple
         accept=".x83,.x84,.x86,.d83,.d84,.d86,.pdf,.xlsx,.xls"
         onChange={(e) => {
-          upload(e.target.files?.[0]);
+          upload(e.target.files);
           e.target.value = "";
         }}
       />
 
       <header className="band">
         <span className="brand">LV Check</span>
+        {project && !analysis && (
+          <>
+            <div className="doc">
+              <strong>Project: {project.name}</strong>
+              <span>{project.lvs.length} trade LVs</span>
+            </div>
+            <div className="actions">
+              <button className="btn" onClick={() => setProject(null)}>
+                Close project
+              </button>
+            </div>
+          </>
+        )}
         {analysis && stats && (
           <>
           <div className="doc">
@@ -210,6 +264,11 @@ export default function App() {
             </span>
           </div>
           <div className="actions">
+            {project && (
+              <button className="btn" onClick={() => setAnalysis(null)}>
+                Back to project
+              </button>
+            )}
             {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
             <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
               Risk report
@@ -248,7 +307,9 @@ export default function App() {
         </div>
       )}
 
-      {!analysis || !stats ? (
+      {project && !analysis ? (
+        <ProjectView project={project} onOpenLv={(id) => void run("LV", () => loadAnalysis(id))} />
+      ) : !analysis || !stats ? (
         <main className="landing">
           <div className="landing-inner">
             <div className="hero">
@@ -280,8 +341,28 @@ export default function App() {
             <div className="pick">
               <button className="drop" disabled={busy !== null} onClick={() => fileInput.current?.click()}>
                 <strong>Drop an LV, or choose one</strong>
-                <span>GAEB XML (.x83 .x84 .x86), GAEB 90 (.d83 .d84 .d86) or a PDF with a text layer.</span>
+                <span>
+                  GAEB XML, GAEB 90, Excel or a PDF with a text layer. Several files at once open as one project.
+                </span>
               </button>
+              {projectFolders.length > 0 && (
+                <div>
+                  <h2>Or open a whole project: several trade LVs and what they expect from each other</h2>
+                  <ul className="samples">
+                    {projectFolders.map((p) => (
+                      <li key={p.folder}>
+                        <button
+                          disabled={busy !== null}
+                          onClick={() => void runProject(`${p.files} LVs`, () => openSampleProject(p.folder))}
+                        >
+                          <span className="sample-name">{p.folder.replace(/^\d+_/, "").replace(/_/g, " ")}</span>
+                          <span className="sample-kind">{p.files} LVs</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {samples.length > 0 && (
                 <div>
                   <h2>Or open one of the dataset LVs</h2>

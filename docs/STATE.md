@@ -98,6 +98,25 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 - Companion check: "wie vor, jedoch …" items inherit what the previous item does (fixed a false Stop on
   project C, where the control cable is laid by a "wie vor" item).
 
+- Projects (`src/boq/project.py`, `POST /api/projects`, `GET /api/projects/sample`, `web/src/ProjectView.tsx`,
+  `TradeGraph.tsx`): several trade LVs of one building analysed together. Reads the interface statements in
+  the item texts ("Vorleistung (baus.): …", "Folgeleistung: …", "bauseits …"), works out which other LV of the
+  project contains that work (by trade named in file / section titles, or by the thing named), and builds an
+  in-memory graph of trades. Findings between LVs: `P-BOTH-EXPECT-OTHERS` / `P-INTERFACE-GAP` (work expected
+  from others that no LV contains), `P-SAME-SCOPE` (an LV repeated inside another), `P-DUPLICATE-SCOPE` (single
+  items in two LVs). UI: several files dropped at once, or the dataset project from the landing page, open as a
+  project; three.js graph of trades laid out as a ball (force layout in 3D, turns slowly until touched; drag,
+  zoom, click), every arrow tagged with the work that links the two trades (in the overview only arrows with
+  three or more statements behind them, all arrows of a picked trade), panel with the cross-LV findings or the
+  clicked trade,
+  "Open this LV" leads into the normal workspace and back. Deterministic, no LLM.
+  On project F (27 LVs, 1,076 items): 177 interface statements, 36 dependencies, 22 findings — roof drains
+  expected "bauseits" by both 12 Dachabdichtung and 14b Dachentwässerung (Stop); 01 Fertigteiltreppen (6 of 6
+  items), 11 Sandwichsockel (8 of 9) repeated inside 00 Rohbau and 06 Kautschukboden (7 of 11) inside
+  20 Bodenbelagsarbeiten; wall plaster expected by the flooring LV with no plaster LV in the project.
+  Checked: graph renders and selects in Chrome at 1600x950 through a script. Not checked: an engineer's view
+  of the dependencies; dragging by hand; a project of GAEB files.
+
 ## In progress
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against
@@ -117,7 +136,8 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 ## Next (in order)
 
 1. Decide team split, demo LV
-3. Companion rules for building trades (project F parses now; the rules still only know civil work)
+3. Projects: trade vocabulary and interface wording beyond project F; quantity checks between trades
+   (screed area against floor coverings); decide in-memory graph vs Neo4j
 4. Money at stake for findings on unpriced LVs (needs the price history)
 5. Verification and prompt tuning of the LLM findings (see In progress)
 6. Money at stake in the report for unpriced LVs (needs prices)

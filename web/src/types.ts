@@ -110,6 +110,58 @@ export interface WhatIfResult {
   optional_items: { item_oz: string; label: string; kind: string; total: number; excluded: boolean }[];
 }
 
+/** A project: several trade LVs of one building and what they expect from each other. */
+export interface ProjectLv {
+  name: string;
+  file: string;
+  analysis_id: string;
+  items: number;
+  counts: Record<Severity, number>;
+}
+
+export interface ProjectNode {
+  id: string;
+  name: string;
+  items: number;
+  provides: string[];
+  part_of: string | null; // the LV this one repeats a part of
+  statements: number;
+  gaps: number;
+}
+
+export interface InterfaceQuote {
+  lv: string;
+  item_oz: string;
+  kind: string; // prior | following | by_others | item
+  quote: string;
+}
+
+export interface ProjectEdge {
+  source: string; // the trade that comes first
+  target: string;
+  count: number;
+  examples: InterfaceQuote[];
+}
+
+export interface ProjectFinding {
+  check_id: string;
+  severity: Severity;
+  title: string;
+  lvs: string[];
+  statements: InterfaceQuote[];
+  explanation: string;
+  action: Action;
+}
+
+export interface Project {
+  name: string;
+  lvs: ProjectLv[];
+  nodes: ProjectNode[];
+  edges: ProjectEdge[];
+  findings: ProjectFinding[];
+  statements: { total: number; resolved: number; internal: number; by_kind: Record<string, number> };
+}
+
 export interface Sample {
   path: string; // relative to dataset/, e.g. "01_gaeb_xml/…X83"
   name: string;

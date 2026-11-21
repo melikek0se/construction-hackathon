@@ -130,3 +130,14 @@ The architecture's labour / material / equipment split does not exist in any dat
 finding 7), and inventing shares would put made-up numbers into a total. The view shows how many items and how
 much money each change touches.
 Revisit if: a file with a real unit-price breakdown (GAEB `UPBkdn` filled in) turns up.
+
+## D-017 — Cross-trade dependencies: read from the LV texts, graph in memory, shown with three.js
+Status: proposed · 2026-11-21
+
+Trade LVs state their own interfaces ("Vorleistung", "Folgeleistung", "bauseits"); `src/boq/project.py` reads
+those sentences instead of assuming a general construction sequence, so every edge of the graph has a quote.
+The graph lives in memory (27 nodes, 36 edges for project F); Neo4j was discussed and left open by Utku —
+it would add persistence and Cypher, not findings. The diagram is a three.js scene (`TradeGraph.tsx`) at
+Utku's request; this is a new view for projects and does not bring back the 3D LV map rejected in D-013.
+Revisit if: projects must persist across restarts or be queried across many buildings (then a graph database
+earns its keep), or the 3D diagram proves as hard to read as the 3D map did (then lay the same graph out flat).
