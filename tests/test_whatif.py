@@ -37,11 +37,16 @@ def test_adjustments_combine_and_sections_limit_them():
 
 
 def test_optional_items_can_be_left_out():
-    r = what_if(B, Scenario())
+    # No priced file in the dataset has alternative or contingency items (bid B's W / B flags mark repeat
+    # descriptions, see the GAEB 90 parser), so two items of B are marked here.
+    assert what_if(B, Scenario())["optional_items"] == []
+    marked = B.model_copy(deep=True)
+    marked.items[10].kind, marked.items[20].kind = "alternative", "contingency"
+    r = what_if(marked, Scenario())
     optional = r["optional_items"]
-    assert {o["kind"] for o in optional} == {"alternative", "contingency"} and len(optional) == 18
+    assert {o["kind"] for o in optional} == {"alternative", "contingency"} and len(optional) == 2
     drop = [o["item_oz"] for o in optional]
-    without = what_if(B, Scenario(exclude=drop))
+    without = what_if(marked, Scenario(exclude=drop))
     assert abs(without["delta"] + sum(o["total"] for o in optional)) < 0.01
     assert all(o["excluded"] for o in without["optional_items"])
 

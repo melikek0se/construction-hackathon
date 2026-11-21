@@ -57,7 +57,24 @@ def test_item_details():
     assert it.short_text.startswith("Sanitärcontainer aufstellen")
     assert (it.qty, it.unit, it.up, it.total) == (1, "St", Decimal("16000"), Decimal("16000"))
     assert it.path[1] == "Baustelleneinrichtung"
-    assert by_oz["3.2.5"].kind == "alternative"
     assert by_oz["3.2.5"].refs == ["3.2.4"]  # "Wie Position  3. 2.   4., jedoch"
-    kinds = [i.kind for i in boq.items]
-    assert kinds.count("alternative") == 14 and kinds.count("contingency") == 4
+
+
+def test_repeat_and_reference_flags_are_not_position_types():
+    """Bid B's award flags 14 items W (repeat description) and 4 B (reference description) in column 21.
+    They are ordinary items: the file's own section totals include them. 7.1.12 ("NNL", 2 St) is no lump sum."""
+    boq = parse_file(str(G90 / "StBALV23040.D86"))
+    by_oz = {i.oz: i for i in boq.items}
+    assert {i.kind for i in boq.items} == {"normal", "hourly", "lump_sum"}
+    assert by_oz["3.2.5"].kind == by_oz["3.2.4"].kind == "normal"
+    assert by_oz["7.1.12"].kind == "normal"
+    assert all(i.unit == "psch" for i in boq.items if i.kind == "lump_sum")
+    section_7 = sum(i.total for i in boq.items if i.oz.startswith("7."))
+    assert section_7 == Decimal("156057.92")  # record 32 of title 07
+
+
+def test_xml_repeat_description_points_to_its_reference_item():
+    """<RefDescr>Rep</RefDescr> + <RefRNo IDRef=…>: the XML text lacks "Wie Position", the link is the ID."""
+    boq = parse_file(str(XML / "[NUMMER_001]_leer.X83"))
+    refs = {i.oz: i.refs for i in boq.items if i.refs}
+    assert refs == {"3.2.5": ["3.2.4"], "3.2.8": ["3.2.7"], "3.5.2": ["3.5.1"], "5.4.2": ["5.4.1"]}

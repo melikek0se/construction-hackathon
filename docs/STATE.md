@@ -159,7 +159,12 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   LV 14b, pipe DN 100 through a sleeve DN 200).
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
   has one. They cover pipeline and civil work only.
-- X83 files do not mark alternative / contingency items the way the D86 does (B: 14 `W`, 4 `B` only in the D86).
+- Parser review (2026-11-21), fixed: GAEB 90 read the W / B flags of column 21 (repeat / reference description)
+  as alternative / contingency — 18 items of bid B (126,475 EUR) were offered as "optional" in what-if and listed
+  as Wahl- / Bedarfspositionen in the report; the `L` flag made 7.1.12 (2 St) a lump sum. GAEB XML repeat
+  descriptions (`<RefRNo IDRef>`) now fill `refs`. Excel: a numeric OZ 1.10 is no longer read as 1.1, and a
+  `psch` row with an empty quantity (or a priced row without one) is an item, not a title. Still open: the
+  shared performance description of B's XML (`RefPerfNo`, 22 items) is kept as a remark, not attached to items.
 - Demo machine: do not let it sleep. On 2026-11-20 two commands "hung" for minutes; `pmset -g log` showed the
   laptop asleep both times (lid closed 22:13–23:01, maintenance sleep 23:03–23:08) with an LLM request and a test
   run in flight. Not a code fault. Keep it on power with the lid open, or start the servers under `caffeinate -i`.

@@ -134,4 +134,21 @@ def parse_gaeb_xml(path: str) -> BoQ:
             body = _child(el, "BoQBody")
             if body is not None:
                 _walk(body, [], [], boq)
+    _link_repeats(root, boq)
     return boq
+
+
+def _link_repeats(root, boq: BoQ):
+    """A repeat description (<RefDescr>Rep</RefDescr>) names its reference item by ID (<RefRNo IDRef="I54"/>)
+    and carries only the difference as text; GAEB 90 prints "Wie Position …" there instead. Record the
+    reference item's OZ in `refs`, as the text references are."""
+    by_id = {i.source.xml_id: i for i in boq.items if i.source.xml_id}
+    for el in root.iter():
+        if _local(el) != "Item" or el.get("ID") not in by_id:
+            continue
+        item = by_id[el.get("ID")]
+        for ref in el.iter():
+            linked = by_id.get(ref.get("IDRef", "")) if _local(ref) == "RefRNo" else None
+            target = linked.oz if linked else None
+            if target and target != item.oz and target not in item.refs:
+                item.refs.append(target)

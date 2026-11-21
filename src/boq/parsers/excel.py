@@ -11,7 +11,7 @@ from decimal import Decimal, InvalidOperation
 
 from boq.model import BoQ, Item, Remark, SourceRef
 from boq.parsers.common import classify, find_refs, norm_oz, tidy
-from boq.units import normalise_unit
+from boq.units import LUMP_SUM, normalise_unit
 
 # column -> headings that name it, compared after lower-casing and dropping everything but letters
 _COLUMNS = {
@@ -42,7 +42,26 @@ def _rows(path: str) -> list[tuple[str, list[list]]]:
                 for s in book.sheets()]
     import openpyxl
     book = openpyxl.load_workbook(path, data_only=True, read_only=True)
-    return [(ws.title, [list(r) for r in ws.iter_rows(values_only=True)]) for ws in book]
+    return [(ws.title, [[_shown(c) for c in r] for r in ws.iter_rows()]) for ws in book]
+
+
+def _shown(cell):
+    """Cell value; a decimal number with a fixed-decimals format becomes the text Excel shows, so that an
+    item number 1.10 stored as the number 1.1 with format "0.00" is not read as 1.1."""
+    value = getattr(cell, "value", None)
+    fmt = getattr(cell, "number_format", "") or ""
+    m = re.fullmatch(r"0\.(0+)", fmt)
+    if isinstance(value, float) and m:
+        return _Shown(value, f"{value:.{len(m.group(1))}f}")
+    return value
+
+
+class _Shown(float):
+    """A float that remembers how Excel displays it; behaves as the number everywhere else."""
+    def __new__(cls, value: float, text: str):
+        obj = super().__new__(cls, value)
+        obj.text = text
+        return obj
 
 
 def _header(rows: list[list]) -> tuple[int, dict[str, int]] | None:
@@ -78,7 +97,12 @@ def _decimal(value) -> Decimal | None:
 def _oz(value) -> str | None:
     if value is None:
         return None
-    text = str(int(value)) if isinstance(value, float) and value.is_integer() else str(value).strip()
+    if isinstance(value, _Shown):
+        text = value.text
+    elif isinstance(value, float) and value.is_integer():
+        text = str(int(value))
+    else:
+        text = str(value).strip()
     return text if _OZ.match(text) else None
 
 
@@ -99,6 +123,7 @@ def parse_excel(path: str) -> BoQ:
         if head:
             boq.remarks.append(Remark(text=head))
         titles: dict[str, str] = {}
+        seen: set[str] = set()
         for n, row in enumerate(rows[start + 1:], start + 2):
             if not any(c is not None and str(c).strip() for c in row):
                 continue
@@ -110,15 +135,23 @@ def parse_excel(path: str) -> BoQ:
                 if m and qty is None:  # a title written into one merged cell
                     titles[norm_oz(m.group(1).split("."))] = m.group(2).strip()
                 continue
+            numeric = isinstance(cell(row, "oz"), float) and not isinstance(cell(row, "oz"), _Shown)
             oz = norm_oz(oz.split("."))
-            if qty is None:
-                if short:
-                    titles[oz] = short
-                continue
-            parts = oz.split(".")
+            if numeric and oz in seen and f"{oz}0" not in seen:
+                oz = f"{oz}0"  # the number 1.1 after 1.9 is item 1.10: Excel dropped the trailing zero
             unit_raw = str(cell(row, "unit") or "").strip()
             up, total = _decimal(cell(row, "up")), _decimal(cell(row, "total"))
-            if total is None and up is not None:  # a formula that was never calculated: the file has no value
+            if qty is None:
+                if normalise_unit(unit_raw) == LUMP_SUM:
+                    qty = Decimal(1)  # "psch" with the quantity cell left empty: one lump sum
+                elif not unit_raw and up is None and total is None:
+                    if short:
+                        titles[oz] = short
+                    continue
+                # otherwise an item without a quantity: kept, so the missing-quantity check reports it
+            seen.add(oz)
+            parts = oz.split(".")
+            if total is None and up is not None and qty is not None:  # a formula that was never calculated: the file has no value
                 total = (up * qty).quantize(Decimal("0.01"))
             item = Item(
                 oz=oz, path=[titles[p] for i in range(1, len(parts)) if (p := ".".join(parts[:i])) in titles],

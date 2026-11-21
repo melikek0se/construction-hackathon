@@ -137,6 +137,14 @@ def parse_gaeb90(path: str) -> BoQ:
         it.short_text = " ".join(s.strip() for s in short if s.strip())
         it.long_text = tidy("\n".join(long))
         it.refs = find_refs(it.text)
-        f = flags.get(it.oz, "")
-        it.kind = classify(it, alternative="W" in f[3:], contingency="B" in f[3:], lump_sum="L" in f[:3])
+        it.kind = classify(it, **_position_type(flags.get(it.oz, "")))
     return boq
+
+
+def _position_type(flags: str) -> dict[str, bool]:
+    """Record 21, columns 12-23. Column 12 is the position type (N normal, G base item, A alternative),
+    column 13 the second type (N normal; E / M taken as contingency without / with total — not verified,
+    no file in the dataset uses anything but N). Column 21 is not a position type: B marks a reference description (Bezugsbeschreibung), W a repeat
+    description (Wiederholungsbeschreibung, followed by a record 28 and "Wie Position …"). Bid B's award
+    counts those items in its own section totals, so they are ordinary items. Lump sums come from the unit."""
+    return {"alternative": flags[:1] == "A", "contingency": flags[1:2] in ("E", "M")}

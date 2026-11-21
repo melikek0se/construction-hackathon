@@ -42,9 +42,13 @@ Why this matters:
    subcontractor's offer.
 3. **Bidder fill-in fields.** PDFs contain `Angebotenes Fabrikat: '.........'` (bidder must name the product) and dotted
    price fields. Items demanding a product choice are exactly the ones that need a supplier quote.
-4. **Position types are flagged in the data.** B's D86 marks 14 `W` (Wahlposition, alternative), 4 `B`
-   (Bedarfsposition, contingency) and 1 `L` item; XML files carry `LumpSumItem`, `Provis` (24 in project E) and
-   `RefDescr` / `SubDescr` (repeat descriptions referring to another item). These are risk signals for free.
+4. **Position types are flagged in the data.** XML files carry `LumpSumItem`, `Provis` (24 contingency items in
+   project E) and `RefDescr` / `SubDescr`. B's D86 marks 14 items `W` and 4 `B` in column 21 of record 21:
+   these are **not** alternative / contingency items but repeat (Wiederholungs-) and reference (Bezugs-)
+   descriptions — every `W` is followed by a record 28 and "Wie Position …", and the file's own section totals
+   include them. The XML twin marks the same pairs `<RefDescr>Ref</RefDescr>` / `Rep` with `<RefRNo IDRef>`.
+   GAEB 90 marks a real alternative with `A` in column 12. No priced file in the dataset has alternative or
+   contingency items. (Corrected 2026-11-21; the parser read W / B as Wahl / Bedarf before.)
 5. **`LV-Positionen.docx` is a human-made grouping** of project C's items by work package (asphalt, trench, pipe
    material DN 250, cable duct …) including "either/or" and "with" combinations. It shows which items belong together
    — a seed for the "missing item" check (pipe delivered but no laying item, etc.).
