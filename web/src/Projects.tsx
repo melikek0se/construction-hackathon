@@ -208,7 +208,11 @@ export function CraneIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-const plateOf = (p: CatalogProject) => (p.source === "demo" ? p.id : (p.name.match(/[A-Za-zÄÖÜ]/)?.[0] ?? "+").toUpperCase());
+/* The project's own letter (A..Z, then AA..), given by the server when the project is kept: no two share one. */
+const plateOf = (p: CatalogProject) => p.plate || "+";
+/* The name on a card whose plate already says the number: without the number it begins with. */
+const nameBeside = (p: CatalogProject) =>
+  (p.number && p.name.startsWith(p.number) && p.name.slice(p.number.length).replace(/^[\s\-–:,_]+/, "")) || p.name;
 
 /* ------------------------------------------------------------------ the opening */
 
@@ -1005,10 +1009,11 @@ function Card({
       }}
     >
       <header>
-        <span className="plate">{plateOf(p)}</span>
         <div className="card-name">
-          <b lang="de">{p.name}</b>
-          <small>{[p.name.startsWith(p.number) ? "" : p.number, p.trade, size].filter(Boolean).join(" · ")}</small>
+          {/* the tender's own number, as its files state it; a tender without one carries no plate */}
+          {p.number && <span className="plate no" title={`Tender number ${p.number}`}>{p.number}</span>}
+          <b lang="de" title={p.name}>{nameBeside(p)}</b>
+          <small>{[p.trade, size].filter(Boolean).join(" · ")}</small>
         </div>
         {/* the dates live on the schedule above the board; this holds this tender's open there */}
         <button

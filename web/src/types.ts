@@ -217,6 +217,7 @@ export type TenderDate = "questions_due" | "due" | "opening" | "binding_until" |
 
 export interface CatalogProject {
   id: string;
+  plate: string; // its letter on the yellow plate, unique among the projects: A..Z, then AA..
   number: string;
   name: string;
   trade: string;

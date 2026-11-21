@@ -31,6 +31,8 @@ projects = Table(
     # where the tender stands and its dates, read from the files or set by the user: stage, questions_due, due,
     # opening, sent, binding_until, exec_start, exec_end
     Column("plan", JSON),
+    # the letter on the project's yellow plate, its own among the projects: A..Z, then AA.. (catalog.next_plate)
+    Column("plate", String(4)),
 )
 
 documents = Table(

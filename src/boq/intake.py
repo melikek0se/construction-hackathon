@@ -110,6 +110,25 @@ def _most(values: list[tuple[str, BoQ]]) -> tuple[str, BoQ] | None:
     return next((v, b) for v, b in values if v == best)
 
 
+_LEADING_NO = re.compile(r"(\d+(?:[.\-/]\d+)+|\d{4,})(?=[\s_,]|$)")
+_DATE = re.compile(r"\d{4}-\d{2}-\d{2}|\d{1,2}\.\d{1,2}\.(?:\d{2}|\d{4})|(?:19|20)\d{6}")
+
+
+def leading_number(text: str) -> str:
+    """The number a file name or a title begins with ("501-24-01_GAEB-XML_sas.x83" → 501-24-01), which is
+    how offices file a tender. Only at the very start, only digits joined by . - / or four digits and more,
+    and not a date: "Angebot AN24-0305" and "LV_03_Malerarbeiten" give nothing."""
+    found = _LEADING_NO.match(text.strip())
+    return "" if not found or _DATE.fullmatch(found[1]) else found[1]
+
+
+def number_in_names(files: list[str], title: str = "") -> str:
+    """A tender whose files do not state its number (or state an anonymisation token): the number most of
+    its file names begin with, else the one its title begins with. Empty when there is none."""
+    named = Counter(n for n in (leading_number(Path(f).stem) for f in files) if n)
+    return named.most_common(1)[0][0] if named else leading_number(title)
+
+
 def identity(boqs: list[BoQ]) -> dict:
     """The tender these files belong to: number, name, client, and where the name was read.
 
@@ -127,8 +146,8 @@ def identity(boqs: list[BoQ]) -> dict:
         if found := _most(values):
             label, where = found, said
             break
-    no = number[0] if number else ""
     text = label[0] if label else ""
+    no = number[0] if number else number_in_names([b.file for b in boqs], text)
     name = text if not no or text.startswith(no) else f"{no} {text}".strip()
     client = _most([(b.client, b) for b in boqs if _real(b.client)])
     source = label[1] if label else number[1] if number else None

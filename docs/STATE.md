@@ -149,6 +149,19 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   "3/6 AI review" and the station's line; when a run ends on a card that is on the page the foot wipes
   in and the estimator's rows come in (`just-done`, once). Seen in headless Chrome: heads, plate, list.
   Not seen in the browser: the stations foot and the wipe (no run was going).
+  The letter on the yellow plate is the project's own (2026-11-22): column `projects.plate`, given when the
+  project is kept — the first free of A..Z, AA..; the dataset projects hold A..F; older rows get theirs on
+  the next read, oldest first (`catalog.next_plate`, `_fill_plates`). Before, an upload showed the first
+  letter of its name, so two projects could carry the same plate. Tried on a scratch database; not seen in
+  the browser.
+  On the card the plate now holds the tender's number as its files state it (`projects.number`, e.g.
+  `8209.003`), as wide as the number, above the name (which then drops the number it begins with); a tender without a
+  number has no plate on its card. Seen in headless Chrome. The number is the one in the file header; when
+  that is empty or an anonymisation token, the number most file names begin with, else the one the title
+  begins with (`intake.leading_number`, `number_in_names`: digits joined by . - / or four digits and more,
+  never a date; "Angebot AN24-0305" gives nothing). Projects already kept get it on read (`catalog._project`).
+  `eval_intake.py`: project number 5/6 (was 4/6; the sixth, B, has none by hand but 15145 in its file). The letter stays
+  on the schedule row and on the line of all tenders, where it ties a deadline to its row.
   Not built (shown in the prototype with made-up data): worst item per project, "new version, not
   checked".
 

@@ -7,11 +7,13 @@ file belongs to (docs/02-dataset.md). After seeding they are ordinary projects: 
 """
 import hashlib
 import uuid
+from itertools import count, product
 from pathlib import Path
+from string import ascii_uppercase
 
 from sqlalchemy import delete, func, insert, select, update
 
-from boq import db
+from boq import db, intake
 
 # The dataset projects for seeding. role: what the file is within the project; the first file opens it.
 DATASET_PROJECTS = [
@@ -61,8 +63,37 @@ def _plan(plan: dict | None) -> dict:
     return plan
 
 
+def _plates():
+    """A, B, .. Z, AA, AB, ..: the letters projects are told apart by on the projects page."""
+    for length in count(1):
+        for letters in product(ascii_uppercase, repeat=length):
+            yield "".join(letters)
+
+
+def next_plate(taken: set[str]) -> str:
+    """The first letter no project carries. The dataset projects hold A..F whether they are seeded or not."""
+    held = taken | {p["id"] for p in DATASET_PROJECTS}
+    return next(x for x in _plates() if x not in held)
+
+
+def _fill_plates(conn) -> None:
+    """Projects kept before plates were given get theirs, oldest first."""
+    rows = conn.execute(select(db.projects.c.id, db.projects.c.source, db.projects.c.plate)
+                        .order_by(db.projects.c.created)).all()
+    if all(r.plate for r in rows):
+        return
+    taken = {r.plate for r in rows if r.plate}
+    for r in rows:
+        if not r.plate:
+            plate = r.id if r.source == "demo" else next_plate(taken)
+            taken.add(plate)
+            conn.execute(update(db.projects).where(db.projects.c.id == r.id).values(plate=plate))
+
+
 def _project(row, files: list) -> dict:
-    return {"id": row.id, "number": row.number, "name": row.name, "trade": row.trade, "note": row.note,
+    # a project kept before the number was also read from the file names gets it here
+    number = row.number or intake.number_in_names([f.name for f in files], row.name)
+    return {"id": row.id, "plate": row.plate or "", "number": number, "name": row.name, "trade": row.trade, "note": row.note,
             "kind": row.kind, "source": row.source, "created": row.created.isoformat(timespec="seconds"),
             "plan": _plan(row.plan),
             "files": [{"id": f.id, "name": f.name, "role": f.role, "format": f.format} for f in files]}
@@ -74,7 +105,8 @@ _DOC_COLUMNS = (db.documents.c.id, db.documents.c.project_id, db.documents.c.nam
 
 def all_projects() -> list[dict]:
     """Uploaded projects newest first, then the demo projects in dataset order (A..F)."""
-    with db.engine().connect() as conn:
+    with db.engine().begin() as conn:
+        _fill_plates(conn)
         rows = conn.execute(select(db.projects).order_by(db.projects.c.created.desc())).all()
         docs = conn.execute(select(*_DOC_COLUMNS).order_by(db.documents.c.position)).all()
     by_project: dict[str, list] = {}
@@ -85,7 +117,8 @@ def all_projects() -> list[dict]:
 
 
 def find(project_id: str) -> dict | None:
-    with db.engine().connect() as conn:
+    with db.engine().begin() as conn:
+        _fill_plates(conn)
         row = conn.execute(select(db.projects).where(db.projects.c.id == project_id)).first()
         if row is None:
             return None
@@ -114,9 +147,11 @@ def save_project(name: str, uploads: list[tuple[str, bytes, str]], kind: str, *,
     """Keep a new project with its files: (file name, bytes, role) each. Returns its id."""
     project_id = project_id or uuid.uuid4().hex[:12]
     with db.engine().begin() as conn:
+        taken = {x for x in conn.execute(select(db.projects.c.plate)).scalars() if x}
+        plate = project_id if source == "demo" else next_plate(taken)
         conn.execute(insert(db.projects).values(id=project_id, name=name, number=number, trade=trade, note=note,
                                                 kind=kind, source=source, created=db.now(),
-                                                plan=plan or None))
+                                                plan=plan or None, plate=plate))
         _add_documents(conn, project_id, uploads)
     return project_id
 
