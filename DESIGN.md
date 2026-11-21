@@ -437,9 +437,10 @@ under it (on a yellow plate within three days; "Dates" as a small outlined butto
 it holds the tender's lane open on the schedule. Then the LV as a strip 22px high (a `strip-base` bar with one
 vertical line per flagged item at its place in the LV, red and yellow 3px, blue 2px) with the sign counts; not
 on an intake card, where nothing is checked yet. Then, under a hairline, what the stage asks: where an intake
-tender was found; on Check and Pricing "N new, N gone" since the last check and the bidder questions (to send
-on a yellow underline, with client, answered); what is open as a short list (a severity sign, or a 7px ink
-square); the net total in the figure style where a priced file exists; the work period on a bid. No file
+tender was found; on Check and Pricing a checklist, one 13px row per open thing with a 10px mark that
+says whose it is (a yellow square with an ink line: the estimator's; an open ink square: the client's or a
+supplier's; an ink tick: done; a 6px grey dot: to know) and under it in 11.5px what stands behind it; the
+items priced carry a 5px bar; the net total in the figure style where a priced file exists; the work period on a bid. No file
 list (files, their steps and deleting are in the project's settings), no pipeline marks. The foot, 36px,
 edge to edge, is the one filled surface and says whose move it is: YOUR MOVE on yellow with an ink rule,
 POLIER under a running 4px hazard stripe, CLIENT or "Nothing open" on `tint`; a tender that ended carries

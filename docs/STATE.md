@@ -96,6 +96,13 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   behind it shows no tape (`covered` on `ProjectsPage` and `Card`). Measured in headless Chrome against
   the dev database: six cards taped under the shutter, the shutter lifts when the last is read (about
   4.3 s cold), no card taped or untaping after it. Not checked: the 8 s cap with a slow project.
+  The card's middle is a checklist (Atahan chose it from six card designs in a playground, roomy over
+  compact): one row per open thing, its mark says whose it is (yellow square: the estimator's; open
+  square: the client's or a supplier's; tick: done; grey dot: to know), a second small line has the rest
+  (out, answered, held). Rows: new findings since the last check, bidder questions, the client's answers,
+  price inquiries, items priced (with a bar), then what `openItems` says. The foot says one move in full
+  and counts several ("3 things wait for you"). Seen in headless Chrome on a1344a2b6dbc with rows put in
+  for the look and taken out again; `npm run build`.
   Not built (shown in the prototype with made-up data): worst item per project, "new version, not
   checked".
 

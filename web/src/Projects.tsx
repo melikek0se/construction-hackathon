@@ -738,10 +738,11 @@ function nowOf(
   const decide = run?.decisions?.proposed ?? 0;
   const mine = [
     q && q.to_send > 0 && `${count(q.to_send, "question")} to send`,
-    decide > 0 && `${count(decide, "change")} from the client's answers to decide`,
+    decide > 0 && `${count(decide, "answer")} of the client to decide`,
     inq && inq.to_send > 0 && `${inquiries(inq.to_send)} to send`,
   ].filter((t): t is string => !!t);
-  if (mine.length > 0) return { who: "you", label: "You", text: mine.join(" · ") };
+  // one move is said in full; several are counted, the card's list names them
+  if (mine.length > 0) return { who: "you", label: "You", text: mine.length === 1 ? mine[0] : `${mine.length} things wait for you` };
   if (q && q.out > 0) {
     const until = parseDay(plan.questions_due);
     return { who: "client", label: "Client", text: `${count(q.out, "question")} out, no answer yet${until ? ` · until ${dm(until)}` : ""}` };
@@ -854,99 +855,63 @@ function Card({
         {found.sender}
       </p>,
     );
-  if (since)
-    block.push(
-      <p key="since" className="kc-quiet">
-        Since the last check: <b>{since.new} new</b>, {since.gone} gone
-      </p>,
-    );
+  /* What is open on the tender, as one list. The mark of a row says whose it is: a yellow square is the
+     estimator's, an open square waits for somebody else, a tick is done, a grey dot is only to know. */
+  type Row = { state: "mine" | "wait" | "done" | "info"; n?: number | string; text: ReactNode; rest?: string; bar?: number; sign?: Severity };
+  const rows: Row[] = [];
+  const and = (parts: (string | false | 0)[]) => parts.filter(Boolean).join(" · ");
+  if (since) rows.push({ state: "info", n: `+${since.new}`, text: `new finding${since.new === 1 ? "" : "s"} since the last check`, rest: since.gone ? `${since.gone} gone` : "" });
   if (q)
-    block.push(
-      <div key="q">
-        <span className="kc-label">Bidder questions</span>
-        <p className="kc-q">
-          <span className={q.to_send ? "hot" : undefined}>
-            <b>{q.to_send}</b> to send
-          </span>
-          <span>
-            <b>{q.out}</b> with client
-          </span>
-          <span>
-            <b>{q.answered}</b> answered
-          </span>
-        </p>
-      </div>,
+    rows.push(
+      q.to_send > 0
+        ? { state: "mine", n: q.to_send, text: `question${q.to_send === 1 ? "" : "s"} to send`, rest: and([q.out > 0 && `${q.out} with the client`, q.answered > 0 && `${q.answered} answered`]) }
+        : q.out > 0
+          ? { state: "wait", n: q.out, text: `question${q.out === 1 ? "" : "s"} with the client`, rest: q.answered > 0 ? `${q.answered} answered` : "" }
+          : { state: "done", n: q.answered || q.total, text: q.answered ? "questions answered" : "questions closed" },
     );
-  if (dec && dec.proposed + dec.quantities + dec.allowances > 0)
-    block.push(
-      <div key="dec">
-        <span className="kc-label">The client's answers</span>
-        <p className="kc-q">
-          {dec.proposed > 0 && (
-            <span className="hot">
-              <b>{dec.proposed}</b> to decide
-            </span>
-          )}
-          {dec.quantities > 0 && (
-            <span>
-              <b>{dec.quantities}</b> quantit{dec.quantities === 1 ? "y" : "ies"} corrected
-            </span>
-          )}
-          {dec.allowances > 0 && (
-            <span>
-              <b>{dec.allowances}</b> allowance{dec.allowances === 1 ? "" : "s"}
-            </span>
-          )}
-        </p>
-      </div>,
+  if (dec && dec.proposed + dec.accepted > 0) {
+    const did = and([dec.quantities > 0 && `${dec.quantities} quantit${dec.quantities === 1 ? "y" : "ies"} corrected`, dec.allowances > 0 && `${dec.allowances} allowance${dec.allowances === 1 ? "" : "s"}`]);
+    rows.push(
+      dec.proposed > 0
+        ? { state: "mine", n: dec.proposed, text: `answer${dec.proposed === 1 ? "" : "s"} of the client to decide`, rest: did }
+        : { state: "done", n: dec.accepted, text: `change${dec.accepted === 1 ? "" : "s"} taken over from the answers`, rest: did },
     );
+  }
+  if (inq) {
+    const packages = `${inq.packages} package${inq.packages === 1 ? "" : "s"}`;
+    const held = inq.held > 0 && `${inq.held} item${inq.held === 1 ? " waits" : "s wait"} for the client`;
+    rows.push(
+      inq.to_send > 0
+        ? { state: "mine", n: inq.to_send, text: `price inquir${inq.to_send === 1 ? "y" : "ies"} to send`, rest: and([inq.out > 0 && `${inq.out} out`, inq.answered > 0 && `${inq.answered} answered`, held]) }
+        : inq.out > 0
+          ? { state: "wait", n: inq.out, text: `inquir${inq.out === 1 ? "y" : "ies"} with suppliers`, rest: and([inq.answered > 0 && `${inq.answered} answered`, held]) }
+          : { state: "done", n: inq.answered, text: `quote${inq.answered === 1 ? "" : "s"} in`, rest: and([packages, held]) },
+    );
+  }
   if (bidOf && ready && s.items > 0)
+    rows.push({
+      state: priced >= s.items ? "done" : "info",
+      n: `${priced.toLocaleString("de-DE")}/${s.items.toLocaleString("de-DE")}`,
+      text: "items priced",
+      rest: bidOf.from_suggestions > 0 ? `${bidOf.from_suggestions} taken from past bids` : "",
+      bar: priced / s.items,
+    });
+  for (const o of open) rows.push({ state: o.quiet ? "done" : "info", text: o.text, sign: o.sign });
+  if (rows.length > 0)
     block.push(
-      <div key="bid">
-        <span className="kc-label">
-          Bid · <b>{priced.toLocaleString("de-DE")}</b> of {s.items.toLocaleString("de-DE")} items priced
-        </span>
-        <i className="kc-bar">
-          <i style={{ width: `${(priced / s.items) * 100}%` }} />
-        </i>
-        {bidOf.from_suggestions > 0 && (
-          <p className="kc-quiet">
-            {bidOf.from_suggestions} taken from past bids
-          </p>
-        )}
-      </div>,
-    );
-  if (inq)
-    block.push(
-      <div key="inq">
-        <span className="kc-label">
-          Price inquiries · {inq.packages} package{inq.packages === 1 ? "" : "s"}
-        </span>
-        <p className="kc-q">
-          <span className={inq.to_send ? "hot" : undefined}>
-            <b>{inq.to_send}</b> to send
-          </span>
-          <span>
-            <b>{inq.out}</b> out
-          </span>
-          <span>
-            <b>{inq.answered}</b> answered
-          </span>
-        </p>
-        {inq.held > 0 && (
-          <p className="kc-quiet">
-            {inq.held} item{inq.held === 1 ? " waits" : "s wait"} for the client's answer
-          </p>
-        )}
-      </div>,
-    );
-  if (open.length > 0)
-    block.push(
-      <ul key="open" className="open-list">
-        {open.map((o, i) => (
-          <li key={i} className={o.quiet ? "quiet" : undefined}>
-            {o.sign ? <Sign severity={o.sign} size={14} /> : <i className={o.quiet ? "ok" : "dot"} />}
-            <span>{o.text}</span>
+      <ul key="rows" className="kc-list">
+        {rows.map((r, i) => (
+          <li key={i} className={`is-${r.state}`}>
+            {r.sign ? <Sign severity={r.sign} size={13} /> : <i />}
+            <span>
+              {r.n !== undefined && <b className="num">{r.n}</b>} {r.text}
+              {r.bar !== undefined && (
+                <i className="kc-bar">
+                  <i style={{ width: `${r.bar * 100}%` }} />
+                </i>
+              )}
+            </span>
+            {r.rest && <small>{r.rest}</small>}
           </li>
         ))}
       </ul>,
