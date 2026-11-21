@@ -355,8 +355,10 @@ Status: decided · 2026-11-21 (Atahan, after comparing three options each as a c
   whether questions were sent, how much is priced, addenda.
 - **New project is a modal dialog** (`<dialog>`): files first, then what was read with its evidence, then the
   two dates. Same intake rules as D-028.
-- **Opening.** Full yellow with two barrier tapes while the projects are fetched, then the yellow is cut away
-  on the slant; schedule rows are uncovered one after the other, a board card keeps a tape across it until
+- **Opening.** Full yellow with two barrier tapes while the projects are fetched, then the tapes run on
+  through on their diagonals (in from a bottom corner, out at the opposite top corner) and the yellow rolls up like a roller shutter until what is left of it is the band, brand and hazard
+  stripes in place from the start (changed 2026-11-21, Atahan; before:
+  cut away on the slant, tapes pulled back to their own sides); schedule rows are uncovered one after the other, a board card keeps a tape across it until
   its files are read. The one-off wipes also run with "reduce motion" set (the loops do not): a deliberate
   exception for the demo, to be reversed in `home.css` if the product is used for real.
 - **The band** (Atahan, after four header options as a mock-up): yellow, 70px, one hazard stripe along the

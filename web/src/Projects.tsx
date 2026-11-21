@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Sign } from "./components";
 import { DateField, Select } from "./controls";
 import { eur } from "./format";
@@ -197,8 +197,9 @@ const plateOf = (p: CatalogProject) => (p.source === "demo" ? p.id : (p.name.mat
 /* ------------------------------------------------------------------ the opening */
 
 /** The page opens the way a site does: barrier tape across full yellow while the projects are fetched,
- *  then the yellow is cut away on the slant and the tapes are pulled out to their sides.
- *  `phase`: "loading" holds, "opening" plays the cut. */
+ *  then the tapes run on through (bottom corner to opposite top corner) and the yellow rolls up like a shutter
+ *  until what is left of it is the band: the brand stands on it where the band has it, from the start.
+ *  `phase`: "loading" holds, "opening" plays the roll-up. */
 export function Opening({ phase }: { phase: "loading" | "opening" }) {
   const run = (text: string) => (
     <div className="open-run" aria-hidden>
@@ -207,10 +208,20 @@ export function Opening({ phase }: { phase: "loading" | "opening" }) {
       ))}
     </div>
   );
+  // the band's own height, so that the shutter stops exactly on it
+  const [bandH, setBandH] = useState<number | null>(null);
+  useLayoutEffect(() => setBandH(document.querySelector<HTMLElement>(".band")?.offsetHeight ?? null), []);
   return (
-    <div className={`opening is-${phase}`} role="status">
+    <div className={`opening is-${phase}`} role="status" style={bandH ? ({ "--band-h": `${bandH}px` } as CSSProperties) : undefined}>
       <span className="visually-hidden">Reading the projects</span>
-      <div className="open-sheet" />
+      <div className="open-sheet">
+        <div className="open-edge foot" />
+      </div>
+      <div className="open-edge head" />
+      <div className="open-brand brand" aria-hidden>
+        <HardHatIcon size={24} />
+        Polier
+      </div>
       <div className="open-tape a">{run("Polier")}</div>
       <div className="open-tape b">{run("Reading the projects")}</div>
     </div>

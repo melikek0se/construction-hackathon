@@ -375,8 +375,10 @@ tenders on a yellow chip, ink while the schedule is open; absent while there is 
 - **Focus:** 2px ink outline, 2px offset, everywhere.
 - Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; `prefers-reduced-motion` removes all transitions.
 - The larger motions are the loading tapes (520ms pull-in, then a steady run along the tape) and the opening
-  of the app: full yellow with two tapes while the projects are fetched, then the yellow is cut away on the
-  slant (900ms), the tapes are pulled out to their sides, and the schedule rows are un-taped one after the
+  of the app: full yellow with two tapes while the projects are fetched, then each tape runs on through on its
+  diagonal (in from a bottom corner, out at the opposite top corner, 600ms), the yellow rolls up like a roller shutter (820ms: plain yellow, the
+  band's hazard stripe along its top and its foot, the brand on it where the band has it) and stops as the
+  band itself, and the schedule rows are un-taped one after the
   other.
 
 ### Chips, tags and toggles
@@ -438,8 +440,8 @@ across it; the tape is wiped off to the right when the numbers arrive.
 ### New-project dialog
 The one modal, drawn as a site sign: a white board with a 2px ink frame standing on two 14px ink posts that
 run down out of the window, on a white veil. Its title (Barlow Condensed 700, 20px) stands on a yellow plate
-at the left of the head, cut off on the slant with a hazard stripe along the cut, as the opening cuts the
-yellow away; the rest of the head is white with a 2px ink rule under it. It is set up from below (520ms).
+at the left of the head, cut off on the slant with a hazard stripe along the cut, as the page-to-page gate
+is cut; the rest of the head is white with a 2px ink rule under it. It is set up from below (520ms).
 First a dashed drop zone; then two columns, the files with the step each belongs to (three-way
 switch, the evidence beneath, a yellow "check" tag where the step was inferred) and what was read about the
 tender with its source, plus the two dates no file carries. Footer (tint): a status line, Discard, the primary

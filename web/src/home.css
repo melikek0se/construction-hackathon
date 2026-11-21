@@ -1229,7 +1229,7 @@
 }
 
 /* The dialog is a site sign: a white board on two posts, its title on a yellow plate cut off on the slant
-   the way the opening cuts the yellow away. It is set up from below. */
+   the way the gate between pages is cut. It is set up from below. */
 .new-project[open] {
   display: flex;
   flex-direction: column;
@@ -1637,16 +1637,46 @@
   pointer-events: auto;
 }
 
+/* The yellow is a roller shutter with the brand on it, where the band has it. It rolls up until what is
+   left of it is the band itself: the same hazard stripe along its top (which stays) and along its foot
+   (which comes up with it). `--band-h` is the band's height, measured by `Opening`. The stripes are drawn
+   in boxes the size of the band, so they run exactly as the band's own do when it takes over. */
 .open-sheet {
   position: absolute;
   inset: 0;
   background: var(--yellow);
-  clip-path: polygon(0 0, 140% 0, 100% 100%, 0 100%);
-  transition: clip-path 900ms cubic-bezier(0.65, 0, 0.2, 1);
+  transition: translate 820ms cubic-bezier(0.7, 0, 0.25, 1) 100ms;
 }
 
 .opening.is-opening .open-sheet {
-  clip-path: polygon(0 0, 0% 0, -40% 100%, 0 100%);
+  translate: 0 calc(var(--band-h, 70px) - 100%);
+}
+
+.open-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--band-h, 70px);
+  box-sizing: border-box;
+  border-block: 9px solid;
+  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) 9;
+}
+
+.open-edge.head {
+  top: 0;
+  clip-path: inset(0 0 calc(100% - 9px) 0);
+}
+
+.open-edge.foot {
+  bottom: 0;
+  clip-path: inset(calc(100% - 9px) 0 0 0);
+}
+
+.open-brand {
+  position: absolute;
+  left: 20px;
+  top: 9px;
+  height: calc(var(--band-h, 70px) - 18px);
 }
 
 .open-tape {
@@ -1677,13 +1707,14 @@
   animation: open-from-right 560ms var(--ease) 90ms backwards;
 }
 
-/* both tapes are pulled out to their sides */
+/* each tape runs on through on its diagonal: in from a bottom corner, out at the top corner opposite,
+   going up with the shutter */
 .opening.is-opening .open-tape.a {
-  translate: -105% 0;
+  translate: 105% -45vh;
 }
 
 .opening.is-opening .open-tape.b {
-  translate: 105% 0;
+  translate: -105% -45vh;
 }
 
 .open-run {
@@ -1718,13 +1749,13 @@
 
 @keyframes open-from-left {
   from {
-    translate: -105% 0;
+    translate: -105% 45vh;
   }
 }
 
 @keyframes open-from-right {
   from {
-    translate: 105% 0;
+    translate: 105% 45vh;
   }
 }
 
@@ -1795,7 +1826,7 @@
    once, under a second, and a cover that never left would hide the page. */
 @media (prefers-reduced-motion: reduce) {
   .open-sheet {
-    transition: clip-path 900ms cubic-bezier(0.65, 0, 0.2, 1) !important;
+    transition: translate 820ms cubic-bezier(0.7, 0, 0.25, 1) 100ms !important;
   }
 
   .open-tape {

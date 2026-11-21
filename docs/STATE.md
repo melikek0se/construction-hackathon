@@ -288,7 +288,10 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 - Home page rebuilt (2026-11-21, D-029): a schedule of the running tenders on top (dates only, set in place),
   a board of all tenders by stage under it (strip, counts, open items, files, net), new project in a modal
-  dialog, barrier-tape opening. Backend: `projects.plan` (stage, due, questions_due, sent, binding_until),
+  dialog, barrier-tape opening (since changed: the tapes cross on diagonals, bottom corner to opposite top
+  corner, and the yellow rolls up as a roller shutter that stops as the band, brand and stripes on it from the
+  start; looked at as stills in headless Chrome, where the end state is pixel-identical to the band, the
+  motion itself not watched). Backend: `projects.plan` (stage, due, questions_due, sent, binding_until),
   `PATCH /api/catalog/{id}` takes them, `POST /api/projects` takes `due` and `questions_due`, the summary
   carries `questions` and `priced` per document. Styles in `web/src/home.css`. Checked through a script in
   headless Chrome at 1440 wide against a seeded SQLite database (opening, schedule, board, dialog with one
