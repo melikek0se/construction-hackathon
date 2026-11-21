@@ -3,9 +3,15 @@
 // in another file of the project. "Not in the documents" is an answer, and one whose passages could not
 // be confirmed says so.
 import { useEffect, useRef, useState } from "react";
-import { askProject } from "./api";
+import { askAllProjects, askProject } from "./api";
 import { LvText } from "./format";
 import type { ChatAnswer, ChatCitation, ChatTurn } from "./types";
+
+const ALL_EXAMPLES = [
+  "Which tender is due next?",
+  "Which project has the most stops?",
+  "Which projects have a priced bid or award, and what is the net total?",
+];
 
 const EXAMPLES = [
   "Which work does this LV expect from others (bauseits)?",
@@ -19,8 +25,10 @@ export function Chat({
   turns,
   onTurns,
   onCite,
+  autoFocus,
 }: {
-  analysisId: string;
+  autoFocus?: boolean; // the panel Polier opens puts the cursor in the box
+  analysisId: string | null; // null: the conversation about all projects, answered from their overview
   openFile: string; // the conversation outlives the file: "this file" is said about the one open now
   turns: ChatTurn[];
   onTurns: (turns: ChatTurn[]) => void;
@@ -47,13 +55,11 @@ export function Chat({
     setBusy(true);
     setError(null);
     try {
-      const answer: ChatAnswer = await askProject(
-        analysisId,
-        question,
-        before.map((t) => ({ role: t.role, content: t.content })),
-        openFile !== "",
-        again === undefined ? "search" : "all",
-      );
+      const history = before.map((t) => ({ role: t.role, content: t.content }));
+      const answer: ChatAnswer =
+        analysisId === null
+          ? await askAllProjects(question, history)
+          : await askProject(analysisId, question, history, openFile !== "", again === undefined ? "search" : "all");
       onTurns([...asked, { role: "assistant", content: answer.answer, answer }]);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -70,10 +76,11 @@ export function Chat({
         {turns.length === 0 && (
           <div className="chat-empty">
             <p>
-              Ask about this project. The answer comes only from the project's documents, this LV and the other files,
-              and names the item and passage it rests on. What the documents do not say is not answered.
+              {analysisId === null
+                ? "Ask about all your tenders: stages, dates, files, findings, net totals. The answer comes only from the overview of the projects and names the line it rests on. What stands inside an LV is asked in its project."
+                : "Ask about this project. The answer comes only from the project's documents, this LV and the other files, and names the item and passage it rests on. What the documents do not say is not answered."}
             </p>
-            {EXAMPLES.map((q) => (
+            {(analysisId === null ? ALL_EXAMPLES : EXAMPLES).map((q) => (
               <button key={q} className="chat-example" onClick={() => void send(q)}>
                 {q}
               </button>
@@ -95,7 +102,7 @@ export function Chat({
             />
           ),
         )}
-        {busy && <p className="chat-wait">Reading the project documents…</p>}
+        {busy && <p className="chat-wait">{analysisId === null ? "Reading the overview of the projects…" : "Reading the project documents…"}</p>}
         {error && (
           <p className="chat-error" role="alert">
             {error}
@@ -113,7 +120,8 @@ export function Chat({
         <textarea
           value={draft}
           rows={2}
-          placeholder="Ask about the project…"
+          autoFocus={autoFocus}
+          placeholder={analysisId === null ? "Ask about your projects…" : "Ask about the project…"}
           aria-label="Question about the project"
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -147,10 +155,12 @@ function Answer({
   const a = turn.answer;
   return (
     <div className="chat-a">
-      {a && !a.found && <p className="chat-flag">Not in the project documents</p>}
+      {a && !a.found && <p className="chat-flag">{a.scope === "overview" ? "Not in the overview of the projects" : "Not in the project documents"}</p>}
       {a && a.found && !a.grounded && (
         <p className="chat-flag warn">
-          No passage in the documents could be confirmed for this answer. Treat it as unverified.
+          {a.scope === "overview"
+            ? "No line of the overview could be confirmed for this answer. Treat it as unverified."
+            : "No passage in the documents could be confirmed for this answer. Treat it as unverified."}
         </p>
       )}
       <p className="chat-text">{turn.content}</p>
@@ -158,6 +168,20 @@ function Answer({
         <ul className="chat-cites">
           {a.citations.map((c, k) => {
             const here = c.file === openFile;
+            if (c.project)
+              return (
+                <li key={k}>
+                  <button onClick={() => onCite(c)} title={`Open ${c.project_name}`}>
+                    <span className="chat-cite-head">
+                      <b lang="de">{c.project_name}</b>
+                      <span>open the project</span>
+                    </span>
+                    <span className="chat-cite-quote">
+                      <LvText text={c.quote} />
+                    </span>
+                  </button>
+                </li>
+              );
             return (
             <li key={k}>
               <button onClick={() => onCite({ ...c, here })} title={here ? "Show this item" : `Open ${c.file} at this item`}>
@@ -184,13 +208,15 @@ function Answer({
               : "")
           }
         >
-          {a.scope === "all"
+          {a.scope === "overview"
+            ? `Read the overview of ${a.files} ${a.files === 1 ? "project" : "projects"}`
+            : a.scope === "all"
             ? `Read all ${a.files} ${a.files === 1 ? "document" : "documents"} in full`
             : `Read the ${a.passages} passages a search found, from ${a.files} of ${a.documents.length} ${
                 a.documents.length === 1 ? "document" : "documents"
               }`}
           {a.cost_usd !== null && ` · ${usd(a.cost_usd)}`}
-          {a.dropped > 0 && ` · ${a.dropped} passage${a.dropped === 1 ? "" : "s"} left out: not found word for word`}
+          {a.dropped > 0 && ` · ${a.dropped} ${a.scope === "overview" ? "line" : "passage"}${a.dropped === 1 ? "" : "s"} left out: not found word for word`}
         </p>
       )}
       {a && a.scope === "search" && onWhole && (

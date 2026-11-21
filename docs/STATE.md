@@ -273,7 +273,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   the test project was deleted again).
   Not done: the one-hour cache was not waited out (a second question after more than five minutes); an
   answer with "found: false" still shows its nearest passages under the label "Not in the project
-  documents", which reads oddly when the answer is "no LV contains this"; no chat on the list of projects.
+  documents", which reads oddly when the answer is "no LV contains this". (The list of projects has a chat since D-036.)
 
 - Database and deploy (2026-11-21, D-026, `docs/08-deploy.md`): projects, documents (file bytes), analyses and
   the LLM cache in one database (`src/boq/db.py`; Postgres via `DATABASE_URL`, SQLite `data/boq.db` locally).
@@ -334,10 +334,24 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 - Name and mascot (D-030): the app is **Polier**; a 3D head in a hard hat (`web/src/Mascot.tsx`) living in the
   bottom-right corner of every page (follows the pointer, glances around at rest, leans in, hops on click,
-  bounces on a file drag), not wired to anything; app icon and band logo: a hard hat in profile. Checked by driving the pointer
+  bounces on a file drag), since D-036 the way into the chat; app icon and band logo: a hard hat in profile. Checked by driving the pointer
   with puppeteer in Chrome at 1440 wide on the dev stack (follow, near, over, idle glances, hop all seen).
   Not checked: a person using it, the file-drag bounce, the
   production build, the PDF view's "Drawn by LV Check" and the auth realm still carry the old name.
+
+- Polier answers (2026-11-21, D-036; `web/src/Agent.tsx`, `POST /api/catalog/chat`, `chat.overview_answer`):
+  a click on the head opens a chat panel above it (Esc or × closes it). In a project or an LV: that
+  project's conversation, shared with the "Ask the project" tab. On the list of projects: all projects at
+  once, answered from their overview lines (stage, dates, files, rule findings, net totals), each answer
+  citing project and line, a click opens the project; or one project picked in the panel. Conversations are
+  kept in the browser as before. Polier bounces on a question and hops on the answer.
+  Live in Chrome through a script at 1440 wide on the Docker stack: project D picked on the list, a question
+  answered in 9 s, its passage opened the LV with the quote marked on the PDF and the panel still open;
+  four questions about all projects (most stops, priced bids and totals in Turkish, next deadline, roof
+  drains) in 4–7 s and 0.03–0.04 USD each, figures as on the cards, the roof-drain one sent to project F;
+  a cited line opened D and F; the conversation was there again after a reload. `tests/test_chat.py` (+3).
+  Not checked: a person clicking through, widths under 500px, the production build in a browser, a
+  catalogue of many projects (the overview is sent whole: about 5k tokens for the six).
 
 - New-project dialog (2026-11-21): files can be added to the ones waiting (button or drop; the same file is
   not taken twice) and taken out again; name, dates and corrected steps stay while the set is read again; a

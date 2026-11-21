@@ -718,6 +718,89 @@ async def ask_project(analysis_id: str, body: Question):
     return {**out, "documents": names, "whole": whole}
 
 
+_STAGE = {"check": "Check", "questions": "Questions (bidder questions are out)", "pricing": "Pricing"}
+_DATE = {"sent_out": "tender sent out", "questions_due": "bidder questions until", "due": "submission deadline",
+         "opening": "bid opening", "binding_until": "bid binding until", "exec_start": "work starts",
+         "exec_end": "work done by"}
+
+
+def _count(n: int, one: str) -> str:
+    return f"{n} {one}" if n == 1 else f"{n} {one}s"
+
+
+def _overview() -> list[dict]:
+    """Every project as the lines of fact the projects page shows about it, for questions about all
+    tenders at once (`chat.overview_answer`): stage, dates with their source, findings, net total, files."""
+    out = []
+    for p in catalog.all_projects():
+        try:
+            summary = catalog_summary(p["id"])
+        except Exception:  # a project that cannot be read is still listed, with what is known without it
+            summary = None
+        roles = {f["role"] for f in p["files"]}
+        plan = p.get("plan") or {}
+        stage = ("Award (an award is among the files)" if "award" in roles
+                 else "Submitted (a bid is among the files)" if roles & {"bid", "submitted bid", "offer"}
+                 else _STAGE.get(plan.get("stage") or "check", "Check"))
+        lines = [f"stage: {stage}"]
+        if p.get("trade"):
+            lines.append(f"trade: {p['trade']}")
+        lines.append("kind: " + ("one building, " + _count(len(p["files"]), "trade LV") if p["kind"] == "trades"
+                                 else "one LV in " + _count(len(p["files"]), "file")))
+        stated = (summary or {}).get("dates") or []
+        for kind, label in _DATE.items():
+            if plan.get(kind):
+                lines.append(f"{label}: {plan[kind]} (the date the project is planned by)")
+            for d in stated:
+                if d["kind"] == kind and d["date"] != plan.get(kind):
+                    where = "; ".join(f"{s['file']}, {s['where']}" for s in d["sources"])
+                    lines.append(f"{label}: {d['date']}{' ' + d['time'] if d['time'] else ''}"
+                                 f"{' (approximate)' if d['approx'] else ''}, stated in the files as "
+                                 f"„{d['label']} {d['text']}“ ({where})")
+        if plan.get("sent"):
+            lines.append(f"bid sent: {plan['sent']}")
+        if not any(plan.get(k) for k in ("due", "opening")) and not any(d["kind"] in ("due", "opening") for d in stated):
+            lines.append("submission deadline: not stated in the files and not set")
+        if summary:
+            c = summary["counts"]
+            lines.append(f"rule findings: {_count(c['high'], 'stop')}, {_count(c['warn'], 'caution')}, "
+                         f"{_count(c['info'], 'note')} on {_count(summary['items'], 'item')} in "
+                         f"{_count(summary['lvs'], 'LV')}")
+            lines.append(f"net total: {summary['net']:,.2f} EUR, from the {summary['net_from']}" if summary["net"] is not None
+                         else "net total: none, no priced bid or award in GAEB format among the files")
+            for d in summary["docs"]:
+                if d["counts"] is None:
+                    lines.append(f"file: {d['name']} — {d['role']}, {d['format']}, could not be read")
+                    continue
+                k = d["counts"]
+                lines.append(f"file: {d['name']} — {d['role']}, {d['format']}, {_count(d['items'], 'item')}, "
+                             f"{_count(k['high'], 'stop')}, {_count(k['warn'], 'caution')}, {_count(k['info'], 'note')}, "
+                             f"{_count(d['questions'], 'point')} to ask the client, {_count(d['priced'], 'item')} priced")
+        else:
+            lines += [f"file: {f['name']} — {f['role']}, {f['format']}" for f in p["files"]]
+        out.append({"id": p["id"], "number": p.get("number") or "", "name": p["name"], "lines": lines})
+    return out
+
+
+@app.post("/api/catalog/chat")
+async def ask_all_projects(body: Question):
+    """A question about all projects at once, answered from the overview of the projects page only
+    (stage, dates, files, rule findings, net totals); what stands in an LV is asked inside its project."""
+    question = body.question.strip()
+    if not question:
+        raise HTTPException(422, "Ask a question.")
+    projects = _overview()
+    try:
+        out = await chat.overview_answer(question[:2000], body.history, projects, date.today().isoformat())
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:  # API or network failure: say so instead of a bare 500
+        raise HTTPException(502, f"The question could not be answered: {exc}") from exc
+    return {**out, "scope": "overview", "documents": [p["name"] for p in projects], "files": len(projects),
+            "passages": sum(len(p["lines"]) for p in projects),
+            "whole": {"tokens": 0, "first_usd": None, "then_usd": None}}
+
+
 class Passage(BaseModel):
     oz: str = ""  # "" = a passage from the preliminary remarks
     quote: str

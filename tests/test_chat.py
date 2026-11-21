@@ -193,3 +193,60 @@ def test_what_an_answer_cost(monkeypatch):
     assert chat.cost_usd(cached) == 2.4  # one-hour cache write: twice the input price
     monkeypatch.setattr(chat, "CHAT_MODEL", "some-other-model")
     assert chat.cost_usd(usage) is None
+
+
+OVERVIEW = [
+    {"id": "A", "number": "8209.003", "name": "Maschinentechnik", "lines": [
+        "stage: Award (an award is among the files)", "submission deadline: 2024-03-27 14:30, stated in the files as „Ablauf der Angebotsfrist 27.03.2024“ (HEM.pdf, page 1)",
+        "rule findings: 2 stops, 10 cautions, 8 notes on 159 items in 1 LV"]},
+    {"id": "D", "number": "152516", "name": "Bachdurchlass", "lines": [
+        "stage: Check", "rule findings: 0 stops, 2 cautions, 2 notes on 50 items in 1 LV"]},
+]
+
+
+def ask_overview(raw, monkeypatch):
+    seen = {}
+
+    async def fake_ask(client, documents_text, history, question, open_text="", cache=True, **kw):
+        seen.update(documents=documents_text, question=question, **kw)
+        return raw
+
+    monkeypatch.setattr(chat, "_ask", fake_ask)
+    return asyncio.run(chat.overview_answer("Which project has the most stops?", [], OVERVIEW, "2026-11-21",
+                                            client=object())), seen
+
+
+def test_a_question_about_all_projects_rests_on_lines_of_the_overview(monkeypatch):
+    out, seen = ask_overview({"answer": "Maschinentechnik, with 2 stops.", "found": True, "citations": [
+        {"project": "A", "line": "rule findings: 2 stops,  10 cautions, 8 notes on 159 items in 1 LV"},  # spacing differs
+        {"project": "D", "line": "rule findings: 2 stops, 10 cautions, 8 notes on 159 items in 1 LV"},  # A's line, not D's
+        {"project": "D", "line": "rule findings: 5 stops"},  # not in the overview
+        {"project": "Z", "line": "stage: Check"},  # no such project
+    ]}, monkeypatch)
+    assert [(c["project"], c["project_name"]) for c in out["citations"]] == [("A", "Maschinentechnik")]
+    assert out["grounded"] is True and out["dropped"] == 3
+    assert 'id="D"' in seen["documents"] and "stage: Check" in seen["documents"]
+    assert "2026-11-21" in seen["question"]
+    assert seen["system"] is chat.OVERVIEW_SYSTEM and seen["schema"] is chat.OVERVIEW_SCHEMA
+
+
+def test_an_overview_answer_without_a_confirmed_line_says_so(monkeypatch):
+    out, _ = ask_overview({"answer": "D is due next week.", "found": True, "citations": [
+        {"project": "D", "line": "submission deadline: 2026-11-28"}]}, monkeypatch)
+    assert out["citations"] == [] and out["grounded"] is False
+
+
+def test_api_answers_about_all_projects_from_the_overview(monkeypatch):
+    async def fake(question, history, projects, today, client=None):
+        assert any(line.startswith("stage: ") for p in projects for line in p["lines"])
+        first = projects[0]
+        return {"answer": "x", "found": True, "grounded": True, "dropped": 0, "usage": None, "cost_usd": None,
+                "citations": [{"project": first["id"], "project_name": first["name"], "quote": first["lines"][0]}]}
+
+    monkeypatch.setattr(chat, "overview_answer", fake)
+    monkeypatch.setattr(api, "_overview", lambda: OVERVIEW)
+    r = client.post("/api/catalog/chat", json={"question": "Which tender is due next?"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["scope"] == "overview" and body["files"] == 2 and body["citations"][0]["project"] == "A"
+    assert client.post("/api/catalog/chat", json={"question": "  "}).status_code == 422

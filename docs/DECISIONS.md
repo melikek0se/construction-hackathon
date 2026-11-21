@@ -519,3 +519,24 @@ Status: decided · 2026-11-21 (the user asked for routing and pagination, built 
 Revisit if: the client's tender platform, not e-mail, is where questions must go; or replies should arrive
 without pasting.
 
+## D-036 — A click on Polier opens the chat; on the list of projects it answers about all tenders from their overview
+
+Decided 2026-11-21 with Utku (he chose: first the existing chat from the avatar, then all projects; no
+free chatbot).
+
+- Polier (bottom right) opens a panel above it (`web/src/Agent.tsx`). Inside a project or an LV it is that
+  project's conversation, the same one as the "Ask the project" tab (D-025, D-027); only one of the two is
+  shown at a time. A passage clicked in the panel opens the item on the PDF and leaves the right pane alone.
+- On the list of projects the panel is about all projects at once (`POST /api/catalog/chat`,
+  `chat.overview_answer`): the model reads one block of fact lines per project (stage, dates with their
+  source, files, rule findings, net total: what the projects page shows) and nothing else. Each statement
+  cites a project and one of its lines; a line that is not there word for word is dropped, as passages are.
+  A click on a line opens the project. "One project" in the panel's head asks a single project's documents
+  without opening it.
+- The overview holds no LV text. A question about items or wording is answered "ask inside the project",
+  not from all documents of all projects: that would cost a whole-project read per project.
+- No free chatbot: general knowledge (VOB, usual prices) stays out, as in D-025.
+
+Revisit if: questions across the documents of several projects are wanted (needs one search index over
+all projects), or the AI findings should count in the overview (it has rule findings only).
+

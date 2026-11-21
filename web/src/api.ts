@@ -163,6 +163,18 @@ export async function askProject(
   );
 }
 
+/** A question about all projects at once, answered from the overview of the projects page. */
+export async function askAllProjects(question: string, history: { role: string; content: string }[]): Promise<ChatAnswer> {
+  const answer: ChatAnswer = await read(
+    await fetch("/api/catalog/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, history }),
+    }),
+  );
+  return { ...answer, citations: answer.citations.map((c) => ({ ...c, file: "", oz: "", index: null, here: false })) };
+}
+
 /** Where a passage (e.g. one an answer rests on) stands on the pages of this LV. */
 export async function locatePassage(id: string, oz: string, quote: string): Promise<{ page: number | null; rects: [number, number, number, number][]; located: "quote" | "item" | "none" }> {
   return read(
