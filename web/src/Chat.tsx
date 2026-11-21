@@ -48,6 +48,7 @@ export function Chat({
         analysisId,
         question,
         turns.map((t) => ({ role: t.role, content: t.content })),
+        openFile !== "",
       );
       onTurns([...asked, { role: "assistant", content: answer.answer, answer }]);
     } catch (e) {
@@ -152,7 +153,15 @@ function Answer({ turn, openFile, onCite }: { turn: ChatTurn; openFile: string; 
         </ul>
       )}
       {a && (
-        <p className="chat-read" title={a.documents.join("\n")}>
+        <p
+          className="chat-read"
+          title={
+            a.documents.join("\n") +
+            (a.usage
+              ? `\n\nTokens: ${a.usage.input_tokens + a.usage.cache_write_tokens} read new, ${a.usage.cache_read_tokens} from the cache, ${a.usage.output_tokens} written`
+              : "")
+          }
+        >
           Read {a.documents.length} {a.documents.length === 1 ? "document" : "documents"}
           {a.dropped > 0 && ` · ${a.dropped} passage${a.dropped === 1 ? "" : "s"} left out: not found word for word`}
         </p>

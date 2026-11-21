@@ -109,12 +109,28 @@ export async function runLlmReview(id: string): Promise<{ findings: Finding[] }>
 }
 
 /** A question about the project of this analysis, answered from its documents only. */
-export async function askProject(id: string, question: string, history: { role: string; content: string }[]): Promise<ChatAnswer> {
+export async function askProject(
+  id: string,
+  question: string,
+  history: { role: string; content: string }[],
+  reading = true, // asked beside this LV; false on a project's overview, where no file is open
+): Promise<ChatAnswer> {
   return read(
     await fetch(`/api/analyses/${id}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, history }),
+      body: JSON.stringify({ question, history, reading }),
+    }),
+  );
+}
+
+/** Where a passage (e.g. one an answer rests on) stands on the pages of this LV. */
+export async function locatePassage(id: string, oz: string, quote: string): Promise<{ page: number | null; rects: [number, number, number, number][]; located: "quote" | "item" | "none" }> {
+  return read(
+    await fetch(`/api/analyses/${id}/locate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ oz, quote }),
     }),
   );
 }

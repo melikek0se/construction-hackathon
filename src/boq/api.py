@@ -456,12 +456,15 @@ def analyze_sample(path: str):
 class Question(BaseModel):
     question: str
     history: list[dict] = []  # earlier turns of this conversation: {"role": "user" | "assistant", "content": …}
+    reading: bool = True  # the question is asked beside this LV; false on a project's overview page
 
 
 def _chat_documents(analysis_id: str, boq: BoQ) -> tuple[list[BoQ], list[dict]]:
-    """What the chat may read: the open LV, and from its project one file per other LV text. Of several
-    versions of one LV the tender is read (a GAEB file before its print-out); the open file is always
-    read as it is, also when it is a bid without texts. Returns the documents and the project's files."""
+    """What the chat may read from the project of an analysis: one file per LV text, in the project's
+    file order whichever file is open (so the model's cached copy serves every question about the
+    project). Of several versions of one LV the tender is read, a GAEB file before its print-out. The
+    open file is read in addition by `chat.answer` if it is not among them, e.g. a bid without texts.
+    Returns the documents and the project's files."""
     project = catalog.find(DATASET, _PROJECT_OF.get(analysis_id, ""))
     if project is None:
         return [boq], []
@@ -473,7 +476,7 @@ def _chat_documents(analysis_id: str, boq: BoQ) -> tuple[list[BoQ], list[dict]]:
         rank = (other.phase == "83", other.format != "pdf")
         if group not in best or rank > (best[group].phase == "83", best[group].format != "pdf"):
             best[group] = other
-    return [boq] + [b for b in best.values() if b.file != boq.file], files
+    return list(best.values()), files
 
 
 @app.post("/api/analyses/{analysis_id}/chat")
@@ -485,7 +488,7 @@ async def ask_project(analysis_id: str, body: Question):
         raise HTTPException(422, "Ask a question.")
     documents, files = _chat_documents(analysis_id, boq)
     try:
-        out = await chat.answer(question[:2000], body.history, documents)
+        out = await chat.answer(question[:2000], body.history, documents, reading=boq if body.reading else None)
     except LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
@@ -494,7 +497,27 @@ async def ask_project(analysis_id: str, body: Question):
     for c in out["citations"]:
         c["index"] = index.get(c["file"])  # which file of the project, to open it from the answer
         c["here"] = c["file"] == boq.file
-    return {**out, "documents": [d.file for d in documents]}
+    read = [d.file for d in documents]  # the open file first in what is shown
+    if body.reading:
+        read = [boq.file] + [f for f in read if f != boq.file]
+    return {**out, "documents": read}
+
+
+class Passage(BaseModel):
+    oz: str = ""  # "" = a passage from the preliminary remarks
+    quote: str
+
+
+@app.post("/api/analyses/{analysis_id}/locate")
+def locate_passage(analysis_id: str, body: Passage):
+    """Where a passage stands on the pages of this LV, e.g. one an answer of the chat rests on:
+    {"page", "rects", "located"} as for a finding (the quote, else the item's line, else no place)."""
+    path, positions = _pages(analysis_id)
+    boq, _ = _analysis(analysis_id)
+    passage = Finding(item_oz=body.oz.strip() or None, category="unclear_scope", check_id="PASSAGE",
+                      severity="info", evidence=body.quote[:600], explanation="", action="ask_client")
+    mark = locate(path, boq, [passage], positions)["marks"][0]
+    return {k: mark[k] for k in ("oz", "page", "rects", "located")}
 
 
 def _pages(analysis_id: str) -> tuple[Path, dict[str, tuple[int, float]] | None]:

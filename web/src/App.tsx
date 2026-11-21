@@ -33,6 +33,7 @@ const VIEWS: [View, string][] = [
   ["whatif", "What-if"],
   ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
 ];
+const CHATS_KEY = "lvcheck.chats.v1";
 const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
 
@@ -61,7 +62,23 @@ export default function App() {
   // The right pane: the findings (list or item sheet), or the questions about the project. A conversation
   // belongs to the project, so it stays when another file of the project is opened from an answer.
   const [side, setSide] = useState<"findings" | "ask">("findings");
-  const [chats, setChats] = useState<Record<string, ChatTurn[]>>({});
+  // Conversations survive a reload: kept in this browser, per project.
+  const [chats, setChats] = useState<Record<string, ChatTurn[]>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(CHATS_KEY) ?? "{}");
+    } catch {
+      return {};
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(CHATS_KEY, JSON.stringify(chats));
+    } catch {
+      /* storage full or switched off: the conversation still works for this visit */
+    }
+  }, [chats]);
+  // The passage of an answer that was clicked, to be outlined on the page.
+  const [passage, setPassage] = useState<{ oz: string; quote: string; at: number } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const refreshCatalog = useCallback(async () => {
@@ -109,6 +126,7 @@ export default function App() {
     setError(null);
     try {
       setAnalysis(await job());
+      setPassage(null); // a passage belongs to the file it was clicked for; cite() sets it again after this
       setAi("idle");
       setView("plan");
       setSeverities(ALL);
@@ -292,14 +310,17 @@ export default function App() {
   const open = selection.oz !== null || selection.finding !== null;
 
   const chatKey = current?.project.id ?? analysis?.id ?? "";
+  const setTurns = (turns: ChatTurn[]) => setChats((all) => ({ ...all, [chatKey]: turns }));
 
   // A passage of an answer: show its item, in this file or in the file of the project it stands in.
   function cite(c: ChatCitation) {
     const show = () => {
       setSelection({ oz: c.oz || null, finding: null });
-      setView(c.oz ? "pdf" : "remarks");
+      setView("pdf");
+      setSide("ask");
+      setPassage({ oz: c.oz, quote: c.quote, at: Date.now() });
     };
-    if (c.here || !analysis) return show();
+    if (analysis && c.file === analysis.boq.file) return show();
     const lv = project?.lvs.find((l) => l.file === c.file);
     if (lv) void run(lv.name, () => loadAnalysis(lv.analysis_id)).then(show);
     else if (current && current.project.kind !== "trades" && c.index !== null) {
@@ -444,7 +465,11 @@ export default function App() {
       )}
 
       {project && !analysis ? (
-        <ProjectView project={project} onOpenLv={(id) => void run("LV", () => loadAnalysis(id))} />
+        <ProjectView
+          project={project}
+          onOpenLv={(id) => void run("LV", () => loadAnalysis(id))}
+          chat={{ turns: chats[chatKey] ?? [], onTurns: setTurns, onCite: cite }}
+        />
       ) : !analysis || !stats ? (
         <ProjectsPage
           projects={catalog}
@@ -551,7 +576,14 @@ export default function App() {
             )}
             {view === "remarks" && <RemarksView analysis={analysis} />}
             {view === "pdf" && analysis.pdf && (
-              <PdfView key={analysis.id} analysis={analysis} visible={severities} selection={selection} onSelect={setSelection} />
+              <PdfView
+                key={analysis.id}
+                analysis={analysis}
+                visible={severities}
+                selection={selection}
+                onSelect={setSelection}
+                passage={passage}
+              />
             )}
             {view === "pdf" && !analysis.pdf && (
               <p className="pdf-status">This PDF was uploaded on its own and not kept, so there are no pages to show. Add it to a project to read it here.</p>
@@ -573,7 +605,7 @@ export default function App() {
                 analysisId={analysis.id}
                 openFile={analysis.boq.file}
                 turns={chats[chatKey] ?? []}
-                onTurns={(turns) => setChats((all) => ({ ...all, [chatKey]: turns }))}
+                onTurns={setTurns}
                 onCite={cite}
               />
             ) : (

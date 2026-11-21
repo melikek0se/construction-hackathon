@@ -259,7 +259,8 @@ the item it names; an answer left without one is shown as unconfirmed, and "not 
 a valid answer. General knowledge (VOB, standards, usual prices) is excluded on purpose: it would be a
 statement without a source. A passage opens its item on the PDF pages, in this file or another file of the
 project; the conversation belongs to the project and stays open.
-No retrieval step and no graph: the largest project (F, 27 LVs, about 150k tokens) fits into one request and
-is prompt-cached, so a follow-up question reads the documents from the cache.
+No retrieval step and no graph: the largest project (F, 27 LVs, 316,700 tokens measured) fits into one request.
+The documents are one block in the project's file order, the same whichever file is open, cached for an hour:
+the first question of an hour pays for them (about 2.55 USD on F at list prices), later ones about 0.10 USD.
 Revisit if: a project no longer fits (then retrieval, possibly over the trade graph of `project.py`); general
 knowledge is wanted (then as a separate, labelled kind of answer); answers should be kept between sessions.

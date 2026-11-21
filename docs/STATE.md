@@ -218,10 +218,29 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   LV 12 and LV 14b, and it names the same open interface the cross-LV check reports. Seen in Chrome: the
   answer, a click on a passage of LV 14b opens that LV on page 4 with the passage in view and the
   conversation still there. Offline tests in `tests/test_chat.py`.
-  Not done: the cost of a question on project F was not read off (about 150k input tokens on the first
-  question, cached after); the cited passage is not highlighted on the page (the view scrolls to its item);
-  no chat on the project overview page; conversations are lost on reload; in one answer the model wrote a
-  plain word where the LV has an anonymisation token.
+  Completed on 2026-11-21 after Utku's review:
+  - Cost, read from the API's token counts at `claude-opus-5-5` list prices (input 4, output 20, cache read
+    0.20, one-hour cache write 8 USD per million tokens): project F is 316,700 tokens of documents, not the
+    150k estimated from character counts. First question in an hour about 2.55 USD, each later one about
+    0.08–0.10 USD (7–33 s); project D (12,300 tokens) about 0.10 USD, then about 0.01 USD.
+  - The documents are sent in the project's file order whichever file is open, and cached for one hour
+    (`BOQ_CHAT_CACHE_TTL`): before, each LV of a project had its own copy and every first question paid in
+    full. The open file is named to the model ("this LV") and sent as a second block only if it is not among
+    the documents (a bid beside the tender).
+  - A clicked passage is outlined on the page (`POST /api/analyses/{id}/locate`, the same search as for
+    findings) and scrolled to.
+  - The project overview (trades projects) has the chat too; an answer's passage opens the LV it stands in.
+  - Conversations are kept in the browser per project (`localStorage`) and survive a reload.
+  - The prompt tells the model to keep anonymisation tokens as written; checked live on the answer that
+    had replaced one („nach [PERSON_125] AN“ now stays).
+  Seen in a separate browser (Playwright, 1440x900): overview chat on project F, reload keeps it, a passage
+  of LV 02 opens that LV with „Vorleistung: Wandputz PII und PIV“ outlined on page 8. Also seen there: the
+  offer D84 of project C on the client's offer PDF with texts and prices at 3.2.110, picked in the item
+  table; an Excel LV uploaded through the page (intake, new project, PDF tab with drawn page, note and mark;
+  the test project was deleted again).
+  Not done: the one-hour cache was not waited out (a second question after more than five minutes); an
+  answer with "found: false" still shows its nearest passages under the label "Not in the project
+  documents", which reads oddly when the answer is "no LV contains this"; no chat on the list of projects.
 
 ## In progress
 

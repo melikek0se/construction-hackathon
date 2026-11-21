@@ -4,7 +4,7 @@
 import { GlobalWorkerOptions, TextLayer, getDocument, type PDFDocumentProxy } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { loadMarks, sourcePdfUrl } from "./api";
+import { loadMarks, locatePassage, sourcePdfUrl } from "./api";
 import { Sign, type Selection } from "./components";
 import { SEVERITY_LABEL, type Analysis, type Finding, type PdfMark, type PdfMarks, type Severity } from "./types";
 import "./pdf.css";
@@ -108,11 +108,14 @@ export function PdfView({
   visible,
   selection,
   onSelect,
+  passage,
 }: {
   analysis: Analysis;
   visible: Set<Severity>;
   selection: Selection;
   onSelect: (s: Selection) => void;
+  // a passage to show on the page, e.g. one an answer of the chat rests on; `at` tells two clicks apart
+  passage?: { oz: string; quote: string; at: number } | null;
 }) {
   const [raw, setRaw] = useState<PdfMarks | null>(null);
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
@@ -284,6 +287,29 @@ export function PdfView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection.oz, selection.finding, ready]);
 
+  // The passage of an answer: found on the page by the server, outlined there and brought into view.
+  const [cited, setCited] = useState<{ page: number; rects: [number, number, number, number][] } | null>(null);
+  useEffect(() => {
+    setCited(null);
+    if (!passage) return;
+    let live = true;
+    locatePassage(analysis.id, passage.oz, passage.quote).then(
+      (m) => live && m.located === "quote" && m.page !== null && setCited({ page: m.page, rects: m.rects }),
+      () => undefined, // the item is still scrolled to; only the outline is missing
+    );
+    return () => {
+      live = false;
+    };
+  }, [analysis.id, passage?.oz, passage?.quote, passage?.at]);
+  useEffect(() => {
+    const box = scroller.current;
+    const el = cited ? pageEls.current.get(cited.page) : undefined;
+    if (!cited || !box || !el || !marks) return;
+    const scale = width / marks.pages[cited.page - 1].width;
+    box.scrollTo({ top: el.offsetTop + cited.rects[0][1] * scale - box.clientHeight * 0.3 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cited, ready]);
+
   function pick(p: Placed) {
     // a note clicked a second time changes nothing, so there is no scroll to skip afterwards
     pickedHere.current = selection.oz !== p.mark.oz || selection.finding !== p.mark.finding;
@@ -348,6 +374,14 @@ export function PdfView({
             >
               <PageCanvas doc={doc} n={n} scale={scale} width={width} height={height} root={scroller} />
               <div className="pdf-marks">
+                {cited?.page === n &&
+                  cited.rects.map((r, k) => (
+                    <i
+                      key={`cited-${k}`}
+                      className="pdf-mark cited"
+                      style={{ left: r[0] * scale - 2, top: r[1] * scale - 2, width: (r[2] - r[0]) * scale + 4, height: (r[3] - r[1]) * scale + 4 }}
+                    />
+                  ))}
                 {placed.flatMap((p) =>
                   p.mark.rects.map((r, k) => {
                     const bar = p.mark.located === "item";

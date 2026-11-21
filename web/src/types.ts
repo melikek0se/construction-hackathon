@@ -292,6 +292,7 @@ export interface ChatAnswer {
   citations: ChatCitation[];
   dropped: number; // passages the model named that are not in the documents
   documents: string[]; // the files that were read
+  usage: { input_tokens: number; cache_write_tokens: number; cache_read_tokens: number; output_tokens: number } | null;
 }
 
 export interface ChatTurn {

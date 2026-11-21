@@ -240,3 +240,7 @@
   min-height: 0;
   height: auto;
 }
+
+.right > .panel[hidden] {
+  display: none;
+}
