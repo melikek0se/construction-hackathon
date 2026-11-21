@@ -114,6 +114,7 @@ def save_supplier(values: dict, supplier_id: str | None = None) -> dict:
 
 def remove_supplier(supplier_id: str) -> bool:
     with db.engine().begin() as conn:
+        conn.execute(delete(db.partner_messages).where(db.partner_messages.c.supplier_id == supplier_id))
         return bool(conn.execute(delete(db.suppliers).where(db.suppliers.c.id == supplier_id)).rowcount)
 
 
@@ -233,7 +234,9 @@ first kind, and items with quantity zero or without a unit of measure worth pric
 line. A single item is a package of its own only if no other item shares its material group or trade.
 - ask are ids from the directory, at most 5 per package, only entries whose kind fits (supplier for \
 material, subcontractor for subcontract) and whose groups or products fit the package. Never invent an id. \
-If nobody in the directory fits, ask is empty: the estimator then adds a supplier.
+If nobody in the directory fits, ask is empty: the estimator then adds a supplier. Where more fit than \
+are needed, take the entries marked preferred first, then those that have answered inquiries before; an \
+entry that was asked several times and rarely answered goes last.
 - The files are anonymised: tokens such as [FIRMA_044] or [ORT_024] replace product and place names. They \
 are not errors; where a token replaces a required make, the package is still formed by what the item is.
 """
@@ -250,9 +253,14 @@ async def plan(boq: BoQ, skip: set[str], client: anthropic.AsyncAnthropic | None
     items = [i for i in boq.items if i.oz not in skip and i.kind != "surcharge"]
     if not items:
         return []
-    firm, directory = company(), suppliers()
+    from boq import partners  # what is known about each firm: asked first, answers or not (it imports this module)
+
+    # a firm the estimator marked "do not ask" stays in the directory with its prices and is on no inquiry
+    firm, directory = company(), [s for s in suppliers() if not s["more"].get("blocked")]
+    known = partners.notes()
     listed = "\n".join(f"{s['id']} | {s['kind']} | {s['name']} | sells: {', '.join(s['groups']) or '-'}"
                        + (f" | products: {', '.join(p['name'] for p in s['products'][:12])}" if s["products"] else "")
+                       + (f" | {known[s['id']]}" if known.get(s["id"]) else "")
                        for s in directory) or "(the directory is empty)"
     client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
     started = time.monotonic()
@@ -710,7 +718,7 @@ as they stand.
 
 
 async def answer(items: list[Item], thread: list[dict], asks: list[dict], dates: dict,
-                 client: anthropic.AsyncAnthropic | None = None) -> dict:
+                 client: anthropic.AsyncAnthropic | None = None, style: str = "") -> dict:
     """The estimator's answer to what a supplier asked back, written from the LV: the German message, and
     per question what it rests on. A point whose words are not in the item it names counts as not settled
     by the LV (`settled` false), so the estimator sees what the answer does not stand on."""
@@ -738,7 +746,10 @@ async def answer(items: list[Item], thread: list[dict], asks: list[dict], dates:
                        f"submission of our bid: {_day(dates.get('due')) or 'not set'}\n"
                        f"work from {_day(dates.get('exec_start')) or 'not stated'} to {_day(dates.get('exec_end')) or 'not stated'}\n</dates>\n\n"
                        f"<items>\n{listed}\n</items>\n\n<conversation>\n{talk}\n</conversation>\n\n"
-                       f"<questions>\n{asked}\n</questions>"}],
+                       f"<questions>\n{asked}\n</questions>"
+                       # how this supplier is written to (boq.partners.style_note): tone only, never content
+                       + (f"\n\n<recipient_style>\nWrite in the tone the firm and this supplier use with each "
+                          f"other; this changes the wording, not what is said: {style}\n</recipient_style>" if style else "")}],
         )
     except _NO_CREDENTIALS as exc:
         raise LLMUnavailable(

@@ -135,3 +135,25 @@ def token() -> dict:
     agent = agent_id()
     got = _call("GET", f"/v1/convai/conversation/token?agent_id={agent}")
     return {"token": got["token"], "conversation_id": got.get("conversation_id"), "agent_id": agent}
+
+
+def record(conversation_id: str) -> dict:
+    """What ElevenLabs kept of a call: who said what, and how long it was. API shape as in the docs read on
+    2026-11-21 (GET /v1/convai/conversations/{id}: `transcript` of {role, message}, `metadata`); not run."""
+    got = _call("GET", f"/v1/convai/conversations/{conversation_id}")
+    lines = [f"{'Polier' if turn.get('role') == 'agent' else 'Supplier'}: {turn['message']}"
+             for turn in got.get("transcript") or [] if turn.get("message")]
+    return {"status": got.get("status") or "", "transcript": "\n".join(lines),
+            "seconds": (got.get("metadata") or {}).get("call_duration_secs")}
+
+
+def audio(conversation_id: str) -> bytes:
+    """The recording of a call (GET /v1/convai/conversations/{id}/audio), as ElevenLabs keeps it."""
+    request = urllib.request.Request(f"{BASE}/v1/convai/conversations/{conversation_id}/audio", headers={"xi-api-key": _key()})
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return response.read()
+    except urllib.error.HTTPError as exc:
+        raise VoiceUnavailable(f"ElevenLabs answered {exc.code}: {exc.read().decode('utf-8', 'replace')[:300]}") from exc
+    except (urllib.error.URLError, OSError) as exc:
+        raise VoiceUnavailable(f"ElevenLabs could not be reached: {exc}") from exc

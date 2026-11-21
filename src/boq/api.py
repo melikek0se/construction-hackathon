@@ -2,6 +2,7 @@
 
     uv run uvicorn boq.api:app --reload --port 8000
 """
+import asyncio
 import base64
 import json
 import os
@@ -22,7 +23,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import amendments, bid, catalog, chat, db, inbox, mail, pipeline, retrieve, risk, runs, spend, supply, voice
+from boq import (amendments, bid, catalog, chat, db, inbox, mail, partners, partners_demo, pipeline, retrieve, risk,
+                 runs, spend, supply, voice)
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -52,7 +54,11 @@ async def lifespan(_app: FastAPI):
     db.engine()  # create the tables, and fail at start rather than on the first request; nothing is seeded
     if runs.AUTO:
         runs.resume_interrupted()  # runs a restart cut off go on where they stood
+    # Polier looks into the web for partners now and then, where the estimator switched that on (boq.partners)
+    looking = asyncio.create_task(partners.keep_looking()) if runs.AUTO else None
     yield
+    if looking:
+        looking.cancel()
 
 
 app = FastAPI(title="BoQ analysis", lifespan=lifespan)
@@ -1440,6 +1446,7 @@ class SupplierEntry(BaseModel):
     products: list[dict] | None = None
     note: str | None = None
     source: str | None = None
+    more: dict | None = None  # website, customer number, contacts, flags, documents (supply.MORE)
 
 
 def _entry(body: SupplierEntry, new: bool) -> dict:
@@ -1620,6 +1627,7 @@ class InquiryDraft(BaseModel):
     supplier_id: str
     remind: bool = False  # a reminder about the inquiry already sent to this supplier
     answer: bool = False  # the answer to what the supplier asked back, written from the LV (asks Claude)
+    styled: bool = True  # write the inquiry the way this partner is written to, where that is on record
 
 
 def _dates(analysis_id: str) -> dict:
@@ -1653,7 +1661,9 @@ async def compose_inquiry(analysis_id: str, body: InquiryDraft):
         try:
             with spend.scope(project_id=_project_id(analysis_id), file=boq.file):
                 drafted = await supply.answer([by_oz[oz] for oz in package["items"] if oz in by_oz], talk, said["asks"],
-                                              _dates(analysis_id))
+                                              _dates(analysis_id),
+                                              # the tone this supplier is written in, where it is on record
+                                              **({"style": tone} if (tone := partners.style_note(to["more"].get("style"))) else {}))
         except LLMUnavailable as exc:
             raise HTTPException(503, str(exc)) from exc
         except Exception as exc:
@@ -1670,7 +1680,19 @@ async def compose_inquiry(analysis_id: str, body: InquiryDraft):
         by_oz = {i.oz: i for i in boq.items}
         subject, text = supply.compose(state["lv"], package, [by_oz[oz] for oz in package["items"] if oz in by_oz],
                                        to, _dates(analysis_id))
-    return {"subject": subject, "body": text, "to": to["email"], "points": []}
+        # A partner whose way of writing is on record gets the inquiry written that way: the opening and
+        # the closing only, the items stay (boq.partners.restyle). If that fails, the template goes out.
+        style = to["more"].get("style")
+        if style and body.styled:
+            try:
+                with spend.scope(project_id=_project_id(analysis_id), file=boq.file):
+                    fitted = await partners.restyle(text, style, to)
+            except Exception:
+                fitted = None
+            if fitted:
+                return {"subject": subject, "body": fitted["body"], "to": to["email"], "points": [],
+                        "styled": {"changed": fitted["changed"], "summary": style.get("summary", ""), "plain": text}}
+    return {"subject": subject, "body": text, "to": to["email"], "points": [], "styled": None}
 
 
 class Inquiry(BaseModel):
@@ -1856,6 +1878,8 @@ def start_call(analysis_id: str, body: CallStart):
     to = supply.supplier(body.supplier_id)
     if to is None:
         raise HTTPException(404, "This supplier is no longer in the directory.")
+    if to["more"].get("no_call"):
+        raise HTTPException(422, f"{to['name']} is marked \"do not phone\" in the directory.")
     try:
         session = voice.token()
     except voice.VoiceUnavailable as exc:
@@ -1917,6 +1941,157 @@ def call_end(mail_id: str, body: CallEnd):
                      else "The call ended without a price."}, "phone")
     return {"ok": True}
 
+
+
+# ---------------------------------------------------------------- partners: suppliers and subcontractors (boq.partners)
+
+@app.get("/api/partners")
+def partners_page():
+    """Every supplier and subcontractor with how it behaves, what waits across all tenders, the price book,
+    who covers which group, and the packages nobody can be asked for."""
+    return partners.overview()
+
+
+@app.get("/api/partners/searches")
+def partner_searches():
+    """Every look into the web for partners, newest first, with what it found."""
+    return partners.searches_kept()
+
+
+class Lookup(BaseModel):
+    what: str  # the material group or trade, in German
+    kind: str = "supplier"
+    region: str = ""
+    project_id: str | None = None
+
+
+@app.post("/api/partners/discover")
+async def discover_partners(body: Lookup):
+    """Look into the web for firms to ask about a material group or trade (Claude with web search: half a
+    minute, a few cents). What is found are candidates; nobody is written to."""
+    if len(body.what.strip()) < 3:
+        raise HTTPException(422, "Say what to look for: a material group or a trade.")
+    if body.kind not in supply.KINDS:
+        raise HTTPException(422, f"kind is one of: {', '.join(supply.KINDS)}.")
+    try:
+        with spend.scope(project_id=body.project_id):
+            return await partners.discover(body.what, body.kind, body.region, project_id=body.project_id)
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(502, f"The search failed: {exc}") from exc
+
+
+class Decision(BaseModel):
+    take: bool  # into the directory; false: pass it over (again: take that back)
+
+
+@app.post("/api/partners/searches/{search_id}/{n}")
+def decide_candidate(search_id: str, n: int, body: Decision):
+    found = partners.decide(search_id, n, body.take)
+    if found is None:
+        raise HTTPException(404, "This search result is not there any more.")
+    return found
+
+
+class Discovery(BaseModel):
+    auto: bool | None = None  # Polier looks on its own for packages with nobody to ask
+    every_days: int | None = None
+    region: str | None = None
+
+
+@app.put("/api/partners/discovery")
+def put_discovery(body: Discovery):
+    if body.every_days is not None and not 1 <= body.every_days <= 90:
+        raise HTTPException(422, "Between 1 and 90 days.")
+    return partners.set_discovery(body.model_dump(exclude_unset=True))
+
+
+@app.post("/api/partners/history")
+def partner_history():
+    """Look into the mailbox for the mail exchanged with every partner that has an address (read-only)."""
+    try:
+        return partners.mailbox_history()
+    except mail.MailUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.post("/api/partners/messages")
+async def partner_messages(files: list[UploadFile]):
+    """The same for messages handed over as .eml files: each goes to the partner it is from or to."""
+    raws = []
+    for file in files:
+        data = await file.read(MAX_BYTES + 1)
+        if len(data) > MAX_BYTES or not (file.filename or "").lower().endswith(".eml"):
+            raise HTTPException(422, "Hand over e-mails as .eml files of at most 30 MB.")
+        raws.append(data)
+    return partners.take_messages(raws)
+
+
+@app.post("/api/partners/examples")
+def put_examples():
+    """Put the example history in: six made-up firms with mail, quotes and prices, all marked as examples."""
+    return {"firms": partners_demo.put()}
+
+
+@app.delete("/api/partners/examples", status_code=204)
+def remove_examples():
+    partners_demo.remove()
+
+
+@app.get("/api/partners/{supplier_id}")
+def partner_profile(supplier_id: str):
+    """One partner: its prices with their dates, its usual terms, how it behaves, and every message and call."""
+    found = partners.profile(supplier_id)
+    if found is None:
+        raise HTTPException(404, "This partner is no longer in the directory.")
+    return found
+
+
+@app.post("/api/partners/{supplier_id}/style")
+async def partner_style(supplier_id: str):
+    """Read how a partner writes from its own messages (asks Claude) and keep it; inquiries to it are then
+    written that way. Every trait carries its passage."""
+    if supply.supplier(supplier_id) is None:
+        raise HTTPException(404, "This partner is no longer in the directory.")
+    try:
+        with spend.scope():
+            return await partners.read_style(supplier_id)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(502, f"Reading the style failed: {exc}") from exc
+
+
+@app.get("/api/mails/{mail_id}/call-audio")
+def call_audio(mail_id: str):
+    """The recording of a call the voice agent made, as ElevenLabs keeps it."""
+    found = _mail(mail_id)
+    conversation = (found["meta"] or {}).get("conversation_id")
+    if not conversation:
+        raise HTTPException(404, "No recording is kept for this call.")
+    try:
+        return Response(voice.audio(conversation), media_type="audio/mpeg")
+    except voice.VoiceUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.post("/api/mails/{mail_id}/call-record")
+def call_record(mail_id: str):
+    """Fetch what ElevenLabs kept of a call (who said what) and keep it as the call's transcript."""
+    found = _mail(mail_id)
+    conversation = (found["meta"] or {}).get("conversation_id")
+    if not conversation:
+        raise HTTPException(404, "This record is no call with a recording.")
+    try:
+        kept = voice.record(conversation)
+    except voice.VoiceUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    if kept["transcript"]:
+        mail.keep_reply(mail_id, kept["transcript"][:60000], {**(found["answers"] or {"kind": "other", "asks": [], "unmatched": [], "summary": ""})}, "phone")
+    return kept
 
 
 # ---------------------------------------------------------------- tenders found in the mailbox (boq.inbox)

@@ -3,7 +3,7 @@
    estimator reads each inquiry and sends it (nothing goes out by itself), the replies are read into one
    line per item, and each package gets a comparison on what it costs on site with a proposal. Items that
    cannot be priced as written wait for the client's answer and are not asked for. */
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { checkQuoteReplies, chooseQuote, composeInquiry, getSupply, mailInquiry, markMailSent, planSupply, quotesToBid, readQuote, setPackageSuppliers } from "./api";
 import { dayText } from "./controls";
 import { eur } from "./format";
@@ -43,7 +43,8 @@ export function InquiriesView({
   onItem: (oz: string) => void;
   onQuestions: () => void;
   onBid: () => void;
-  onDirectory: () => void;
+  /** Opens the partners page: on one firm, or on the firm's own particulars. */
+  onDirectory: (partner?: string) => void;
 }) {
   const [state, setState] = useState<SupplyState | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -98,8 +99,8 @@ export function InquiriesView({
             Quotes needed by <b>{dayText(state.reply_by)}</b>
           </p>
         )}
-        <button className="btn-ghost small" onClick={onDirectory}>
-          Suppliers ({state.suppliers.length})
+        <button className="btn-ghost small" onClick={() => onDirectory()} title="Suppliers and subcontractors: their prices, the conversations with them">
+          Partners ({state.suppliers.length})
         </button>
         {state.inbox && state.plan && (
           <button
@@ -127,7 +128,7 @@ export function InquiriesView({
       {state.priced_file && <p className="sup-note">This file carries its prices already (a bid or an award): there is nothing to ask for.</p>}
       {!firm && (
         <p className="sup-note is-open">
-          A supplier asks first who is asking. <button className="text-link" onClick={onDirectory}>Set your firm's name and contact</button> before the first inquiry goes out.
+          A supplier asks first who is asking. <button className="text-link" onClick={() => onDirectory("firm")}>Set your firm's name and contact</button> before the first inquiry goes out.
         </p>
       )}
       {state.released.length > 0 && (
@@ -154,6 +155,7 @@ export function InquiriesView({
           act={act}
           onItem={onItem}
           onNote={setNote}
+          onPartner={onDirectory}
         />
       ))}
 
@@ -209,7 +211,9 @@ function Package({
   act,
   onItem,
   onNote,
+  onPartner,
 }: {
+  onPartner: (partner: string) => void;
   p: SupplyPackage;
   state: SupplyState;
   analysisId: string;
@@ -259,7 +263,9 @@ function Package({
       <ul className="sup-ask">
         {p.ask.map((a) => (
           <li key={a.supplier_id} className={`is-${a.status}`}>
-            <b>{a.supplier}</b>
+            <button className="text-link sup-who" onClick={() => onPartner(a.supplier_id)} title="What is known about this firm: prices, conversations, how it writes">
+              {a.supplier}
+            </button>
             <span className={`q-status is-${CHIP[a.status]}`}>{STATUS[a.status]}</span>
             <small>
               {lastSaid(a.thread) ??
@@ -446,6 +452,10 @@ function Composer({
   onCancel: () => void;
 }) {
   const [points, setPoints] = useState<AnswerPoint[]>([]);
+  // the inquiry was worded the way this partner is written to (Partners page, "How they write")
+  const [styled, setStyled] = useState<{ changed: string[]; summary: string; plain: string } | null>(null);
+  const [plain, setPlain] = useState(false);
+  const fitted = useRef("");
   const [writing, setWriting] = useState(true);
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
@@ -456,7 +466,7 @@ function Composer({
     setWriting(true);
     composeInquiry(analysisId, pkg, supplier, kind)
       .then(
-        (m) => (setTo(m.to), setSubject(m.subject), setBody(m.body), setPoints(m.points)),
+        (m) => (setTo(m.to), setSubject(m.subject), setBody(m.body), setPoints(m.points), setStyled(m.styled), setPlain(false)),
         (e) => setError(say(e)),
       )
       .finally(() => setWriting(false));
@@ -486,6 +496,23 @@ function Composer({
   return (
     <div className="sup-compose q-mail is-draft">
       {writing && kind === "answer" && <p className="quiet">Polier is writing the answer from the LV…</p>}
+      {writing && kind === "inquiry" && <p className="quiet">Polier is writing the inquiry…</p>}
+      {styled && (
+        <div className="sup-styled">
+          <b>{plain ? "The plain template" : "Written the way this partner is written to"}</b>
+          {!plain && <span>{styled.changed.join(" ")} The items and what is asked for are as in every inquiry.</span>}
+          <button
+            className="text-link"
+            onClick={() => {
+              if (!plain) fitted.current = body;
+              setBody(plain ? fitted.current : styled.plain);
+              setPlain(!plain);
+            }}
+          >
+            {plain ? "Use their style again" : "Use the plain template instead"}
+          </button>
+        </div>
+      )}
       {points.length > 0 && (
         <ul className="sup-points">
           {points.map((pt, i) => (

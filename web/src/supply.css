@@ -679,3 +679,29 @@
 .sup-dir-body {
   padding: 14px 20px 20px;
 }
+
+/* the composer says when the inquiry was worded in the partner's own way (Partners page) */
+.sup-styled {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 8px;
+  padding: 7px 10px;
+  border-left: 4px solid var(--yellow);
+  background: var(--tint);
+  font-size: 13px;
+}
+
+.sup-styled b {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sup-styled .text-link {
+  justify-self: start;
+}
+
+.sup-who {
+  font-weight: 700;
+  text-align: left;
+}

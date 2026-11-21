@@ -14,6 +14,33 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Done
 
+- Partners page (2026-11-22, D-047; `src/boq/partners.py`, `partners_demo.py`, tables `partner_messages`,
+  `partner_searches`, column `suppliers.more`; `web/src/Partners.tsx`, `partners.css`; replaces the Suppliers
+  dialog, `Suppliers.tsx` is gone): `/partners`, reached from "Partners" in the band and from a firm's name
+  in the price inquiries, through the shutter with the band and the rows coming in. Tabs: Suppliers,
+  Subcontractors (list left, the firm right: what is open with it, a card counted from the record — asked,
+  answered, median time to the first reply, quotes, taken, reminders —, particulars, usual terms from its
+  quotes, a subcontractor's papers with expiry, how it writes, every price with day, validity, terms, tender
+  and the change against its price before, every message and call), Waiting (open conversations of all
+  tenders, whose move), Price book (every quoted line by what was priced), Found on the web, Your firm.
+  The agent uses it: the plan of an inquiry sees "preferred" and how often a firm answered, leaves out
+  "do not ask"; an inquiry to a firm whose style is on record has its opening and closing written that
+  way (`partners.restyle`, the items never change, the plain template is one click away); the answer to a
+  supplier's question takes the tone too; "do not phone" refuses the voice call.
+  Checked: `tests/test_partners.py` (4), full pytest 210 passed, type-check and build. On the dev stack
+  with real Claude calls: a style read (8 s: Du, "Moin Herr Kaya,", five habits each with its passage, none
+  dropped), an inquiry of project D worded that way (6 s; items identical), a web search for
+  "Tragwerksplanung / Statik" in Hamburg (about 40 s, 0.22 USD, 2 queries, 8 firms each with its page).
+  Seen in headless Chrome at 1500 wide, no console error: all six tabs, a supplier and a subcontractor,
+  the way there from the projects page and back, Waiting → "Open the inquiry" → a firm's name → back to the LV.
+  **Not run**: the mailbox history over IMAP and the call record and recording from ElevenLabs (no
+  account in `.env`; the API shapes are from the docs, as for the rest of `voice.py`); Polier's own search
+  on a timer (`keep_looking`: same code as the button, the loop itself was not waited for); `.eml` dropped
+  on the page in a browser (the API path is tested); "Take into the directory" clicked in a browser.
+  Known: the contact of a firm found is what the search reported, not checked against its page (the page
+  says so); the example history (six made-up firms, "Your firm" → Examples) shares the price book with real
+  quotes, marked "example"; the dev database has it in; a firm's widths under 1000px were not looked at.
+
 - Risk report by the money (2026-11-22): "Items by the money at stake" ranks by the worst finding, then
   the item's value (from the file, else what the findings were given, with where the price is from); a
   file without prices says what the items with findings are worth by the prices at hand. Checked on the
@@ -79,7 +106,7 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   Not checked: a quote as PDF, sending through SMTP with the sheet attached, replies found in an inbox, the
   Suppliers dialog and the composer and reader clicked in a browser, a reminder, "Put the taken
   subcontractor prices into the bid" in the browser.
-  Not built: suppliers found by web search; the app sending by itself; a supplier's material price inside
+  Not built (web search: built since, see Partners page): the app sending by itself; a supplier's material price inside
   the bid's unit price; the card line for inquiries (the field `run.inquiries` is there).
 
 - Board by where the tender stands (2026-11-21, D-042; research: `reports/Alman ihale teklif aşamaları.md`):

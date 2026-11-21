@@ -1,0 +1,1038 @@
+/* The partners page (Partners.tsx): suppliers and subcontractors. DESIGN.md: white ground, hairlines, square,
+   12 to 15px text, labels in small capitals, figures condensed and tabular; yellow only for the one primary
+   action, a mark that says "your move" and hover. */
+
+.pt {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+}
+
+.pt-tabs {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.pt-tabs .views {
+  display: flex;
+  margin-right: auto;
+}
+
+.pt-tabs .views button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  white-space: nowrap;
+}
+
+.pt-tabs .views button[aria-selected="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+
+.pt-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--dim);
+}
+
+[aria-selected="true"] > .pt-count {
+  color: #fff;
+}
+
+.pt-count.is-you {
+  padding: 0 5px;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.pt-search,
+.pt input[type="text"] {
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  background: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  min-width: 0;
+}
+
+.pt-search {
+  width: 300px;
+}
+
+.pt-search:focus,
+.pt input[type="text"]:focus {
+  border-color: var(--ink);
+  outline: none;
+}
+
+.pt-error {
+  margin: 10px 20px 0;
+}
+
+.pt-empty {
+  padding: 28px 20px;
+  max-width: 70ch;
+}
+
+.pt small {
+  display: block;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.pt h2 {
+  margin: 0 0 4px;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.pt h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pt h3 small,
+.pt h3 .text-link {
+  display: inline;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mute);
+}
+
+.pt h3 .btn-ghost {
+  margin-left: auto;
+}
+
+.pt h3.pt-sub {
+  margin-top: 16px;
+}
+
+.pt .tag {
+  font-style: normal;
+}
+
+/* whose move: the marks of the board cards */
+.pt-mark {
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--ink);
+  vertical-align: -1px;
+}
+
+.pt-mark.is-you {
+  background: var(--yellow);
+}
+
+/* ------------------------------------------------------------------ list and profile */
+
+.pt-two {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: clamp(320px, 27vw, 420px) minmax(0, 1fr);
+}
+
+.pt-list {
+  overflow-y: auto;
+  border-right: 1px solid var(--line-2);
+}
+
+.pt-row {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 16px 10px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-left: 4px solid transparent;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease);
+}
+
+.pt-row:hover {
+  background: var(--hover);
+}
+
+.pt-row.is-open {
+  border-left-color: var(--ink);
+  background: var(--hover);
+}
+
+.pt-row.is-blocked b {
+  color: var(--mute);
+}
+
+.pt-row-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14.5px;
+}
+
+.pt-row-name b {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-pref {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.pt-row-sub {
+  font-size: 12.5px;
+  color: var(--mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-row-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.pt-row-facts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pt-none {
+  padding: 20px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.pt-none p {
+  margin: 0;
+}
+
+.pt-add {
+  display: grid;
+  gap: 6px;
+  padding: 12px 16px 12px 20px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--tint);
+}
+
+.pt-add b {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pt-add div {
+  display: flex;
+  gap: 8px;
+}
+
+.pt-profile {
+  overflow-y: auto;
+  padding: 16px 24px 80px;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.pt-profile.is-dropping {
+  outline: 2px dashed var(--ink);
+  outline-offset: -8px;
+  background: var(--hover);
+}
+
+.pt-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pt-head > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+
+.pt .pt-name {
+  width: 100%;
+  height: 34px;
+  margin-left: -8px;
+  padding: 0 7px;
+  border-color: transparent;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.pt .pt-name:hover {
+  border-color: var(--line-2);
+}
+
+.pt-head-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.pt-flags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: 13px;
+}
+
+.pt-flags .check input,
+.pt-auto input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--ink);
+}
+
+.pt-note {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--tint);
+  font-size: 13px;
+  color: var(--ink-2);
+  max-width: 100ch;
+}
+
+.pt-note a,
+.pt-src a {
+  color: inherit;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.pt-open,
+.pt-gaps,
+.pt-cover,
+.pt-docs,
+.pt-habits,
+.pt-cands,
+.pt-book,
+.pt-talk,
+.pt-read ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pt-open li {
+  display: grid;
+  grid-template-columns: 10px auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+
+.pt-open b {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pt-summary .pt-open li {
+  grid-template-columns: 10px minmax(120px, auto) minmax(0, 1fr);
+}
+
+.pt-figures {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  border: 1px solid var(--line-2);
+}
+
+.pt-figures > div {
+  flex: 1 1 130px;
+  padding: 9px 12px 10px;
+  border-left: 1px solid var(--rule);
+  margin-left: -1px;
+}
+
+.pt-figures dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.pt-figures dd {
+  margin: 3px 0 0;
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.pt-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+}
+
+.pt-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 9px 12px;
+}
+
+.pt-fields label {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+}
+
+.pt-fields label.wide {
+  grid-column: 1 / -1;
+}
+
+.pt-fields label > span,
+.pt-contacts > span:first-child,
+.pt-products > span:first-child,
+.pt-queries > span:first-child,
+.pt-like b {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.pt-contacts,
+.pt-products,
+.pt-queries {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.pt-terms {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 5px 14px;
+  margin: 0;
+  font-size: 13.5px;
+}
+
+.pt-terms dt,
+.pt-traits dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding-top: 2px;
+}
+
+.pt-terms dd,
+.pt-traits dd {
+  margin: 0;
+}
+
+.pt-docs li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+
+.pt-docs .is-soon .num {
+  background: var(--yellow);
+  padding: 0 5px;
+}
+
+.pt-docs .is-over .num {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.pt-doc-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px auto;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* how they write */
+.pt-style-sum {
+  margin: 0 0 10px;
+  font-size: 14.5px;
+  max-width: 90ch;
+}
+
+.pt-traits {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px 20px;
+  margin: 0 0 12px;
+  font-size: 13.5px;
+}
+
+.pt q {
+  quotes: "„" "“";
+}
+
+.pt-traits q,
+.pt-habits q {
+  display: block;
+  margin-top: 3px;
+  padding: 4px 8px;
+  background: var(--tint);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.pt-habits li {
+  padding: 7px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 13.5px;
+  max-width: 100ch;
+}
+
+.pt-like {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-left: 4px solid var(--yellow);
+  background: var(--tint);
+  font-size: 13.5px;
+  max-width: 100ch;
+}
+
+.pt-like b {
+  display: block;
+  color: var(--ink);
+}
+
+/* tables: prices, waiting */
+.pt-prices {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.pt-prices th {
+  padding: 6px 10px 6px 0;
+  box-shadow: inset 0 -1px 0 var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.pt-prices td {
+  padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.pt-prices .r {
+  text-align: right;
+}
+
+.pt-prices td b {
+  font-weight: 600;
+}
+
+.pt-prices tr.is-stale td {
+  color: var(--mute);
+}
+
+.pt-prices tr.is-stale .tag,
+.pt-prices td > .tag {
+  margin-left: 6px;
+}
+
+.pt-prices tbody tr:hover {
+  background: var(--hover);
+}
+
+.pt-up {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.pt-waiting tr.is-you td:first-child {
+  font-weight: 700;
+}
+
+/* conversations */
+.pt-talk li {
+  padding: 8px 0 8px 12px;
+  border-bottom: 1px solid var(--rule);
+  border-left: 3px solid var(--line-2);
+  margin-bottom: 4px;
+}
+
+.pt-talk li.is-theirs {
+  border-left-color: var(--ink);
+  margin-left: 28px;
+}
+
+.pt-talk header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.pt-talk header b {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.pt-talk-sum {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+}
+
+.pt-talk summary {
+  margin-top: 4px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-talk details[open] summary {
+  display: none;
+}
+
+.pt-talk pre {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  background: var(--tint);
+  font: inherit;
+  font-size: 13.5px;
+  white-space: pre-wrap;
+  max-width: 90ch;
+}
+
+.pt-talk audio {
+  display: block;
+  height: 32px;
+  margin-top: 6px;
+}
+
+.pt-drop-hint {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+}
+
+/* the directory at a glance */
+.pt-gaps li,
+.pt-cover li {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(0, 2fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+
+.pt-gaps li {
+  border-left: 4px solid var(--red);
+  padding-left: 10px;
+}
+
+.pt-gaps b,
+.pt-cover b {
+  font-weight: 600;
+}
+
+.pt-gaps span,
+.pt-cover span {
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------------ full-width tabs */
+
+.pt-wide {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px max(20px, calc((100% - 1320px) / 2)) 80px;
+}
+
+.pt-wide > .quiet {
+  margin: 0 0 12px;
+  max-width: 100ch;
+}
+
+.pt-wide h2:not(:first-child) {
+  margin-top: 28px;
+  padding-top: 12px;
+  border-top: 2px solid var(--ink);
+}
+
+.pt-book {
+  margin-top: 12px;
+  border-top: 1px solid var(--ink);
+}
+
+.pt-book > li {
+  border-bottom: 1px solid var(--rule);
+}
+
+.pt-book > li > button {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1.4fr);
+  gap: 14px;
+  width: 100%;
+  padding: 8px 6px;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.pt-book > li > button:hover,
+.pt-book > li.is-open > button {
+  background: var(--hover);
+}
+
+.pt-book > li > button > b {
+  font-weight: 600;
+}
+
+.pt-book .pt-prices {
+  margin: 0 0 12px 18px;
+  width: calc(100% - 18px);
+}
+
+/* found on the web */
+.pt-found {
+  grid-template-columns: clamp(300px, 26vw, 380px) minmax(0, 1fr);
+}
+
+.pt-look {
+  overflow-y: auto;
+  padding: 14px 16px 80px 20px;
+  border-right: 1px solid var(--line-2);
+}
+
+.pt-look form {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.pt-look h3:not(:first-child) {
+  margin-top: 6px;
+}
+
+.pt-look .pt-gaps {
+  margin-bottom: 18px;
+}
+
+.pt-look .pt-gaps li {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.pt-look .pt-gaps li span {
+  grid-row: 2;
+  font-size: 12.5px;
+}
+
+.pt-look .pt-gaps li button {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: center;
+}
+
+.pt-auto {
+  white-space: normal;
+  font-size: 13.5px;
+  margin-bottom: 6px;
+}
+
+.pt-look .quiet {
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+
+.pt .pt-days {
+  width: 44px;
+  height: 24px;
+  padding: 0 5px;
+  text-align: center;
+}
+
+.pt-searches {
+  overflow-y: auto;
+  padding: 14px 24px 80px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.pt-search-card {
+  border: 1px solid var(--line-2);
+  padding: 12px;
+}
+
+.pt-search-card.is-running {
+  border-color: var(--ink);
+  background: repeating-linear-gradient(-45deg, var(--ink) 0 9px, var(--yellow) 9px 18px) bottom / 100% 4px no-repeat;
+  padding-bottom: 16px;
+}
+
+.pt-search-card > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.pt-search-card > header > b {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pt-by {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff !important;
+}
+
+.pt-search-card > .quiet {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.pt-queries q {
+  padding: 1px 7px;
+  background: var(--tint);
+  font-size: 12.5px;
+}
+
+.pt-cands {
+  margin-top: 10px;
+  border-top: 1px solid var(--ink);
+}
+
+.pt-cands li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+
+.pt-cands li > div:first-child > b {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.pt-cands li > div:first-child > span {
+  color: var(--mute);
+}
+
+.pt-sells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.pt-cands p {
+  margin: 4px 0 0;
+  max-width: 100ch;
+}
+
+.pt-src {
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.pt-cands li.is-dismissed > div:first-child {
+  opacity: 0.5;
+}
+
+.pt-cand-act {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  align-content: start;
+  font-size: 12.5px;
+}
+
+/* your firm */
+.pt-firm .pt-fields {
+  max-width: 900px;
+}
+
+.pt-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pt-read {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--tint);
+  font-size: 13.5px;
+  max-width: 900px;
+}
+
+.pt-read p {
+  margin: 0 0 6px;
+}
+
+.pt-read li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.pt-read li button {
+  margin-left: auto;
+}
+
+/* the page comes in with the band (styles.css, "arriving") */
+@media (max-width: 1000px) {
+  .pt-two,
+  .pt-found,
+  .pt-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pt-two {
+    overflow-y: auto;
+  }
+
+  .pt-list,
+  .pt-look {
+    border-right: 0;
+    border-bottom: 2px solid var(--ink);
+    max-height: 40vh;
+  }
+
+  .pt-tabs {
+    flex-wrap: wrap;
+  }
+
+  .pt-tabs .views {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
+
+.pt-prices .text-link,
+.pt-open .text-link {
+  text-align: left;
+}
+
+.pt-waiting td:nth-child(2) {
+  min-width: 190px;
+}
+
+.pt-waiting td:first-child {
+  white-space: nowrap;
+}
+
+.pt-book > li > button > b .tag {
+  margin-left: 8px;
+}
+
+.pt-prices td.num,
+.pt-prices td:nth-child(6) {
+  white-space: nowrap;
+}
+
+/* Coming onto the page: the tab row with the band as the shutter rolls up (App.tsx `toPartners`, styles.css
+   "arriving"); the content when the directory has been read (`pt-fresh`): the rows of the list one after the
+   other, the open firm from the right. */
+.app.arriving .pt-tabs {
+  animation: arrive 520ms var(--ease) 140ms backwards;
+}
+
+.pt-fresh .pt-list > *,
+.pt-fresh .pt-look,
+.pt-fresh .pt-wide {
+  animation: arrive 480ms var(--ease) backwards;
+  animation-delay: calc(var(--n, 0) * 45ms);
+}
+
+.pt-fresh .pt-profile,
+.pt-fresh .pt-searches {
+  animation: arrive-side 560ms var(--ease) 120ms backwards;
+}
+
+.pt-fresh .pt-list > :nth-child(2) { --n: 1; }
+.pt-fresh .pt-list > :nth-child(3) { --n: 2; }
+.pt-fresh .pt-list > :nth-child(4) { --n: 3; }
+.pt-fresh .pt-list > :nth-child(5) { --n: 4; }
+.pt-fresh .pt-list > :nth-child(6) { --n: 5; }
+.pt-fresh .pt-list > :nth-child(n + 7) { --n: 6; }

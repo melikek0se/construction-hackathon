@@ -612,6 +612,186 @@ export interface Supplier {
   note: string;
   source: "user" | "quote" | "web" | "demo";
   created: string;
+  more: SupplierMore;
+}
+
+/** What else is kept about a firm (supply.MORE). */
+export interface SupplierMore {
+  website: string;
+  customer_no: string; // the number the firm has us under
+  contacts: { name: string; role: string; email: string; phone: string }[];
+  preferred: boolean;
+  blocked: boolean;
+  no_call: boolean; // not to be phoned by the voice agent
+  documents: { name: string; valid_until: string }[]; // a subcontractor's papers with their expiry
+  found: { search: string; url: string; title: string; why: string; at: string; what: string } | null; // where a web search found it
+  style: PartnerStyle | null;
+  example: boolean | "made";
+}
+
+/* ------------------------------------------------------------------ partners (src/boq/partners.py) */
+
+/** How a partner writes, read from its own messages; every trait with its passage. */
+export interface PartnerStyle {
+  address: "Sie" | "Du" | "unknown";
+  address_quote: string;
+  salutation: string;
+  closing: string;
+  register: "formal" | "neutral" | "casual";
+  length: "short" | "medium" | "long";
+  answers_with: string;
+  person: string;
+  habits: { text: string; quote: string }[];
+  dropped: number;
+  summary: string;
+  write_like: string;
+  messages: number;
+  at: string;
+}
+
+/** Where a message or a price belongs: the tender, its file in the project, the package. */
+interface PartnerWhere {
+  project_id: string | null;
+  project: string;
+  file: number | null;
+  package: string;
+}
+
+/** One conversation with a partner (a package of one tender) that is not finished. */
+export interface PartnerThread extends PartnerWhere {
+  supplier_id: string;
+  supplier?: string;
+  status: "sent" | "question" | "later" | "drafted" | "answered" | "declined";
+  subject: string;
+  since: string | null;
+  days: number | null;
+  reminders: number;
+  calls: number;
+  summary: string;
+  asks: number;
+  due: string | null;
+  example: boolean;
+}
+
+export interface PartnerCard {
+  asked: number;
+  answered: number;
+  answer_rate: number | null;
+  reply_hours: number | null; // median, first reply
+  quotes: number;
+  prices: number;
+  stale: number;
+  latest_price: string | null;
+  alternatives: number;
+  declined: number;
+  reminders: number;
+  calls: number;
+  taken: number;
+  messages: number;
+  last_contact: string | null;
+  open: PartnerThread[];
+}
+
+/** A price on record: one line of a quote, with what it rests on. */
+export interface PartnerPrice extends PartnerWhere {
+  supplier_id: string;
+  supplier?: string;
+  label: string;
+  oz: string;
+  unit: string;
+  unit_price: number;
+  net: number; // after the quote's discount
+  product: string;
+  alternative: boolean;
+  note: string;
+  date: string;
+  valid_until: string | null;
+  fresh: boolean; // still valid, or no older than 90 days where no validity is stated
+  binding: "binding" | "non_binding" | "unknown";
+  basis: "free_to_site" | "ex_works" | "unknown";
+  via: string;
+  example: boolean;
+  before: { net: number; date: string; change_pct: number | null } | null; // the same partner's price for it before
+}
+
+export interface PartnerEvent extends PartnerWhere {
+  id: string;
+  mail_id: string | null;
+  kind: "inquiry" | "reminder" | "answer" | "call" | "reply" | "transcript" | "mail";
+  direction: "in" | "out";
+  at: string;
+  draft: boolean;
+  via: string;
+  subject: string;
+  text: string;
+  example: boolean;
+  reply_kind?: string;
+  summary?: string;
+  priced?: boolean;
+  audio?: boolean;
+}
+
+export interface PartnerRow extends Omit<Supplier, "more"> {
+  more: Omit<SupplierMore, "style"> & { style: boolean };
+  card: PartnerCard;
+}
+
+export interface PartnerProfile extends Supplier {
+  card: PartnerCard;
+  prices: PartnerPrice[];
+  usual: { quotes: number; basis: string | null; discount_pct: number | null; freight: number | null; skonto: string | null; valid_days: number | null; binding: string | null } | null;
+  timeline: PartnerEvent[];
+}
+
+export interface PartnerGap {
+  what: string;
+  kind: Supplier["kind"];
+  project_id: string | null;
+  project: string;
+  items: number;
+}
+
+export interface PartnersOverview {
+  partners: PartnerRow[];
+  waiting: PartnerThread[];
+  book: { label: string; unit: string; low: number | null; latest: string; suppliers: number; offers: PartnerPrice[] }[];
+  coverage: { group: string; kind: Supplier["kind"]; partners: { id: string; name: string }[] }[];
+  gaps: PartnerGap[];
+  voice: boolean;
+  inbox: string | null;
+  discovery: { auto: boolean; every_days: number; region: string };
+  company: Company;
+}
+
+export interface PartnerCandidate {
+  name: string;
+  kind: Supplier["kind"];
+  place: string;
+  website: string;
+  email: string;
+  phone: string;
+  sells: string[];
+  why: string;
+  source_url: string;
+  source_title: string;
+  status: "new" | "added" | "dismissed";
+  supplier_id: string | null;
+}
+
+/** One look into the web for partners, with what it found. */
+export interface PartnerSearch {
+  id: string;
+  created: string;
+  what: string;
+  kind: Supplier["kind"];
+  region: string;
+  reason: string;
+  by: "you" | "polier";
+  project_id: string | null;
+  queries: string[];
+  candidates: PartnerCandidate[];
+  note: string;
+  usd: number | null;
 }
 
 /** The firm's own particulars, which every inquiry carries. */

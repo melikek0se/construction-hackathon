@@ -17,8 +17,8 @@ import { WhatIfView } from "./WhatIf";
 import { BidView } from "./Bid";
 import { InquiriesView } from "./Inquiries";
 import { QuestionsView } from "./Questions";
-import { SuppliersDialog } from "./Suppliers";
-import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type Route } from "./router";
+import { PartnersPage } from "./Partners";
+import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type PartnersPlace, type Route } from "./router";
 import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions" | "inquiries" | "bid";
@@ -135,13 +135,15 @@ export default function App() {
   // the page changes behind it, and it rolls up into the band again. A link straight into a project starts
   // with it down.
   const [gate, setGate] = useState<{ dir: "in" | "out"; phase: "closing" | "opening"; info: GateInfo | null; held: boolean } | null>(
-    () => (DEEP_LINK ? { dir: "in", phase: "closing", info: null, held: true } : null),
+    // the partners page has nothing to load behind the sheet: it opens bare
+    () => (DEEP_LINK && START.at !== "partners" ? { dir: "in", phase: "closing", info: null, held: true } : null),
   );
   const [arriving, setArriving] = useState(false); // the opened page is still setting itself up
   const gateTimers = useRef<number[]>([]);
   /** Draws the sheet across; resolves once the page is covered (and, on the way in, its name was readable). */
   const closeGate = useCallback((dir: "in" | "out", info: GateInfo | null) => {
     gateTimers.current.forEach(clearTimeout);
+    if (dir === "in") setCrossed(false);
     setArriving(false);
     // a sheet that is across already stays as it is, with the new lettering
     setGate((g) => ({ dir, info, phase: "closing", held: g?.phase === "closing" }));
@@ -194,8 +196,10 @@ export default function App() {
   // going, now and then otherwise (a run can be started from another window).
   const [runs, setRuns] = useState<Run[]>([]);
   const [runsOpen, setRunsOpen] = useState(false);
-  // the directory of suppliers; `directoryAt` counts its changes, so the inquiries on the page are read again
-  const [directoryOpen, setDirectoryOpen] = useState(false);
+  // The partners page (suppliers and subcontractors, Partners.tsx) lies over whatever is open: leaving it
+  // shows that again as it was. `directoryAt` counts the directory's changes, so the inquiries are read again.
+  const [partners, setPartners] = useState<PartnersPlace | null>(null);
+  const [crossed, setCrossed] = useState(false); // the last change of page was onto or off the partners page
   const [directoryAt, setDirectoryAt] = useState(0);
   const [startingRun, setStartingRun] = useState(false);
   const refreshRuns = useCallback(() => listRuns().then(setRuns, () => undefined), []);
@@ -411,6 +415,14 @@ export default function App() {
     });
   }
 
+  /** Onto the partners page, or off it again: the shutter comes down, the page and the band change behind
+   *  it, and what stands in the band and on the page comes in as it rolls up. Inside the page nothing moves. */
+  function toPartners(place: PartnersPlace | null) {
+    if ((place === null) === (partners === null)) return setPartners(place);
+    setCrossed(true);
+    leave(() => setPartners(place));
+  }
+
   function closeAll() {
     const swap = () => {
       setPending(null);
@@ -427,7 +439,7 @@ export default function App() {
   // It is written whenever the state changes; on load and on Back / Forward the address is read and the
   // state brought to it (`navigate`), through the same sheet as a click.
   const place: LvPlace = { view, item: selection.oz, page: view === "table" ? page : 1, fpage };
-  const here: Route =
+  const under: Route =
     analysis && current
       ? project
         ? { at: "lv", id: current.project.id, analysis: analysis.id, ...place }
@@ -437,6 +449,7 @@ export default function App() {
         : project && current
           ? { at: "project", id: current.project.id }
           : HOME;
+  const here: Route = partners ? { at: "partners", ...partners } : under;
   // The address being loaded (from the address bar, not from a click): until the state has reached it,
   // the state is not written back over it.
   const target = useRef<Route | null>(DEEP_LINK ? START : null);
@@ -471,6 +484,12 @@ export default function App() {
       setFpage(r.fpage);
     };
     const done = () => (inside(), settle(r));
+    if (r.at === "partners") {
+      setPartners({ tab: r.tab, partner: r.partner });
+      return Promise.resolve();
+    }
+    setPartners(null);
+    if (docKey(r) === docKey(under)) return Promise.resolve(inside()); // the page under the partners is this one
     if (r.at === "home") {
       closeAll();
       return Promise.resolve();
@@ -528,6 +547,11 @@ export default function App() {
   const linked = useRef(false);
   useEffect(() => {
     if (linked.current || !DEEP_LINK) return;
+    if (START.at === "partners") {
+      linked.current = true;
+      navigateNow.current(START);
+      return;
+    }
     if (START.at !== "sample" && !catalog.some((p) => "id" in START && p.id === START.id)) return; // not arrived yet
     linked.current = true;
     navigateNow.current(START);
@@ -538,6 +562,7 @@ export default function App() {
     const onPop = () => {
       const r = parseRoute();
       if (docKey(r) === docKey(hereNow.current)) {
+        if (r.at === "partners") setPartners({ tab: r.tab, partner: r.partner });
         if (!isLv(r)) return;
         setView(r.view);
         setSelection((s) => (s.oz === r.item ? s : { oz: r.item, finding: null }));
@@ -859,7 +884,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}${gate ? " gated" : ""}${gate?.phase === "closing" ? " covering" : ""}${arriving && gate?.dir !== "out" ? " arriving" : ""}${intro === "entering" ? " entering" : ""}`}
+      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}${gate ? " gated" : ""}${gate?.phase === "closing" ? " covering" : ""}${arriving && (gate?.dir !== "out" || crossed) ? " arriving" : ""}${intro === "entering" ? " entering" : ""}`}
       onDragOver={(e) => (e.preventDefault(), setDragging(true))}
       onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)}
       onDrop={(e) => {
@@ -884,7 +909,19 @@ export default function App() {
       <header className="band">
         {/* the brand stands on the projects page only; an open LV or project has the way back in its place:
             one step up, to the project an LV was opened from, else to the projects */}
-        {!analysis && !project ? (
+        {partners ? (
+          <>
+            <button className="band-back" onClick={() => toPartners(null)} title="Back to where you were">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
+                <path d="M10 2.5 4.5 8 10 13.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+              </svg>
+              {analysis ? "LV" : project ? "Project" : "Projects"}
+            </button>
+            <div className="doc">
+              <strong>Partners</strong>
+            </div>
+          </>
+        ) : !analysis && !project ? (
           <button className="brand" onClick={closeAll} title="All projects">
             <HardHatIcon size={24} />
             Polier
@@ -902,7 +939,7 @@ export default function App() {
           </button>
         )}
         {/* the projects page has two buttons, top right: the pipeline and a new project */}
-        {!project && (!analysis || !stats) && (
+        {!partners && !project && (!analysis || !stats) && (
           <div className="actions">
             {catalog.length > 0 && <RunsSwitch runs={runs} onOpen={() => setRunsOpen(true)} />}
             {mailbox && (
@@ -910,8 +947,8 @@ export default function App() {
                 {mailBusy ? "Reading mail…" : "Check mail"}
               </button>
             )}
-            <button className="btn plain" onClick={() => setDirectoryOpen(true)} title="Who is asked for prices, and who is asking">
-              Suppliers
+            <button className="btn plain" onClick={() => toPartners({ tab: "suppliers", partner: null })} title="Suppliers and subcontractors: their prices, the conversations with them, who is new">
+              Partners
             </button>
             <button className="btn band-new" disabled={busy !== null || pending !== null} onClick={() => setPending({ files: [], info: null, target: null })}>
               <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
@@ -921,7 +958,7 @@ export default function App() {
             </button>
           </div>
         )}
-        {project && !analysis && (
+        {!partners && project && !analysis && (
           <>
             <div className="doc">
               {current ? (
@@ -950,7 +987,7 @@ export default function App() {
             </div>
           </>
         )}
-        {analysis && stats && (
+        {!partners && analysis && stats && (
           <>
             <div className="doc">
               <strong lang="de" title={analysis.boq.file}>
@@ -1044,7 +1081,6 @@ export default function App() {
           }}
         />
       )}
-      {directoryOpen && <SuppliersDialog onClose={() => setDirectoryOpen(false)} onChanged={() => setDirectoryAt((n) => n + 1)} />}
       {runsOpen && (
         <RunsDialog
           runs={current ? history : runs}
@@ -1092,7 +1128,18 @@ export default function App() {
         </div>
       )}
 
-      {project && !analysis ? (
+      {partners ? (
+        <PartnersPage
+          place={partners}
+          onPlace={setPartners}
+          onChanged={() => setDirectoryAt((n) => n + 1)}
+          onOpenTender={(id, file) => {
+            const to: Route = { at: "file", id, file, view: "inquiries", item: null, page: 1, fpage: 1 };
+            target.current = to;
+            if (navigate(to) === null) (target.current = null), setPartners(null);
+          }}
+        />
+      ) : project && !analysis ? (
         <ProjectView
           project={project}
           onOpenLv={(id) => {
@@ -1250,7 +1297,7 @@ export default function App() {
                 onItem={(oz) => setSelection({ oz, finding: null })}
                 onQuestions={() => setView("questions")}
                 onBid={() => setView("bid")}
-                onDirectory={() => setDirectoryOpen(true)}
+                onDirectory={(partner) => toPartners(partner === "firm" ? { tab: "firm", partner: null } : { tab: "suppliers", partner: partner ?? null })}
               />
             )}
             {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} onBid={() => setView("bid")} />}

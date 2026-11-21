@@ -776,3 +776,23 @@ refusing an LV that came without prices. A quantity the client corrected in an a
 (the bid keeps the file's quantity, D-040) and is one switch of the scenario. Suggested prices are not in the
 base: a suggestion is not a price until the estimator takes it.
 Revisit if: the bid gets overheads or surcharges on the whole bid — they then belong into the base as well.
+
+## D-047 — Partners are a page; Polier may look for new ones on the web, and writes to none of them
+Status: decided · 2026-11-22 (Atahan: "implement all of it"). Changes D-044 in one point.
+
+- Suppliers and subcontractors have a page (`/partners`), not a dialog; one name for both: Partners.
+- What is known about a firm is counted from the record (inquiries, replies, quotes), never entered as an
+  opinion; a price is shown with its day, validity, terms and tender, and is "out of date" past its
+  validity or after 90 days.
+- How a firm writes is read by Claude from its own messages; a trait is kept only with a passage that
+  stands in them. An inquiry to that firm gets its opening and closing in that style; the items, the dates
+  and what is asked for are held against the template, else the template goes out. The estimator still
+  reads and sends every message.
+- **Web search (was left out in D-044):** Polier may look for firms, on the button or on its own for a
+  package with nobody to ask (off until switched on). A firm counts only with a page the search returned.
+  It is a candidate until the estimator takes it into the directory; the app writes to no firm on its own
+  and the first inquiry to a new one goes out from the estimator (§ 7 UWG, `docs/09`).
+- Example history is marked as such everywhere and never prices a real item.
+
+Revisit if: a legal read says a first inquiry to a published address needs more than the estimator's own
+send; the card should weigh into who is asked by rule and not only as a hint to the model.

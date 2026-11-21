@@ -1,4 +1,4 @@
-import type { AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
+import type { PartnerProfile, PartnerSearch, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -320,7 +320,7 @@ export async function setPackageSuppliers(id: string, pkg: string, ask: string[]
 
 /** The message to read and change: the inquiry, a reminder, or the answer to what the supplier asked back
  *  (written by Claude from the LV: seconds; `points` says what each part of it rests on). */
-export async function composeInquiry(id: string, pkg: string, supplierId: string, kind: "inquiry" | "reminder" | "answer" = "inquiry"): Promise<{ subject: string; body: string; to: string; points: AnswerPoint[] }> {
+export async function composeInquiry(id: string, pkg: string, supplierId: string, kind: "inquiry" | "reminder" | "answer" = "inquiry"): Promise<{ subject: string; body: string; to: string; points: AnswerPoint[]; styled: { changed: string[]; summary: string; plain: string } | null }> {
   return read(await fetch(`/api/analyses/${id}/supply/compose`, send("POST", { package: pkg, supplier_id: supplierId, remind: kind === "reminder", answer: kind === "answer" })));
 }
 
@@ -379,4 +379,57 @@ export async function sortMessages(files: File[]): Promise<MailSorted> {
 /** The bid's price risk: the total as a range, the allowance that covers it, the items behind it. */
 export async function getBidRisk(id: string): Promise<BidRisk> {
   return read(await fetch(`/api/analyses/${id}/bid/risk`));
+}
+
+/* ------------------------------------------------------------------ partners */
+
+export async function getPartners(): Promise<PartnersOverview> {
+  return read(await fetch("/api/partners"));
+}
+
+export async function getPartner(id: string): Promise<PartnerProfile> {
+  return read(await fetch(`/api/partners/${id}`));
+}
+
+/** Read how a partner writes from its messages. Asks Claude: seconds, a few cents. */
+export async function readPartnerStyle(id: string): Promise<PartnerStyle> {
+  return read(await fetch(`/api/partners/${id}/style`, { method: "POST" }));
+}
+
+export async function listPartnerSearches(): Promise<PartnerSearch[]> {
+  return read(await fetch("/api/partners/searches"));
+}
+
+/** Look into the web for firms to ask. Claude with web search: about half a minute, a few cents. */
+export async function discoverPartners(what: string, kind: string, region: string, projectId?: string | null): Promise<PartnerSearch> {
+  return read(await fetch("/api/partners/discover", send("POST", { what, kind, region, project_id: projectId ?? null })));
+}
+
+export async function decideCandidate(search: string, n: number, take: boolean): Promise<PartnerSearch> {
+  return read(await fetch(`/api/partners/searches/${search}/${n}`, send("POST", { take })));
+}
+
+export async function saveDiscovery(values: Partial<PartnersOverview["discovery"]>): Promise<PartnersOverview["discovery"]> {
+  return read(await fetch("/api/partners/discovery", send("PUT", values)));
+}
+
+export type HistoryRead = { kept: number; known: number; looked?: number; unknown: { email: string; name: string; messages: number }[] };
+
+export async function readMailboxHistory(): Promise<HistoryRead> {
+  return read(await fetch("/api/partners/history", { method: "POST" }));
+}
+
+export async function handOverMessages(files: File[]): Promise<HistoryRead> {
+  const form = new FormData();
+  files.forEach((f) => form.append("files", f));
+  return read(await fetch("/api/partners/messages", { method: "POST", body: form }));
+}
+
+export async function putExamples(on: boolean): Promise<void> {
+  const response = await fetch("/api/partners/examples", { method: on ? "POST" : "DELETE" });
+  if (!response.ok) await read(response);
+}
+
+export async function fetchCallRecord(mailId: string): Promise<{ status: string; transcript: string; seconds: number | null }> {
+  return read(await fetch(`/api/mails/${mailId}/call-record`, { method: "POST" }));
 }

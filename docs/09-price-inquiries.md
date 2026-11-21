@@ -91,3 +91,10 @@ Left out on purpose: the app sending or reminding by itself; choosing an equival
 finding suppliers on the web (the legal point above);
 wholesaler interfaces (IDS, Datanorm); waste factors on order quantities (the inquiry says the quantities are
 the LV's); the three-way split of a unit price, so a supplier's price stands beside the bid, not in it.
+
+## Since D-047 (2026-11-22)
+
+The directory is the Partners page (`src/boq/partners.py`, `web/src/Partners.tsx`): per firm its prices
+with their dates, how it behaves, every message and call, how it writes. Two points of the list above
+changed: firms are looked for on the web (as candidates the estimator takes in; the app still writes to
+nobody on its own), and an inquiry is worded the way the firm is written to, opening and closing only.
