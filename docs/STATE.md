@@ -288,6 +288,13 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   real X83 read). Not checked: a person clicking through, creating a project from the dialog end to end in
   a browser, widths under 1180px, the Docker Postgres picking up the new column.
 
+- Name and mascot (D-030): the app is **Polier**; a 3D head in a hard hat (`web/src/Mascot.tsx`) living in the
+  bottom-right corner of every page (follows the pointer, glances around at rest, leans in, hops on click,
+  bounces on a file drag), not wired to anything; app icon and band logo: a hard hat in profile. Checked by driving the pointer
+  with puppeteer in Chrome at 1440 wide on the dev stack (follow, near, over, idle glances, hop all seen).
+  Not checked: a person using it, the file-drag bounce, the
+  production build, the PDF view's "Drawn by LV Check" and the auth realm still carry the old name.
+
 - New-project dialog (2026-11-21): files can be added to the ones waiting (button or drop; the same file is
   not taken twice) and taken out again; name, dates and corrected steps stay while the set is read again; a
   drop without any LV keeps the dialog open and says why. Walked through in headless Chrome by script on an

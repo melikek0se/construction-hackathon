@@ -1390,3 +1390,8 @@
     animation: dialog-in 260ms var(--ease) both !important;
   }
 }
+
+/* keep the last line of the page clear of the agent in the corner */
+.register .formats {
+  padding-right: 120px;
+}

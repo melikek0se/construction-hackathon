@@ -15,7 +15,8 @@ import {
   setFileStep,
   runLlmReview,
 } from "./api";
-import { CraneIcon, Opening, ProjectsPage } from "./Projects";
+import { HardHatIcon, Opening, ProjectsPage } from "./Projects";
+import { Mascot } from "./Mascot";
 import { LoadingTapes } from "./Loading";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
@@ -450,8 +451,8 @@ export default function App() {
 
       <header className="band">
         <button className="brand" onClick={closeAll} title="All projects">
-          <CraneIcon size={26} />
-          LV Check
+          <HardHatIcon size={24} />
+          Polier
         </button>
         {project && !analysis && (
           <>
@@ -744,6 +745,10 @@ export default function App() {
           </aside>
         </div>
       )}
+      {/* Polier, the agent, lives in the bottom-right corner (not wired to anything yet) */}
+      <div className="agent-dock">
+        <Mascot size={112} free />
+      </div>
     </div>
   );
 }

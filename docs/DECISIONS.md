@@ -365,3 +365,30 @@ Status: decided · 2026-11-21 (Atahan, after comparing three options each as a c
 - **Columns added to a table are added to an existing database on start** (`db._add_new_columns`); D-026's
   "a column change means a new database" still holds for every other change.
 
+
+## D-030 — The app is called Polier; its agent is a 3D head in a hard hat
+
+- **Name: Polier** (the site foreman who catches mistakes before they cost money). Replaces "LV Check" in the
+  band, the opening tape and the page title. The server-side strings ("Drawn by LV Check", the auth realm)
+  are not renamed yet.
+- **Mascot** (`web/src/Mascot.tsx`, three.js): a matte white sphere, two pill eyes, a yellow hard hat, on a dark
+  tile, cropped and tilted. It turns towards the pointer, the hat turns with the head; after 6 s without
+  pointer movement it looks around on its own; still under reduced motion. Matte on purpose: shine and extra
+  detail were tried and rejected (read as cheap or scary). It lives in the **bottom-right corner** of every
+  page (`.agent-dock`, 112px, no tile: the whole head floating over a soft shadow; rises in once, hops when
+  clicked), not wired to anything yet. Tried and removed the same day: the head in the band beside the name,
+  and beside the projects title.
+- **Behaviour:** eyes lead, the head follows on a spring and the hat lags; the turn is the angle to the
+  pointer (as if the screen were 700px away), so it varies across the page instead of pinning to one side.
+  Pointer at rest 2.5 s: random glances (at the page, at you, the other way, a head tilt). Pointer near: leans
+  in; over it: looks at you and squints. Click: crouch, hop, squash. Files dragged over the page: bounces.
+  Blinks at random and on big gaze shifts. Hook for later: `window.dispatchEvent(new CustomEvent("polier",
+  {detail: "hop" | "excited"}))`.
+- **It ignores "reduce motion"** (`HONOUR_REDUCED_MOTION = false` in `Mascot.tsx`, and the dock's rise-in):
+  the team's Mac has the setting on and the mascot looked dead. Same demo exception as D-029's opening; flip
+  the flag if the product is used for real.
+- **App icon: a hard hat in profile**, ink on yellow (`web/public/favicon.svg`, PNG fallbacks rendered from it);
+  the same silhouette without the tile is the logo in the band (`HardHatIcon` in `Projects.tsx`), replacing
+  the crane.
+- Options tried and dropped on 2026-11-21: flat SVG marks, figures, detailed 2D characters, rounded-block and
+  pebble heads, white helmet. The team knows the head resembles the Grok bot and chose it anyway.

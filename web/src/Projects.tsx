@@ -93,7 +93,18 @@ function Fingerprint({ marks, cuts = [] }: { marks: string; cuts?: number[] }) {
   );
 }
 
-/** The tower crane of the logo: mast, jib with its tie, counterweight, hook. */
+/** The logo: a hard hat in profile, front peak to the right (the app icon without its tile). */
+export function HardHatIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg className="hardhat-icon" width={(size * 58) / 36} height={size} viewBox="4 12 58 36" aria-hidden>
+      <path d="M9 41 C9 25 18.5 14 31.5 14 C44 14 52 23.5 53 38 L53.5 41 Z" fill="currentColor" />
+      <path d="M5 40.5 H52 C56.5 40.5 60 41.8 61.5 44 C62.2 45.3 61.4 46.8 59.8 46.8 H7 C5 46.8 4 44.5 5 40.5 Z" fill="currentColor" />
+      <path d="M7 40.6 H52 M16 39.5 C16.5 29 21.5 21 29 17.5 M25 39.5 C25.5 30 30 23 37 19" fill="none" stroke="var(--yellow, #ffc400)" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** The tower crane of the old logo: mast, jib with its tie, counterweight, hook. */
 export function CraneIcon({ size = 24 }: { size?: number }) {
   return (
     <svg className="crane-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden>
@@ -126,7 +137,7 @@ export function Opening({ phase }: { phase: "loading" | "opening" }) {
     <div className={`opening is-${phase}`} role="status">
       <span className="visually-hidden">Reading the projects</span>
       <div className="open-sheet" />
-      <div className="open-tape a">{run("LV Check")}</div>
+      <div className="open-tape a">{run("Polier")}</div>
       <div className="open-tape b">{run("Reading the projects")}</div>
     </div>
   );
