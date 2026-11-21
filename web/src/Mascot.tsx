@@ -25,7 +25,7 @@
    window.dispatchEvent(new CustomEvent("polier", { detail: "hop" | "excited" | "moon" | "strip" })).
    Typing "popo" anywhere on the page does the turn-around at once, typing "strip" the strip, typing "split"
    the split: it turns its back, the two hands take hold of the cheeks, squeeze, and pull them apart (sideways, at their own height;
-   still together at the top and the bottom, an almond-shaped gap between), and there is an "x" between them; then they let go, the cheeks snap shut and wobble, and it turns round again.
+   still together at the top and the bottom, an almond-shaped gap between), and there is a star between them, like the mark of an assistant at work, which squeezes to a dot once, slowly, and opens again; then they let go, the cheeks snap shut and wobble, and it turns round again.
    The system's "reduce motion" setting is not read anywhere in the app (D-038); `calm` below is the slow
    variant (only follows and blinks), kept switched off. */
 import { useEffect, useRef } from "react";
@@ -183,15 +183,22 @@ function buildRig() {
     shaped = true;
   };
 
-  // the "x" between them, on the body, covered until the cheeks are pulled apart (the split)
+  // the star between them, on the body, covered until the cheeks are pulled apart (the split): eight rays
+  // like the mark of an assistant at work, which squeezes shut once and lets go while it shows (`pulseStar`)
   const cross = new THREE.Group();
   const ink = matte(0x161816);
-  for (const a of [Math.PI / 4, -Math.PI / 4]) {
-    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.055, 0.03), ink);
-    bar.rotation.z = a;
+  const rays = [0, 1, 2, 3].map((k) => {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.042, 0.03), ink);
+    bar.rotation.z = (k * Math.PI) / 4;
     cross.add(bar);
-  }
-  const crossAt = new THREE.Vector3(0, CHEEK_Y - 0.02, -0.905).normalize();
+    return bar;
+  });
+  /** The star clenched by `k` (0 open at full size, 1 squeezed to a dot); the diagonal rays give way first,
+      so it passes through a plus on the way in and out. */
+  const pulseStar = (k: number) => {
+    rays.forEach((bar, i) => bar.scale.setScalar(1 - 0.78 * THREE.MathUtils.smoothstep(k, i % 2 ? 0 : 0.25, i % 2 ? 0.75 : 1)));
+  };
+  const crossAt = new THREE.Vector3(0, CHEEK_Y - 0.045, -0.905).normalize();
   cross.position.copy(crossAt).multiplyScalar(1.01);
   cross.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), crossAt);
   cross.visible = false;
@@ -216,7 +223,7 @@ function buildRig() {
   hat.position.set(0, 0.34, -0.04);
   hat.rotation.set(-0.16, 0, 0.08);
   head.add(hat);
-  return { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross };
+  return { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross, pulseStar };
 }
 
 /** A damped spring: moves `v` towards `to`, overshooting a little. */
@@ -279,7 +286,7 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       root.scale.setScalar(0.92);
       root.rotation.z = -0.08;
     }
-    const { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross } = buildRig();
+    const { rig, head, eyePivot, eyes, hat, shapeCheeks, blush, cross, pulseStar } = buildRig();
     root.add(rig);
 
     const calm = false as boolean;
@@ -511,6 +518,8 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       head.rotation.set(hp - wig * 0.035, hy + around, hr + flip);
       // both cheeks go up and down together: stretched long on the way up, piled flat and wide at the bottom
       cross.visible = apart > 0.02;
+      // one slow squeeze while the cheeks are held apart: in, then out again
+      if (cross.visible) pulseStar(Math.sin(Math.PI * clamp((pT - S.pull - 0.4) / (S.release - S.pull - 0.7), 0, 1)));
       {
         // pulled apart they stay at their height and go sideways, still together at the top and the bottom
         const a = apart * OPEN;
