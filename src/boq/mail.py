@@ -125,7 +125,7 @@ def file_name(subject: str, created: str) -> str:
 # ------------------------------------------------------------------ keeping
 
 def _row(row) -> dict:
-    return {"id": row.id, "kind": row.kind, "to": row.to, "subject": row.subject, "body": row.body,
+    return {"id": row.id, "kind": row.kind, "project_id": row.project_id, "to": row.to, "subject": row.subject, "body": row.body,
             "via": row.via, "created": row.created.isoformat(timespec="seconds"),
             "sent_at": row.sent_at.isoformat(timespec="seconds") if row.sent_at else None,
             "items": row.items, "reply": row.reply,

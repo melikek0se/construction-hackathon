@@ -210,3 +210,77 @@ def wording(boq: BoQ) -> list[Finding]:
 
 def lump_sums(boq: BoQ) -> list[Finding]:
     return _each(boq, _lump_sum)
+
+
+# ---------------------------------------------------------------- structure of the LV
+
+def numbering(boq: BoQ) -> list[Finding]:
+    """An item number used twice: prices and quantities are exchanged by number (GAEB), so one of the two
+    is lost or overwritten on the way."""
+    seen: dict[str, Item] = {}
+    out = []
+    for item in boq.items:
+        first = seen.setdefault(item.oz, item)
+        if first is not item:
+            out.append(Finding(
+                item_oz=item.oz, category="error", check_id="R-NUMBER-TWICE", severity="warn",
+                title="Item number used twice",
+                evidence=f"„{first.label[:70]}“ / „{item.label[:70]}“",
+                explanation="Two items carry the same number. Bids are exchanged by item number, so the "
+                            "price of one of them cannot be told from the other.",
+                action="ask_client",
+                question_de=f"Die Ordnungszahl {item.oz} ist zweimal vergeben. Wir bitten um Klarstellung, "
+                            f"welche Position gemeint ist."))
+    return out
+
+
+def _same_words(item: Item) -> str:
+    return re.sub(r"\s+", " ", _TOKEN.sub(" ", item.text.lower())).strip()
+
+
+def repeats(boq: BoQ) -> list[Finding]:
+    """The same description twice in one section, with the same unit: tendered twice, or two places of
+    use that the text does not tell apart. Short texts and "wie Position" items are left out."""
+    seen: dict[tuple, Item] = {}
+    out = []
+    for item in boq.items:
+        words = _same_words(item)
+        if len(words) < 40 or item.refs or item.kind != "normal":
+            continue
+        first = seen.setdefault((tuple(item.path), words, item.unit), item)
+        if first is not item:
+            out.append(Finding(
+                item_oz=item.oz, related_oz=[first.oz], category="unclear_scope", check_id="R-REPEATED",
+                severity="info", title=f"Same description as item {first.oz}",
+                evidence=f"„{item.label[:90]}“",
+                explanation=f"Items {first.oz} and {item.oz} of this section read the same word for word, "
+                            f"with the same unit. Either the work is tendered twice, or the two differ in "
+                            f"something the text does not say (place, depth, section of the route).",
+                action="ask_client",
+                question_de=f"Die Positionen {first.oz} und {item.oz} sind wortgleich beschrieben. Worin "
+                            f"unterscheiden sich die beiden Leistungen?"))
+    return out
+
+
+_OPTIONAL = {"contingency": "contingency items (Bedarfspositionen)", "alternative": "alternative items (Wahlpositionen)"}
+
+
+def position_types(boq: BoQ) -> list[Finding]:
+    """A large share of items that may never be ordered: the client decides later, the bidder has to
+    keep price and capacity ready. Said once for the LV (on the first such item, the others as related), from a
+    tenth of its items and at least three."""
+    out = []
+    for kind, name in _OPTIONAL.items():
+        items = [i for i in boq.items if i.kind == kind]
+        if len(items) < 3 or len(items) * 10 < len(boq.items):
+            continue
+        out.append(Finding(
+            item_oz=items[0].oz, related_oz=[i.oz for i in items[1:41]], category="contract_risk",
+            check_id="R-OPTIONAL-SHARE", severity="warn",
+            title=f"{len(items)} of {len(boq.items)} items are {name.split(' (')[0]}",
+            evidence=f"{len(items)} of {len(boq.items)} items: {', '.join(i.oz for i in items[:8])}"
+                     f"{' …' if len(items) > 8 else ''}",
+            explanation=f"A tenth or more of this LV are {name}. They are priced now and ordered only if "
+                        f"the client wants them: their share of site overheads is not earned if they stay out.",
+            action="add_surcharge"))
+    return out

@@ -582,3 +582,34 @@ too much (then agentic steps on request only).
 
 Revisit if: this becomes a product.
 
+## D-039 — The pipeline is the estimator's order of work: six stations, and it waits for the person at the questions
+
+**Decided** 2026-11-21 (Atahan: "the steps the people who do this job follow, but more intelligent; human
+in the loop, step by step"). Extends D-037.
+
+- Every step of `src/boq/pipeline.py` stands at one of six stations (`STAGES`): read, rules, ai, compare,
+  questions, prices. The pages show a run by station, not as a list of steps.
+- A step can be `human`: a gate. `Q-GATE` passes when there is nothing to ask, every question is answered,
+  the last day for questions is over, the project already holds a bid or an award, or the person goes on
+  without the answers; otherwise the run stops
+  with status `waiting` and the price step behind it is `held`. Nothing is sent by the run itself: the
+  e-mail is written and sent by the person in the Questions view (D-035).
+- A run is taken up again where it stands (rows that are done are left alone). The same mechanism serves
+  the gate (`runs.nudge` after a message is written, sent, discarded or answered; `runs.go_on`), a failed
+  step tried again (`runs.retry`), and runs cut off by a restart (`runs.resume_interrupted` at start).
+- The run moves the tender along the board: to "questions" when it waits there, to "pricing" when the
+  prices are worked out. Forward only.
+- The cards count what the run found (AI findings, changes against the tender) with the rule findings, so
+  card and LV page say the same numbers (`catalog_summary` v4, worked out again when a run ends).
+- New steps: the tender's dates (`D-DATES`), three structure rules (number used twice, same description
+  twice in a section, share of optional items), the AI's second look (`L-SECOND`: takes out an AI finding
+  that repeats another; adds nothing), a later version against its tender (`V-DIFF`, its findings are put
+  onto the file when opened), questions drafted (`Q-DRAFT`), prices from past bids (`P-PRICES`).
+- Not built, tried and dropped: a quantity-outlier rule (same DN in one section, quantities ten times
+  apart). On the dataset it only flagged "wie Position" items and different products.
+- Cost, known: the three new rule findings change the AI review's prompt, so every LV reviewed before is
+  read once more by Claude (project of 296 items: 0.34 USD); the second look is one more request per LV
+  (0.02 USD there).
+
+Revisit if: questions should go out without the person (then the gate needs an approval, not a view), or
+several server workers run (D-037).

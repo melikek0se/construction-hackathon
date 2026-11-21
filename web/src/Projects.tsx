@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { Sign } from "./components";
 import { DateField, Select } from "./controls";
 import { eur } from "./format";
+import { RunSegs } from "./Runs";
 import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type DateKind, type FoundDate, type Intake, type IntakeFile, type Plan, type ProjectSummary, type Run, type Severity, type TenderDate } from "./types";
 import "./home.css";
 
@@ -321,60 +322,6 @@ function openingStart(projects: CatalogProject[], summaries: Record<string, Proj
   const away = (days: Date[]) => Math.min(...days.map((d) => Math.abs(daysBetween(today, d))));
   const nearest = sets.sort((a, b) => away(a) - away(b))[0];
   return monday(addDays(new Date(Math.min(...nearest.map((d) => d.getTime()))), -7));
-}
-
-/** Tenders on the schedule: everything not yet awarded. */
-export const runningTenders = (projects: CatalogProject[]) => projects.filter((p) => stageOf(p) !== "award").length;
-
-/** The schedule's switch in the band: what is due next, and how many tenders run. Ink while the schedule is open. */
-export function ScheduleSwitch({
-  projects,
-  summaries,
-  open,
-  onToggle,
-}: {
-  projects: CatalogProject[];
-  summaries: Record<string, ProjectSummary | "failed">;
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const today = startOfDay(new Date());
-  const next = projects
-    .flatMap((p) => {
-      const n = nextDate(p, datesOf(p, summaries[p.id]), today);
-      return n ? [{ p, ...n }] : [];
-    })
-    .sort((a, b) => a.days - b.days)[0];
-  return (
-    <button
-      className={`sched-switch${next && next.days <= 3 ? " soon" : ""}`}
-      aria-expanded={open}
-      aria-controls="schedule"
-      onClick={onToggle}
-      title={open ? "Close the schedule" : "Open the schedule"}
-    >
-      <span className="ss-cal" aria-hidden>
-        <svg width="16" height="16" viewBox="0 0 24 24">
-          <path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" strokeWidth="2" />
-        </svg>
-        <b className="num">{runningTenders(projects)}</b>
-      </span>
-      <span className="ss-text">
-        <small>Schedule</small>
-        {next ? (
-          <span>
-            <span className="ss-plate">{plateOf(next.p)}</span>
-            {next.what} <b>{inDays(next.days)}</b>
-          </span>
-        ) : (
-          <span>Nothing due</span>
-        )}
-      </span>
-      <svg className="ss-chev" width="11" height="11" viewBox="0 0 12 12" aria-hidden>
-        <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
-      </svg>
-    </button>
-  );
 }
 
 /** Which project's dates the schedule shows, asked for from its card; `n` counts the asks, so the same card
@@ -748,7 +695,7 @@ function Card({
 }: {
   p: CatalogProject;
   s: ProjectSummary | "failed" | undefined;
-  run: Run | undefined; // the pipeline run going on this project, if one is
+  run: Run | undefined; // the project's latest pipeline run: where it stands
   stage: Stage;
   busy: boolean;
   onOpen: (p: CatalogProject, file?: number) => void;
@@ -821,12 +768,7 @@ function Card({
 
       {!ready && <p className="card-wait">{s === "failed" ? "The files could not be read." : "Reading the files"}</p>}
       {strip}
-      {run && (
-        <p className="card-run" title="The pipeline is running on this project in the background">
-          Checking {run.finished_steps}/{run.total}
-          <span>{run.steps.find((r) => r.status === "running")?.title ?? "waiting"}</span>
-        </p>
-      )}
+      {run && <RunSegs run={run} />}
       {ready && open.length > 0 && (
         <ul className="open-list">
           {open.map((o, i) => (
@@ -1163,15 +1105,12 @@ export function ProjectsPage({
   pending,
   error,
   onOpen,
-  onNew,
   onChooseFiles,
   onDropFiles,
   onRemoveFile,
   onConfirm,
   onCancel,
   onChange,
-  scheduleOpen,
-  onShowSchedule,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
@@ -1180,24 +1119,18 @@ export function ProjectsPage({
   pending: Pending | null;
   error: string | null; // shown in the dialog while it is open: it covers the notice bar
   onOpen: (project: CatalogProject, file?: number) => void;
-  onNew: () => void;
   onChooseFiles: (target: string | null) => void;
   onDropFiles: (files: FileList, target: string | null) => void;
   onRemoveFile: (file: File) => void;
   onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: Partial<Record<TenderDate, string>>) => void;
   onCancel: () => void;
   onChange: (project: CatalogProject, change: Change) => void;
-  scheduleOpen: boolean; // opened and closed from the band
-  onShowSchedule: () => void;
 }) {
   const [focus, setFocus] = useState<Focus>(null);
   return (
     <main className="register">
-      {/* the schedule runs the full width of the window, straight under the band, which opens and closes it */}
-      {/* always there, so it can slide open and shut; closed it is out of the tab order */}
+      {/* the schedule runs the full width of the window, straight under the band */}
       {projects.length > 0 && (
-        <div className={`sched-wrap${scheduleOpen ? " open" : ""}`} inert={!scheduleOpen} aria-hidden={!scheduleOpen}>
-          <div>
         <Schedule
           projects={projects}
           summaries={summaries}
@@ -1206,8 +1139,6 @@ export function ProjectsPage({
           onFocus={(id) => setFocus(id ? { id, n: (focus?.n ?? 0) + 1 } : null)}
           onOpen={onOpen}
         />
-          </div>
-        </div>
       )}
 
       <div className="register-body">
@@ -1229,14 +1160,9 @@ export function ProjectsPage({
       <section className="board-wrap" aria-label="Tenders by stage">
         <header className="board-head">
           <h1>Projects</h1>
+          {/* "New project" is in the band, top right */}
           <div className="register-new">
-            <span>Drop the files of a tender anywhere, or</span>
-            <button className="btn-new" disabled={busy || pending !== null} onClick={onNew}>
-              <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
-                <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
-              </svg>
-              New project
-            </button>
+            <span>Drop the files of a tender anywhere on this page</span>
           </div>
         </header>
         <div className="board">
@@ -1253,7 +1179,7 @@ export function ProjectsPage({
                     key={p.id}
                     p={p}
                     s={summaries[p.id]}
-                    run={runs.find((r) => r.active && r.project_id === p.id)}
+                    run={runs.find((r) => r.project_id === p.id)}
                     stage={stage}
                     busy={busy}
                     onOpen={onOpen}
@@ -1261,7 +1187,6 @@ export function ProjectsPage({
                     onChange={onChange}
                     onDates={(p) => {
                       setFocus({ id: p.id, n: (focus?.n ?? 0) + 1 });
-                      onShowSchedule();
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                   />

@@ -14,6 +14,41 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 ## Done
 
+- Projects page, band (2026-11-21): two buttons at the top right, "Pipeline" and "New project" (moved up from the
+  board's head, which keeps only the drop hint). The schedule is always open: its switch in the band
+  (`ScheduleSwitch`) and the sliding wrapper are gone. Checked: type-check, the page in headless Chrome at 1440
+  wide. Not checked: clicking the two buttons in the browser; the page with no project.
+
+- Pipeline as a workflow with a gate (2026-11-21, D-039; `pipeline.py`, `runs.py`, `web/src/Runs.tsx`): six
+  stations (read, rules, AI review, compare, questions, prices). The run stops at the bidder questions with
+  status `waiting` until they are answered, the person goes on without (`POST /api/runs/{id}/go-on`) or the
+  last day for questions is over; then the prices. Also `…/retry` (failed steps again), `…/cancel`, runs cut
+  off by a restart go on at start, "n new, n gone" against the run before, USD per agentic step.
+  New steps: dates, three structure rules, the AI's second look, version against tender, questions drafted,
+  prices. `GET /api/runs` without a project is now the latest run of every project.
+  UI: a strip of the six stations under the band of a project and an LV (a station opens to its steps, a
+  step with findings puts them into the list, the waiting station holds "Write the e-mail" and "Go on to
+  the prices"); six marks and one line on every card; "Pipeline" in the band of the projects page opens a
+  table project × station; the record of a project's runs behind "Record" on the strip. The cards count
+  the run's findings too, and the run moves the card along the board.
+  Checked: `tests/test_runs.py` (8: record, gate waits, go on, goes on by itself when all are answered,
+  stop and take up again, version against tender, skipped and failed steps, a building). On the dev stack,
+  real runs: 296 items (AI review and second look 0.36 USD, 40 AI findings, 0 taken out, stopped at 30
+  questions, "go on" → prices → card in Pricing); 50 items in two files, the server restarted while Claude
+  was reading: the run went on by itself and stopped at 6 questions; a building of two trade LVs made
+  through the API (0.23 USD, both LVs waiting, 7 and 3 questions). Seen in headless Chrome at 1440 wide:
+  the strip on an LV and on the project view, open stations, a step filtering the list, card marks, the
+  table; no console error.
+  Not checked: "Stop" and "Try again" pressed in the browser (covered by the test; live, Stop only takes
+  effect after the step it is on, up to a minute in the AI review, and the button says so); "Write the
+  e-mail" leading into a sent message and a pasted reply in the browser (the same path is covered by the
+  test through `mail`); a building of 27 LVs; widths under 1200px (six stations and the buttons share one
+  row). Known: on the project view of a building the waiting station has no "Write the e-mail" (an LV has
+  to be opened for it); a run's "version against tender" findings make `reviewed` true on a file the AI did
+  not read; "Run AI review" by hand replaces them until the file is opened again. Prices: 0 of 296 on the
+  dataset's own projects, because a project's own bid is left out of its history. A project that already
+  holds a bid or an award does not wait at the questions.
+
 - Pipeline and background runs (2026-11-21, D-037): `src/boq/pipeline.py` lists every check as a step (7 rule
   steps, 10 missing-item steps, the AI review, the comparison between LVs); `src/boq/runs.py` runs them in a
   thread when a project is created or gets files and keeps a record per step and document (table `runs`).

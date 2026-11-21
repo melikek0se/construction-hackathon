@@ -362,8 +362,8 @@ words running along it were tried and read as buttons, a stripe along both edges
 brand style, on the projects page only. An open LV or project has the way back in its place: a white button
 with a 1px ink line, a chevron and "Projects" (or "Project" for an LV opened from a building), one step up;
 hover ink. Then the name in Barlow Condensed 25px 600, alone (the file line under it was dropped: the versions bar says it); a created project's name is an input that shows its frame only on hover and
-focus. Right: actions. On the projects page the one action is the Schedule switch: outline with the count of running
-tenders on a yellow chip, ink while the schedule is open; absent while there is no project.
+focus. Right: actions. On the projects page there are two: "Pipeline" (white with an ink line; absent while
+there is no project) and "New project" (ink). The schedule under the band is always open; it has no switch.
 
 ### Buttons
 - **Shape:** 2px radius, 30 to 32px high, 12px side padding, Barlow 700 12px capitals with 0.08em tracking.
@@ -519,6 +519,17 @@ The same sign on two posts as the new-project dialog, titled "Project settings":
 "Remove" at the left, name, stage and the tender's dates at the right, "Delete project" and "Done" in the
 foot. No confirm step: every change is kept at once, and the foot says so. Taking something away is two
 clicks on the same control ("Remove" turns into "Remove for good?", red).
+
+### Pipeline strip (project and LV pages)
+
+Straight under the band, full width, closed by a 2px ink line: six stations in a row (number, name in the
+display face, one line under it: the counts, or what the station says), then the run's state and its
+buttons at the right. States carry meaning by fill, not by colour alone: at work = ink with the barrier
+tape running along its lower edge; waiting for the person = the one yellow station, named "Your move";
+not reached or not needed = dimmed text; failed = red name. A station opens a panel under the strip (its
+steps; checks that found nothing folded into one line); the waiting one holds the primary action in
+yellow and the way round it as a ghost button. On a card the same six stations are six 6px marks with one
+line; in the band's dialog on the projects page they are the columns of a table, one row per project.
 
 ### Gate (the way from one page to another)
 Pages change behind the shutter, never in the open, and the band is the shutter: in the opening the yellow

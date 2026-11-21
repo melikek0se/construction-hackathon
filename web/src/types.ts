@@ -427,18 +427,38 @@ export interface QuestionsState {
   account: string | null; // the address the app can send from; null: drafts only
 }
 
+/** The six stations of the pipeline (src/boq/pipeline.py, STAGES), in the estimator's order of work. */
+export type StageId = "read" | "rules" | "ai" | "compare" | "questions" | "prices";
+
 /** One step of a pipeline run on one document (or on the project): a row of the run's record. */
 export interface RunStep {
   step: string; // the step's id in src/boq/pipeline.py; "READ" for reading the file
   title: string;
-  kind: "deterministic" | "agentic";
-  scope: "document" | "project";
+  kind: "deterministic" | "agentic" | "human"; // human: a gate the run waits at for the person
+  scope: "document" | "versions" | "project";
+  stage: StageId;
+  report: boolean; // it states a fact (dates read, questions drafted) instead of looking for faults
+  twin: boolean; // another file of an LV that is counted already: its findings are not added up again
   doc: number | null; // index of the file in the project; null for a step about the whole project
   file: string | null;
-  status: "queued" | "running" | "done" | "skipped" | "failed" | "interrupted";
-  detail: string; // what it is doing, what it read, why it was skipped, or the error
+  // waiting: for the person (the questions); held: behind a step that waits
+  status: "queued" | "running" | "done" | "skipped" | "failed" | "waiting" | "held" | "interrupted" | "cancelled";
+  detail: string; // what it is doing, what it read, why it was skipped, what the person has to do, or the error
   counts: Record<Severity, number> | null; // what it found, once done
   ms: number | null;
+  usd: number | null; // what an agentic step cost at list prices; 0 when every answer came from the cache
+}
+
+/** A station of a run: how far it is and what it found. */
+export interface RunStage {
+  id: StageId;
+  title: string;
+  status: "none" | "queued" | "running" | "done" | "skipped" | "failed" | "waiting" | "cancelled";
+  counts: Record<Severity, number>;
+  line: string; // one line on it: what it is doing, what it stated, what it waits for
+  done: number;
+  total: number;
+  checks: number; // steps of it that look for faults
 }
 
 /** A run of the pipeline on a project, in the background (src/boq/runs.py). */
@@ -447,14 +467,20 @@ export interface Run {
   project_id: string;
   project: string; // its name when the run started
   trigger: string; // "project created", "files added", "started by hand"
-  status: "queued" | "running" | "done" | "failed" | "interrupted";
+  // waiting: it stopped at the bidder questions and goes on when they are dealt with
+  status: "queued" | "running" | "waiting" | "done" | "failed" | "interrupted" | "cancelled";
   active: boolean; // queued or running
+  stopping: boolean; // asked to stop: it does after the step it is on (an AI step can take a minute)
   created: string;
   started: string | null;
   finished: string | null;
   error: string | null;
   steps: RunStep[];
+  stages: RunStage[];
   total: number;
   finished_steps: number;
   counts: Record<Severity, number>;
+  usd: number | null;
+  waiting_for: string | null; // what the person has to do, when the run waits
+  since: { new: number; gone: number } | null; // against the run before it on this project
 }

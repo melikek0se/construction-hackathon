@@ -75,7 +75,9 @@ export function FindingsList({
   onPage,
   ai,
   onReview,
+  find,
 }: {
+  find?: { text: string; n: number } | null; // put into the search box from outside (a step of the pipeline)
   page: number; // of the rows, from 1 (kept in the address)
   onPage: (page: number) => void;
   ai: "idle" | "running" | "done";
@@ -91,6 +93,10 @@ export function FindingsList({
 }) {
   const [category, setCategory] = useState<Category | "all">("all");
   const [query, setQuery] = useState("");
+  const asked = find?.n;
+  useEffect(() => {
+    if (find) setQuery(find.text);
+  }, [asked]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const counts = useMemo(() => {
     const c: Record<Severity, number> = { high: 0, warn: 0, info: 0 };
@@ -110,6 +116,7 @@ export function FindingsList({
         if (category !== "all" && f.category !== category) return false;
         if (section !== null && (f.item_oz === null || sectionOf(f.item_oz) !== section)) return false;
         if (!q) return true;
+        if (q.startsWith("check:")) return f.check_id.toLowerCase().startsWith(q.slice(6)); // from the pipeline strip
         const hay = `${f.item_oz ?? ""} ${f.check_id} ${f.evidence} ${itemLabel(itemByOz.get(f.item_oz ?? ""))}`;
         return hay.toLowerCase().includes(q);
       });

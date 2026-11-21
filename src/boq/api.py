@@ -49,6 +49,8 @@ PAGES = ROOT / "data" / "processed" / "pages"  # pages drawn for LVs that came w
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     db.engine()  # create the tables, and fail at start rather than on the first request; nothing is seeded
+    if runs.AUTO:
+        runs.resume_interrupted()  # runs a restart cut off go on where they stood
     yield
 
 
@@ -208,9 +210,10 @@ def _from_run(analysis_id: str, project_id: str, doc_id: int) -> list[Finding] |
     """What the project's pipeline run found in this document with the AI review, put onto the analysis the
     file was just opened as; None if no run has reviewed it (yet)."""
     found = runs.llm_findings(project_id, doc_id)
-    if found is not None:
-        _keep_llm_findings(analysis_id, found)
-    return found
+    changed = runs.version_findings(project_id, doc_id)  # what this version changed against its tender
+    if found is not None or changed:
+        _keep_llm_findings(analysis_id, (found or []) + changed)
+    return found if not changed else (found or []) + changed if found is not None else None
 
 
 def _keep_llm_findings(analysis_id: str, findings: list[Finding]) -> None:
@@ -297,7 +300,8 @@ def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None,
         if project_id:
             _set_project(analysis_id, project_id)
             if docs and id(boq) in docs:
-                findings = findings + (_from_run(analysis_id, project_id, docs[id(boq)]) or [])
+                _from_run(analysis_id, project_id, docs[id(boq)])
+                findings = findings + _llm_findings(analysis_id)
         lvs[label] = boq
         rows.append({"name": label, "file": boq.file, "analysis_id": analysis_id, "items": len(boq.items),
                      "counts": {s: sum(f.severity == s for f in findings) for s in ("high", "warn", "info")}})
@@ -475,7 +479,7 @@ def catalog_summary(project_id: str):
     Parses every file, so it is asked for per project and kept with the project until its files change."""
     project = _catalog(project_id)
     kept = catalog.summary(project_id)
-    if kept is None or kept.get("v") != 3:  # v: summaries kept by an earlier version are worked out again
+    if kept is None or kept.get("v") != 4:  # v: summaries kept by an earlier version are worked out again
         rank = {"info": 1, "warn": 2, "high": 3}
         docs, net, net_from, dates = [], None, None, []
         for index, f in enumerate(project["files"]):
@@ -489,7 +493,10 @@ def catalog_summary(project_id: str):
                              "questions": 0, "priced": 0})
                 continue
             counts, worst, ask = {"high": 0, "warn": 0, "info": 0}, {}, set()
-            for finding in run_checks(boq):
+            # the rules, and what the project's pipeline run added to this file (AI review, changes against
+            # the tender): the same findings the file shows when it is opened
+            from_run = (runs.llm_findings(project_id, f["id"]) or []) + runs.version_findings(project_id, f["id"])
+            for finding in run_checks(boq) + from_run:
                 counts[finding.severity] += 1
                 if finding.action == "ask_client":
                     ask.add(finding.item_oz)
@@ -508,7 +515,7 @@ def catalog_summary(project_id: str):
         # trade LVs all count.
         counted = [d for d in docs if d["counts"]]
         counted = counted if project["kind"] == "trades" else counted[:1]
-        kept = {"v": 3, "lvs": len(counted), "items": sum(d["items"] for d in counted),
+        kept = {"v": 4, "lvs": len(counted), "items": sum(d["items"] for d in counted),
                 "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
                 "net": net, "net_from": net_from, "docs": docs,
                 # the tender's dates as its files state them, each with where it was read (boq.dates)
@@ -531,8 +538,9 @@ def open_project_file(project_id: str, index: int):
     if shown:
         _PRINT_OUT[analysis_id] = shown[1:]
     _set_project(analysis_id, project_id)
-    reviewed = _from_run(analysis_id, project_id, doc["id"])
-    return _dump(analysis_id, boq, sort_findings(findings + (reviewed or [])), reviewed is not None)
+    reviewed = runs.llm_findings(project_id, doc["id"]) is not None
+    _from_run(analysis_id, project_id, doc["id"])
+    return _dump(analysis_id, boq, sort_findings(findings + _llm_findings(analysis_id)), reviewed)
 
 
 @app.delete("/api/catalog/{project_id}/files/{index}")
@@ -594,9 +602,10 @@ def pipeline_steps():
 
 @app.get("/api/runs")
 def list_runs(project: str | None = None):
-    """The latest pipeline runs, newest first, of one project or of all: status, and one row per step and
+    """Pipeline runs, newest first. Of one project: its latest runs. Without: the latest run of every
+    project, i.e. where each one stands. A run has its status, its six stations and one row per step and
     document with what it found. Asked again and again by the pages while a run is going."""
-    return runs.list_runs(project)
+    return runs.list_runs(project) if project else runs.latest()
 
 
 @app.post("/api/catalog/{project_id}/runs")
@@ -604,6 +613,32 @@ def start_run(project_id: str):
     """Run the pipeline on a project again, in the background."""
     _catalog(project_id)
     return runs.start(project_id, "started by hand")
+
+
+def _run(found: dict | None) -> dict:
+    if found is None:
+        raise HTTPException(404, "This run is no longer kept.")
+    return found
+
+
+@app.post("/api/runs/{run_id}/go-on")
+def run_go_on(run_id: str):
+    """A run that waits for the bidder questions goes on to the prices without the client's answers."""
+    return _run(runs.go_on(run_id))
+
+
+@app.post("/api/runs/{run_id}/retry")
+def run_retry(run_id: str):
+    """Try the failed steps of a run again."""
+    return _run(runs.retry(run_id))
+
+
+@app.post("/api/runs/{run_id}/cancel")
+def run_cancel(run_id: str):
+    """Stop a run after the step it is on."""
+    if not runs.cancel(run_id):
+        raise HTTPException(409, "This run is not going.")
+    return _run(runs.find(run_id))
 
 
 PLAN_DATES = ("questions_due", "due", "opening", "sent", "binding_until", "exec_start", "exec_end")
@@ -1049,6 +1084,7 @@ def mail_questions(analysis_id: str, body: Outgoing):
     items = [{**q, "no": no} for no, q in enumerate(asked, 1)]
     mail.keep(mail.BIDDER_QUESTIONS, _project_id(analysis_id), boq.file, to, subject, text, body.via, items,
               sent=body.via == "smtp")
+    runs.nudge(_project_id(analysis_id))  # the run waiting for the questions looks again
     return _questions_state(analysis_id)
 
 
@@ -1078,6 +1114,7 @@ def change_mail(mail_id: str, body: MailChange):
     if _mail(mail_id)["via"] == "smtp":
         raise HTTPException(422, "This message was sent by the app.")
     mail.set_sent(mail_id, body.sent)
+    runs.nudge(_mail(mail_id)["project_id"])
     return _mail(mail_id)
 
 
@@ -1088,6 +1125,7 @@ def discard_mail(mail_id: str):
     if found["via"] == "smtp" or found["reply"]:
         raise HTTPException(422, "A message that was sent by the app or has a reply is kept.")
     mail.discard(mail_id)
+    runs.nudge(found["project_id"])
 
 
 class Reply(BaseModel):
@@ -1113,6 +1151,7 @@ async def read_mail_reply(mail_id: str, body: Reply):
     mail.keep_reply(mail_id, reply, read["answers"])
     if not found["sent_at"]:  # an answer came, so the questions went out
         mail.set_sent(mail_id, True)
+    runs.nudge(found["project_id"])  # all answered: the run goes on to the prices
     return {**_mail(mail_id), "dropped": read["dropped"]}
 
 

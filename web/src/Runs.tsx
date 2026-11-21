@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Sign } from "./components";
-import { SEVERITIES, SEVERITY_LABEL, type Run, type RunStep, type Severity } from "./types";
+import { SEVERITIES, SEVERITY_LABEL, type Run, type RunStage, type RunStep, type Severity, type StageId } from "./types";
 import "./runs.css";
 
-/* The pipeline runs (src/boq/runs.py): what is being checked in the background, step by step.
-   - RunsSwitch: the button in the band, on the projects page (all runs) and on a project (its runs).
-     While a run is going it counts the steps done.
-   - RunsDialog: the record. A run, its documents, and under each document every step of the pipeline
-     (src/boq/pipeline.py) with what it found. The same sign on two posts as the other dialogs. */
+/* The pipeline (src/boq/pipeline.py) and its runs (src/boq/runs.py): what is done with a project's files,
+   station by station, and where the run waits for the person.
+   - PipelineStrip: the six stations under the band of a project or an LV. A station opens to its steps;
+     the one the run waits at holds what the person has to do.
+   - RunSegs: the same six stations as marks on a project's card.
+   - RunsSwitch: the button in the band of the projects page. While a run is going it counts the steps done.
+   - RunsDialog: on the projects page every project against the six stations; on a project the record of
+     its runs, each with its documents and every step. The same sign on two posts as the other dialogs. */
 
-const KIND = { deterministic: "Rule", agentic: "AI" } as const;
+const KIND = { deterministic: "Rule", agentic: "AI", human: "You" } as const;
 
 function ago(iso: string): string {
   const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
@@ -27,9 +30,11 @@ function took(ms: number | null): string {
 const STATUS: Record<Run["status"], string> = {
   queued: "Waiting",
   running: "Running",
+  waiting: "Your move",
   done: "Done",
   failed: "Failed",
   interrupted: "Interrupted",
+  cancelled: "Stopped",
 };
 
 function Counts({ counts }: { counts: Record<Severity, number> }) {
@@ -93,22 +98,26 @@ function StepRow({ row }: { row: RunStep }) {
         <code>{row.step}</code>
       </span>
       <span className="run-result">
-        {row.status === "done" && row.step !== "READ" && row.counts && <Counts counts={row.counts} />}
-        {row.detail && (row.status !== "done" || row.step === "READ" || row.kind === "agentic") && (
+        {row.status === "done" && !row.report && row.counts && <Counts counts={row.counts} />}
+        {row.detail && (row.status !== "done" || row.report || row.kind === "agentic") && (
           <span className="run-detail">{row.detail}</span>
         )}
         {row.status === "queued" && <span className="run-detail">waiting</span>}
         {row.status === "interrupted" && <span className="run-detail">the server was restarted</span>}
+        {row.status === "cancelled" && <span className="run-detail">stopped</span>}
       </span>
-      <span className="run-ms num">{took(row.ms)}</span>
+      <span className="run-ms num">
+        {row.usd ? `$${row.usd.toFixed(2)} · ` : ""}
+        {took(row.ms)}
+      </span>
     </li>
   );
 }
 
 function Group({ name, rows, open }: { name: string; rows: RunStep[]; open: boolean }) {
   const counts = { high: 0, warn: 0, info: 0 };
-  for (const r of rows) for (const s of SEVERITIES) counts[s] += r.counts?.[s] ?? 0;
-  const done = rows.filter((r) => r.status === "done" || r.status === "skipped" || r.status === "failed").length;
+  for (const r of rows) if (!r.report) for (const s of SEVERITIES) counts[s] += r.counts?.[s] ?? 0;
+  const done = rows.filter((r) => r.status === "done" || r.status === "skipped" || r.status === "failed" || r.status === "cancelled").length;
   const going = rows.some((r) => r.status === "running");
   const failed = rows.filter((r) => r.status === "failed").length;
   const ai = rows.filter((r) => r.kind === "agentic" && r.status === "done").length;
@@ -162,6 +171,7 @@ function RunCard({ run, open, showProject }: { run: Run; open: boolean; showProj
           <i style={{ clipPath: `inset(0 ${(1 - share) * 100}% 0 0)` }} />
         </span>
         {run.active && <span className="run-now">{nowDoing(run)}</span>}
+        {run.status === "waiting" && <span className="run-now">Waits at the questions: {run.waiting_for}</span>}
         {run.error && <span className="run-now err">{run.error}</span>}
       </summary>
       {groups.map((g, i) => (
@@ -176,15 +186,316 @@ function RunCard({ run, open, showProject }: { run: Run; open: boolean; showProj
   );
 }
 
+/* ------------------------------------------------------------------ the six stations */
+
+const ABOUT: Record<StageId, string> = {
+  read: "Every file is read and the tender's dates are taken from it.",
+  rules: "Rules without a model: totals, quantities, units, wording, missing items, the structure of the LV.",
+  ai: "Claude reads the LV section by section, then looks at the findings a second time and takes out what is said twice.",
+  compare: "A later version against its tender; the LVs of a building against each other.",
+  questions: "What only the client can settle is drafted as bidder questions. Nothing is priced on a guess while the client can still be asked: the run waits here for you.",
+  prices: "After the questions: unit prices from past bids with their source, and the items that have no reliable price.",
+};
+
+function any(counts: Record<Severity, number>): boolean {
+  return SEVERITIES.some((s) => counts[s] > 0);
+}
+
+/** What a station says in a few words: on the strip, on a card, in the table. */
+function stageSays(s: RunStage): { text: string; counts: boolean } {
+  switch (s.status) {
+    case "none":
+      return { text: s.id === "compare" ? "one file: nothing to compare" : "not part of this run", counts: false };
+    case "queued":
+      return { text: "waiting", counts: false };
+    case "running":
+      return { text: s.line || "running", counts: false };
+    case "waiting":
+      return { text: s.line, counts: false };
+    case "failed":
+      return { text: "failed", counts: false };
+    case "cancelled":
+      return { text: "stopped", counts: false };
+    case "skipped":
+      return { text: s.id === "compare" ? "nothing to compare" : "not needed", counts: false };
+    default:
+      if (s.checks > 0 && any(s.counts)) return { text: "", counts: true };
+      return { text: s.line || (s.checks > 0 ? "nothing found" : "done"), counts: false };
+  }
+}
+
+/** The six stations as marks, with one line under them: on a project's card. */
+export function RunSegs({ run }: { run: Run }) {
+  const on = run.stages.find((s) => s.status === "running") ?? run.stages.find((s) => s.status === "waiting");
+  const line =
+    run.status === "waiting"
+      ? `Your move · questions: ${run.waiting_for}`
+      : run.active
+        ? on
+          ? `${on.title} · ${on.line || "running"}`
+          : "Waiting for a free worker"
+        : run.status === "done"
+          ? `Checked ${ago(run.finished ?? run.created)}${run.since && run.since.new + run.since.gone > 0 ? ` · ${run.since.new} new, ${run.since.gone} gone` : ""}`
+          : `${STATUS[run.status]} ${ago(run.finished ?? run.created)}`;
+  return (
+    <div className={`run-segs is-${run.status}`} title="The pipeline on this project: read, rules, AI review, compare, questions, prices">
+      <span className="run-seg-row" aria-hidden>
+        {run.stages.map((s) => (
+          <i key={s.id} className={`is-${s.status}`} />
+        ))}
+      </span>
+      <span className="run-seg-line">{line}</span>
+    </div>
+  );
+}
+
+/** The steps of one station, as they stand: what found something, what failed, what waits; the checks that
+ *  found nothing as one line. */
+function StageSteps({ rows, onFind }: { rows: RunStep[]; onFind: ((check: string) => void) | null }) {
+  const [all, setAll] = useState(false);
+  const quiet = (r: RunStep) => r.status === "done" && !r.report && !(r.counts && any(r.counts));
+  const clean = rows.filter(quiet);
+  const shown = all || clean.length <= 2 ? rows : rows.filter((r) => !quiet(r));
+  return (
+    <ul className="stage-steps">
+      {shown.map((r, i) => {
+        const hit = onFind && r.status === "done" && !r.report && r.counts && any(r.counts);
+        return (
+          <li key={i} className={`run-step is-${r.status}`}>
+            <i className="run-mark" aria-label={r.status} />
+            <span className={`run-kind ${r.kind}`}>{r.step === "READ" ? "File" : KIND[r.kind]}</span>
+            <span className="run-title">
+              {hit ? (
+                <button className="stage-find" onClick={() => onFind(r.step)} title="Show these findings in the list">
+                  {r.title}
+                </button>
+              ) : (
+                r.title
+              )}
+            </span>
+            <span className="run-result">
+              {r.status === "done" && !r.report && r.counts && <Counts counts={r.counts} />}
+              {r.detail && (r.status !== "done" || r.report || r.kind === "agentic") && <span className="run-detail">{r.detail}</span>}
+              {r.status === "queued" && <span className="run-detail">waiting</span>}
+            </span>
+            <span className="run-ms num">
+              {r.usd ? `$${r.usd.toFixed(2)} · ` : ""}
+              {took(r.ms)}
+            </span>
+          </li>
+        );
+      })}
+      {!all && clean.length > 2 && (
+        <li className="run-step is-done stage-clean">
+          <i className="run-mark" />
+          <span className="run-kind deterministic">Rule</span>
+          <span className="run-title">
+            <button className="stage-find" onClick={() => setAll(true)}>
+              {clean.length} more checks
+            </button>
+          </span>
+          <span className="run-result">
+            <span className="run-none">nothing found</span>
+          </span>
+          <span className="run-ms num">{took(clean.reduce((n, r) => n + (r.ms ?? 0), 0))}</span>
+        </li>
+      )}
+    </ul>
+  );
+}
+
+export function PipelineStrip({
+  run,
+  file,
+  starting,
+  onStart,
+  onChange,
+  onQuestions,
+  onFind,
+  onRecord,
+}: {
+  run: Run | undefined; // the project's latest run
+  file: number | null; // the file on the page, if one is: its steps are the ones shown
+  starting: boolean;
+  onStart: () => void;
+  onChange: (what: "go-on" | "retry" | "cancel") => void;
+  onQuestions: (() => void) | null; // opens the bidder questions of the LV on the page
+  onFind: ((check: string) => void) | null; // shows the findings of one step in the list
+  onRecord: () => void;
+}) {
+  const [open, setOpen] = useState<StageId | null>(null);
+  // "18 min ago" moves on while the page stays open
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const t = window.setInterval(() => tick((n) => n + 1), 30000);
+    return () => window.clearInterval(t);
+  }, []);
+  if (!run) {
+    return (
+      <section className="pipe none" aria-label="Pipeline">
+        <p className="pipe-none">
+          <b>Pipeline</b> No run on this project yet: read, rules, AI review, compare, questions, prices.
+        </p>
+        <button className="btn plain" onClick={onStart} disabled={starting}>
+          Run
+        </button>
+      </section>
+    );
+  }
+  const stage = run.stages.find((s) => s.id === open);
+  // the steps of the open station: of the file on the page where it has any, else of the files that are counted
+  let rows = run.steps.filter((r) => r.stage === open && !(r.status === "skipped" && r.detail.startsWith("done on another file")));
+  if (rows.some((r) => r.doc === file)) rows = rows.filter((r) => r.doc === file || r.doc === null || r.stage === "compare");
+  else if (rows.some((r) => !r.twin)) rows = rows.filter((r) => !r.twin);
+  const files = [...new Set(rows.map((r) => r.file ?? "Between the LVs"))];
+  const failed = run.steps.some((r) => r.status === "failed") || run.status === "cancelled" || run.status === "interrupted" || run.status === "failed";
+  return (
+    <section className={`pipe is-${run.status}`} aria-label="Pipeline">
+      <ol className="pipe-rail">
+        {run.stages.map((s, n) => {
+          const says = stageSays(s);
+          return (
+            <li key={s.id} className={`is-${s.status}${open === s.id ? " open" : ""}`}>
+              <button onClick={() => setOpen(open === s.id ? null : s.id)} aria-expanded={open === s.id} title={ABOUT[s.id]}>
+                <b>
+                  <span className="num">{n + 1}</span>
+                  {s.status === "waiting" ? "Your move" : s.title}
+                </b>
+                <span className="pipe-says">{says.counts ? <Counts counts={s.counts} /> : s.status === "waiting" ? `Questions: ${says.text}` : says.text}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      <div className="pipe-meta">
+        <span title={`${run.trigger} · ${new Date(run.created).toLocaleString("de-DE")}`}>
+          {run.active ? `${run.finished_steps}/${run.total} steps` : `${STATUS[run.status]} · ${ago(run.finished ?? run.created)}`}
+          {run.since && run.since.new + run.since.gone > 0 && (
+            <b title="Against the run before this one">
+              {run.since.new} new, {run.since.gone} gone
+            </b>
+          )}
+          {run.usd !== null && run.usd > 0 && <span className="num">${run.usd.toFixed(2)}</span>}
+        </span>
+        {run.active ? (
+          <button
+            className="btn-ghost small"
+            onClick={() => onChange("cancel")}
+            disabled={run.stopping}
+            title="The run stops after the step it is on; an AI step can take a minute"
+          >
+            {run.stopping ? "Stopping after this step" : "Stop"}
+          </button>
+        ) : (
+          <>
+            {failed && (
+              <button className="btn-ghost small" onClick={() => onChange("retry")}>
+                Try again
+              </button>
+            )}
+            <button className="btn-ghost small" onClick={onStart} disabled={starting}>
+              Run again
+            </button>
+          </>
+        )}
+        <button className="btn-ghost small" onClick={onRecord}>
+          Record
+        </button>
+      </div>
+      {stage && (
+        <div className={`pipe-panel is-${stage.status}`}>
+          <p className="pipe-about">
+            <b>{stage.title}</b>
+            {ABOUT[stage.id]}
+          </p>
+          {stage.status === "waiting" && (
+            <div className="pipe-move">
+              <p>
+                <b>{run.waiting_for}.</b> The prices are worked out once the questions are answered, or when you go on without the
+                answers; what stays open is then priced as a risk.
+              </p>
+              {onQuestions && (
+                <button className="btn-new" onClick={onQuestions}>
+                  Write the e-mail
+                </button>
+              )}
+              <button className="btn-ghost small" onClick={() => onChange("go-on")}>
+                Go on to the prices
+              </button>
+            </div>
+          )}
+          {files.map((name) => (
+            <div key={name} className="pipe-file">
+              {files.length > 1 && <h4 lang="de">{name}</h4>}
+              <StageSteps rows={rows.filter((r) => (r.file ?? "Between the LVs") === name)} onFind={onFind} />
+            </div>
+          ))}
+          {rows.length === 0 && <p className="pipe-empty">{stage.status === "none" ? "This run has no step at this station." : "Nothing to do here on this project."}</p>}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Every project against the six stations: where each stands, and which waits for the person. */
+function RunsTable({ projects, runs, onOpen }: { projects: { id: string; name: string }[]; runs: Run[]; onOpen: (id: string) => void }) {
+  const titles = runs[0]?.stages.map((s) => s.title) ?? ["Read", "Rules", "AI review", "Compare", "Questions", "Prices"];
+  return (
+    <table className="runs-table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          {titles.map((title, n) => (
+            <th key={title}>
+              <span className="num">{n + 1}</span> {title}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {projects.map((p) => {
+          const run = runs.find((r) => r.project_id === p.id);
+          return (
+            <tr key={p.id} onClick={() => onOpen(p.id)} tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onOpen(p.id)}>
+              <th lang="de">
+                {p.name}
+                {run && <small>{run.active ? "running" : `${STATUS[run.status]} · ${ago(run.finished ?? run.created)}`}</small>}
+              </th>
+              {run ? (
+                run.stages.map((s) => {
+                  const says = stageSays(s);
+                  return (
+                    <td key={s.id} className={`is-${s.status}`} title={s.line}>
+                      {says.counts ? <Counts counts={s.counts} /> : s.status === "waiting" ? <b>your move: {says.text}</b> : says.text}
+                    </td>
+                  );
+                })
+              ) : (
+                <td colSpan={titles.length} className="is-none">
+                  no run yet
+                </td>
+              )}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 export function RunsDialog({
   runs,
   project,
+  projects,
+  onOpenProject,
   starting,
   onStart,
   onClose,
 }: {
-  runs: Run[]; // of the project, or of all
-  project: { id: string; name: string } | null; // null: the runs of all projects
+  runs: Run[]; // of the project, newest first; or the latest run of every project
+  project: { id: string; name: string } | null; // null: all projects
+  projects?: { id: string; name: string }[]; // all projects: the rows of the table
+  onOpenProject?: (id: string) => void;
   starting: boolean;
   onStart: (() => void) | null;
   onClose: () => void;
@@ -218,23 +529,28 @@ export function RunsDialog({
         </button>
       </header>
       <div className="runs-body">
-        {runs.length === 0 && (
+        {project && runs.length === 0 && (
           <p className="runs-empty">
             <b>No run yet.</b>
             A run starts by itself when a project is created or gets files: every file is read, every rule is run on
-            it, Claude reviews one file per LV, and the LVs of a building are compared with each other.
+            it, Claude reviews one file per LV, versions and LVs are compared, the bidder questions are drafted; the
+            prices follow once the questions are dealt with.
             {project ? " Start one for this project below." : ""}
           </p>
         )}
-        {runs.map((r) => (
-          <RunCard key={r.id} run={r} open={r === first} showProject={!project} />
-        ))}
+        {project ? (
+          runs.map((r) => <RunCard key={r.id} run={r} open={r === first} showProject={false} />)
+        ) : (
+          <RunsTable projects={projects ?? []} runs={runs} onOpen={(id) => (onClose(), onOpenProject?.(id))} />
+        )}
       </div>
       <footer className={active.length > 0 ? "busy" : undefined}>
         <span>
           {active.length > 0
             ? `${active.length === 1 ? "One run is" : `${active.length} runs are`} going in the background. You can close this and go on working.`
-            : "Runs go in the background. Their AI findings are on the LV when you open it."}
+            : project
+              ? "Runs go in the background. What they find is on the LV when you open it."
+              : "One row per project, one column per station. A click opens the project."}
         </span>
         {onStart && (
           <button className="btn-new" onClick={onStart} disabled={starting || active.length > 0}>

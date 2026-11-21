@@ -230,9 +230,20 @@ export async function readReply(mailId: string, text: string): Promise<QuestionM
   return read(await fetch(`/api/mails/${mailId}/reply`, json("POST", { text })));
 }
 
-/** The latest pipeline runs of all projects, newest first, each with the record of its steps. */
+/** The latest pipeline run of every project that has one: where each project stands. */
 export async function listRuns(): Promise<Run[]> {
   return read(await fetch("/api/runs"));
+}
+
+/** The latest runs of one project, newest first, each with the record of its steps. */
+export async function listProjectRuns(projectId: string): Promise<Run[]> {
+  return read(await fetch(`/api/runs?project=${encodeURIComponent(projectId)}`));
+}
+
+/** A run that waits ("go-on": on to the prices without the client's answers), has failed steps ("retry")
+ *  or is going ("cancel"). */
+export async function changeRun(runId: string, what: "go-on" | "retry" | "cancel"): Promise<Run> {
+  return read(await fetch(`/api/runs/${runId}/${what}`, { method: "POST" }));
 }
 
 /** Runs the pipeline on a project again, in the background. */

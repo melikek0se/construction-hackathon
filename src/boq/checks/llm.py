@@ -336,3 +336,89 @@ async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
             first.related_oz.append(f.item_oz)
     return list(findings.values()), {"requests": len(tasks), "kept": len(findings), "dropped": len(raw) - len(valid),
                                      "failed": len(failures), "failures": failures, "model": MODEL, **usage}
+
+
+# ---------------------------------------------------------------- the second look
+
+SECOND_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "repeats": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "finding": {"type": "string", "description": "The AI finding that repeats another, e.g. A7"},
+                    "same_as": {"type": "string", "description": "The finding it repeats, e.g. R3 or A2"},
+                    "why": {"type": "string", "description": "One line, English: what both say"},
+                },
+                "required": ["finding", "same_as", "why"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["repeats"],
+    "additionalProperties": False,
+}
+
+SECOND_SYSTEM = """\
+You are the second reader of a review of a German bill of quantities (Leistungsverzeichnis). A set of \
+rules (findings R1, R2, …) and a first AI reading (findings A1, A2, …) have each listed defects of the \
+document. The estimator who gets the list loses time on every finding that says what another one already \
+says.
+
+Name every AI finding (A…) that states the same defect of the same item as a rule finding or as an AI \
+finding with a lower number. Two findings are the same only if acting on one settles the other: the same \
+item, the same passage or fact, the same thing to do. Two different defects of one item are not the same. \
+A finding about another item is never the same. When in doubt, it is not a repeat. Do not judge whether a \
+finding is right, and do not add findings."""
+
+
+async def second_look(boq: BoQ, rule_findings: list[Finding], ai_findings: list[Finding],
+                      client: anthropic.AsyncAnthropic | None = None) -> tuple[dict[int, tuple[Finding, str]], dict]:
+    """Which AI findings repeat another finding: their index in `ai_findings` with the finding and why, and
+    the tokens used. An answer naming a finding of another item, or a later AI finding, is not followed."""
+    def line(tag: str, f: Finding) -> str:
+        return f"{tag} | item {f.item_oz or '-'} | {f.check_id} | {f.title} | {_squash(f.evidence)[:240]}"
+
+    # only rule findings on the items the AI also has something on can be repeated
+    touched = {f.item_oz for f in ai_findings}
+    rule_findings = [f for f in rule_findings if f.item_oz in touched]
+    task = "\n".join([f"LV: {boq.name}", "", "Rule findings:",
+                      *(line(f"R{n}", f) for n, f in enumerate(rule_findings, 1)), "", "AI findings:",
+                      *(line(f"A{n}", f) for n, f in enumerate(ai_findings, 1))])
+    usage = dict.fromkeys(["api_requests", "input_tokens", "cache_write_tokens", "cache_read_tokens", "output_tokens"], 0)
+    key = hashlib.sha256("\x00".join(["second", MODEL, EFFORT, SECOND_SYSTEM, task]).encode()).hexdigest()
+    raw = cache_get(key)
+    if raw is None:
+        client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
+        try:
+            response = await client.beta.messages.create(
+                model=MODEL, max_tokens=8000, betas=["server-side-fallback-2026-07-01"], fallbacks="default",
+                thinking={"type": "adaptive"},
+                output_config={"effort": EFFORT, "format": {"type": "json_schema", "schema": SECOND_SCHEMA}},
+                system=SECOND_SYSTEM, messages=[{"role": "user", "content": task}])
+        except _NO_CREDENTIALS as exc:
+            raise LLMUnavailable("No working Claude API credentials.") from exc
+        if response.stop_reason != "end_turn":
+            raise RuntimeError(f"second look stopped with {response.stop_reason}")
+        u = response.usage
+        usage.update(api_requests=1, input_tokens=u.input_tokens or 0, output_tokens=u.output_tokens or 0,
+                     cache_write_tokens=u.cache_creation_input_tokens or 0,
+                     cache_read_tokens=u.cache_read_input_tokens or 0)
+        raw = json.loads(next(b.text for b in response.content if b.type == "text"))["repeats"]
+        cache_put(key, raw)
+    dropped: dict[int, tuple[Finding, str]] = {}
+    for entry in raw:
+        try:
+            tag, other = str(entry["finding"]).strip().upper(), str(entry["same_as"]).strip().upper()
+            n, m = int(tag[1:]) - 1, int(other[1:]) - 1
+            twin = ai_findings[m] if other[0] == "A" else rule_findings[m]
+        except (ValueError, IndexError, KeyError):
+            continue
+        if tag[0] != "A" or not 0 <= n < len(ai_findings) or m < 0 or (other[0] == "A" and m >= n):
+            continue
+        if ai_findings[n].item_oz != twin.item_oz or (other[0] == "A" and m in dropped):
+            continue
+        dropped[n] = (ai_findings[n], f"same as {twin.title or twin.check_id}: {str(entry.get('why', ''))[:160]}")
+    return dropped, {"model": MODEL, **usage}

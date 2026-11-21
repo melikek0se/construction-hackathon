@@ -5,6 +5,8 @@ import {
   createProject,
   intakeFiles,
   listRuns,
+  listProjectRuns,
+  changeRun,
   startRun,
   listCatalog,
   loadAnalysis,
@@ -18,9 +20,9 @@ import {
   runLlmReview,
   getQuestions,
 } from "./api";
-import { HardHatIcon, Opening, ProjectsPage, ScheduleSwitch } from "./Projects";
+import { HardHatIcon, Opening, ProjectsPage } from "./Projects";
 import { ProjectSettings } from "./Settings";
-import { RunsDialog, RunsSwitch } from "./Runs";
+import { PipelineStrip, RunsDialog, RunsSwitch } from "./Runs";
 import { Agent } from "./Agent";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { ProjectView } from "./ProjectView";
@@ -62,13 +64,6 @@ const GATE_CUT = 780;
 
 export default function App() {
   const [catalog, setCatalog] = useState<CatalogProject[]>([]);
-  // The schedule under the band: open on every load, closed only for this visit, opened again when a project is added.
-  const [scheduleOpen, setScheduleOpen] = useState(true);
-  const projectCount = useRef<number | null>(null);
-  useEffect(() => {
-    if (projectCount.current !== null && catalog.length > projectCount.current) setScheduleOpen(true);
-    projectCount.current = catalog.length;
-  }, [catalog.length]);
   const [summaries, setSummaries] = useState<Record<string, ProjectSummary | "failed">>({});
   // The project that is open, and which of its files when it is one LV in several versions.
   const [current, setCurrent] = useState<{ project: CatalogProject; file: number } | null>(null);
@@ -205,16 +200,37 @@ export default function App() {
   const [startingRun, setStartingRun] = useState(false);
   const refreshRuns = useCallback(() => listRuns().then(setRuns, () => undefined), []);
   const running = runs.some((r) => r.active);
+  // a run that waits for the questions goes on when a message is sent or answered: looked at more often
+  const pace = running ? 1000 : runs.some((r) => r.status === "waiting") ? 3000 : 10000;
   useEffect(() => {
     void refreshRuns();
-    const t = window.setInterval(() => void refreshRuns(), running ? 1000 : 10000);
+    const t = window.setInterval(() => void refreshRuns(), pace);
     return () => window.clearInterval(t);
-  }, [running, refreshRuns]);
-  const runsHere = useMemo(() => runs.filter((r) => r.project_id === current?.project.id), [runs, current]);
+  }, [pace, refreshRuns]);
+  // `runs` holds the latest run of every project: where each one stands
+  const runHere = useMemo(() => runs.find((r) => r.project_id === current?.project.id), [runs, current]);
+  // the record of the project on the page (its earlier runs too), while the dialog is open
+  const [history, setHistory] = useState<Run[]>([]);
+  const hereId = current?.project.id;
+  useEffect(() => {
+    if (!runsOpen || !hereId) return;
+    void listProjectRuns(hereId).then(setHistory, () => undefined);
+  }, [runsOpen, hereId, runHere?.status, runHere?.finished_steps]);
+  // a step of the pipeline picked on the strip: its findings are the ones the list shows
+  const [find, setFind] = useState<{ text: string; n: number } | null>(null);
 
-  const reviewingHere = runsHere.some(
-    (r) => r.active && r.steps.some((s) => s.kind === "agentic" && s.doc === current?.file && (s.status === "queued" || s.status === "running")),
-  );
+  const reviewingHere =
+    !!runHere?.active && runHere.steps.some((s) => s.kind === "agentic" && s.doc === current?.file && (s.status === "queued" || s.status === "running"));
+
+  async function moveRun(what: "go-on" | "retry" | "cancel") {
+    if (!runHere) return;
+    try {
+      await changeRun(runHere.id, what);
+      await refreshRuns();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
 
   async function runAgain(projectId: string) {
     setStartingRun(true);
@@ -236,6 +252,13 @@ export default function App() {
   useEffect(() => {
     const ended = runs.filter((r) => !r.active && wasRunning.current.has(r.id));
     wasRunning.current = new Set(runs.filter((r) => r.active).map((r) => r.id));
+    if (ended.length > 0) {
+      // the cards count what the run found, and the tender may have moved on along the board
+      // (the old numbers stay on the card until the new ones are there)
+      for (const r of ended)
+        void catalogSummary(r.project_id).then((summary) => setSummaries((s) => ({ ...s, [r.project_id]: summary })), () => undefined);
+      void refreshCatalog();
+    }
     const page = pageNow.current;
     const here = page.current && ended.find((r) => r.project_id === page.current!.project.id);
     if (!here || !page.current || page.busy !== null || page.ai === "running") return;
@@ -818,10 +841,16 @@ export default function App() {
             {project && analysis ? "Project" : "Projects"}
           </button>
         )}
-        {!project && (!analysis || !stats) && catalog.length > 0 && (
+        {/* the projects page has two buttons, top right: the pipeline and a new project */}
+        {!project && (!analysis || !stats) && (
           <div className="actions">
-            <RunsSwitch runs={runs} onOpen={() => setRunsOpen(true)} />
-            <ScheduleSwitch projects={catalog} summaries={summaries} open={scheduleOpen} onToggle={() => setScheduleOpen(!scheduleOpen)} />
+            {catalog.length > 0 && <RunsSwitch runs={runs} onOpen={() => setRunsOpen(true)} />}
+            <button className="btn band-new" disabled={busy !== null || pending !== null} onClick={() => setPending({ files: [], info: null, target: null })}>
+              <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
+                <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
+              </svg>
+              New project
+            </button>
           </div>
         )}
         {project && !analysis && (
@@ -842,7 +871,6 @@ export default function App() {
               )}
             </div>
             <div className="actions">
-              {current && <RunsSwitch runs={runsHere} onOpen={() => setRunsOpen(true)} />}
               {current && (
                 <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
                   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
@@ -869,7 +897,6 @@ export default function App() {
               <button className="btn" onClick={() => setView("questions")}>
                 Bidder questions
               </button>
-              {current && <RunsSwitch runs={runsHere} onOpen={() => setRunsOpen(true)} />}
               {current && (
                 <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
                   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
@@ -898,6 +925,28 @@ export default function App() {
             </button>
           ))}
         </nav>
+      )}
+
+      {/* the pipeline on this project, station by station; the run waits at the questions for the person */}
+      {current && ((analysis && stats) || (project && !analysis)) && (
+        <PipelineStrip
+          run={runHere}
+          file={analysis && !project ? current.file : null}
+          starting={startingRun}
+          onStart={() => void runAgain(current.project.id)}
+          onChange={(what) => void moveRun(what)}
+          onQuestions={analysis && stats ? () => setView("questions") : null}
+          onFind={
+            analysis && stats
+              ? (step) => {
+                  const prefix = step === "L-REVIEW" ? "l-" : step === "V-DIFF" ? "v-" : step.toLowerCase();
+                  setSelection(NONE);
+                  setFind((was) => ({ text: `check:${prefix}`, n: (was?.n ?? 0) + 1 }));
+                }
+              : null
+          }
+          onRecord={() => setRunsOpen(true)}
+        />
       )}
 
       {(intro === "loading" || intro === "opening") && <Opening phase={intro} />}
@@ -929,8 +978,13 @@ export default function App() {
       )}
       {runsOpen && (
         <RunsDialog
-          runs={current ? runsHere : runs}
+          runs={current ? history : runs}
           project={current ? { id: current.project.id, name: current.project.name } : null}
+          projects={catalog}
+          onOpenProject={(id) => {
+            const p = catalog.find((c) => c.id === id);
+            if (p) openProject(p);
+          }}
           starting={startingRun}
           onStart={current ? () => void runAgain(current.project.id) : null}
           onClose={() => setRunsOpen(false)}
@@ -979,14 +1033,11 @@ export default function App() {
       ) : !analysis || !stats ? (
         <ProjectsPage
           projects={catalog}
-          scheduleOpen={scheduleOpen}
-          onShowSchedule={() => setScheduleOpen(true)}
           summaries={summaries}
           runs={runs}
           busy={busy !== null}
           pending={pending}
           error={error}
-          onNew={() => setPending({ files: [], info: null, target: null })}
           onChange={(p, change) => void changePlan(p, change)}
           onOpen={(p, file) => {
             if (file === undefined || p.kind === "versions") return openProject(p, file ?? 0);
@@ -1145,6 +1196,7 @@ export default function App() {
                 // the project's pipeline run is reviewing this file: the button waits for it instead of asking twice
                 ai={ai === "idle" && reviewingHere ? "running" : ai}
                 onReview={() => void review()}
+                find={find}
               />
             )}
           </aside>
