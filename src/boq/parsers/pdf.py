@@ -169,8 +169,14 @@ _FIELD_KEY = {"Projekt": "project", "Bauvorhaben": "project", "Baumaßnahme": "p
               "Bauherr": "client", "Auftraggeber": "client"}  # every other label is a number
 _OTHER_FIELD = re.compile(r"^[^\s:]+(\s[^\s:]+)?:|^(Seite|Datum)\b")  # "Währung: EUR", "Seite 4"
 _NUMBER_TOKEN = re.compile(r"^[\w./-]*\d[\w./-]*$")
-_HEADING = re.compile(r"^(Anfrage|Preisanfrage|Angebotsaufforderung|Angebot|Nachtragsangebot|Auftrag|Auftrags-LV|"
-                      r"Auftragsbestätigung|Auftragsleistungsverzeichnis|Bestellung)$")
+# The word a document is headed with, alone on its line or followed by its number ("Angebot AN24-0305",
+# "Auftrag Nr. 4711"). Which step each word means is decided in boq.intake.
+_HEADING = re.compile(
+    r"^(Anfrage|Preisanfrage|Angebotsaufforderung|Angebotsanfrage|Ausschreibung|Ausschreibungs-LV|"
+    r"Angebot|Angebots-LV|Nachtragsangebot|Preisangebot|"
+    r"Auftrag|Auftrags-LV|Auftragsbestätigung|Auftragsleistungsverzeichnis|Auftragserteilung|Auftragsschreiben|"
+    r"Bestellung|Zuschlag|Zuschlagsschreiben)"
+    r"(?:\s+(?:Nr\.?|No\.?|Nummer)?\s*:?\s*[\w./-]*\d[\w./-]*)?$")
 _CALL_FOR_BIDS = "Aufforderung zur Abgabe eines Angebots"  # VHB form 211, the cover of a public tender
 _PRINTED_FOR = re.compile(r"^(.*?)\s*\(([\w./-]*\d[\w./-]*)\)$")  # "<project> (8209.003)"
 
@@ -189,8 +195,8 @@ def _about(boq: BoQ, pages: list[tuple[list[Line], float]]) -> None:
     for lines, head in lv_pages:
         for l in lines[:head]:
             texts = [t for _, t, _ in l.spans]
-            if _HEADING.match(l.text):
-                found["heading"][l.text] += 1
+            if m := _HEADING.match(l.text):
+                found["heading"][m.group(1)] += 1
             if texts[0] == "Leistungsverzeichnis" and len(texts) == 2 and (m := _PRINTED_FOR.match(texts[1])):
                 found["project"][m.group(1)] += 1
                 found["number"][m.group(2)] += 1
@@ -216,6 +222,10 @@ def _about(boq: BoQ, pages: list[tuple[list[Line], float]]) -> None:
 
     boq.project, boq.project_no, boq.lv_label, boq.client = best("project"), best("number"), best("lv"), best("client")
     boq.heading = best("heading")
+    if not boq.heading:
+        # not above the LV's column header: then on the cover, the letter before the LV begins
+        cover = [m.group(1) for lines, _ in pages[:2] for l in lines[:15] if (m := _HEADING.match(l.text))]
+        boq.heading = cover[0] if cover else ""
     forms = [lines for (lines, _), head in zip(pages, heads) if head is None and any("VHB" in l.text for l in lines)]
     boq.forms = len(forms)
     if not boq.heading and any(_CALL_FOR_BIDS in l.text for lines in forms[:10] for l in lines):

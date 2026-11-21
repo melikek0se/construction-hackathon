@@ -508,6 +508,7 @@ function NewProjectDialog({
   error,
   onFiles,
   onChoose,
+  onRemoveFile,
   onConfirm,
   onCancel,
 }: {
@@ -517,14 +518,16 @@ function NewProjectDialog({
   error: string | null;
   onFiles: (files: FileList, target: string | null) => void;
   onChoose: (target: string | null) => void;
+  onRemoveFile: (file: File) => void;
   onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) => void;
   onCancel: () => void;
 }) {
   const { info, files } = pending;
   const dialog = useRef<HTMLDialogElement>(null);
-  const [name, setName] = useState("");
-  const [target, setTarget] = useState<string | null>(pending.target);
-  const [steps, setSteps] = useState<Record<number, Step>>({}); // the user's corrections, by file index
+  // What the user typed or chose stays when files are added or taken out and the set is read again.
+  const [name, setName] = useState<string | null>(null); // null: as read from the files
+  const [target, setTarget] = useState<string | null | undefined>(pending.target ?? undefined); // undefined: as suggested
+  const [steps, setSteps] = useState(() => new Map<File, Step>()); // the user's corrections, by file
   const [due, setDue] = useState("");
   const [questionsDue, setQuestionsDue] = useState("");
   const [over, setOver] = useState(false);
@@ -533,24 +536,21 @@ function NewProjectDialog({
     const d = dialog.current;
     if (d && !d.open) d.showModal();
   }, []);
-  useEffect(() => {
-    setName(info?.name ?? "");
-    setSteps({});
-    setTarget(pending.target ?? info?.suggested?.id ?? null);
-  }, [info, pending.target]);
-
   const rows: IntakeFile[] = [...(info?.files ?? [])].sort((a, b) => a.lv - b.lv || a.index - b.index);
-  const stepNow = (f: IntakeFile) => steps[f.index] ?? f.step;
+  const fileOf = (f: IntakeFile) => files[f.index];
+  const stepNow = (f: IntakeFile) => steps.get(fileOf(f)) ?? f.step;
+  const nameNow = name ?? info?.name ?? "";
+  const targetNow = target === undefined ? (info?.suggested?.id ?? null) : target;
   const present = STEPS.filter((s) => rows.some((f) => stepNow(f) === s));
-  const toCheck = rows.filter((f) => !f.certain && steps[f.index] === undefined).length;
-  const into = projects.find((p) => p.id === target);
+  const toCheck = rows.filter((f) => !f.certain && !steps.has(fileOf(f))).length;
+  const into = projects.find((p) => p.id === targetNow);
   const waiting = files.length === 0;
 
   function confirm() {
     if (!info) return;
     const roles: (string | null)[] = files.map(() => null);
     for (const f of info.files) if (stepNow(f) !== f.step) roles[f.index] = stepNow(f);
-    onConfirm(name.trim(), target, roles, target ? {} : { due: due || undefined, questions_due: questionsDue || undefined });
+    onConfirm(nameNow.trim(), targetNow, roles, targetNow ? {} : { due: due || undefined, questions_due: questionsDue || undefined });
   }
 
   return (
@@ -566,7 +566,7 @@ function NewProjectDialog({
         e.preventDefault();
         e.stopPropagation();
         setOver(false);
-        if (!busy) onFiles(e.dataTransfer.files, target);
+        if (!busy) onFiles(e.dataTransfer.files, targetNow);
       }}
     >
       <header>
@@ -596,26 +596,36 @@ function NewProjectDialog({
             <b>Drop the files of the tender here.</b>
             The LV as GAEB, PDF or Excel, in every version you have: the app reads which tender it is and which step each file belongs to.
           </p>
-          <button className="btn-new" onClick={() => onChoose(target)}>
+          <button className="btn-new" onClick={() => onChoose(targetNow)}>
             Choose files
           </button>
+          {error && (
+            <strong className="np-error" role="alert">
+              {error}
+            </strong>
+          )}
           <small>GAEB XML (X83, X84, X86) · GAEB 90 (D83, D84, D86) · PDF with a text layer · Excel</small>
         </div>
       ) : (
         <div className="np-body">
           <section>
-            <h3>The files and the step each belongs to</h3>
+            <h3>
+              The files and the step each belongs to
+              <button className="btn-ghost small" disabled={busy} title="Or drop more files onto this window" onClick={() => onChoose(targetNow)}>
+                Add more files
+              </button>
+            </h3>
             <ul className="np-files">
               {!info &&
                 files.map((f, i) => (
                   <li key={i} className="reading">
                     <span className="np-name">{f.name}</span>
-                    <span className="np-why">being read</span>
+                    <span className="np-why">being read{files.length > 1 ? " together with the others" : ""}</span>
                   </li>
                 ))}
               {rows.map((f, i) => {
                 const first = i === 0 || rows[i - 1].lv !== f.lv;
-                const corrected = steps[f.index] !== undefined && steps[f.index] !== f.step;
+                const corrected = steps.has(fileOf(f)) && steps.get(fileOf(f)) !== f.step;
                 return (
                   <li key={f.index} className={first && i > 0 ? "new-lv" : undefined}>
                     {first && info!.lvs > 1 && (
@@ -626,34 +636,49 @@ function NewProjectDialog({
                     <span className="np-name" title={f.name}>
                       {f.name}
                     </span>
-                    <span className="np-step" role="group" aria-label={`Step of ${f.name}`}>
-                      {STEPS.map((s) => (
-                        <button key={s} aria-pressed={stepNow(f) === s} disabled={busy} onClick={() => setSteps((old) => ({ ...old, [f.index]: s }))}>
-                          {STEP_LABEL[s]}
-                        </button>
-                      ))}
+                    <span className="np-controls">
+                      <span className="np-step" role="group" aria-label={`Step of ${f.name}`}>
+                        {STEPS.map((s) => (
+                          <button key={s} aria-pressed={stepNow(f) === s} disabled={busy} onClick={() => setSteps((old) => new Map(old).set(fileOf(f), s))}>
+                            {STEP_LABEL[s]}
+                          </button>
+                        ))}
+                      </span>
+                      <button className="np-remove" disabled={busy} aria-label={`Remove ${f.name}`} title="Take this file out" onClick={() => onRemoveFile(fileOf(f))}>
+                        Remove
+                      </button>
                     </span>
                     <span className="np-why">
-                      {!corrected && !f.certain && steps[f.index] === undefined && <i>check</i>}
+                      {!f.certain && !steps.has(fileOf(f)) && <i>check</i>}
                       {FORMAT_LABEL[f.format]} · {f.items.toLocaleString("de-DE")} items · {corrected ? "step set by you" : f.evidence.join(" · ")}
                     </span>
                   </li>
                 );
               })}
-              {info?.left_out.map((f, i) => (
-                <li key={`out${i}`} className="left-out">
-                  <span className="np-name">{f.name}</span>
-                  <span className="np-why">left out: {f.reason}</span>
-                </li>
-              ))}
+              {info?.left_out.map((f, i) => {
+                const file = files.find((x) => x.name === f.name);
+                return (
+                  <li key={`out${i}`} className="left-out">
+                    <span className="np-name">{f.name}</span>
+                    {file && (
+                      <span className="np-controls">
+                        <button className="np-remove" disabled={busy} aria-label={`Remove ${f.name}`} onClick={() => onRemoveFile(file)}>
+                          Remove
+                        </button>
+                      </span>
+                    )}
+                    <span className="np-why">left out: {f.reason}</span>
+                  </li>
+                );
+              })}
             </ul>
           </section>
 
           <section className="np-fields">
-            <h3>{target ? "Where the files go" : "The tender"}</h3>
+            <h3>{targetNow ? "Where the files go" : "The tender"}</h3>
             <label className="wide">
               <span>Goes into</span>
-              <select value={target ?? ""} onChange={(e) => setTarget(e.target.value || null)} disabled={!info || busy}>
+              <select value={targetNow ?? ""} onChange={(e) => setTarget(e.target.value || null)} disabled={!info || busy}>
                 <option value="">A new project</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -661,15 +686,15 @@ function NewProjectDialog({
                   </option>
                 ))}
               </select>
-              <small>{info?.suggested && target === info.suggested.id ? `suggested: ${info.suggested.reason}` : " "}</small>
+              <small>{info?.suggested && targetNow === info.suggested.id ? `suggested: ${info.suggested.reason}` : " "}</small>
             </label>
-            {target === null && (
+            {targetNow === null && (
               <>
                 <label className="wide">
                   <span>Project name</span>
-                  <input value={name} maxLength={80} placeholder={info ? "Name this tender" : ""} onChange={(e) => setName(e.target.value)} disabled={!info || busy} />
+                  <input value={nameNow} maxLength={80} placeholder={info ? "Name this tender" : ""} onChange={(e) => setName(e.target.value)} disabled={!info || busy} />
                   <small>
-                    {info?.source && name === info.name
+                    {info?.source && nameNow === info.name
                       ? `read from ${info.source.file}: ${info.source.where}`
                       : info && !info.name
                         ? "the files do not name their project"
@@ -712,7 +737,7 @@ function NewProjectDialog({
             Discard
           </button>
           <button className="btn-new" onClick={confirm} disabled={!info || busy}>
-            {target ? "Add to project" : "Create project"}
+            {targetNow ? "Add to project" : "Create project"}
           </button>
         </footer>
       )}
@@ -733,6 +758,7 @@ export function ProjectsPage({
   onNew,
   onChooseFiles,
   onDropFiles,
+  onRemoveFile,
   onConfirm,
   onCancel,
   onDelete,
@@ -749,6 +775,7 @@ export function ProjectsPage({
   onNew: () => void;
   onChooseFiles: (target: string | null) => void;
   onDropFiles: (files: FileList, target: string | null) => void;
+  onRemoveFile: (file: File) => void;
   onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) => void;
   onCancel: () => void;
   onDelete: (project: CatalogProject) => void;
@@ -809,6 +836,7 @@ export function ProjectsPage({
           error={error}
           onFiles={onDropFiles}
           onChoose={onChooseFiles}
+          onRemoveFile={onRemoveFile}
           onConfirm={onConfirm}
           onCancel={onCancel}
         />

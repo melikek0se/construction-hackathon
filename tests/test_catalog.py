@@ -237,3 +237,23 @@ def test_summary_says_what_is_open_on_each_document():
     docs = client.get("/api/catalog/A/summary").json()["docs"]
     assert docs[0]["questions"] == 2 and docs[0]["priced"] == 0  # the tender: two points for the client, no price
     assert docs[2]["priced"] == 197  # the award is priced throughout
+
+
+def test_a_priced_pdf_says_bid_or_award_by_its_heading():
+    """A PDF has no GAEB phase: the word it is headed with decides between bid and award."""
+    from boq import intake
+    from boq.parsers import parse_file, pdf
+
+    for line, word in [("Angebot AN24-0305", "Angebot"), ("Auftrag Nr. 4711", "Auftrag"),
+                       ("Auftragsbestätigung Nr.: 2024/17", "Auftragsbestätigung"), ("Bestellung 4500123456", "Bestellung")]:
+        assert pdf._HEADING.match(line).group(1) == word
+    for line in ["Auftraggeber: Stadt", "Angebotsfrist: 12.03.", "Auftrag: Fernleitung", "Angebot ist bis zum 3.12. einzureichen"]:
+        assert pdf._HEADING.match(line) is None  # a label or a sentence is not a heading
+    offer = parse_file(DATASET / "04_pdf_tiefbau_sonstige" / "Angebot AN24-0305.pdf")
+    assert intake.classify(offer, [offer])["step"] == "bid"
+    offer.heading = "Auftragsbestätigung"
+    as_award = intake.classify(offer, [offer])
+    assert as_award["step"] == "award" and as_award["certain"]
+    offer.heading = ""
+    unnamed = intake.classify(offer, [offer])
+    assert unnamed["step"] == "bid" and not unnamed["certain"]  # priced, names nothing: a guess, marked

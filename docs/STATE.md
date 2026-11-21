@@ -288,6 +288,14 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   real X83 read). Not checked: a person clicking through, creating a project from the dialog end to end in
   a browser, widths under 1180px, the Docker Postgres picking up the new column.
 
+- New-project dialog (2026-11-21): files can be added to the ones waiting (button or drop; the same file is
+  not taken twice) and taken out again; name, dates and corrected steps stay while the set is read again; a
+  drop without any LV keeps the dialog open and says why. Walked through in headless Chrome by script on an
+  empty database: open dialog, one X83, add its PDF, add a priced PDF and a .docx, remove both, create with
+  name and deadline, project opens with both versions, card and schedule row show name and date, PDFs alone
+  (bid by heading, bid guessed, tender), add files from a card, a .docx alone. Not checked: real drag and
+  drop with the mouse, a person clicking through.
+
 ## In progress
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against

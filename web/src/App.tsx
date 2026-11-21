@@ -227,22 +227,49 @@ export default function App() {
 
   // Files never open on their own: they are read first (what is each one, which are the same LV), then
   // kept as a project or added to one. See docs/07-user-flows.md.
-  const upload = useCallback((files: FileList | File[] | null | undefined, target: string | null = null) => {
-    const list = [...(files ?? [])];
-    if (list.length === 0) return;
-    setAnalysis(null);
-    setProject(null);
-    setCurrent(null);
+  // Reads `list` as the files waiting in the dialog: what each one is, which tender they are.
+  const readPending = useCallback((list: File[], target: string | null) => {
     setError(null);
     setPending({ files: list, info: null, target });
+    if (list.length === 0) return; // the dialog is back at asking for files
     intakeFiles(list, target).then(
       (info) => setPending((p) => (p && p.files === list ? { ...p, info } : p)),
       (e) => {
-        setPending((p) => (p && p.files === list ? null : p));
+        // the dialog stays open and says why, so other files can be chosen
+        setPending((p) => (p && p.files === list ? { files: [], info: null, target } : p));
         setError(e instanceof Error ? e.message : String(e));
       },
     );
   }, []);
+
+  const pendingNow = useRef(pending);
+  pendingNow.current = pending;
+
+  // Files dropped or chosen. With the dialog already holding files they are added to those (a file that is
+  // there already is not taken twice); the whole set is then read again, since what a file is depends on
+  // the others (same LV, same prices).
+  const upload = useCallback(
+    (files: FileList | File[] | null | undefined, target: string | null = null) => {
+      const had = pendingNow.current;
+      const same = (a: File, b: File) => a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
+      const added = [...(files ?? [])].filter((f) => !had?.files.some((h) => same(h, f)));
+      if (added.length === 0) return;
+      setAnalysis(null);
+      setProject(null);
+      setCurrent(null);
+      readPending([...(had?.files ?? []), ...added], had ? had.target : target);
+    },
+    [readPending],
+  );
+
+  // A file taken out of the dialog again, before anything is kept.
+  const dropPendingFile = useCallback(
+    (file: File) => {
+      const had = pendingNow.current;
+      if (had) readPending(had.files.filter((f) => f !== file), had.target);
+    },
+    [readPending],
+  );
 
   async function confirmIntake(name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) {
     if (!pending) return;
@@ -516,7 +543,8 @@ export default function App() {
       {!busy && ai === "running" && analysis && (
         <LoadingTapes doing="AI review in progress" what={analysis.boq.name || analysis.boq.file} />
       )}
-      {error && (
+      {/* while the new-project dialog is open it shows the error itself */}
+      {error && !pending && (
         <div className="notice error" role="alert">
           <span>{error}</span>
           <button className="text-link" onClick={() => setError(null)}>
@@ -562,7 +590,8 @@ export default function App() {
           }}
           onDropFiles={upload}
           onConfirm={(name, target, roles, dates) => void confirmIntake(name, target, roles, dates)}
-          onCancel={() => setPending(null)}
+          onRemoveFile={dropPendingFile}
+          onCancel={() => (setPending(null), setError(null))}
           onDelete={(p) => void removeProject(p)}
           onSetStep={(p, index, step) => void moveFile(p, index, step)}
         />

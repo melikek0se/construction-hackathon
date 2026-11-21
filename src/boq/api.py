@@ -348,12 +348,16 @@ async def intake(files: list[UploadFile], project: str | None = Form(None)):
     boqs = [boq for _, _, _, boq in uploads]
     existing = catalog.all_projects()
     target = next((p for p in existing if p["id"] == project), None)
-    known = [_parse_doc(f) for f in target["files"]] if target else []
     groups = _same_lv(boqs)
     found = intake_rules.identity(boqs)
+    suggested = None if target else intake_rules.suggest(found, existing)
+    # the files already kept for this tender say what a new one is too (a PDF with the prices of its D84);
+    # also when the project was not dropped on but is the one the files name
+    home = target or next((p for p in existing if suggested and p["id"] == suggested["id"]), None)
+    known = [_parse_doc(f) for f in home["files"]] if home else []
     return {**found,
             "lvs": len(set(groups)),
-            "suggested": None if target else intake_rules.suggest(found, existing),
+            "suggested": suggested,
             "files": [{"index": n, "name": name, "format": boq.format, "title": lv_name(boq),
                        "items": len(boq.items), "lv": g, **intake_rules.classify(boq, boqs + known)}
                       for (n, name, _, boq), g in zip(uploads, groups)],

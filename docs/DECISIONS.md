@@ -327,6 +327,13 @@ the document, whether it carries prices and what the project already holds (`src
 `BoQ.phase` of a PDF is unchanged ("84" when priced); the role kept with the document is what the UI shows.
 Scored against the hand mapping in `catalog.py` by `scripts/eval_intake.py`: step 43/43, qualifier 43/43,
 number 4/6 (B has none by hand, E's is inside its LV title), name 5/6 (D's is only a token).
+Added 2026-11-21 (Atahan: the step of a PDF did not seem to work; no dataset PDF was found with a wrong step):
+a PDF's heading may carry its number ("Angebot AN24-0305", "Auftrag Nr. 4711"), more words are known
+(Angebots-LV, Preisangebot, Auftragserteilung, Auftragsschreiben, Zuschlag, Zuschlagsschreiben, Ausschreibung),
+and a heading missing above the column header is looked for on the first two pages; files are also compared
+with the project the intake suggests, not only with one they were dropped on; the evidence says in words why
+"no prices" means tender and why a priced PDF without heading or GAEB twin is only a guess. There is still no
+award PDF in the dataset, so "award" for a PDF is tested on the heading rule only.
 Revisit if: real tenders use headers the label list does not know (then a model reads the first page as a
 fallback), deadlines are wanted (form 211 is blank in the dataset), or ZIP / folder drops are needed.
 

@@ -16,8 +16,10 @@ ROLE = {"83": "tender", "84": "bid", "86": "award"}  # GAEB exchange phase -> wh
 STEPS = ("tender", "bid", "award")
 ROLES = ("tender", "tender package", "excerpt", "trade LV", "bid", "submitted bid", "offer", "award")
 _TOKEN = re.compile(r"\[[A-ZÄÖÜ]+(?:_\d+)?\]")  # anonymisation: [PROJEKT_004], [FIRMA_0000006]
-_BID_WORDS = re.compile(r"^(Angebot|Nachtragsangebot)$")
-_AWARD_WORDS = re.compile(r"^(Auftrag|Auftrags-LV|Auftragsbestätigung|Auftragsleistungsverzeichnis|Bestellung)$")
+# what a PDF is headed with (read by parsers.pdf._HEADING); every other heading there is a request for bids
+_BID_WORDS = re.compile(r"^(Angebot|Angebots-LV|Nachtragsangebot|Preisangebot)$")
+_AWARD_WORDS = re.compile(r"^(Auftrag|Auftrags-LV|Auftragsbestätigung|Auftragsleistungsverzeichnis|Auftragserteilung|"
+                          r"Auftragsschreiben|Bestellung|Zuschlag|Zuschlagsschreiben)$")
 
 
 def step_of(role: str) -> str:
@@ -165,7 +167,8 @@ def classify(boq: BoQ, others: list[BoQ]) -> dict:
         step = "tender"
         evidence.append(f'headed "{boq.heading}"' if boq.heading and not _BID_WORDS.match(boq.heading)
                         and not _AWARD_WORDS.match(boq.heading) else "")
-        evidence.append("no prices" if not priced else f"prices in only {priced} of {n} items")
+        evidence.append("no prices: an empty LV, as the client sends it out" if not priced
+                        else f"prices in only {priced} of {n} items")
         certain = priced < 0.05 * n
     else:
         twins = [o for o in others if o.format in ("gaeb_xml", "gaeb_90") and o.phase in ("84", "86")
@@ -182,7 +185,8 @@ def classify(boq: BoQ, others: list[BoQ]) -> dict:
             evidence.append(f"same prices as {twin.file}")
         else:
             step, certain = "bid", False
-            evidence.append("the document does not say whose prices these are")
+            evidence.append("priced, but the document does not say whether as a bid or as the award, "
+                            "and no GAEB file here has the same prices")
         evidence.append(f"prices in {priced} of {n} items")
 
     role = step

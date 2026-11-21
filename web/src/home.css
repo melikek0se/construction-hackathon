@@ -973,6 +973,42 @@
   color: var(--dim);
 }
 
+.np-body h3 button {
+  float: right;
+  margin-top: -6px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.np-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.np-remove {
+  height: 24px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mute);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.np-remove:hover:not(:disabled) {
+  color: var(--red);
+}
+
+.np-drop .np-error {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+
 .np-files li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
