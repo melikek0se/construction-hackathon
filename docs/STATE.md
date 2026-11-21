@@ -356,9 +356,9 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   bounces on a file drag; every 30 to 70 seconds it turns three quarters away (cheeks to one side, face free), shows two big round cheeks and bounces them up
   and down together (long on the way up, piled flat at the bottom) while looking back over its shoulder (lids half down, a blush, one wink), about 4.6 s, also on the event `polier` with detail `moon` and when "popo" is typed anywhere on the page; a strip, as a pole dance at full size (the free mascot's canvas is three times its box, up
   and to the left, so it can leave its corner: a scaffold tube drops in, two round hands in yellow gloves appear for the strip only, it holds on and sways, swings round it
-  twice with an arm out, climbs hand over hand, tips upside down and spirals down, bounces its cheeks against
+  twice with an arm out (turning with the swing, so its back and cheeks show on every turn), climbs hand over hand, tips upside down and spirals down, bounces its cheeks against
   the tube with two slaps, blows a kiss with hearts, tips the hat; about 12 s); a split (back to you, the two hands take hold of the cheeks, squeeze and pull
-  them apart like a hinge (joined at the top of the cleft, open below), an "x" between them, they snap shut and wobble; about 4.7 s) on the event detail `split` or when
+  them apart sideways at their own height (still together at the top and the bottom, a gap between), an "x" between them, they snap shut and wobble; about 4.7 s) on the event detail `split` or when
   "split" is typed only on the event detail `strip` or when
   "strip" is typed; seen in
   headless Chrome on the dev stack 2026-11-21), since D-036 the way into the chat; app icon and band logo: a hard hat in profile. Checked by driving the pointer
@@ -367,10 +367,13 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   production build, the PDF view's "Drawn by LV Check" and the auth realm still carry the old name.
   Drawn 1.2 times larger since 2026-11-21 (134px box, was 112).
 
-- Mascot, cheeks (2026-11-21): no longer two spheres set on the body but the body's own surface swelling out
-  (`shapeCheeks` in `Mascot.tsx` moves the sphere's vertices each frame while it has its back to you), so the
-  outer edges run into the body without a line and the only line is the cleft. Seen in headless Chrome frames
-  for the turn-around and the split; the pole dance not shot again since.
+- Mascot, cheeks (2026-11-21): not two spheres set on the body but the body's own surface pushed out to where
+  two balls would stand (`shapeCheeks` in `Mascot.tsx`, each frame while it has its back to you; about 0.5 ms,
+  measured in the page). Round and large, the outer rim runs into the body in a soft curve without a line, the
+  only line is the cleft. In the split they are pulled sideways at their own height and slope down to the bare
+  body between them (an almond-shaped valley with the "x"), still together at the top and the bottom. Seen in
+  headless Chrome frames for the turn-around and the split; the pole dance not shot again since. Headless
+  Chrome (software GL) draws the finer body slowly; not looked at on a real GPU.
 
 - Sideways overflow (2026-11-21): what slides into the band or the page from the side widened the page for a
   moment (28px, a horizontal scrollbar at the bottom); `.app` now has `overflow-x: clip`. Measured per frame in
