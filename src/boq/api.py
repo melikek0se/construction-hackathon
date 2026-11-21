@@ -11,6 +11,7 @@ import uuid
 from collections import OrderedDict
 from contextlib import asynccontextmanager
 from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 from fastapi import FastAPI, Form, HTTPException, Request, Response, UploadFile
@@ -222,9 +223,65 @@ def _keep_llm_findings(analysis_id: str, findings: list[Finding]) -> None:
                      .values(llm_findings=[f.model_dump(mode="json") for f in findings]))
 
 
+_SIBLING: dict[int, dict[str, Decimal]] = {}  # per priced document of a project: unit price by item number
+
+
+def _item_values(analysis_id: str, boq: BoQ) -> dict[str, tuple[Decimal, str]]:
+    """What each item of the LV is worth, and where that price is from: the file itself, the bid in
+    progress, a priced version of the same LV in the project (the bid or the award), else the suggestion
+    from past bids. An item nobody has a price for is not in it: "not quantified" is a valid answer."""
+    out: dict[str, tuple[Decimal, str]] = {}
+    qty = {i.oz: i.qty for i in boq.items if i.qty is not None}
+
+    def take(oz: str, unit_price, basis: str) -> None:
+        if oz in qty and oz not in out and unit_price is not None:
+            out[oz] = ((Decimal(str(unit_price)) * qty[oz]).quantize(Decimal("0.01")), basis)
+
+    for i in boq.items:
+        if i.total is not None and i.oz not in out:
+            out[i.oz] = (i.total, "the price in this file")
+    project_id = _project_id(analysis_id)
+    for oz, kept in bid.entered(project_id, boq.file).items():
+        take(oz, kept["unit_price"], "your price in the bid")
+    if project_id and len(out) < len(qty):
+        docs = (catalog.find(project_id) or {"files": []})["files"]
+        for doc in sorted(docs, key=lambda d: d["format"] == "PDF"):  # a GAEB file is read in a moment, a PDF is not
+            if doc["name"] == boq.file or doc["role"] not in ("bid", "award", "offer", "submitted bid"):
+                continue
+            if len(out) >= len(qty):
+                break
+            if doc["id"] not in _SIBLING:
+                try:
+                    _SIBLING[doc["id"]] = {i.oz: i.up for i in _parse_doc(doc).items if i.up is not None}
+                except HTTPException:
+                    _SIBLING[doc["id"]] = {}
+            for oz, up in _SIBLING[doc["id"]].items():
+                take(oz, up, f"the {doc['role']} of this LV ({doc['name']})")
+    if len(out) < len(qty):
+        try:
+            for s in (_prices(boq) or {"suggestions": []})["suggestions"]:
+                take(s["item_oz"], s["unit_price"], "past bids (a suggestion)")
+        except Exception:  # the suggestions are a help here, never a reason to fail
+            pass
+    return out
+
+
+def _with_stakes(analysis_id: str, boq: BoQ, findings: list[Finding]) -> list[Finding]:
+    """Every finding with the money it is about, and the list in the order of the money: within a severity
+    the finding on the most expensive item first (CLAUDE.md: rank by money at stake). A finding that brings
+    its own amount keeps it; the others get the value of their item, with where the price is from."""
+    values = _item_values(analysis_id, boq)
+    out = []
+    for f in findings:
+        if f.money_at_stake is None and f.item_oz in values:
+            f = f.model_copy(update={"money_at_stake": values[f.item_oz][0], "money_basis": values[f.item_oz][1]})
+        out.append(f)
+    return sort_findings(out)
+
+
 def _dump(analysis_id: str, boq: BoQ, findings: list[Finding], reviewed: bool = False) -> dict:
     return {"id": analysis_id, "boq": boq.model_dump(mode="json"),
-            "findings": [f.model_dump(mode="json") for f in findings],
+            "findings": [f.model_dump(mode="json") for f in _with_stakes(analysis_id, boq, findings)],
             "reviewed": reviewed,  # the AI review has run on it: its findings are among these
             # pages can be shown (GET …/source.pdf, …/marks): the PDF itself if it is kept, pages drawn by
             # the app for a file that has none. A PDF from a temporary upload is gone, so it has neither.
@@ -994,7 +1051,7 @@ async def llm_review(analysis_id: str):
     finally:
         _REVIEWS.pop(analysis_id, None)
     _keep_llm_findings(analysis_id, findings)  # the report and the marks of this analysis now include them
-    return {"findings": [f.model_dump(mode="json") for f in findings], "stats": stats}
+    return {"findings": [f.model_dump(mode="json") for f in _with_stakes(analysis_id, boq, findings)], "stats": stats}
 
 
 @app.get("/api/analyses/{analysis_id}/llm/progress")

@@ -75,5 +75,8 @@ class Finding(BaseModel):
     explanation: str  # why it matters to an estimator
     action: Literal["ask_client", "add_surcharge", "get_quote", "note_for_claims", "fix_typo"]
     money_at_stake: Decimal | None = None
+    # What the amount is. Empty: the finding's own (a total that is off by this much). Otherwise it is the
+    # value of the item the finding sits on, and this says where its price was taken from.
+    money_basis: str = ""
     question_de: str = ""  # bidder question (Bieterfrage) in German, ready to send; only for ask_client
     origin: Literal["rule", "llm"] = "rule"

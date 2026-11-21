@@ -244,7 +244,8 @@ export function FindingsList({
         )}
         <ol className="findings">
           {paged.rows.map(({ oz, first, findings }) => {
-            const money = findings.reduce((n, f) => n + Number(f.money_at_stake ?? 0), 0);
+            // the findings of one item are about the same money: the largest amount, not their sum
+            const money = Math.max(0, ...findings.map((f) => Number(f.money_at_stake ?? 0)));
             return (
               <li key={first}>
                 <button
@@ -317,9 +318,12 @@ function FindingPlate({
         <dt>Money at stake</dt>
         <dd>
           {finding.money_at_stake !== null ? (
-            <b className="num">{eur(finding.money_at_stake)}</b>
+            <>
+              <b className="num">{eur(finding.money_at_stake)}</b>
+              {finding.money_basis && <span className="quiet"> · the value of this item, from {finding.money_basis}</span>}
+            </>
           ) : (
-            <span className="quiet">Not quantified{priced ? "" : ": this file carries no prices"}</span>
+            <span className="quiet">Not quantified: {priced ? "this item has no price" : "nobody has a price for this item yet"}</span>
           )}
         </dd>
         {finding.related_oz.length > 0 && (

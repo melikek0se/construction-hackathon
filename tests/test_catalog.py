@@ -258,3 +258,14 @@ def test_a_priced_pdf_says_bid_or_award_by_its_heading():
     offer.heading = ""
     unnamed = intake.classify(offer, [offer])
     assert unnamed["step"] == "bid" and not unnamed["certain"]  # priced, names nothing: a guess, marked
+
+
+def test_findings_carry_the_value_of_their_item_and_stand_in_the_order_of_the_money():
+    """The tender of project B has no prices; its bid in the same project has: a finding on an item says
+    what that item is worth and where the price is from, and within a severity the dearest comes first."""
+    found = client.get("/api/catalog/B/files/0").json()["findings"]
+    priced = [f for f in found if f["money_at_stake"] is not None]
+    assert priced and all("of this LV" in f["money_basis"] for f in priced)
+    for severity in ("high", "warn", "info"):
+        amounts = [float(f["money_at_stake"] or 0) for f in found if f["severity"] == severity]
+        assert amounts == sorted(amounts, reverse=True)

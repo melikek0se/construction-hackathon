@@ -45,6 +45,8 @@ export interface Finding {
   explanation: string;
   action: Action;
   money_at_stake: string | null;
+  // "": the finding's own amount; else the amount is the value of its item, and this says where the price is from
+  money_basis?: string;
   origin: "rule" | "llm";
 }
 

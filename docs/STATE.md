@@ -14,6 +14,15 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Done
 
+- Findings ranked by money (2026-11-22; `_item_values`, `_with_stakes` in `api.py`, `Finding.money_basis`): a
+  finding without an amount of its own gets the value of its item (quantity × unit price) and says where the
+  price is from: the file, the bid in progress, a priced version of the same LV in the project (bid, award),
+  else the suggestion from past bids. Within a severity the dearest item comes first; the findings list
+  shows the largest amount per item, not the sum. Checked: `tests/test_catalog.py` (project B: the tender's
+  findings priced from its bid, in order), dev API on two projects. First opening of a tender whose only
+  priced twin is a PDF takes about 9 s (the PDF is parsed once per server start). Not seen in a browser.
+  The risk report still ranks by its own points.
+
 - Conversations with suppliers, tenders from the inbox, price risk on the bid (2026-11-21 late, D-045):
   `supply.answer` and the thread in `Inquiries.tsx`; `src/boq/inbox.py` with `/api/inbox/*`, "Check mail" in
   the band and `.eml` dropped on the page; `src/boq/risk.py` with `Risk.tsx` in the Bid view.
