@@ -287,6 +287,10 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   headless Chrome at 1440 wide against a seeded SQLite database (opening, schedule, board, dialog with one
   real X83 read). Not checked: a person clicking through, creating a project from the dialog end to end in
   a browser, widths under 1180px, the Docker Postgres picking up the new column.
+  Revised (2026-11-21): the band has a thin hazard stripe along its top and its lower edge; the schedule runs
+  the full window width straight under the band, opens on every load without the tape wipe, and closes with
+  the arrow by its title; two labels of a row less than eight days apart open to opposite sides. The board is
+  headed "Projects" with the New project button. Checked in headless Chrome at 1920 wide.
 
 - Name and mascot (D-030): the app is **Polier**; a 3D head in a hard hat (`web/src/Mascot.tsx`) living in the
   bottom-right corner of every page (follows the pointer, glances around at rest, leans in, hops on click,

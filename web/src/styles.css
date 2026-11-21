@@ -242,10 +242,9 @@ input[type="search"]::placeholder {
   min-height: 70px;
   padding: 4px 20px;
   background: var(--yellow);
-  /* yellow with one hazard stripe along its lower edge, twice as high as the stripe on the tapes of the
-     opening and of loading; nothing along the top, no lettering beyond the brand */
-  border-bottom: 18px solid;
-  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 9px, var(--yellow) 9px 18px) 18;
+  /* yellow with a thin hazard stripe along its top and its lower edge; no lettering beyond the brand */
+  border-block: 9px solid;
+  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) 9;
 }
 
 
@@ -349,10 +348,16 @@ input[type="search"]::placeholder {
 .register {
   flex: 1;
   overflow: auto;
-  padding: 26px max(28px, calc((100% - 1320px) / 2)) 40px;
+  padding: 0 0 40px;
 }
 
-.register-head {
+/* under the full-width schedule: the board, centred */
+.register-body {
+  padding: 26px max(28px, calc((100% - 1320px) / 2)) 0;
+}
+
+.register-head,
+.board-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -369,7 +374,8 @@ input[type="search"]::placeholder {
   text-transform: uppercase;
 }
 
-.register-head p {
+.register-head p,
+.board-head p {
   margin-top: 6px;
   font-size: 13px;
   font-weight: 400;

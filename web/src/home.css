@@ -753,12 +753,9 @@
 }
 
 /* A card whose files are still being read has tape across it; once its numbers are there the card is
-   covered for a moment and the tape is pulled off to the right. The same wipe uncovers the schedule rows
-   when the page opens. */
+   covered for a moment and the tape is pulled off to the right. */
 .card.taped::after,
-.card.untape::after,
-.sched-row.veiled::after,
-.sched-row.unveil::after {
+.card.untape::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -766,9 +763,7 @@
   background: var(--hazard) 0 50% / 22.63px 16px repeat-x;
 }
 
-.card.untape::after,
-.sched-row.veiled::after,
-.sched-row.unveil::after {
+.card.untape::after {
   background: var(--hazard) 0 50% / 22.63px 16px repeat-x, #fff;
 }
 
@@ -782,10 +777,6 @@
 
 .card.untape::after {
   animation: untape 620ms cubic-bezier(0.65, 0, 0.2, 1) both;
-}
-
-.sched-row.unveil::after {
-  animation: untape 620ms cubic-bezier(0.65, 0, 0.2, 1) calc(var(--i, 0) * 140ms + 150ms) both;
 }
 
 @keyframes untape {
@@ -1417,10 +1408,6 @@
     animation: untape 620ms cubic-bezier(0.65, 0, 0.2, 1) both !important;
   }
 
-  .sched-row.unveil::after {
-    animation: untape 620ms cubic-bezier(0.65, 0, 0.2, 1) calc(var(--i, 0) * 140ms + 150ms) both !important;
-  }
-
   .new-project[open] {
     animation: dialog-in 520ms var(--ease) both !important;
   }
@@ -1429,4 +1416,80 @@
 /* keep the last line of the page clear of the agent in the corner */
 .register .formats {
   padding-right: 120px;
+}
+
+/* ------------------------------------------------------------------ schedule under the band, full width */
+
+.register > .sched {
+  border-top: 0;
+  border-bottom: 2px solid var(--ink);
+}
+
+.register > .sched .sched-head h2 {
+  padding-left: 20px;
+}
+
+.register > .sched .sched-left {
+  padding-left: 20px;
+}
+
+.register > .sched .sched-body {
+  border-bottom: 0;
+}
+
+.register > .sched .sched-note {
+  padding: 0 20px 8px;
+}
+
+.sched-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: -4px 0 -4px -7px;
+  padding: 3px 7px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sched-toggle:hover {
+  border-color: var(--ink);
+  background: var(--yellow);
+}
+
+.sched-toggle svg {
+  transition: rotate 160ms var(--ease);
+}
+
+.sched.closed .sched-toggle svg {
+  rotate: -90deg;
+}
+
+/* closed: the head alone */
+.sched.closed .sched-head {
+  border-bottom: 0;
+}
+
+.sched.closed .weeks {
+  visibility: hidden;
+}
+
+/* the board under it, headed Projects with the New project button */
+.register-body .board-wrap {
+  margin-top: 0;
+  border-top: 0;
+}
+
+.board-head {
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.register-body .board-head {
+  margin-bottom: 0;
 }

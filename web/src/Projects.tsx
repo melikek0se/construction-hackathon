@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Sign } from "./components";
 import { DateField, Select } from "./controls";
 import { eur } from "./format";
@@ -161,13 +161,11 @@ function DayField({ label, value, disabled, onSet }: { label: string; value?: st
 function Schedule({
   projects,
   busy,
-  cover,
   onOpen,
   onChange,
 }: {
   projects: CatalogProject[];
   busy: boolean;
-  cover: "veiled" | "unveil" | ""; // the page is opening: rows stay taped, then are uncovered one by one
   onOpen: (p: CatalogProject) => void;
   onChange: (p: CatalogProject, change: Change) => void;
 }) {
@@ -180,14 +178,22 @@ function Schedule({
     .filter((p) => stageOf(p) !== "award")
     .sort((a, b) => (nextDate(a, today)?.days ?? 9999) - (nextDate(b, today)?.days ?? 9999));
   const closed = projects.length - running.length;
+  const [open, setOpen] = useState(true); // open on every load; closed only for this visit
 
   const bar = (kind: string, from: Date, to: Date) =>
     x(to) > x(from) && <i className={`gbar ${kind}`} style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%` }} />;
-  const mark = (day: Date | null, label: string, flag = false) => {
+  /** Which way each of a row's two labels opens. Two dates less than eight days apart would put their labels
+   *  on top of each other: the earlier one then opens to the left of its line, the later one to the right. */
+  const sides = (a: Date | null, b: Date | null): ["left" | "right" | undefined, "left" | "right" | undefined] => {
+    if (!a || !b || Math.abs(daysBetween(a, b)) >= 8) return [undefined, undefined];
+    return a.getTime() <= b.getTime() ? ["left", "right"] : ["right", "left"];
+  };
+  const mark = (day: Date | null, label: string, flag = false, side?: "left" | "right") => {
     if (!day || pos(day) < 0 || pos(day) > 100) return null;
     const n = daysBetween(today, day);
+    const left = side ? side === "left" : pos(day) > 80; // near the right edge a label opens to the left
     return (
-      <i className={`gmark${flag ? " flag" : ""}${n >= 0 && n <= 3 ? " soon" : ""}${pos(day) > 80 ? " left" : ""}`} style={{ left: `${pos(day)}%` }}>
+      <i className={`gmark${flag ? " flag" : ""}${n >= 0 && n <= 3 ? " soon" : ""}${left ? " left" : ""}`} style={{ left: `${pos(day)}%` }}>
         <span>
           {label}
           <small>
@@ -206,10 +212,16 @@ function Schedule({
     ) : null;
 
   return (
-    <section className="sched" aria-label="Schedule of the running tenders">
+    <section className={`sched${open ? "" : " closed"}`} aria-label="Schedule of the running tenders">
       <div className="sched-head">
         <h2>
-          Schedule <small>{running.length === 0 ? "no running tender" : `${running.length} running tender${running.length > 1 ? "s" : ""}, next date first`}</small>
+          <button className="sched-toggle" aria-expanded={open} onClick={() => setOpen(!open)} title={open ? "Close the schedule" : "Open the schedule"}>
+            <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden>
+              <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            Schedule
+          </button>
+          <small>{running.length === 0 ? "no running tender" : `${running.length} running tender${running.length > 1 ? "s" : ""}, next date first`}</small>
         </h2>
         <div className="weeks" aria-hidden>
           {Array.from({ length: SPAN / 7 }, (_, w) => {
@@ -222,18 +234,19 @@ function Schedule({
           })}
         </div>
       </div>
+      {open && (
       <div className="sched-body">
-        {running.map((p, n) => {
+        {running.map((p) => {
           const stage = stageOf(p);
           const received = parseDay(p.created) ?? today;
           const due = parseDay(p.plan.due), q = parseDay(p.plan.questions_due);
           const sent = parseDay(p.plan.sent), bind = parseDay(p.plan.binding_until);
           const dated = stage === "submitted" ? sent || bind : due || q;
+          const [sentSide, bindSide] = sides(sent, bind), [qSide, dueSide] = sides(q, due);
           return (
             <div
               key={p.id}
-              className={`sched-row ${cover}`}
-              style={{ "--i": n } as CSSProperties}
+              className="sched-row"
               tabIndex={0}
               aria-disabled={busy}
               onClick={() => !busy && onOpen(p)}
@@ -267,8 +280,8 @@ function Schedule({
                   <>
                     {sent && bar("past", received, sent)}
                     {sent && bind && bar("wait", sent, bind)}
-                    {mark(sent, "Bid sent", true)}
-                    {mark(bind, "Binding until")}
+                    {mark(sent, "Bid sent", true, sentSide)}
+                    {mark(bind, "Binding until", false, bindSide)}
                     {off(sent, "sent")}
                     {off(bind, "binding until")}
                   </>
@@ -277,8 +290,8 @@ function Schedule({
                     <>
                       {bar("past", received, today)}
                       {due && bar("todo", today, due)}
-                      {mark(q, "Questions close")}
-                      {mark(due, "Submission", true)}
+                      {mark(q, "Questions close", false, qSide)}
+                      {mark(due, "Submission", true, dueSide)}
                       {off(due, "submission")}
                     </>
                   )
@@ -294,7 +307,8 @@ function Schedule({
           </i>
         </div>
       </div>
-      {closed > 0 && (
+      )}
+      {open && closed > 0 && (
         <p className="sched-note">
           {closed} awarded tender{closed > 1 ? "s are" : " is"} not on the schedule.
         </p>
@@ -764,7 +778,6 @@ export function ProjectsPage({
   busy,
   pending,
   error,
-  cover,
   onOpen,
   onNew,
   onChooseFiles,
@@ -781,7 +794,6 @@ export function ProjectsPage({
   busy: boolean;
   pending: Pending | null;
   error: string | null; // shown in the dialog while it is open: it covers the notice bar
-  cover: "veiled" | "unveil" | "";
   onOpen: (project: CatalogProject, file?: number) => void;
   onNew: () => void;
   onChooseFiles: (target: string | null) => void;
@@ -804,40 +816,10 @@ export function ProjectsPage({
 
   return (
     <main className="register">
-      <header className="register-head">
-        <div>
-          <h1>Projects</h1>
-          <p>
-            {projects.length === 0 ? (
-              "No tender yet."
-            ) : (
-              <>
-                {projects.length} tender{projects.length > 1 ? "s" : ""}
-                {upcoming.length > 0 && (
-                  <>
-                    {" · "}
-                    <b>
-                      {thisWeek} date{thisWeek === 1 ? "" : "s"} this week
-                    </b>
-                    {" · next: "}
-                    {upcoming[0].what} for <span lang="de">{upcoming[0].p.name}</span>, {wd(upcoming[0].day)}
-                  </>
-                )}
-              </>
-            )}
-          </p>
-        </div>
-        <div className="register-new">
-          <span>Drop the files of a tender anywhere, or</span>
-          <button className="btn-new" disabled={busy || pending !== null} onClick={onNew}>
-            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
-              <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
-            </svg>
-            New project
-          </button>
-        </div>
-      </header>
+      {/* the schedule runs the full width of the window, straight under the band */}
+      <Schedule projects={projects} busy={busy} onOpen={onOpen} onChange={onChange} />
 
+      <div className="register-body">
       {pending && (
         <NewProjectDialog
           key={pending.target ?? "new"}
@@ -853,12 +835,40 @@ export function ProjectsPage({
         />
       )}
 
-      <Schedule projects={projects} busy={busy} cover={cover} onOpen={onOpen} onChange={onChange} />
-
       <section className="board-wrap" aria-label="Tenders by stage">
-        <h2>
-          Board <small>every tender by the stage it is in, and what is open on it</small>
-        </h2>
+        <header className="board-head">
+          <div>
+            <h1>Projects</h1>
+            <p>
+              {projects.length === 0 ? (
+                "No tender yet."
+              ) : (
+                <>
+                  {projects.length} tender{projects.length > 1 ? "s" : ""}
+                  {upcoming.length > 0 && (
+                    <>
+                      {" · "}
+                      <b>
+                        {thisWeek} date{thisWeek === 1 ? "" : "s"} this week
+                      </b>
+                      {" · next: "}
+                      {upcoming[0].what} for <span lang="de">{upcoming[0].p.name}</span>, {wd(upcoming[0].day)}
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+          </div>
+          <div className="register-new">
+            <span>Drop the files of a tender anywhere, or</span>
+            <button className="btn-new" disabled={busy || pending !== null} onClick={onNew}>
+              <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
+                <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
+              </svg>
+              New project
+            </button>
+          </div>
+        </header>
         <div className="board">
           {STAGES.map((stage) => {
             const here = projects.filter((p) => stageOf(p) === stage);
@@ -900,6 +910,7 @@ export function ProjectsPage({
         ))}
         <span className="formats">Submitted and Award follow from the files of a tender; the stages before are set on its card.</span>
       </footer>
+      </div>
     </main>
   );
 }

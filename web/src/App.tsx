@@ -575,7 +575,6 @@ export default function App() {
           busy={busy !== null}
           pending={pending}
           error={error}
-          cover={intro === "done" ? "" : intro === "entering" ? "unveil" : "veiled"}
           onNew={() => setPending({ files: [], info: null, target: null })}
           onChange={(p, change) => void changePlan(p, change)}
           onOpen={(p, file) => {
