@@ -155,7 +155,7 @@ only its arrows, solid and named after the linking work.
 Revisit if: a project has far more than about 30 trades or more than 4 per storey row — the stack gets deep.
 
 ## D-019 — Projects page; dataset projects mapped by hand; created projects kept as folders, no database
-Status: superseded by D-024 (storage); the projects page and the hand mapping stand · 2026-11-21
+Status: superseded by D-026 (storage); the projects page and the hand mapping stand · 2026-11-21
 
 The app opens on a list of projects instead of a list of files. A project is either one LV in several versions
 (tender, bid, award, print-out: dataset projects A–E) or the trade LVs of one building (F). Which dataset file
@@ -248,7 +248,24 @@ view names both files. Known cost: items the print-out lacks (project A's award 
 package) have no place there, and their findings are listed above the pages.
 Revisit if: such items matter in the demo — then draw the pages for that file after all.
 
-## D-024 — A database for projects, documents, analyses and the LLM cache; dataset projects are seeded
+## D-025 — Ask the project: a chat that answers from the project's documents only
+Status: decided · 2026-11-21 (Utku: "only from the project documents")
+
+Beside the LV the estimator can ask a question (`src/boq/chat.py`, `POST /api/analyses/{id}/chat`, right
+pane tab "Ask the project", `web/src/Chat.tsx`). The model reads the open LV and one file per other LV of the
+project (of several versions the tender, a GAEB file before its print-out) and answers with the passages it
+rests on: file, item number, quote. As for AI findings, a passage is kept only if it stands word for word in
+the item it names; an answer left without one is shown as unconfirmed, and "not in the project documents" is
+a valid answer. General knowledge (VOB, standards, usual prices) is excluded on purpose: it would be a
+statement without a source. A passage opens its item on the PDF pages, in this file or another file of the
+project; the conversation belongs to the project and stays open.
+No retrieval step and no graph: the largest project (F, 27 LVs, 316,700 tokens measured) fits into one request.
+The documents are one block in the project's file order, the same whichever file is open, cached for an hour:
+the first question of an hour pays for them (about 2.55 USD on F at list prices), later ones about 0.10 USD.
+Revisit if: a project no longer fits (then retrieval, possibly over the trade graph of `project.py`); general
+knowledge is wanted (then as a separate, labelled kind of answer); answers should be kept between sessions.
+
+## D-026 — A database for projects, documents, analyses and the LLM cache; dataset projects are seeded
 Status: decided · 2026-11-21 (replaces the storage part of D-019)
 
 For a live deployment the app keeps everything in one database (`src/boq/db.py`, SQLAlchemy Core): projects,
@@ -263,6 +280,6 @@ on first use, no migrations: a schema change means a new database. `BOQ_PASSWORD
 front of everything but `/api/health`, since the URL is public and the AI review spends API credit.
 Revisit if: several users or companies need their own projects (accounts), or files outgrow the database
 (then object storage, e.g. Cloudflare R2).
-Merged with the PDF view (D-023) the same day: that view reads pages from a file, so a project document is
+Merged with the PDF view (D-023) and the chat (D-025) the same day: that view reads pages from a file, so a project document is
 written out on demand to `data/processed/pages/docs/` (`_doc_path` in `api.py`); which PDF belongs to which
 analysis is kept in memory only, so after a restart a kept PDF is shown again once its file is reopened.

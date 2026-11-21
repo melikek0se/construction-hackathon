@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
+import { Chat } from "./Chat";
 import { Sign } from "./components";
 import { LvText } from "./format";
 import { TradeGraph } from "./TradeGraph";
-import { countLabel, SEVERITIES, type Project, type ProjectFinding } from "./types";
+import { countLabel, SEVERITIES, type ChatCitation, type ChatTurn, type Project, type ProjectFinding } from "./types";
 
 const KIND: Record<string, string> = {
   prior: "needs before it",
@@ -15,8 +16,17 @@ const KIND: Record<string, string> = {
  * Several trade LVs of one building: the dependency graph on the left; on the right the findings that
  * only show up between LVs, or the trade that was clicked in the graph.
  */
-export function ProjectView({ project, onOpenLv }: { project: Project; onOpenLv: (analysisId: string) => void }) {
+export function ProjectView({
+  project,
+  onOpenLv,
+  chat,
+}: {
+  project: Project;
+  onOpenLv: (analysisId: string) => void;
+  chat: { turns: ChatTurn[]; onTurns: (turns: ChatTurn[]) => void; onCite: (c: ChatCitation) => void };
+}) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [side, setSide] = useState<"findings" | "ask">("findings");
   const lv = project.lvs.find((l) => l.name === selected) ?? null;
   const node = project.nodes.find((n) => n.id === selected) ?? null;
 
@@ -58,7 +68,19 @@ export function ProjectView({ project, onOpenLv }: { project: Project; onOpenLv:
       </main>
 
       <aside className="right">
-        <div className="panel sheet">
+        <div className="side-tabs" role="tablist" aria-label="Right pane">
+          <button role="tab" aria-selected={side === "findings"} onClick={() => setSide("findings")}>
+            Between the LVs
+          </button>
+          <button role="tab" aria-selected={side === "ask"} onClick={() => setSide("ask")}>
+            Ask the project
+          </button>
+        </div>
+        {side === "ask" && project.lvs.length > 0 && (
+          // any LV of the project stands for it: the server reads all of them for an answer
+          <Chat analysisId={project.lvs[0].analysis_id} openFile="" turns={chat.turns} onTurns={chat.onTurns} onCite={chat.onCite} />
+        )}
+        <div className="panel sheet" hidden={side === "ask"}>
           {lv && node ? (
             <>
               <header className="panel-head">

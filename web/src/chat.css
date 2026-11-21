@@ -1,0 +1,246 @@
+/* Ask the project: questions answered from the project's documents (Chat.tsx). */
+
+.side-tabs {
+  flex: none;
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+  background: #fff;
+}
+
+.side-tabs button {
+  flex: 1;
+  padding: 9px 12px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--mute);
+  font: 600 13px var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.side-tabs button[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--yellow);
+}
+
+.side-tabs button:hover:not([aria-selected="true"]) {
+  background: var(--hover);
+}
+
+.side-tabs button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.chat-turns {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px 16px;
+}
+
+.chat-empty p {
+  margin: 0 0 12px;
+  color: var(--mute);
+}
+
+.chat-example {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-example:hover {
+  background: var(--hover);
+  border-color: var(--ink);
+}
+
+.chat-q {
+  margin: 14px 0 8px 32px;
+  padding: 7px 10px;
+  background: var(--ink);
+  color: #fff;
+  white-space: pre-wrap;
+}
+
+.chat-q:first-child {
+  margin-top: 0;
+}
+
+.chat-a {
+  margin: 0 0 6px;
+  padding: 9px 10px 8px;
+  border: 1px solid var(--line-2);
+  border-left: 4px solid var(--yellow);
+  background: #fff;
+}
+
+.chat-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.chat-flag {
+  margin: 0 0 6px;
+  font: 600 12px var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.chat-flag.warn {
+  padding: 5px 8px;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 500 13px var(--text);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.chat-cites {
+  list-style: none;
+  margin: 9px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.chat-cites button {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  background: var(--tint);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-cites button:hover {
+  background: var(--hover);
+  border-color: var(--ink);
+}
+
+.chat-cites button:focus-visible,
+.chat-example:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.chat-cite-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.chat-cite-head b {
+  color: var(--ink);
+  font: 700 13px var(--display);
+  letter-spacing: 0.04em;
+}
+
+.chat-cite-head span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-cite-quote {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.chat-read {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.chat-wait {
+  margin: 8px 0;
+  color: var(--mute);
+}
+
+.chat-error {
+  margin: 8px 0;
+  padding: 7px 10px;
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+.chat-form {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--rule);
+  background: #fff;
+}
+
+.chat-form textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid var(--line-2);
+  font: inherit;
+  color: var(--ink);
+  resize: none;
+}
+
+.chat-form textarea:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+}
+
+.chat-form button {
+  padding: 0 16px;
+  border: 1px solid var(--ink);
+  background: var(--yellow);
+  color: var(--ink);
+  font: 700 13px var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.chat-form button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* the right pane now has the tab row above its panel */
+.right {
+  display: flex;
+  flex-direction: column;
+}
+
+.right > .panel {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.right > .panel[hidden] {
+  display: none;
+}

@@ -343,3 +343,10 @@
   font: 600 12px var(--text);
   color: var(--ink-2);
 }
+
+/* a passage an answer of the chat rests on: outlined in ink, unlike a finding's coloured mark */
+.pdf-mark.cited {
+  background: rgb(255 196 0 / 0.3);
+  box-shadow: 0 0 0 2px var(--ink);
+  mix-blend-mode: multiply;
+}

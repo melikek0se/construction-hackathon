@@ -2,7 +2,7 @@
 
 **Update this file whenever something is finished, started or dropped.** Keep it short; history lives in git.
 
-Last updated: 2026-11-21 (hackathon day 2, PDF view merged with the database and deploy work)
+Last updated: 2026-11-21 (hackathon day 2, PDF view and chat merged with the database and deploy work)
 
 ## Now
 
@@ -206,7 +206,43 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   own viewer, `watchTextLayer` in `PdfView.tsx`); notes and tool row cannot be selected. Checked by script
   (wheel events, a programmatic selection); a real drag with the mouse is for Utku to confirm.
 
-- Database and deploy (2026-11-21, D-024, `docs/08-deploy.md`): projects, documents (file bytes), analyses and
+- Ask the project (D-025; `src/boq/chat.py`, `POST /api/analyses/{id}/chat`, `web/src/Chat.tsx`): the right
+  pane has two tabs, Findings and Ask the project. A question is answered from the open LV and the other LVs
+  of its project only; each answer lists its passages (item, file, German quote), a click opens the item on
+  the PDF pages, in another file if that is where it stands. Passages that are not word for word in the item
+  are dropped; "Not in the project documents" and "unconfirmed" are shown as such. Model and effort:
+  `BOQ_CHAT_MODEL` (default: the review model, `claude-opus-5-5`), `BOQ_CHAT_EFFORT` (default low).
+  Live, 2026-11-21: project D (one LV, 12k tokens) 7 s for the first question, 4.5 s for a follow-up read
+  from the prompt cache, a question about usual market prices answered "not in the documents"; project F
+  from LV 12 ("which LV supplies the roof drains?") 21 s, 27 documents read, five confirmed passages from
+  LV 12 and LV 14b, and it names the same open interface the cross-LV check reports. Seen in Chrome: the
+  answer, a click on a passage of LV 14b opens that LV on page 4 with the passage in view and the
+  conversation still there. Offline tests in `tests/test_chat.py`.
+  Completed on 2026-11-21 after Utku's review:
+  - Cost, read from the API's token counts at `claude-opus-5-5` list prices (input 4, output 20, cache read
+    0.20, one-hour cache write 8 USD per million tokens): project F is 316,700 tokens of documents, not the
+    150k estimated from character counts. First question in an hour about 2.55 USD, each later one about
+    0.08–0.10 USD (7–33 s); project D (12,300 tokens) about 0.10 USD, then about 0.01 USD.
+  - The documents are sent in the project's file order whichever file is open, and cached for one hour
+    (`BOQ_CHAT_CACHE_TTL`): before, each LV of a project had its own copy and every first question paid in
+    full. The open file is named to the model ("this LV") and sent as a second block only if it is not among
+    the documents (a bid beside the tender).
+  - A clicked passage is outlined on the page (`POST /api/analyses/{id}/locate`, the same search as for
+    findings) and scrolled to.
+  - The project overview (trades projects) has the chat too; an answer's passage opens the LV it stands in.
+  - Conversations are kept in the browser per project (`localStorage`) and survive a reload.
+  - The prompt tells the model to keep anonymisation tokens as written; checked live on the answer that
+    had replaced one („nach [PERSON_125] AN“ now stays).
+  Seen in a separate browser (Playwright, 1440x900): overview chat on project F, reload keeps it, a passage
+  of LV 02 opens that LV with „Vorleistung: Wandputz PII und PIV“ outlined on page 8. Also seen there: the
+  offer D84 of project C on the client's offer PDF with texts and prices at 3.2.110, picked in the item
+  table; an Excel LV uploaded through the page (intake, new project, PDF tab with drawn page, note and mark;
+  the test project was deleted again).
+  Not done: the one-hour cache was not waited out (a second question after more than five minutes); an
+  answer with "found: false" still shows its nearest passages under the label "Not in the project
+  documents", which reads oddly when the answer is "no LV contains this"; no chat on the list of projects.
+
+- Database and deploy (2026-11-21, D-026, `docs/08-deploy.md`): projects, documents (file bytes), analyses and
   the LLM cache in one database (`src/boq/db.py`; Postgres via `DATABASE_URL`, SQLite `data/boq.db` locally).
   Dataset projects seeded by `uv run boq-seed`, then ordinary: files can be added to and removed from any
   project, projects deleted (two-click Delete on the projects page; file removal is API only:
@@ -238,9 +274,8 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 1. Decide team split, demo LV
 2. PDF view, next steps agreed with Utku: (a) the estimator's own notes on a line or a selected passage,
-   marking a finding valid / not valid, tagging a colleague who is notified to review; (b) a chat beside the
-   document that answers from all files of the project (asked for by Utku on 2026-11-21, not designed yet);
-   (c) retrieval (GraphRAG) for fact-checking findings
+   marking a finding valid / not valid, tagging a colleague who is notified to review; (b) retrieval
+   (GraphRAG) for fact-checking findings; (c) highlight a chat passage on the page
 3. Projects: trade vocabulary and interface wording beyond project F; quantity checks between trades
    (screed area against floor coverings); decide in-memory graph vs Neo4j
 4. Money at stake for findings on unpriced LVs (needs the price history)
