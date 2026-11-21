@@ -934,7 +934,6 @@ export function ProjectsPage({
             {sev === "high" ? "cannot be priced as written" : sev === "warn" ? "risk pushed onto the bidder" : "wording worth knowing"}
           </span>
         ))}
-        <span className="formats">Submitted and Award follow from the files of a tender; the stages before are set on its card.</span>
       </footer>
       </div>
     </main>

@@ -814,11 +814,6 @@
   color: var(--ink);
 }
 
-.register-foot .formats {
-  margin-left: auto;
-  color: var(--dim);
-}
-
 /* ------------------------------------------------------------------ new project (dialog) */
 
 .new-project {
@@ -1378,10 +1373,6 @@
     min-height: 74px;
     border-top: 1px solid var(--rule);
   }
-
-  .register-foot .formats {
-    margin-left: 0;
-  }
 }
 
 /* With "reduce motion" set, styles.css stops every animation. The loops stay stopped (tape running along,
@@ -1411,11 +1402,6 @@
   .new-project[open] {
     animation: dialog-in 520ms var(--ease) both !important;
   }
-}
-
-/* keep the last line of the page clear of the agent in the corner */
-.register .formats {
-  padding-right: 120px;
 }
 
 /* ------------------------------------------------------------------ schedule under the band, full width */
