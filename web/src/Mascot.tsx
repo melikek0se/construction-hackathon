@@ -316,8 +316,8 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
     const POLE_R = 0.075, POLE_X = -(1 + POLE_R + 0.02); // the tube stands to its left, touching
     const steel = new THREE.MeshStandardMaterial({ color: 0xa9aba6, roughness: 0.45, metalness: 0.1 });
     const pole = new THREE.Group();
-    const tube = new THREE.Mesh(new THREE.CylinderGeometry(POLE_R, POLE_R, 14, 24), steel);
-    tube.position.y = 6;
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(POLE_R, POLE_R, 5.6, 24), steel);
+    tube.position.y = 1.8;
     const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.07, 32), matte(0x2a2d29));
     foot.position.y = -1;
     pole.add(tube, foot);
