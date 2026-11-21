@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
+import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, ReviewProgress, Sample, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -140,6 +140,11 @@ export async function runWhatIf(id: string, scenario: { adjustments: Adjustment[
 /** The LLM checks of an analysed LV. Seconds when cached, a few minutes otherwise. */
 export async function runLlmReview(id: string): Promise<{ findings: Finding[] }> {
   return read(await fetch(`/api/analyses/${id}/llm`, { method: "POST" }));
+}
+
+/** Where the AI review of this analysis stands while it runs; asked every second or so by the page that waits. */
+export async function reviewProgress(id: string): Promise<ReviewProgress> {
+  return read(await fetch(`/api/analyses/${id}/llm/progress`));
 }
 
 /** A question about the project of this analysis, answered from its documents only. */

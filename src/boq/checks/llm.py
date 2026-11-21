@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 import anthropic
@@ -251,9 +252,23 @@ def _validate(raw: dict, by_oz: dict[str, Item], remarks: str) -> Finding | None
     )
 
 
+def _section(items: list[Item]) -> str:
+    """What a request reads, for the person waiting: the title and the item range."""
+    title = items[0].path[0] if items[0].path else ""
+    span = items[0].oz if len(items) == 1 else f"{items[0].oz}–{items[-1].oz}"
+    return f"{title} ({span})" if title else f"Items {span}"
+
+
 async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
-                         client: anthropic.AsyncAnthropic | None = None) -> tuple[list[Finding], dict]:
-    """Returns the findings and a small report: requests made, findings kept and dropped."""
+                         client: anthropic.AsyncAnthropic | None = None,
+                         progress: Callable[[dict], None] | None = None) -> tuple[list[Finding], dict]:
+    """Returns the findings and a small report: requests made, findings kept and dropped.
+
+    `progress` is called whenever the state of the review changes, with what is true at that moment:
+    sections in all, sections read, the sections being read now, and the findings so far per check.
+    Every request looks for all six kinds of finding at once, so there is no "now checking typos" step
+    to report; what moves is the section and the counts.
+    """
     client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
     context = _context(boq)
     tasks = [_task(boq, items, rule_findings) for items in _chunks(boq)]  # one per chunk, same order
@@ -265,18 +280,43 @@ async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
 
     chunks = _chunks(boq)
     failures: list[str] = []
+    by_oz = {i.oz: i for i in boq.items}
+    remarks = _squash(" ".join(r.text for r in boq.remarks))
+    reading: list[int] = []  # the sections whose request is out, in the order they were sent
+    read = 0
+    seen: dict[tuple[str, str], str] = {}  # the findings so far, counted as they are at the end (see below)
+
+    def tell() -> None:
+        if progress is not None:
+            found = dict.fromkeys(CHECKS, 0)
+            for check in seen.values():
+                found[check] += 1
+            progress({"total": len(tasks), "read": read, "reading": [_section(chunks[n]) for n in reading],
+                      "found": found})
 
     async def ask(n: int) -> list[dict]:
         """One title. A title that fails (refusal, max tokens, network) is reported and skipped, so the
         findings of the other titles still arrive; missing credentials end the whole review."""
+        nonlocal read
+        answer: list[dict] = []
         try:
             async with limit:
-                return await _ask(client, context, tasks[n], usage)
+                reading.append(n)
+                tell()
+                try:
+                    answer = await _ask(client, context, tasks[n], usage)
+                finally:
+                    reading.remove(n)
         except _NO_CREDENTIALS:
             raise
         except Exception as exc:
             failures.append(f"items {chunks[n][0].oz}–{chunks[n][-1].oz}: {exc}")
-            return []
+        read += 1
+        for raw in answer:  # only what holds up against the document counts, one per quoted clause
+            if (f := _validate(raw, by_oz, remarks)) is not None:
+                seen.setdefault((f.check_id, f.evidence), raw["check"])
+        tell()
+        return answer
 
     try:
         first = await ask(0)  # writes the prompt cache that the parallel requests then read
@@ -287,8 +327,6 @@ async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
             "root (see .env.example) and restart the server.") from exc
     if len(failures) == len(tasks):
         raise RuntimeError(f"every request failed; first: {failures[0]}")
-    by_oz = {i.oz: i for i in boq.items}
-    remarks = _squash(" ".join(r.text for r in boq.remarks))
     raw = [f for answer in [first, *rest] for f in answer]
     valid = [f for f in (_validate(r, by_oz, remarks) for r in raw) if f]
     findings: dict[tuple[str, str], Finding] = {}

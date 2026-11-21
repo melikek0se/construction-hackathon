@@ -86,7 +86,7 @@ def test_api_serves_report_and_questions_including_ai_findings(monkeypatch):
     before = client.get(f"/api/analyses/{analysis_id}/report").json()
     assert before["checks"]["llm"] == 0 and before["questions"] == []
 
-    async def fake_review(boq, findings):
+    async def fake_review(boq, findings, progress=None):
         return [Finding(item_oz="2.12", category="unclear_scope", check_id="L-UNCLEAR-SCOPE", severity="warn",
                         title="Grading undefined", evidence="„Körnung 0/X“", explanation="x", action="ask_client",
                         origin="llm", question_de="Welche Körnung ist für den Grubenkies vorgesehen?")], {}

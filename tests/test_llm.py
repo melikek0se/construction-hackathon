@@ -83,7 +83,7 @@ def test_answers_are_cached():
 def test_api_reports_missing_credentials(monkeypatch):
     from boq import api
 
-    async def no_key(boq, findings):
+    async def no_key(boq, findings, progress=None):
         raise llm.LLMUnavailable("No working Claude API credentials.")
 
     monkeypatch.setattr(api, "run_llm_checks", no_key)
@@ -121,3 +121,24 @@ def test_review_fails_when_every_title_fails(monkeypatch):
     boq = parse_file(str(D))
     with pytest.raises(RuntimeError, match="every request failed"):
         asyncio.run(llm.run_llm_checks(boq, run_checks(boq), client=object()))
+
+
+def test_progress_says_what_is_read_and_what_was_found(monkeypatch):
+    """The page that waits is told the section being read and the findings so far, as they will be listed."""
+    boq = parse_file(D)
+    item = next(i for i in boq.items if len(i.long_text) > 40)
+    quote = llm._squash(item.long_text)[:30]
+    states = []
+
+    async def fake_ask(client, context, task, usage=None):
+        first = not any(s["read"] for s in states)
+        return [answer(item.oz, quote), answer(item.oz, quote), answer(item.oz, "steht nicht im LV", "typo")] if first else []
+
+    monkeypatch.setattr(llm, "_ask", fake_ask)
+    findings, stats = asyncio.run(llm.run_llm_checks(boq, run_checks(boq), client=object(), progress=states.append))
+    assert states[0]["read"] == 0 and len(states[0]["reading"]) == 1 and item.oz.split(".")[0] in states[0]["reading"][0]
+    assert states[0]["found"] == dict.fromkeys(llm.CHECKS, 0)
+    last = states[-1]
+    assert last["read"] == last["total"] == stats["requests"] and last["reading"] == []
+    # the clause quoted twice is one finding, the quote that is not in the LV is none
+    assert sum(last["found"].values()) == len(findings) == 1 and last["found"]["unclear_scope"] == 1

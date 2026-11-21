@@ -17,7 +17,7 @@ import {
 } from "./api";
 import { HardHatIcon, Opening, ProjectsPage, runningTenders } from "./Projects";
 import { Mascot } from "./Mascot";
-import { LoadingTapes } from "./Loading";
+import { LoadingTapes, ReviewTapes } from "./Loading";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, eur, qty } from "./format";
@@ -567,9 +567,10 @@ export default function App() {
       {(intro === "loading" || intro === "opening") && <Opening phase={intro} />}
       {/* while the new-project dialog is open it says itself that it is working */}
       {busy && !pending && <LoadingTapes what={busy} />}
-      {/* the AI review reads every section with Claude: seconds when cached, a minute or two otherwise */}
+      {/* the AI review reads every section with Claude: seconds when cached, a minute or two otherwise;
+          the board under the tapes says which section is being read and what was found so far */}
       {!busy && ai === "running" && analysis && (
-        <LoadingTapes doing="AI review in progress" what={analysis.boq.name || analysis.boq.file} />
+        <ReviewTapes id={analysis.id} what={analysis.boq.name || analysis.boq.file} />
       )}
       {/* while the new-project dialog is open it shows the error itself */}
       {error && !pending && (

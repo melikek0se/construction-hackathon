@@ -93,6 +93,7 @@ _PARSED: dict[tuple[str, float], BoQ] = {}  # project files read for a print-out
 _PROJECT_OF: dict[str, str] = {}  # the catalog project an analysis was opened from
 _INDEXES: dict[tuple, tuple[retrieve.Index, dict]] = {}  # search index and whole-project cost per set of documents
 _MARKS: dict[str, tuple[tuple[str, ...], dict]] = {}  # marks of an analysis, for the findings they were made for
+_REVIEWS: dict[str, dict] = {}  # AI reviews that are running: where each one stands (see llm_progress)
 _PAGES_KEPT = 240  # analyses whose pages stay at hand: several projects of thirty trade LVs
 _DRAWN_ORDER: OrderedDict[str, None] = OrderedDict()  # analyses in the order they were made
 
@@ -746,14 +747,25 @@ def marks(analysis_id: str):
 async def llm_review(analysis_id: str):
     """Run the LLM checks on an analysed LV. Takes from seconds (cached) to a few minutes."""
     boq, rule_findings = _analysis(analysis_id)
+    _REVIEWS[analysis_id] = {"running": True}
     try:
-        findings, stats = await run_llm_checks(boq, rule_findings)
+        findings, stats = await run_llm_checks(
+            boq, rule_findings, progress=lambda state: _REVIEWS.update({analysis_id: {"running": True, **state}}))
     except LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
         raise HTTPException(502, f"The LLM review failed: {exc}") from exc
+    finally:
+        _REVIEWS.pop(analysis_id, None)
     _keep_llm_findings(analysis_id, findings)  # the report and the marks of this analysis now include them
     return {"findings": [f.model_dump(mode="json") for f in findings], "stats": stats}
+
+
+@app.get("/api/analyses/{analysis_id}/llm/progress")
+def llm_progress(analysis_id: str):
+    """What a running AI review is doing right now, for the page that waits for it: sections in all,
+    sections read, the sections being read, findings so far per check. `running` false: none is running."""
+    return _REVIEWS.get(analysis_id, {"running": False})
 
 
 def _analysis(analysis_id: str) -> tuple[BoQ, list[Finding]]:

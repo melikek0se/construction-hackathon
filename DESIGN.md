@@ -489,6 +489,11 @@ stripe 9px along both edges, a 1px ink line outside. Along it runs what is being
 17px 600 capitals at 0.14em, the two tapes running in opposite directions. The tapes block the page until the
 work is done and vanish without an exit. This is the one place where the stripe moves and where an animation
 is more than a colour change; `prefers-reduced-motion` leaves the tapes in place, still.
+During the AI review the tapes sit 90px higher and a board stands under them: a white plate with a 1px ink
+border, 560px wide at most. It says what is being done at that moment: a heading in Barlow Condensed 17px
+capitals with "n of m sections read" beside it, a 6px ink meter, the section being read, and the six kinds of
+finding in two columns, each with its count so far (a count above zero on yellow). All six are looked for at
+once in every section, so they are listed together and never as steps.
 
 ### Trade diagram (project view)
 The one three-dimensional drawing (D-018): each trade LV is a lettered slab, standing one storey above the last

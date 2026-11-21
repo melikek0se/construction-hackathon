@@ -68,6 +68,13 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   risk shift, quantity. A finding is kept only if its quote is found verbatim in the item text or the remarks.
   Wired into the API (`POST /api/analyses/{id}/llm`), the UI ("Run AI review") and the CLI (`--llm`).
   Offline tests in `tests/test_llm.py` (request building, evidence filter, cache, missing credentials).
+  While a review runs the page says what is being done (2026-11-21): a board under the loading tapes with the
+  section being read, sections read of all, and the findings so far for each of the six checks
+  (`ReviewTapes` in `web/src/Loading.tsx`, asked every 0.7 s from `GET /api/analyses/{id}/llm/progress`,
+  filled by the `progress` callback of `run_llm_checks`). Every request looks for all six kinds at once, so
+  the board shows no "now checking typos" step: that would be invented. The state is kept in the server
+  process, so it needs one worker. Seen in the browser with stubbed answers (start and mid-run, 1280×800 and
+  ×620) and through the real API on a cached review of project D; not yet seen on a live, uncached review.
   Live runs with `claude-opus-5-5`, effort medium (2026-11-20): project D (50 items) 4 requests, 53 s, 12 findings;
   project C PDF (274 items) 9 requests, 90 s, 36 findings, about 0.90 USD (81k input, 96k cache-read, 12k
   cache-write, 25k output tokens). No finding was dropped by the evidence filter in either run. The findings

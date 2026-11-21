@@ -356,3 +356,13 @@ export interface ChatTurn {
   content: string;
   answer?: ChatAnswer;
 }
+
+/** Where a running AI review stands (GET …/llm/progress). Every request looks for all six kinds of
+    finding at once, so what moves is the section being read and the findings so far. */
+export interface ReviewProgress {
+  running: boolean;
+  total?: number; // sections of the LV, one request each
+  read?: number; // sections whose answer is in
+  reading?: string[]; // the sections being read now: title and item range
+  found?: Record<string, number>; // findings so far per check, as they will be listed
+}
