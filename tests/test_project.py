@@ -53,6 +53,16 @@ def test_roof_drains_fall_between_two_trades():
     assert "Bauseitig gelieferte Dach" in quotes and "bauseitigen Dachablauf" in quotes
 
 
+def test_word_broken_at_a_pdf_line_end_is_joined():
+    """'bauseitige Stahlum-\\nfassungszargen' must be read whole: the door frames come from the door LV,
+    and a half sentence must not turn into a gap finding."""
+    gaps = [f for f in RESULT["findings"] if f["check_id"].startswith(("P-INTERFACE", "P-BOTH"))]
+    assert not any(s["quote"].endswith("-") for f in gaps for s in f["statements"])
+    edges = {(e["source"], e["target"]): e for e in RESULT["edges"]}
+    e = edges[("19 Sektionaltore Stahltueren", "22 Schreinerarbeiten")]
+    assert any("bauseitige Stahlumfassungszargen" in x["quote"] for x in e["examples"])
+
+
 def test_lv_repeated_inside_another_lv():
     same = {tuple(f["lvs"]): f for f in RESULT["findings"] if f["check_id"] == "P-SAME-SCOPE"}
     f = same[("01 Fertigteiltreppen", "00 Roh und Erdauarbeiten")]

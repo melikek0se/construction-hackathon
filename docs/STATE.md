@@ -114,10 +114,12 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   three or more statements behind them, all arrows of a picked trade), panel with the cross-LV findings or the
   clicked trade,
   "Open this LV" leads into the normal workspace and back. Deterministic, no LLM.
-  On project F (27 LVs, 1,076 items): 177 interface statements, 36 dependencies, 22 findings — roof drains
+  On project F (27 LVs, 1,076 items): 177 interface statements, 39 dependencies, 21 findings — roof drains
   expected "bauseits" by both 12 Dachabdichtung and 14b Dachentwässerung (Stop); 01 Fertigteiltreppen (6 of 6
   items), 11 Sandwichsockel (8 of 9) repeated inside 00 Rohbau and 06 Kautschukboden (7 of 11) inside
   20 Bodenbelagsarbeiten; wall plaster expected by the flooring LV with no plaster LV in the project.
+  Words broken at a PDF line end are joined before reading the statements (2026-11-21): removed a gap finding
+  built from a half sentence ("bauseitige Stahlum-"); it is now the edge 19 Stahltüren → 22 Schreinerarbeiten.
   Checked: graph renders and selects in Chrome at 1600x950 through a script. Not checked: an engineer's view
   of the dependencies; dragging by hand; a project of GAEB files.
 

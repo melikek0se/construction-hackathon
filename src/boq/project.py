@@ -47,6 +47,8 @@ TRADES: dict[str, tuple[str, str, str]] = {
 
 _FIELD = re.compile(r"^\s*(Vorleistung|Folgeleistung)\s*(\(baus\.\))?\s*:\s*(.+)$", re.M | re.I)
 _BY_OTHERS = re.compile(r"[^.\n;:]*\bbauseit\w*[^.\n;]*", re.I)
+# a word broken at a line end and continued in lower case on the next line
+_HYPHEN_BREAK = re.compile(r"([A-Za-zÄÖÜäöüß])-\n([a-zäöüß])")
 _TOKEN = re.compile(r"\[?[A-Z]{3,}_?\d{2,}\]?")
 # words that say how something is provided, not what it is
 _FILLER = set("bauseits bauseitig bauseitige bauseitigen bauseitiger bauseitigem vorhanden vorhandene vorhandenen "
@@ -96,17 +98,23 @@ def provides(boq: BoQ) -> set[str]:
     return _trades_in(head, title=True)
 
 
+def _unhyphenate(text: str) -> str:
+    """PDF lines break words: 'bauseitige Stahlum-\\nfassungszargen' -> 'bauseitige Stahlumfassungszargen'."""
+    return _HYPHEN_BREAK.sub(r"\1\2", text)
+
+
 def statements(name: str, boq: BoQ) -> list[Statement]:
     out = []
     for item in boq.items:
         seen = set()
-        for m in _FIELD.finditer(item.long_text):
+        long_text, text = _unhyphenate(item.long_text), _unhyphenate(item.text)
+        for m in _FIELD.finditer(long_text):
             value = " ".join(m.group(3).split())
             kind = "prior" if m.group(1).lower() == "vorleistung" else "following"
             out.append(Statement(name, item.oz, kind, f"{m.group(1)}{' (baus.)' if m.group(2) else ''}: {value}",
                                  _trades_in(value), _nouns(value), explicit=bool(m.group(2))))
             seen.add(value)
-        for m in _BY_OTHERS.finditer(item.text):
+        for m in _BY_OTHERS.finditer(text):
             quote = " ".join(m.group(0).split())
             if any(value in quote for value in seen) or len(quote) < 12:
                 continue  # already taken as the Vorleistung field
