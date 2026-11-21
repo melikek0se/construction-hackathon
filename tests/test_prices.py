@@ -80,3 +80,10 @@ def test_api_and_report_carry_the_prices():
     with open(DATA / "02_gaeb_90" / "Angebot AN24-0305.D84", "rb") as fh:  # a priced bid needs no suggestions
         priced_id = client.post("/api/analyze", files={"file": ("Angebot AN24-0305.D84", fh)}).json()["id"]
     assert client.get(f"/api/analyses/{priced_id}/prices").json() is None
+
+
+def test_rental_token_prices_are_not_history():
+    """Bid B keeps a fence "vorhalten" at 0.03 EUR per metre-week: a token price, like 0.34 EUR/m3."""
+    rentals = [e for e in HISTORY.entries if e.item.unit in ("mWo", "m2Wo", "m2d", "md", "StWo", "Wo")]
+    assert rentals and all(e.unit_price >= Decimal("0.1") for e in rentals)
+    assert not any(e.project == "B" and e.item.oz == "1.2.3" for e in HISTORY.entries)  # Bauzaun vorhalten 0.03

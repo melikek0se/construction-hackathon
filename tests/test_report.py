@@ -101,3 +101,15 @@ def test_api_serves_report_and_questions_including_ai_findings(monkeypatch):
     html = client.get(f"/api/analyses/{analysis_id}/report.html")
     assert html.status_code == 200 and "Frage 1 – Position 2.12" in html.text
     assert client.get("/api/analyses/unknown/report.html").status_code == 404
+
+
+def test_bidder_question_names_every_item_it_is_about():
+    """A missing-item finding triggered by three supply items, or one AI finding on a clause quoted for
+    several items, is one question; the client must see all the item numbers, not only the first."""
+    boq = parse_file(str(D))
+    finding = Finding(item_oz="2.5", related_oz=["2.6", "2.7"], category="change_order", check_id="C-TEST",
+                      severity="high", evidence="2.5 „Rohrgrabenaushub“", explanation="e", action="ask_client",
+                      question_de="Ist das Verfüllen einzurechnen?")
+    r = build_report(boq, [finding])
+    assert "Betrifft auch: Positionen 2.6, 2.7" in render_questions(r)
+    assert "Betrifft auch: Positionen 2.6, 2.7" in render_html(r)

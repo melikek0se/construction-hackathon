@@ -178,8 +178,15 @@ def render_questions(report: dict) -> str:
     for q in report["questions"]:
         where = f"Position {q['item_oz']}" + (f" (Seite {q['page']})" if q["page"] else "")
         lines += [f"Frage {q['no']} – {where}: {q['item_label']}", q["question"]]
+        if q["related_oz"]:
+            lines.append(f"Betrifft auch: {_positions(q['related_oz'])}")
         lines += [f"Bezug im LV: {q['evidence']}", ""] if q["evidence"] else [""]
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _positions(ozs: list[str]) -> str:
+    """'Position 3.2.20, 3.2.30' — the other items a question is about, so the client sees all of them."""
+    return ("Position " if len(ozs) == 1 else "Positionen ") + ", ".join(ozs[:12]) + (" …" if len(ozs) > 12 else "")
 
 
 def _eur(value: float | None) -> str:
@@ -330,6 +337,7 @@ def render_html(report: dict) -> str:
         out.append(f'<div class="q" lang="de"><b>Frage {q["no"]} – {where}: {e(q["item_label"][:90])}</b>'
                    + ('  <span class="tag">AI</span>' if q["origin"] == "llm" else '')
                    + f'<p class="text">{e(q["question"])}</p>'
+                   + (f'<p>Betrifft auch: {e(_positions(q["related_oz"]))}</p>' if q["related_oz"] else '')
                    + (f'<blockquote>Bezug im LV: {e(q["evidence"])}</blockquote>' if q["evidence"] else '') + '</div>')
 
     out.append(f'<h2>All findings ({total})</h2>')

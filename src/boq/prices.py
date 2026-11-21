@@ -24,11 +24,14 @@ MIN_SIMILARITY = 0.45  # below this a match is not shown at all
 TOP_K = 5
 _TOKEN = re.compile(r"\[?[A-Z]{3,}_?\d{2,}\]?")  # anonymiser placeholders
 _WORD = re.compile(r"[a-zäöüß]+|\d+(?:[.,]\d+)?")
-_SIZE = re.compile(r"\b(?:DN\s*/\s*OD|DN|OD|DA|da)\s*=?\s*(\d{2,4})\b")
+_SIZE = re.compile(r"\b(?:DN\s*/\s*OD|DN|OD|DA|Da|da)\s*=?\s*(\d{2,4})\b")  # as boq.checks.companions
 # Unit prices this low are token prices: bidders park speculative or "included elsewhere" items there
 # (docs/02-dataset.md, finding 2). They say nothing about what the work costs.
 _TOKEN_PRICE = {"m3": Decimal(1), "t": Decimal(1), "St": Decimal(1), "h": Decimal(1), "kg": Decimal("0.05"),
-                "m": Decimal("0.1"), "m2": Decimal("0.1")}
+                "m": Decimal("0.1"), "m2": Decimal("0.1"),
+                # rental per week or day: bid B keeps a fence "vorhalten" at 0.03 EUR per metre-week
+                "mWo": Decimal("0.1"), "m2Wo": Decimal("0.1"), "m2d": Decimal("0.1"), "md": Decimal("0.1"),
+                "StWo": Decimal(1), "Wo": Decimal(1), "d": Decimal(1)}
 _STOP = set("und oder der die das den dem des ein eine einer eines mit für von zu zur zum im in an auf aus bei "
             "nach wie vor jedoch sowie ist sind wird werden als bis je inkl einschl einschließlich".split())
 

@@ -85,10 +85,10 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   the 34 German questions by someone who writes Bieterfragen for a living.
 
 - Price suggestions (`src/boq/prices.py`, `GET /api/analyses/{id}/prices`, item sheet "Price from past bids",
-  report section, CLI `--prices`). History: the three priced bids (656 items after dropping token prices under
-  1 EUR). A price is suggested only from items with the same unit, the same head word and the same nominal
+  report section, CLI `--prices`). History: the three priced bids (643 items after dropping token prices, e.g. under
+  1 EUR/m³ or 0.1 EUR per metre-week). A price is suggested only from items with the same unit, the same head word and the same nominal
   size, at TF-IDF similarity ≥ 0.62; looser matches are shown as references, lump sums never get a price.
-  Back-test `scripts/eval_prices.py`, each project priced from the other two: **5 of 656 items get a price**
+  Back-test `scripts/eval_prices.py`, each project priced from the other two: **5 of 643 items get a price**
   (median error 23 %, all inside the band). On unseen LVs: D 1 of 50, E 4 of 296. Three unlike projects are too
   little history; the code is ready for more. When the item itself is left out but its own project stays in the
   history, 310 of 682 get a price at 6 % median error — the number to expect once similar projects are in.
@@ -164,6 +164,13 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   so an LV printed without a separate short text (project D as PDF) gives different missing-item results than
   its GAEB twin. AI review: a failed title (refusal, max tokens, network) is skipped and listed in
   `stats.failures`; the review fails only if every title fails. The UI does not show `failures` yet.
+- Price and report review (2026-11-21), fixed: token prices of rental units (bid B: a fence "vorhalten" at
+  0.03 EUR per metre-week) were kept in the price history; 13 dropped, back-test unchanged. Price sizes read
+  "Da 125" as the checks do. A bidder question about several items (a missing-item finding with three supply
+  items, an AI finding on a clause quoted for several items) now names all of them ("Betrifft auch: …") in the
+  text and the HTML report. Checked and correct: the bid PDF of B sums to 835,804.22 EUR, as its own last page
+  says (the award D86 differs by two prices); price dates match the GAEB headers; section totals equal the net
+  total on every priced file. Open: the back-test figures in the report's price note are written in, not computed.
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
   has one. They cover pipeline and civil work only.
 - Parser review (2026-11-21), fixed: GAEB 90 read the W / B flags of column 21 (repeat / reference description)
