@@ -253,6 +253,17 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   :8080, password `demo`, seeds itself); an AI review on project D was cached in Postgres and answered from
   it after a restart in 0.03 s (the old disk-cache answers did not match the current prompts: 4 real requests). Not checked: the new Delete button clicked in a browser; a real
   deploy (needs the team's accounts).
+- Chat cost (D-027; `src/boq/retrieve.py`): the chat no longer sends the whole project with each question.
+  A local search picks up to 60 passages and the model reads those plus an index of all LVs. Project F, live:
+  five questions for 0.34 USD in total (0.06–0.08 USD and 5–13 s each, 12–16k input tokens), against about
+  2.55 USD for a first question before; the answers to the roof-drain, wall-plaster and edge-strip questions
+  say the same as the whole-project answers did. Each answer shows its cost and what was read; a button under
+  the last answer reads every document instead and states the price (F: about 2.53 USD now, then 0.06 USD a
+  question for an hour). Seen in a separate browser on project F: the cost line, the priced button, a passage
+  of LV 14b opened and outlined. Not done: the "read every document" button was not clicked in the browser
+  (its server path is tested and was run live before); no comparison on more than four questions; the chat
+  model is still `claude-opus-5-5` (`BOQ_CHAT_MODEL=claude-sonnet-5-5` would halve the price, untested).
+  Spent on live chat tests on 2026-11-21, estimated from token counts: about 5 USD, most of it before this change.
 
 ## In progress
 

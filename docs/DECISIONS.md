@@ -283,3 +283,23 @@ Revisit if: several users or companies need their own projects (accounts), or fi
 Merged with the PDF view (D-023) and the chat (D-025) the same day: that view reads pages from a file, so a project document is
 written out on demand to `data/processed/pages/docs/` (`_doc_path` in `api.py`); which PDF belongs to which
 analysis is kept in memory only, so after a restart a kept PDF is shown again once its file is reopened.
+
+## D-027 — The chat searches first: only the passages a question is about go to the model
+Status: decided · 2026-11-21 (Utku: "cost matters"); replaces the "no retrieval step" part of D-025
+
+Sending every LV of the project with each question was simple and cost too much: project F is 316,700 tokens,
+about 2.55 USD for the first question of an hour. Now a local search (`src/boq/retrieve.py`, BM25 over words
+and 4-letter pieces of words, no model and no database) picks up to 60 passages: the best hits for the
+question, the most similar items of the *other* LVs for the top hits, items named by number, and what an item
+refers back to. The model gets those plus an index of all LVs with their sections. Measured on project F:
+12–16k input tokens, 0.06–0.08 USD and 5–13 s a question, the same conclusions on the four questions asked
+both ways.
+Reading everything is still possible, as a button under an answer that says what it costs; that path keeps
+the one-hour cache of D-025. Each answer shows what it cost and how many passages from how many files it read.
+The price of the search: it is blind to what it did not find, so the model is told it sees an excerpt and
+must say "the passages shown do not answer this", not "the project does not say".
+No Neo4j, no vector store (the database of D-026 stores projects, it is not searched): 1,076 items are searched in memory in well under a second. Not used yet: the
+interface statements and trade graph of `project.py` as a second way to pull linked items.
+Revisit if: answers miss passages that reading everything finds (then add the graph edges or embeddings);
+projects grow past what an in-memory index handles.
+

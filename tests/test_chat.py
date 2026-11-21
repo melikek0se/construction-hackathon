@@ -21,15 +21,16 @@ ROOF = lv("LV_12_Dach.pdf", [("6.1.180", "Dachabläufe einbauen", "Bauseitig gel
 DRAIN = lv("LV_14b_Entwaesserung.pdf", [("7.1.10", "Anschluss Dachablauf", "Anschluss an bauseitigen Dachablauf DN 100.")])
 
 
-def ask(raw, monkeypatch, documents=(ROOF, DRAIN), history=()):
+def ask(raw, monkeypatch, documents=(ROOF, DRAIN), history=(), scope="all"):
     seen = {}
 
-    async def fake_ask(client, documents_text, history, question, open_text=""):
-        seen.update(documents=documents_text, history=history, question=question, open=open_text)
+    async def fake_ask(client, documents_text, history, question, open_text="", cache=True):
+        seen.update(documents=documents_text, history=history, question=question, open=open_text, cache=cache)
         return raw
 
     monkeypatch.setattr(chat, "_ask", fake_ask)
-    out = asyncio.run(chat.answer("Wer liefert die Dachabläufe?", list(history), list(documents), client=object()))
+    out = asyncio.run(chat.answer("Wer liefert die Dachabläufe?", list(history), list(documents), client=object(),
+                                  scope=scope))
     return out, seen
 
 
@@ -83,14 +84,14 @@ def test_api_answers_from_the_other_files_of_the_project(monkeypatch):
     """Project C: the offer (D84) carries no texts; the answer comes from the tender in the same project."""
     seen = {}
 
-    async def fake_ask(client, documents_text, history, question, open_text=""):
+    async def fake_ask(client, documents_text, history, question, open_text="", cache=True):
         seen.update(documents=documents_text, open=open_text, question=question)
         return {"answer": "Yes, item 1.1.10.", "found": True, "citations": [
             {"file": "Leistungsverzeichnis.pdf", "oz": "1.1.10", "quote": "Baustelleneinrichtung herstellen"}]}
 
     monkeypatch.setattr(chat, "_ask", fake_ask)
     offer = client.get("/api/catalog/C/files/2").json()
-    r = client.post(f"/api/analyses/{offer['id']}/chat", json={"question": "Is site set-up an item?", "history": []})
+    r = client.post(f"/api/analyses/{offer['id']}/chat", json={"question": "Is site set-up an item?", "history": [], "scope": "all"})
     assert r.status_code == 200
     body = r.json()
     # the tender stands for the LV in the shared, cacheable block; the open bid follows on its own
@@ -98,7 +99,8 @@ def test_api_answers_from_the_other_files_of_the_project(monkeypatch):
     assert 'file="Angebot AN24-0305.D84"' in seen["open"] and 'file "Angebot AN24-0305.D84" open' in seen["question"]
     tender = client.get("/api/catalog/C/files/0").json()  # another file of the project: the same shared block
     before = seen["documents"]
-    client.post(f"/api/analyses/{tender['id']}/chat", json={"question": "Is site set-up an item?", "history": []})
+    client.post(f"/api/analyses/{tender['id']}/chat",
+                json={"question": "Is site set-up an item?", "history": [], "scope": "all"})
     assert seen["documents"] == before and seen["open"] == ""
     assert body["documents"] == ["Angebot AN24-0305.D84", "Leistungsverzeichnis.pdf"]  # the open file first; one per LV text
     cite = body["citations"][0]
@@ -106,7 +108,7 @@ def test_api_answers_from_the_other_files_of_the_project(monkeypatch):
 
 
 def test_api_chat_without_a_project_reads_the_open_lv(monkeypatch):
-    async def fake_ask(client, documents_text, history, question, open_text=""):
+    async def fake_ask(client, documents_text, history, question, open_text="", cache=True):
         return {"answer": "x", "found": False, "citations": []}
 
     monkeypatch.setattr(chat, "_ask", fake_ask)
@@ -140,11 +142,54 @@ def test_placeholders_are_to_be_kept_as_written():
 def test_on_the_project_overview_no_file_is_open(monkeypatch):
     seen = {}
 
-    async def fake_ask(client, documents_text, history, question, open_text=""):
+    async def fake_ask(client, documents_text, history, question, open_text="", cache=True):
         seen.update(question=question, open=open_text)
         return {"answer": "x", "found": False, "citations": []}
 
     monkeypatch.setattr(chat, "_ask", fake_ask)
     tender = client.get("/api/catalog/C/files/0").json()
-    r = client.post(f"/api/analyses/{tender['id']}/chat", json={"question": "Wo?", "history": [], "reading": False}).json()
+    r = client.post(f"/api/analyses/{tender['id']}/chat", json={"question": "Wo?", "history": [], "reading": False, "scope": "all"}).json()
     assert seen["question"] == "Wo?" and seen["open"] == "" and r["documents"] == ["Leistungsverzeichnis.pdf"]
+
+
+# ---------------------------------------------------------------- search before asking (retrieve.py)
+
+def test_by_default_the_model_reads_only_what_a_search_finds(monkeypatch):
+    filler = lv("LV_03_Maler.pdf", [(f"15.1.{n}", f"Wandanstrich Raum {n}", "Dispersionsfarbe deckend streichen, zwei Anstriche.")
+                                    for n in range(10, 400, 10)])
+    out, seen = ask({"answer": "x", "found": True, "citations": [
+        {"file": "LV_14b_Entwaesserung.pdf", "oz": "7.1.10", "quote": "Anschluss an bauseitigen Dachablauf DN 100"}]},
+        monkeypatch, documents=(ROOF, DRAIN, filler), scope="search")
+    text = seen["documents"]
+    assert 'oz="6.1.180"' in text and 'oz="7.1.10"' in text  # "Dachabläufe" finds "Dachablauf" too
+    assert text.count("<item ") < 30 and seen["cache"] is False and seen["open"] == ""
+    assert 'file="LV_03_Maler.pdf"' in text  # every LV is named in the overview, shown or not
+    assert "only the passages a search found" in seen["question"]
+    assert out["scope"] == "search" and out["passages"] < 30 and out["citations"]
+
+
+def test_an_item_named_by_number_and_the_one_it_refers_to_are_read():
+    from boq import retrieve
+    doc = lv("x.x83", [("3.2.100", "Gussrohr DN 250 liefern", "Druckrohr aus duktilem Gusseisen."),
+                       ("3.2.110", "wie vor, jedoch längskraftschlüssig", "wie vor, jedoch mit Schubsicherung."),
+                       ("9.9.10", "Bauzaun", "Mobiler Bauzaun vorhalten.")])
+    picked = {(p.file, p.oz) for p in retrieve.Index([doc, DRAIN]).select("Was verlangt Pos. 3.2.110 genau?")}
+    assert ("x.x83", "3.2.110") in picked and ("x.x83", "3.2.100") in picked
+
+
+def test_a_follow_up_is_searched_with_the_question_before_it():
+    from boq import retrieve
+    index = retrieve.Index([ROOF, DRAIN])
+    alone = {p.oz for p in index.select("Und in welcher Menge?")}
+    after = {p.oz for p in index.select("Und in welcher Menge?", earlier="Wer liefert die Dachabläufe?")}
+    assert "6.1.180" not in alone and {"6.1.180", "7.1.10"} <= after
+
+
+def test_what_an_answer_cost(monkeypatch):
+    monkeypatch.setattr(chat, "CHAT_MODEL", "claude-opus-5-5")
+    usage = {"input_tokens": 10_000, "cache_write_tokens": 0, "cache_read_tokens": 0, "output_tokens": 1_000}
+    assert chat.cost_usd(usage) == 0.06  # 10k x 4 USD + 1k x 20 USD per million
+    cached = {"input_tokens": 0, "cache_write_tokens": 300_000, "cache_read_tokens": 0, "output_tokens": 0}
+    assert chat.cost_usd(cached) == 2.4  # one-hour cache write: twice the input price
+    monkeypatch.setattr(chat, "CHAT_MODEL", "some-other-model")
+    assert chat.cost_usd(usage) is None

@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import catalog, chat, db
+from boq import catalog, chat, db, retrieve
 from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
@@ -91,6 +91,7 @@ _DRAWN: dict[str, tuple[Path, dict[str, tuple[int, float]]]] = {}
 _PRINT_OUT: dict[str, tuple[str, dict[str, tuple[int, float]]]] = {}
 _PARSED: dict[tuple[str, float], BoQ] = {}  # project files read for a print-out or the chat, by path and mtime
 _PROJECT_OF: dict[str, str] = {}  # the catalog project an analysis was opened from
+_INDEXES: dict[tuple, tuple[retrieve.Index, dict]] = {}  # search index and whole-project cost per set of documents
 _MARKS: dict[str, tuple[tuple[str, ...], dict]] = {}  # marks of an analysis, for the findings they were made for
 _PAGES_KEPT = 240  # analyses whose pages stay at hand: several projects of thirty trade LVs
 _DRAWN_ORDER: OrderedDict[str, None] = OrderedDict()  # analyses in the order they were made
@@ -567,6 +568,7 @@ class Question(BaseModel):
     question: str
     history: list[dict] = []  # earlier turns of this conversation: {"role": "user" | "assistant", "content": …}
     reading: bool = True  # the question is asked beside this LV; false on a project's overview page
+    scope: str = "search"  # "search": read the passages a local search finds; "all": read every document
 
 
 def _chat_documents(analysis_id: str, boq: BoQ) -> tuple[list[BoQ], list[dict]]:
@@ -597,20 +599,30 @@ async def ask_project(analysis_id: str, body: Question):
     if not question:
         raise HTTPException(422, "Ask a question.")
     documents, files = _chat_documents(analysis_id, boq)
+    reading = boq if body.reading else None
+    read = documents + ([boq] if reading is not None and all(d.file != boq.file for d in documents) else [])
+    key = tuple((d.file, len(d.items), id(d)) for d in read)
+    if key not in _INDEXES:  # built once per set of documents: a second or so for a building of 27 LVs
+        if len(_INDEXES) > 8:
+            _INDEXES.clear()
+        _INDEXES[key] = (retrieve.Index(read), chat.whole_project(read))
+    index, whole = _INDEXES[key]
+    scope = "all" if body.scope == "all" else "search"
     try:
-        out = await chat.answer(question[:2000], body.history, documents, reading=boq if body.reading else None)
+        out = await chat.answer(question[:2000], body.history, documents, reading=reading, scope=scope, index=index)
     except LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
         raise HTTPException(502, f"The question could not be answered: {exc}") from exc
-    index = {f["name"]: n for n, f in reversed(list(enumerate(files)))}
+    by_name = {f["name"]: n for n, f in reversed(list(enumerate(files)))}
     for c in out["citations"]:
-        c["index"] = index.get(c["file"])  # which file of the project, to open it from the answer
+        c["index"] = by_name.get(c["file"])  # which file of the project, to open it from the answer
         c["here"] = c["file"] == boq.file
-    read = [d.file for d in documents]  # the open file first in what is shown
+    names = [d.file for d in documents]  # the open file first in what is shown
     if body.reading:
-        read = [boq.file] + [f for f in read if f != boq.file]
-    return {**out, "documents": read}
+        names = [boq.file] + [f for f in names if f != boq.file]
+    # `whole`: what the same question would cost with every document read, for the "read everything" offer
+    return {**out, "documents": names, "whole": whole}
 
 
 class Passage(BaseModel):

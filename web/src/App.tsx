@@ -34,7 +34,7 @@ const VIEWS: [View, string][] = [
   ["whatif", "What-if"],
   ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
 ];
-const CHATS_KEY = "lvcheck.chats.v1";
+const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
 const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
 

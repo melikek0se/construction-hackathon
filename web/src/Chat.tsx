@@ -35,26 +35,30 @@ export function Chat({
     end.current?.scrollIntoView({ block: "end" });
   }, [turns.length, busy]);
 
-  async function send(text: string) {
+  // `again`: the turn index of an answer to give once more from every document of the project, in place
+  // of the one a search-based answer gave; the question is the turn before it.
+  async function send(text: string, again?: number) {
     const question = text.trim();
     if (!question || busy) return;
-    const asked: ChatTurn[] = [...turns, { role: "user", content: question }];
+    const before = again === undefined ? turns : turns.slice(0, again - 1);
+    const asked: ChatTurn[] = [...before, { role: "user", content: question }];
     onTurns(asked);
-    setDraft("");
+    if (again === undefined) setDraft("");
     setBusy(true);
     setError(null);
     try {
       const answer: ChatAnswer = await askProject(
         analysisId,
         question,
-        turns.map((t) => ({ role: t.role, content: t.content })),
+        before.map((t) => ({ role: t.role, content: t.content })),
         openFile !== "",
+        again === undefined ? "search" : "all",
       );
       onTurns([...asked, { role: "assistant", content: answer.answer, answer }]);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
-      onTurns(turns); // the question goes back into the box, nothing is lost
-      setDraft(question);
+      onTurns(turns); // nothing is lost: the question goes back into the box, or the earlier answer stays
+      if (again === undefined) setDraft(question);
     } finally {
       setBusy(false);
     }
@@ -82,7 +86,13 @@ export function Chat({
               {t.content}
             </p>
           ) : (
-            <Answer key={n} turn={t} openFile={openFile} onCite={onCite} />
+            <Answer
+              key={n}
+              turn={t}
+              openFile={openFile}
+              onCite={onCite}
+              onWhole={busy || n !== turns.length - 1 ? undefined : () => void send(turns[n - 1]?.content ?? "", n)}
+            />
           ),
         )}
         {busy && <p className="chat-wait">Reading the project documents…</p>}
@@ -121,7 +131,19 @@ export function Chat({
   );
 }
 
-function Answer({ turn, openFile, onCite }: { turn: ChatTurn; openFile: string; onCite: (c: ChatCitation) => void }) {
+const usd = (v: number) => (v < 0.01 ? "under 0.01 USD" : `${v.toFixed(2)} USD`);
+
+function Answer({
+  turn,
+  openFile,
+  onCite,
+  onWhole,
+}: {
+  turn: ChatTurn;
+  openFile: string;
+  onCite: (c: ChatCitation) => void;
+  onWhole?: () => void; // ask the same question again with every document read; only for the last answer
+}) {
   const a = turn.answer;
   return (
     <div className="chat-a">
@@ -162,9 +184,24 @@ function Answer({ turn, openFile, onCite }: { turn: ChatTurn; openFile: string; 
               : "")
           }
         >
-          Read {a.documents.length} {a.documents.length === 1 ? "document" : "documents"}
+          {a.scope === "all"
+            ? `Read all ${a.files} ${a.files === 1 ? "document" : "documents"} in full`
+            : `Read the ${a.passages} passages a search found, from ${a.files} of ${a.documents.length} ${
+                a.documents.length === 1 ? "document" : "documents"
+              }`}
+          {a.cost_usd !== null && ` · ${usd(a.cost_usd)}`}
           {a.dropped > 0 && ` · ${a.dropped} passage${a.dropped === 1 ? "" : "s"} left out: not found word for word`}
         </p>
+      )}
+      {a && a.scope === "search" && onWhole && (
+        <button className="chat-whole" onClick={onWhole}>
+          Read every document for this question
+          {a.whole.first_usd !== null && a.whole.then_usd !== null && (
+            <span>
+              about {usd(a.whole.first_usd)} now, then {usd(a.whole.then_usd)} a question for an hour
+            </span>
+          )}
+        </button>
       )}
     </div>
   );

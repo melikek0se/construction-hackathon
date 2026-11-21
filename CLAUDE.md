@@ -81,7 +81,8 @@ Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src
 (storage in `src/boq/db.py`: projects, documents, analyses, LLM cache; `DATABASE_URL`, SQLite by default) → `web/` (Vite + React, one screen:
 `web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`, the original PDF pages with
 findings marked on them in `PdfView.tsx`, positions from `src/boq/pdfmarks.py`, pages for LVs without a PDF
-drawn by `src/boq/lvpages.py`, questions about the project in `Chat.tsx` answered by `src/boq/chat.py`; `web/src/types.ts` mirrors
+drawn by `src/boq/lvpages.py`, questions about the project in `Chat.tsx` answered by `src/boq/chat.py` from the passages
+`src/boq/retrieve.py` finds; `web/src/types.ts` mirrors
 `boq.model`). The projects page lists `src/boq/catalog.py` (projects in the database; the dataset ones seeded from
 its hand mapping). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
 

@@ -291,7 +291,13 @@ export interface ChatAnswer {
   grounded: boolean; // false = found, but no passage could be confirmed
   citations: ChatCitation[];
   dropped: number; // passages the model named that are not in the documents
-  documents: string[]; // the files that were read
+  documents: string[]; // the files of the project the answer could draw on
+  scope: "search" | "all"; // read the passages a search found, or every document
+  passages: number; // how many passages (items, pieces of remarks) the model read
+  files: number; // from how many files
+  cost_usd: number | null; // what this answer cost at list prices; null for a model without a known price
+  // what reading every document would cost: the first time, and per question while it is cached (an hour)
+  whole: { tokens: number; first_usd: number | null; then_usd: number | null };
   usage: { input_tokens: number; cache_write_tokens: number; cache_read_tokens: number; output_tokens: number } | null;
 }
 

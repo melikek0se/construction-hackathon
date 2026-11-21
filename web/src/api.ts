@@ -119,12 +119,13 @@ export async function askProject(
   question: string,
   history: { role: string; content: string }[],
   reading = true, // asked beside this LV; false on a project's overview, where no file is open
+  scope: "search" | "all" = "search", // "all" reads every document of the project: thorough and costly
 ): Promise<ChatAnswer> {
   return read(
     await fetch(`/api/analyses/${id}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, history, reading }),
+      body: JSON.stringify({ question, history, reading, scope }),
     }),
   );
 }

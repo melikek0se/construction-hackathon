@@ -13,7 +13,8 @@ import os
 import anthropic
 
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable, _fmt_qty, _squash
-from boq.model import BoQ
+from boq import retrieve
+from boq.model import BoQ, Item
 
 CHAT_MODEL = os.environ.get("BOQ_CHAT_MODEL", MODEL)
 CHAT_EFFORT = os.environ.get("BOQ_CHAT_EFFORT", "low")  # someone is waiting for the answer
@@ -22,6 +23,11 @@ MAX_HISTORY = 12  # earlier turns sent along
 # minutes, not every few seconds: with the default five minutes most questions would pay for all documents
 # again. One hour costs twice the price to store (once) and a twentieth of the price for each question after.
 CACHE = {"type": "ephemeral", "ttl": os.environ.get("BOQ_CHAT_CACHE_TTL", "1h")}
+
+# USD per million tokens: input, output, cache read. A cache write costs 2x input for one hour, 1.25x for
+# five minutes. Only for showing what an answer cost; unknown models show token counts alone.
+PRICES = {"claude-opus-5-5": (4.0, 20.0, 0.20), "claude-sonnet-5-5": (2.0, 10.0, 0.10)}
+TOKENS_PER_CHAR = 0.55  # measured on project F: 316,700 tokens for 575,000 characters as sent (text and tags)
 
 SCHEMA = {
     "type": "object",
@@ -74,6 +80,22 @@ replace it with a word and do not leave it out.
 """
 
 
+def _item(i: Item, limit: int | None = None) -> str:
+    head = f'<item oz="{i.oz}" qty="{_fmt_qty(i)}"'
+    if i.kind != "normal":
+        head += f' kind="{i.kind}"'
+    if i.up is not None:
+        head += f' unit_price="{i.up}"'
+    if i.total is not None:
+        head += f' total="{i.total}"'
+    if i.path:
+        head += f' section="{" / ".join(i.path)}"'
+    body = "\n".join(t for t in (i.short_text.strip(), i.long_text.strip()) if t)
+    if limit and len(body) > limit:
+        body = body[:limit] + "\n[… the rest of this item is not shown]"
+    return f"{head}>\n{body}\n</item>"
+
+
 def _document(boq: BoQ) -> str:
     parts = [f'<document file="{boq.file}" lv="{boq.name or boq.file}" items="{len(boq.items)}">']
     general = [r.text for r in boq.remarks if not r.path]
@@ -82,19 +104,24 @@ def _document(boq: BoQ) -> str:
     for r in boq.remarks:
         if r.path:
             parts.append(f'<note section="{" / ".join(r.path)}">\n{r.text}\n</note>')
-    for i in boq.items:
-        head = f'<item oz="{i.oz}" qty="{_fmt_qty(i)}"'
-        if i.kind != "normal":
-            head += f' kind="{i.kind}"'
-        if i.up is not None:
-            head += f' unit_price="{i.up}"'
-        if i.total is not None:
-            head += f' total="{i.total}"'
-        if i.path:
-            head += f' section="{" / ".join(i.path)}"'
-        body = "\n".join(t for t in (i.short_text.strip(), i.long_text.strip()) if t)
-        parts.append(f"{head}>\n{body}\n</item>")
+    parts += [_item(i) for i in boq.items]
     parts.append("</document>")
+    return "\n".join(parts)
+
+
+def _excerpt(documents: list[BoQ], selected: list[retrieve.Passage]) -> str:
+    """The passages a search picked, in document order, after an index of all LVs of the project."""
+    parts = [retrieve.overview(documents)]
+    for doc in documents:
+        mine = sorted((p for p in selected if p.file == doc.file), key=lambda p: p.order)
+        if not mine:
+            continue
+        parts.append(f'<document file="{doc.file}" lv="{doc.name or doc.file}" items="{len(doc.items)}" '
+                     f'shown="{sum(1 for p in mine if p.item)}">')
+        for p in mine:
+            parts.append(_item(p.item, retrieve.MAX_ITEM_CHARS) if p.item
+                         else f"<remarks_excerpt>\n{p.text}\n</remarks_excerpt>")
+        parts.append("</document>")
     return "\n".join(parts)
 
 
@@ -102,7 +129,8 @@ def _documents(documents: list[BoQ]) -> str:
     return "\n\n".join(_document(d) for d in documents)
 
 
-def _messages(documents_text: str, history: list[dict], question: str, open_text: str = "") -> list[dict]:
+def _messages(documents_text: str, history: list[dict], question: str, open_text: str = "",
+              cache: bool = True) -> list[dict]:
     """The documents open the first user turn and are cached there, so every later question of the
     conversation, and every other conversation about the same project, reads them from the cache.
     `documents_text` is the same whichever file is open; a file that is open but not among them (a bid
@@ -112,14 +140,15 @@ def _messages(documents_text: str, history: list[dict], question: str, open_text
     while turns and turns[0]["role"] != "user":  # a cut history must still open with the user
         turns.pop(0)
     turns.append({"role": "user", "content": question})
-    blocks = [{"type": "text", "text": text, "cache_control": CACHE}
+    # an excerpt picked for one question is different every time: storing it would only cost the write
+    blocks = [{"type": "text", "text": text, **({"cache_control": CACHE} if cache else {})}
               for text in (documents_text, open_text) if text]
     turns[0] = {"role": "user", "content": blocks + [{"type": "text", "text": turns[0]["content"]}]}
     return turns
 
 
 async def _ask(client: anthropic.AsyncAnthropic, documents_text: str, history: list[dict], question: str,
-               open_text: str = "") -> dict:
+               open_text: str = "", cache: bool = True) -> dict:
     response = await client.beta.messages.create(
         model=CHAT_MODEL,
         max_tokens=8000,
@@ -128,7 +157,7 @@ async def _ask(client: anthropic.AsyncAnthropic, documents_text: str, history: l
         thinking={"type": "adaptive"},
         output_config={"effort": CHAT_EFFORT, "format": {"type": "json_schema", "schema": SCHEMA}},
         system=SYSTEM,
-        messages=_messages(documents_text, history, question, open_text),
+        messages=_messages(documents_text, history, question, open_text, cache),
     )
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"the answer stopped with {response.stop_reason}")
@@ -165,22 +194,62 @@ def _verify(raw: dict, documents: list[BoQ]) -> dict:
             "dropped": len(cited) - len(kept), "usage": raw.get("usage")}
 
 
-async def answer(question: str, history: list[dict], documents: list[BoQ],
-                 client: anthropic.AsyncAnthropic | None = None, reading: BoQ | None = None) -> dict:
-    """{"answer", "found", "grounded", "citations": [{"file", "oz", "quote"}], "dropped", "usage"}
+def cost_usd(usage: dict | None) -> float | None:
+    """What a request cost at list prices, from its token counts; None for a model without a price here."""
+    price = PRICES.get(CHAT_MODEL)
+    if not usage or price is None:
+        return None
+    p_in, p_out, p_read = price
+    write = 2.0 if CACHE.get("ttl") == "1h" else 1.25
+    return round((usage["input_tokens"] * p_in + usage["cache_write_tokens"] * p_in * write
+                  + usage["cache_read_tokens"] * p_read + usage["output_tokens"] * p_out) / 1e6, 4)
 
-    `documents` are the project's LVs in an order that does not depend on the question or on the file
-    that is open, so their cached copy serves every question about the project. `reading` is the file
-    the user has open, if any: the model is told so ("this LV"), and reads it too if it is not one of
-    the documents."""
+
+def whole_project(documents: list[BoQ]) -> dict:
+    """What reading every document would cost: about how many tokens, the first time and while cached."""
+    tokens = int(sum(len(_document(d)) for d in documents) * TOKENS_PER_CHAR)
+    price = PRICES.get(CHAT_MODEL)
+    write = 2.0 if CACHE.get("ttl") == "1h" else 1.25
+    return {"tokens": tokens,
+            "first_usd": round(tokens * price[0] * write / 1e6, 2) if price else None,
+            "then_usd": round(tokens * price[2] / 1e6, 2) if price else None}
+
+
+async def answer(question: str, history: list[dict], documents: list[BoQ],
+                 client: anthropic.AsyncAnthropic | None = None, reading: BoQ | None = None,
+                 scope: str = "search", index: retrieve.Index | None = None) -> dict:
+    """{"answer", "found", "grounded", "citations": [{"file", "oz", "quote"}], "dropped", "usage",
+        "scope", "passages", "files", "cost_usd"}
+
+    scope "search" (the default): the model reads the passages a local search picks for the question,
+    plus an index of all LVs; cheap, and blind to what the search missed. scope "all": it reads every
+    document, in an order that does not depend on the question or the open file, cached for an hour.
+    `reading` is the file the user has open, if any: the model is told so ("this LV"), and that file is
+    part of what is read even if it is not among `documents` (a bid beside the tender)."""
     client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
     extra = reading is not None and all(d.file != reading.file for d in documents)
+    everything = documents + ([reading] if extra else [])
+    asked = question
     if reading is not None:
         question = f'[The user has the file "{reading.file}" open; "this LV" means that file.]\n{question}'
+    if scope == "all":
+        text, open_text, cache = _documents(documents), _document(reading) if extra else "", True
+        passages, files = sum(len(d.items) for d in everything), len(everything)
+    else:
+        index = index or retrieve.Index(everything)
+        earlier = next((str(t.get("content", "")) for t in reversed(history) if t.get("role") == "user"), "")
+        selected = index.select(asked, earlier, reading.file if reading else None)
+        text, open_text, cache = _excerpt(everything, selected), "", False
+        passages, files = len(selected), len({p.file for p in selected})
+        question = ("[You are shown only the passages a search found for this question, not the whole "
+                    "project; the project overview lists every LV. If they do not answer it, say that "
+                    "the passages shown do not, not that the project is silent.]\n" + question)
     try:
-        raw = await _ask(client, _documents(documents), history, question, _document(reading) if extra else "")
+        raw = await _ask(client, text, history, question, open_text, cache)
     except _NO_CREDENTIALS as exc:
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
-    return _verify(raw, documents + ([reading] if extra else []))
+    out = _verify(raw, everything)
+    return {**out, "scope": "all" if scope == "all" else "search", "passages": passages, "files": files,
+            "cost_usd": cost_usd(out["usage"])}
