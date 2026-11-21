@@ -265,7 +265,6 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   model is still `claude-opus-5-5` (`BOQ_CHAT_MODEL=claude-sonnet-5-5` would halve the price, untested).
   Spent on live chat tests on 2026-11-21, estimated from token counts: about 5 USD, most of it before this change.
 
-## In progress
 - Intake rebuilt (D-028; `src/boq/intake.py`, `POST /api/intake`, `POST /api/projects` with `roles`,
   `PATCH /api/catalog/{id}/files/{n}`, `IntakePanel` in `web/src/Projects.tsx`): the project number, name and
   client and each file's step (tender / bid / award, with "package", "excerpt", "as submitted") are read from
@@ -279,6 +278,7 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   Not seen: narrow widths, a real mouse drag. A file is moved to another step from the project row ("Move to…" beside the selected file; seen once in
   headless Chrome: a PDF bid moved to Award). Not built: ZIP / folders, deadline. Untested on tenders outside the dataset: the header labels are the ones these six projects use.
 
+## In progress
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against
   the LV text, quantities and remarks by reading, not by an engineer:

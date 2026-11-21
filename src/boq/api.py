@@ -482,6 +482,9 @@ def remove_project_file(project_id: str, index: int):
     catalog.remove_file(project_id, files[index]["id"])
     rest = [_parse_doc(f) for i, f in enumerate(files) if i != index]
     catalog.set_kind(project_id, "trades" if len(set(_same_lv(rest))) > 1 else "versions")
+    return _catalog(project_id)
+
+
 class FileRole(BaseModel):
     step: str
 
@@ -495,9 +498,6 @@ def set_file_step(project_id: str, index: int, body: FileRole):
     if body.step not in intake_rules.STEPS:
         raise HTTPException(422, f"A step is one of: {', '.join(intake_rules.STEPS)}.")
     catalog.set_role(project_id, files[index]["id"], intake_rules.with_step(files[index]["role"], body.step))
-    return _catalog(project_id)
-
-
     return _catalog(project_id)
 
 
