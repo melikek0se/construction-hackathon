@@ -9,11 +9,12 @@ prices) is deliberately left out: it would be a statement without a source.
 """
 import json
 import os
+import time
 
 import anthropic
 
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable, _fmt_qty, _squash
-from boq import retrieve
+from boq import retrieve, spend
 from boq.model import BoQ, Item
 
 CHAT_MODEL = os.environ.get("BOQ_CHAT_MODEL", MODEL)
@@ -26,7 +27,7 @@ CACHE = {"type": "ephemeral", "ttl": os.environ.get("BOQ_CHAT_CACHE_TTL", "1h")}
 
 # USD per million tokens: input, output, cache read. A cache write costs 2x input for one hour, 1.25x for
 # five minutes. Only for showing what an answer cost; unknown models show token counts alone.
-PRICES = {"claude-opus-5-5": (4.0, 20.0, 0.20), "claude-sonnet-5-5": (2.0, 10.0, 0.10)}
+PRICES = spend.PRICES
 TOKENS_PER_CHAR = 0.55  # measured on project F: 316,700 tokens for 575,000 characters as sent (text and tags)
 
 SCHEMA = {
@@ -148,7 +149,9 @@ def _messages(documents_text: str, history: list[dict], question: str, open_text
 
 
 async def _ask(client: anthropic.AsyncAnthropic, documents_text: str, history: list[dict], question: str,
-               open_text: str = "", cache: bool = True, system: str = SYSTEM, schema: dict = SCHEMA) -> dict:
+               open_text: str = "", cache: bool = True, system: str = SYSTEM, schema: dict = SCHEMA,
+               purpose: str = "chat") -> dict:
+    started = time.monotonic()
     response = await client.beta.messages.create(
         model=CHAT_MODEL,
         max_tokens=8000,
@@ -159,6 +162,8 @@ async def _ask(client: anthropic.AsyncAnthropic, documents_text: str, history: l
         system=system,
         messages=_messages(documents_text, history, question, open_text, cache),
     )
+    spend.answered(purpose, response, CHAT_MODEL, ms=round((time.monotonic() - started) * 1000),
+                   write=2.0 if CACHE.get("ttl") == "1h" else 1.25)
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"the answer stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))
@@ -321,7 +326,7 @@ async def overview_answer(question: str, history: list[dict], projects: list[dic
     client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
     try:
         raw = await _ask(client, overview_text(projects), history, f"[Today is {today}.]\n{question}",
-                         cache=False, system=OVERVIEW_SYSTEM, schema=OVERVIEW_SCHEMA)
+                         cache=False, system=OVERVIEW_SYSTEM, schema=OVERVIEW_SCHEMA, purpose="chat, all projects")
     except _NO_CREDENTIALS as exc:
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "

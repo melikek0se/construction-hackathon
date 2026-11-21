@@ -9,7 +9,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, LargeBinary, MetaData, String, Table, Text,
+from sqlalchemy import (JSON, Float, Boolean, Column, DateTime, ForeignKey, Integer, LargeBinary, MetaData, String, Table, Text,
                         create_engine, inspect, text)
 from sqlalchemy.engine import Engine
 
@@ -89,6 +89,27 @@ runs = Table(
     Column("status", String(16), nullable=False),  # queued, running, done, failed
     Column("state", JSON, nullable=False),
     Column("results", JSON),
+)
+
+# The audit of the requests to the Claude API (boq.spend): one row per request, and one per answer taken from
+# llm_cache instead (cached, no tokens). No foreign keys: a row outlives its project and its run.
+llm_calls = Table(
+    "llm_calls", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("created", DateTime(timezone=True), nullable=False, index=True),
+    Column("purpose", String(48), nullable=False),  # "AI review", "second look", "chat", "chat, all projects", "reply read"
+    Column("project_id", String(32), index=True),
+    Column("file", Text),
+    Column("run_id", String(32)),
+    Column("model", String(64), nullable=False),  # the model that answered
+    Column("key", String(8)),  # last four characters of the API key
+    Column("cached", Boolean, nullable=False),
+    Column("input_tokens", Integer, nullable=False),
+    Column("output_tokens", Integer, nullable=False),
+    Column("cache_read_tokens", Integer, nullable=False),
+    Column("cache_write_tokens", Integer, nullable=False),
+    Column("ms", Integer),
+    Column("usd", Float),  # estimate at list prices; unset for a model without one
 )
 
 llm_cache = Table(

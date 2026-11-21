@@ -21,7 +21,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import catalog, chat, db, mail, pipeline, retrieve, runs
+from boq import catalog, chat, db, mail, pipeline, retrieve, runs, spend
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -615,6 +615,13 @@ def start_run(project_id: str):
     return runs.start(project_id, "started by hand")
 
 
+@app.get("/api/spend")
+def spend_audit(project: str | None = None):
+    """The audit of the requests to Claude (boq.spend), of one project or of all: the sum in USD (an
+    estimate at list prices), per purpose, and the latest requests with their token counts."""
+    return spend.audit(project)
+
+
 def _run(found: dict | None) -> dict:
     if found is None:
         raise HTTPException(404, "This run is no longer kept.")
@@ -770,7 +777,8 @@ async def ask_project(analysis_id: str, body: Question):
     index, whole = _INDEXES[key]
     scope = "all" if body.scope == "all" else "search"
     try:
-        out = await chat.answer(question[:2000], body.history, documents, reading=reading, scope=scope, index=index)
+        with spend.scope(project_id=_project_id(analysis_id), file=reading.file if reading else None):
+            out = await chat.answer(question[:2000], body.history, documents, reading=reading, scope=scope, index=index)
     except LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
@@ -932,8 +940,9 @@ async def llm_review(analysis_id: str):
     boq, rule_findings = _analysis(analysis_id)
     _REVIEWS[analysis_id] = {"running": True}
     try:
-        findings, stats = await run_llm_checks(
-            boq, rule_findings, progress=lambda state: _REVIEWS.update({analysis_id: {"running": True, **state}}))
+        with spend.scope(project_id=_project_id(analysis_id), file=boq.file):
+            findings, stats = await run_llm_checks(
+                boq, rule_findings, progress=lambda state: _REVIEWS.update({analysis_id: {"running": True, **state}}))
     except LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
@@ -1141,7 +1150,8 @@ async def read_mail_reply(mail_id: str, body: Reply):
     if len(reply) < 10:
         raise HTTPException(422, "Paste the text of the client's reply.")
     try:
-        read = await mail.read_reply(found["items"], reply)
+        with spend.scope(project_id=found["project_id"]):
+            read = await mail.read_reply(found["items"], reply)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     except LLMUnavailable as exc:

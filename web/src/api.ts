@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, WhatIfResult, TenderDate } from "./types";
+import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, WhatIfResult, TenderDate } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -233,6 +233,11 @@ export async function readReply(mailId: string, text: string): Promise<QuestionM
 /** The latest pipeline run of every project that has one: where each project stands. */
 export async function listRuns(): Promise<Run[]> {
   return read(await fetch("/api/runs"));
+}
+
+/** The audit of the requests to Claude, of one project or of all: sum, per purpose, the latest requests. */
+export async function getSpend(projectId?: string): Promise<Spend> {
+  return read(await fetch(projectId ? `/api/spend?project=${encodeURIComponent(projectId)}` : "/api/spend"));
 }
 
 /** The latest runs of one project, newest first, each with the record of its steps. */

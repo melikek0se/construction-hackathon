@@ -484,3 +484,33 @@ export interface Run {
   waiting_for: string | null; // what the person has to do, when the run waits
   since: { new: number; gone: number } | null; // against the run before it on this project
 }
+
+/** One request to Claude as the audit keeps it (src/boq/spend.py), or an answer taken from the app's cache. */
+export interface SpendCall {
+  id: number;
+  created: string;
+  purpose: string; // "AI review", "second look", "chat", "chat, all projects", "reply read"
+  project_id: string | null;
+  file: string | null;
+  run_id: string | null;
+  model: string;
+  cached: boolean; // answered from the app's own cache: nothing was sent, nothing was paid
+  ms: number | null;
+  usd: number | null; // estimate at list prices; null for a model without one
+  key: string | null; // last four characters of the API key
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  cache_write_tokens: number;
+}
+
+/** What Claude cost, of one project or in all. */
+export interface Spend {
+  usd: number;
+  requests: number; // sent to the API
+  cached: number; // answered from the app's cache
+  unpriced: number; // requests whose model has no list price here: tokens only
+  keys: string[];
+  by_purpose: { purpose: string; requests: number; cached: number; usd: number; input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number }[];
+  calls: SpendCall[];
+}

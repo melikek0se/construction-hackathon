@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { getSpend } from "./api";
 import { Sign } from "./components";
-import { SEVERITIES, SEVERITY_LABEL, type Run, type RunStage, type RunStep, type Severity, type StageId } from "./types";
+import { SEVERITIES, SEVERITY_LABEL, type Run, type RunStage, type RunStep, type Severity, type Spend, type StageId } from "./types";
 import "./runs.css";
 
 /* The pipeline (src/boq/pipeline.py) and its runs (src/boq/runs.py): what is done with a project's files,
@@ -437,6 +438,111 @@ export function PipelineStrip({
   );
 }
 
+const tokens = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}k` : String(n));
+
+/** The audit of what Claude was asked and what it cost (src/boq/spend.py): one line, opening to the sums
+ *  per purpose and the latest requests. `at` changes when there may be something new to read. */
+function SpendAudit({ projectId, at }: { projectId: string | null; at: string }) {
+  const [spend, setSpend] = useState<Spend | null>(null);
+  useEffect(() => {
+    let live = true;
+    void getSpend(projectId ?? undefined).then((s) => live && setSpend(s), () => undefined);
+    return () => {
+      live = false;
+    };
+  }, [projectId, at]);
+  if (!spend) return null;
+  const none = spend.requests + spend.cached === 0;
+  return (
+    <details className="spend">
+      <summary>
+        <b>Claude</b>
+        {none ? (
+          <span>No request yet{projectId ? " on this project" : ""}.</span>
+        ) : (
+          <>
+            <span className="num spend-sum">${spend.usd.toFixed(2)}</span>
+            <span>
+              {spend.requests} request{spend.requests === 1 ? "" : "s"}
+              {spend.cached > 0 && `, ${spend.cached} more answered from the cache at no cost`}
+            </span>
+            {spend.keys.length > 0 && <span className="spend-key">key …{spend.keys.join(", …")}</span>}
+          </>
+        )}
+      </summary>
+      {!none && (
+        <div className="spend-body">
+          <p className="spend-note">
+            An estimate at list prices from the token counts the API returned, not the invoice.
+            {spend.unpriced > 0 &&
+              ` ${spend.unpriced} request${spend.unpriced === 1 ? " was" : "s were"} answered by a model without a list price here: counted in tokens only.`}
+          </p>
+          <table className="spend-table">
+            <thead>
+              <tr>
+                <th>For</th>
+                <th className="r">Requests</th>
+                <th className="r">From cache</th>
+                <th className="r">Tokens in</th>
+                <th className="r">Tokens out</th>
+                <th className="r">USD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {spend.by_purpose.map((p) => (
+                <tr key={p.purpose}>
+                  <th>{p.purpose}</th>
+                  <td className="r num">{p.requests}</td>
+                  <td className="r num">{p.cached}</td>
+                  <td
+                    className="r num"
+                    title={`${p.input_tokens} new, ${p.cache_write_tokens} written to Claude's cache, ${p.cache_read_tokens} read from it`}
+                  >
+                    {tokens(p.input_tokens + p.cache_write_tokens + p.cache_read_tokens)}
+                  </td>
+                  <td className="r num">{tokens(p.output_tokens)}</td>
+                  <td className="r num">${p.usd.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <table className="spend-table calls">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>For</th>
+                <th>File</th>
+                <th>Model</th>
+                <th className="r">In</th>
+                <th className="r">Out</th>
+                <th className="r">Time</th>
+                <th className="r">USD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {spend.calls.slice(0, 60).map((c) => (
+                <tr key={c.id} className={c.cached ? "cached" : undefined}>
+                  <td className="num">
+                    {new Date(c.created).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                  </td>
+                  <td>{c.purpose}</td>
+                  <td lang="de">{c.file ?? ""}</td>
+                  <td>{c.cached ? "from cache" : c.model}</td>
+                  <td className="r num">{c.cached ? "" : tokens(c.input_tokens + c.cache_write_tokens + c.cache_read_tokens)}</td>
+                  <td className="r num">{c.cached ? "" : tokens(c.output_tokens)}</td>
+                  <td className="r num">{took(c.ms)}</td>
+                  <td className="r num">{c.usd === null ? "no price" : `$${c.usd.toFixed(c.usd > 0 && c.usd < 0.01 ? 4 : 2)}`}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {spend.calls.length > 60 && <p className="spend-note">The latest 60 of {spend.requests + spend.cached} are shown.</p>}
+        </div>
+      )}
+    </details>
+  );
+}
+
 /** Every project against the six stations: where each stands, and which waits for the person. */
 function RunsTable({ projects, runs, onOpen }: { projects: { id: string; name: string }[]; runs: Run[]; onOpen: (id: string) => void }) {
   const titles = runs[0]?.stages.map((s) => s.title) ?? ["Read", "Rules", "AI review", "Compare", "Questions", "Prices"];
@@ -529,6 +635,7 @@ export function RunsDialog({
         </button>
       </header>
       <div className="runs-body">
+        <SpendAudit projectId={project?.id ?? null} at={runs.map((r) => `${r.id}${r.status}${r.finished_steps}`).join()} />
         {project && runs.length === 0 && (
           <p className="runs-empty">
             <b>No run yet.</b>

@@ -27,7 +27,7 @@ from pathlib import Path
 
 from sqlalchemy import insert, select, update
 
-from boq import catalog, db, pipeline
+from boq import catalog, db, pipeline, spend
 from boq import intake as intake_rules
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
@@ -38,9 +38,7 @@ RUNS_AT_ONCE = 2
 AGENTIC_AT_ONCE = 3  # documents an agentic step works on at the same time within one run
 
 PENDING = ("queued", "held", "waiting", "interrupted", "running")  # rows a run still has to work through
-# USD per million tokens (input, output, cache read), as in boq.chat; a cache write costs 1.25 × input
-_USD = {"claude-opus-5-5": (4.0, 20.0, 0.20), "claude-sonnet-5-5": (2.0, 10.0, 0.10)}
-_STAGE_ORDER = ("check", "questions", "pricing")  # where a tender stands on the board (projects.plan.stage)
+_STAGE_ORDER = ("check", "pricing")  # where a run moves a tender on the board (projects.plan.stage)
 
 _pool = ThreadPoolExecutor(max_workers=RUNS_AT_ONCE, thread_name_prefix="run")
 _lock = threading.Lock()
@@ -116,12 +114,9 @@ def _counts(findings: list) -> dict:
 
 
 def _usd(usage: dict) -> float | None:
-    price = _USD.get(usage.get("model", ""))
-    if price is None or not usage.get("api_requests"):
-        return 0.0 if price is not None else None
-    p_in, p_out, p_read = price
-    return round((usage.get("input_tokens", 0) * p_in + usage.get("cache_write_tokens", 0) * p_in * 1.25
-                  + usage.get("cache_read_tokens", 0) * p_read + usage.get("output_tokens", 0) * p_out) / 1e6, 3)
+    """What an agentic step cost (estimate at list prices, boq.spend); 0 when every answer came from the cache."""
+    cost = spend.usd(usage.get("model"), usage)
+    return None if cost is None else round(cost, 3) if usage.get("api_requests") else 0.0
 
 
 def _do(run: dict, row: dict, job) -> list | None:
@@ -134,7 +129,9 @@ def _do(run: dict, row: dict, job) -> list | None:
     _save(run)
     started = time.monotonic()
     try:
-        found = job(row)
+        # what Claude is asked inside the step is noted in the audit under this project, file and run
+        with spend.scope(project_id=run["project_id"], run_id=run["id"], file=row["file"]):
+            found = job(row)
         with _lock:
             row.update(status="done", counts=_counts(found))
     except pipeline.Skip as why:
@@ -183,6 +180,8 @@ def _work(run: dict, results: dict | None = None) -> None:
             def keep(key: str, value) -> None:
                 with _lock:
                     results["facts"].setdefault(str(doc_id[n]), {})[key] = value
+                    if key == "questions":  # how the questions of this LV stand: the pages say whose move it is
+                        row["tally"] = value
 
             def spent(usage: dict) -> None:
                 with _lock:
@@ -323,7 +322,9 @@ def _work(run: dict, results: dict | None = None) -> None:
 
                 _do(run, row, across)
 
-        # 5. questions, where the run waits for the person; 6. prices, behind that
+        # 5. questions, a thread that stays open until the client has answered (or the person closes it);
+        # 6. prices, worked out beside it: a question can be asked until shortly before the bid, so nothing
+        # waits for the answers (D-040)
         waived = set(run.get("waived") or [])
         for n in order:
             key = str(doc_id[n])
@@ -331,21 +332,14 @@ def _work(run: dict, results: dict | None = None) -> None:
                           + [Finding.model_validate(f) for f in results["extra"].get(key, [])])
             with _lock:
                 results["keys"][key] = sorted({f"{f.check_id}|{f.item_oz}|{f.evidence}" for f in everything})
-            held = False
             for row in skip_others(n, ("questions", "prices")):
-                if held:
-                    with _lock:
-                        row.update(status="held", detail="after the questions")
-                    continue
                 ctx = context(n, row, findings=everything, waived=doc_id[n] in waived)
                 _do(run, row, lambda row, ctx=ctx: step_of[row["step"]].run(ctx))
-                held = row["status"] == "waiting"
 
         waiting = any(r["status"] == "waiting" for r in rows)
         with _lock:
             run.update(status="waiting" if waiting else "done", finished=_now())
-        _move_stage(project, "questions" if waiting else "pricing" if any(
-            r["stage"] == "prices" and r["status"] == "done" for r in rows) else None)
+        _move_stage(project, "pricing" if any(r["stage"] == "prices" and r["status"] == "done" for r in rows) else None)
     except _Cancelled:
         with _lock:
             for r in run["steps"]:
@@ -368,10 +362,12 @@ def _work(run: dict, results: dict | None = None) -> None:
 
 
 def _move_stage(project: dict, stage: str | None) -> None:
-    """The tender moves on along the board with the run: to "questions" when the run waits for them, to
-    "pricing" when the prices are worked out. Forward only; what the person set later is not taken back."""
-    now = (project.get("plan") or {}).get("stage") or "check"
-    if stage and now in _STAGE_ORDER and _STAGE_ORDER.index(stage) > _STAGE_ORDER.index(now):
+    """The tender moves on along the board with the run: to "pricing" when the prices are worked out.
+    Forward only; what the person set later is not taken back, and a tender not taken on yet (intake) or
+    one with an outcome stays where it is."""
+    plan = project.get("plan") or {}
+    now = plan.get("stage") or "check"
+    if stage and not plan.get("outcome") and now in _STAGE_ORDER and _STAGE_ORDER.index(stage) > _STAGE_ORDER.index(now):
         catalog.set_plan(project["id"], {"stage": stage})
 
 
@@ -456,8 +452,8 @@ def _take_up(run_id: str, change, wait: bool = False) -> dict | None:
 
 
 def go_on(run_id: str, wait: bool = False) -> dict | None:
-    """The person goes on without waiting for the client: the questions that are open stay open, the run
-    works out the prices."""
+    """The person closes the questions without waiting for the client: what is open stays unanswered and
+    is priced as a risk; the run has nothing left to wait for."""
     def waive(run: dict) -> None:
         run["waived"] = sorted({r["doc_id"] for r in run["steps"] if r["status"] == "waiting"} | set(run.get("waived") or []))
 
@@ -485,7 +481,7 @@ def cancel(run_id: str) -> bool:
 
 def nudge(project_id: str | None, wait: bool = False) -> None:
     """Something happened to the bidder questions of a project (a message written, sent, answered): the
-    run that waits for them looks again, and goes on to the prices if nothing is open any more."""
+    run that waits for them looks again, and is done if nothing is open any more."""
     if not project_id:
         return
     query = (select(db.runs.c.id, db.runs.c.status).where(db.runs.c.project_id == project_id)
@@ -559,7 +555,11 @@ def _view(run: dict) -> dict:
     spent = [r["usd"] for r in steps if r.get("usd") is not None]
     held_up = [r for r in steps if r["status"] == "waiting"]
     waiting = {"detail": f"open on {len(held_up)} LVs"} if len(held_up) > 1 else held_up[0] if held_up else None
-    return {**view, "total": len(steps), "finished_steps": len(done), "counts": counts,
+    tallies = {r["doc"]: r["tally"] for r in steps if r.get("tally")}  # per LV, as its last step left it
+    questions = {k: sum(t[k] for t in tallies.values()) for k in ("total", "to_send", "out", "answered")} if tallies else None
+    if questions and not held_up:  # nothing waits any more: closed by the person, the deadline or the bid
+        questions |= {"to_send": 0, "out": 0}
+    return {**view, "total": len(steps), "finished_steps": len(done), "counts": counts, "questions": questions,
             "stages": _stages(steps), "usd": round(sum(spent), 3) if spent else None,
             "waiting_for": waiting["detail"] if waiting else None,
             "active": view["status"] in ("queued", "running")}

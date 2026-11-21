@@ -9,13 +9,14 @@ import hashlib
 import json
 import os
 import re
+import time
 from collections.abc import Callable
 from pathlib import Path
 
 import anthropic
 from sqlalchemy import insert, select
 
-from boq import db
+from boq import db, spend
 from boq.model import BoQ, Finding, Item
 
 
@@ -194,7 +195,9 @@ async def _ask(client: anthropic.AsyncAnthropic, context: str, task: str, usage:
     key = hashlib.sha256("\x00".join([MODEL, EFFORT, PROMPT_VERSION, SYSTEM, context, task]).encode()).hexdigest()
     hit = cache_get(key)
     if hit is not None:
+        spend.record("AI review", MODEL, cached=True)
         return hit
+    started = time.monotonic()
     response = await client.beta.messages.create(
         model=MODEL,
         max_tokens=16000,
@@ -209,6 +212,7 @@ async def _ask(client: anthropic.AsyncAnthropic, context: str, task: str, usage:
             {"type": "text", "text": task},
         ]}],
     )
+    spend.answered("AI review", response, MODEL, ms=round((time.monotonic() - started) * 1000))
     if usage is not None:
         u = response.usage
         usage["input_tokens"] += u.input_tokens or 0
@@ -390,8 +394,11 @@ async def second_look(boq: BoQ, rule_findings: list[Finding], ai_findings: list[
     usage = dict.fromkeys(["api_requests", "input_tokens", "cache_write_tokens", "cache_read_tokens", "output_tokens"], 0)
     key = hashlib.sha256("\x00".join(["second", MODEL, EFFORT, SECOND_SYSTEM, task]).encode()).hexdigest()
     raw = cache_get(key)
-    if raw is None:
+    if raw is not None:
+        spend.record("second look", MODEL, cached=True)
+    else:
         client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
+        started = time.monotonic()
         try:
             response = await client.beta.messages.create(
                 model=MODEL, max_tokens=8000, betas=["server-side-fallback-2026-07-01"], fallbacks="default",
@@ -400,6 +407,7 @@ async def second_look(boq: BoQ, rule_findings: list[Finding], ai_findings: list[
                 system=SECOND_SYSTEM, messages=[{"role": "user", "content": task}])
         except _NO_CREDENTIALS as exc:
             raise LLMUnavailable("No working Claude API credentials.") from exc
+        spend.answered("second look", response, MODEL, ms=round((time.monotonic() - started) * 1000))
         if response.stop_reason != "end_turn":
             raise RuntimeError(f"second look stopped with {response.stop_reason}")
         u = response.usage

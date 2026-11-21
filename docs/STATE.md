@@ -19,6 +19,20 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   (`ScheduleSwitch`) and the sliding wrapper are gone. Checked: type-check, the page in headless Chrome at 1440
   wide. Not checked: clicking the two buttons in the browser; the page with no project.
 
+- Audit of what Claude costs (2026-11-21; `src/boq/spend.py`, table `llm_calls`, `GET /api/spend[?project=]`):
+  one row per request to the Claude API (AI review, second look, chat, chat about all projects, reply
+  read) with project, file, pipeline run, the model that answered, the token counts the API returned, the
+  time it took, USD at list prices and the last four characters of the API key; an answer taken from the
+  app's own cache is a row too, at 0 USD. What a request belongs to is said once around the call
+  (`spend.scope`), not passed through the callers. UI: a line "Claude $x, n requests" at the top of the
+  pipeline dialog (per project behind "Record" on the strip, all projects from the band), opening to the
+  sums per purpose and the latest requests.
+  Checked: `tests/test_spend.py` (2, with a stand-in for the API); on the dev stack a cached run (5 rows at
+  0 USD under its project, file and run) and one real chat question (0.0306 USD, the same figure the chat
+  returns); the dialog in headless Chrome. Not checked: the row of a real, uncached AI review and of a
+  reply read (same code path as the tested one). Known: USD is an estimate, not the invoice; requests made
+  before this are not in it; a request that fails before an answer comes back is not noted.
+
 - Pipeline as a workflow with a gate (2026-11-21, D-039; `pipeline.py`, `runs.py`, `web/src/Runs.tsx`): six
   stations (read, rules, AI review, compare, questions, prices). The run stops at the bidder questions with
   status `waiting` until they are answered, the person goes on without (`POST /api/runs/{id}/go-on`) or the

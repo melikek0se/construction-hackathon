@@ -16,6 +16,7 @@ import os
 import re
 import smtplib
 import ssl
+import time
 import uuid
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
@@ -23,7 +24,7 @@ from email.utils import formatdate, make_msgid
 import anthropic
 from sqlalchemy import delete, insert, select, update
 
-from boq import db
+from boq import db, spend
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable, _squash
 from boq.report import _positions
 
@@ -266,6 +267,7 @@ async def read_reply(items: list[dict], reply: str, client: anthropic.AsyncAnthr
         f"<question no=\"{no}\" item=\"{q['item_oz']}\">\n{q['question']}\n"
         + (f"Quoted from the LV: {q['evidence']}\n" if q.get("evidence") else "") + "</question>"
         for no, q in enumerate(items, 1))
+    started = time.monotonic()
     try:
         response = await client.beta.messages.create(
             model=MODEL,
@@ -282,6 +284,7 @@ async def read_reply(items: list[dict], reply: str, client: anthropic.AsyncAnthr
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
+    spend.answered("reply read", response, MODEL, ms=round((time.monotonic() - started) * 1000))
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"Reading the reply stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))["answers"]
