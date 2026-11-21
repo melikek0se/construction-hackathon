@@ -124,12 +124,24 @@ def build_report(boq: BoQ, findings: list[Finding], prices: dict | None = None) 
         s["value_at_items_with_findings"] = _money(s["value_at_items_with_findings"]) if priced else None
         section_rows.append(s)
 
-    top_items = sorted(
-        ({"item_oz": oz, "label": by_oz[oz].label, "points": sum(POINTS[f.severity] for f in fs),
-          "findings": len(fs), "worst": min(fs, key=lambda f: "high warn info".split().index(f.severity)).severity,
-          "total": _money(by_oz[oz].total), "headline": fs[0].title or fs[0].check_id}
-         for oz, fs in per_item.items()),
-        key=lambda r: (-r["points"], -(r["total"] or 0)))[:15]
+    # The value of an item: its total in the file, else what its findings were given (the bid in progress,
+    # a priced version of the LV, past bids: boq.api), with where that price is from.
+    def worth(oz: str, fs: list[Finding]) -> tuple[Decimal | None, str]:
+        if by_oz[oz].total is not None:
+            return by_oz[oz].total, ""
+        given = max((f for f in fs if f.money_at_stake is not None and f.money_basis), key=lambda f: f.money_at_stake, default=None)
+        return (given.money_at_stake, given.money_basis) if given else (None, "")
+
+    rank = "high warn info".split()
+    top_items = []
+    for oz, fs in per_item.items():
+        value, basis = worth(oz, fs)
+        top_items.append({"item_oz": oz, "label": by_oz[oz].label, "points": sum(POINTS[f.severity] for f in fs),
+                          "findings": len(fs), "worst": min(fs, key=lambda f: rank.index(f.severity)).severity,
+                          "total": _money(value), "basis": basis, "headline": fs[0].title or fs[0].check_id})
+    # by the money: the worst finding decides first, then what the item is worth; points only break a tie
+    top_items = sorted(top_items, key=lambda r: (rank.index(r["worst"]), -(r["total"] or 0), -r["points"]))[:15]
+    money_known = sum(1 for r in top_items if r["total"] is not None)
 
     kinds = Counter(i.kind for i in boq.items if i.kind != "normal")
     kind_rows = [{"kind": k, "label": KIND_LABEL[k], "items": n,
@@ -157,6 +169,7 @@ def build_report(boq: BoQ, findings: list[Finding], prices: dict | None = None) 
                     for a, n in Counter(f.action for f in findings).most_common()],
         "sections": section_rows,
         "top_items": top_items,
+        "money_at_findings": _money(sum((worth(oz, fs)[0] or Decimal(0) for oz, fs in per_item.items()), Decimal(0))) if money_known else None,
         "position_types": kind_rows,
         "change_orders": change_orders,
         "questions": _questions(findings, by_oz),
@@ -260,7 +273,11 @@ def render_html(report: dict) -> str:
                + (f', {report["checks"]["llm"]} from the AI review; each AI finding quotes the LV verbatim and '
                   f'should be read by the estimator before it is acted on.' if report["checks"]["llm"]
                   else '. The AI review has not been run for this report.')
-               + (' ' if priced else ' The file has no prices, so no finding carries a money amount.') + '</p>')
+               + (' ' if priced else (f' The file has no prices; the items with findings are worth {_eur(report["money_at_findings"])} '
+                                       f'by the prices at hand (the bid in progress, a priced version of this LV, past bids).'
+                                       if report.get("money_at_findings") else
+                                       ' The file has no prices and nobody has priced these items yet, so no finding carries a money amount.'))
+               + '</p>')
     if report["actions"]:
         out.append('<table><tr><th>What to do</th><th class="r">Findings</th></tr>'
                    + "".join(f'<tr><td>{e(a["label"])}</td><td class="r">{a["count"]}</td></tr>' for a in report["actions"])
@@ -280,12 +297,16 @@ def render_html(report: dict) -> str:
     out.append('</table>')
 
     if report["top_items"]:
-        out.append('<h3>Items with the most risk points</h3><table><tr><th>Item</th><th>First finding</th>'
-                   '<th class="r">Findings</th><th class="r">Points</th>' + ('<th class="r">Item total</th>' if priced else '') + '</tr>')
+        valued = any(r["total"] is not None for r in report["top_items"])
+        out.append('<h3>Items by the money at stake</h3><p class="note">The worst finding decides first, then what the '
+                   'item is worth.</p><table><tr><th>Item</th><th>First finding</th>'
+                   '<th class="r">Findings</th><th class="r">Points</th>' + ('<th class="r">Item value</th>' if valued else '') + '</tr>')
         for r in report["top_items"]:
             out.append(f'<tr><td><span class="num">{e(r["item_oz"])}</span> <span lang="de">{e(r["label"][:70])}</span></td>'
                        f'<td>{sign(r["worst"])} {e(r["headline"])}</td><td class="r">{r["findings"]}</td>'
-                       f'<td class="r"><b>{r["points"]}</b></td>' + (f'<td class="r">{_eur(r["total"])}</td>' if priced else '') + '</tr>')
+                       f'<td class="r">{r["points"]}</td>'
+                       + ((f'<td class="r"><b>{_eur(r["total"])}</b>' + (f'<br><span class="note">from {e(r["basis"])}</span>' if r.get("basis") else '') + '</td>'
+                           if r["total"] is not None else '<td class="r note">no price yet</td>') if valued else '') + '</tr>')
         out.append('</table>')
 
     if report["position_types"]:

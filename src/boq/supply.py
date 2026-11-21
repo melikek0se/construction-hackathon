@@ -62,8 +62,13 @@ def set_company(values: dict) -> dict:
     return new
 
 
+# What else is kept about a directory entry, in the column `more`. Read and shown by boq.partners.
+MORE = {"website": "", "customer_no": "", "contacts": [], "preferred": False, "blocked": False, "no_call": False,
+        "documents": [], "found": None, "style": None, "example": False}
+
+
 def _supplier(row) -> dict:
-    return {"id": row.id, "name": row.name, "kind": row.kind, "email": row.email, "contact": row.contact,
+    return {"more": {**MORE, **(row.more or {})}, "id": row.id, "name": row.name, "kind": row.kind, "email": row.email, "contact": row.contact,
             "phone": row.phone, "place": row.place, "groups": row.groups or [], "products": row.products or [],
             "note": row.note, "source": row.source, "created": row.created.isoformat(timespec="seconds")}
 
@@ -80,7 +85,7 @@ def supplier(supplier_id: str) -> dict | None:
     return _supplier(row) if row else None
 
 
-_FIELDS = ("name", "kind", "email", "contact", "phone", "place", "groups", "products", "note", "source")
+_FIELDS = ("name", "kind", "email", "contact", "phone", "place", "groups", "products", "note", "source", "more")
 
 
 def save_supplier(values: dict, supplier_id: str | None = None) -> dict:
@@ -92,6 +97,9 @@ def save_supplier(values: dict, supplier_id: str | None = None) -> dict:
     if "products" in values:
         values["products"] = [{"name": str(p.get("name", "")).strip(), "maker": str(p.get("maker", "")).strip()}
                               for p in values["products"] if str(p.get("name", "")).strip()]
+    if "more" in values:  # only the keys given change
+        before = (supplier(supplier_id) or {}).get("more") or {} if supplier_id else {}
+        values["more"] = {**MORE, **before, **{k: v for k, v in values["more"].items() if k in MORE}}
     with db.engine().begin() as conn:
         if supplier_id is None:
             supplier_id = uuid.uuid4().hex[:12]
@@ -157,7 +165,8 @@ def at_hand(boq: BoQ, project_id: str | None) -> dict[str, dict]:
     today, names = date.today(), {s["id"]: s["name"] for s in suppliers()}
     known: dict[tuple[str, str], dict] = {}
     for q in all_quotes():
-        if (q["project_id"], q["file"]) == (project_id, boq.file) or not _fresh(q, today):
+        # an example quote (boq.partners_demo) is a made-up price: it never prices a real item
+        if (q["project_id"], q["file"]) == (project_id, boq.file) or not _fresh(q, today) or (q["terms"] or {}).get("example"):
             continue
         for line in q["lines"]:
             key = (_same(line.get("label", "")), line.get("unit", ""))

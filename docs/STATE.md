@@ -14,6 +14,11 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Done
 
+- Risk report by the money (2026-11-22): "Items by the money at stake" ranks by the worst finding, then
+  the item's value (from the file, else what the findings were given, with where the price is from); a
+  file without prices says what the items with findings are worth by the prices at hand. Checked on the
+  dev API (project B's tender: 3,460 EUR from its bid) and by the tests that render the report.
+
 - Findings ranked by money (2026-11-22; `_item_values`, `_with_stakes` in `api.py`, `Finding.money_basis`): a
   finding without an amount of its own gets the value of its item (quantity × unit price) and says where the
   price is from: the file, the bid in progress, a priced version of the same LV in the project (bid, award),
@@ -36,12 +41,17 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   headless Chrome. Not checked: IMAP against a real mailbox (scan, replies); the thread, the answer composer
   and "Check mail" clicked in a browser; `.eml` dropped on the page in a browser.
   Known: "Die Bindefrist endet am …" in a mail's text is not read as the binding date.
-  **Voice call (item 5) written, never run**: `src/boq/voice.py` (agent and client tool made through the
-  ElevenLabs API on first use, WebRTC token), `/api/analyses/{id}/supply/call`, `/api/mails/{id}/call-price`
-  and `call-end`, `web/src/Call.tsx` (lazy, `@elevenlabs/client` 1.37) behind a "Call" button on a supplier's
-  row, shown only when `ELEVENLABS_API_KEY` is set. It is empty in `.env`, so no agent was created and no
-  call was made; the API shapes are from the docs read on 2026-11-21, the SDK options from its type files.
-  Only the type-check covers it. First thing to do with a key: one call, and expect the first to fail.
+  **Voice call (item 5), run on 2026-11-22 with a key**: `src/boq/voice.py`, `/api/analyses/{id}/supply/call`,
+  `/api/mails/{id}/call-price` and `call-end`, `web/src/Call.tsx` behind "Call" on a supplier's row (shown
+  only with `ELEVENLABS_API_KEY`). The agent and its client tool were made through the API on first use
+  (German, `eleven_flash_v2_5`, default voice; its id is kept in table `settings`). In headless Chrome with
+  a fake microphone the call connected over WebRTC, the agent spoke its opening with the project's name
+  filled in and asked again when nobody answered; hanging up ended it and kept the transcript. The server
+  side of a price was run by hand (a price for an asked item is kept as a quote marked not binding, one
+  for an unknown item is refused with words the agent hears). **Not done: a call with a person answering,
+  so the agent calling `submit_price` itself, German numbers by voice, and how it sounds are unheard.**
+  The old simulate-conversation endpoint is gone (410), so no simulated supplier either. Set the firm's
+  name in "Suppliers" first: without it the agent says "der Firma unser Unternehmen".
 
 - Price inquiries to suppliers and subcontractors (2026-11-21, D-044; research and what is built:
   `docs/09-price-inquiries.md`; `src/boq/supply.py`, tables `suppliers`, `supply_plans`, `quotes`, `settings`;

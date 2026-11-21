@@ -1083,7 +1083,7 @@ def _prices(boq: BoQ) -> dict | None:
 
 def _report(analysis_id: str) -> dict:
     boq, rule_findings = _analysis(analysis_id)
-    return build_report(boq, sort_findings(rule_findings + _llm_findings(analysis_id)), _prices(boq))
+    return build_report(boq, _with_stakes(analysis_id, boq, rule_findings + _llm_findings(analysis_id)), _prices(boq))
 
 
 @app.get("/api/analyses/{analysis_id}/prices")
@@ -1538,7 +1538,7 @@ def _supply_state(analysis_id: str) -> dict:
             # whose move it is: a question back is the estimator's, whatever else has come in
             status = ("new" if not latest else "question" if said and (said["asks"] or said["kind"] == "question")
                       else "answered" if quote else "declined" if said and said["kind"] == "decline"
-                      else "later" if said and said["kind"] in ("later", "other") else "sent" if latest["sent_at"] else "drafted")
+                      else "later" if said and said["kind"] == "later" else "sent" if latest["sent_at"] else "drafted")
             ask.append({"supplier_id": sid, "supplier": names.get(sid, "(removed from the directory)"),
                         "email": next((s["email"] for s in directory if s["id"] == sid), ""),
                         "mail": latest and {"id": latest["id"], "to": latest["to"], "sent_at": latest["sent_at"],

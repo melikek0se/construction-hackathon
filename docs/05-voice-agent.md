@@ -1,6 +1,6 @@
 # Voice agent for supplier price inquiries
 
-Status: **written 2026-11-21, never run** (no ElevenLabs key was set): `src/boq/voice.py`, `web/src/Call.tsx`; see `STATE.md`. The browser call with a client tool is what is built; no phone number, no webhook.
+Status: **built; connected and spoke on 2026-11-22, not yet tried with a person answering**: `src/boq/voice.py`, `web/src/Call.tsx`; see `STATE.md`. The browser call with a client tool is what is built; no phone number, no webhook.
 API facts were read from the ElevenLabs docs on 2026-11-20; items marked *unverified* were not confirmed.
 
 ## Assessment

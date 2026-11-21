@@ -128,6 +128,43 @@ suppliers = Table(
     Column("products", JSON, nullable=False),  # what it offered or is known to sell: [{"name", "maker"}]
     Column("note", Text, nullable=False, default=""),
     Column("source", String(16), nullable=False),  # "user", "quote" (learned from a reply), "web", "demo"
+    # what else the agent knows about the firm (boq.partners.MORE): website, our customer number there, more
+    # contact persons, flags (preferred, blocked, not to be phoned), a subcontractor's documents with their
+    # expiry, where a web search found it, and how it writes (`style`, worked out from its messages)
+    Column("more", JSON),
+)
+
+# Mail to and from a partner that is no inquiry of the app: the history found in the mailbox or handed over as
+# .eml files (boq.partners). It is what the way a partner writes is read from.
+partner_messages = Table(
+    "partner_messages", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("supplier_id", String(32), nullable=False, index=True),
+    Column("at", DateTime(timezone=True), nullable=False),
+    Column("direction", String(4), nullable=False),  # "in": the partner wrote; "out": we wrote
+    Column("subject", Text, nullable=False, default=""),
+    Column("text", Text, nullable=False, default=""),
+    Column("via", String(16), nullable=False),  # "imap", "eml", "demo"
+    Column("message_id", Text),
+)
+
+# A look into the web for suppliers or subcontractors (boq.partners.discover): what was looked for and why,
+# the queries the model ran, and the firms found, each with the page it was found on. A firm found is a
+# candidate until the estimator takes it into the directory; nobody is written to from here.
+partner_searches = Table(
+    "partner_searches", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("created", DateTime(timezone=True), nullable=False, index=True),
+    Column("what", Text, nullable=False),  # the material group or trade, in German
+    Column("kind", String(16), nullable=False),  # "supplier" or "subcontractor"
+    Column("region", Text, nullable=False, default=""),
+    Column("reason", Text, nullable=False, default=""),  # "asked for", or the gap that set it off
+    Column("by", String(16), nullable=False),  # "you" or "polier" (on its own)
+    Column("project_id", String(32)),
+    Column("queries", JSON, nullable=False),
+    Column("candidates", JSON, nullable=False),
+    Column("note", Text, nullable=False, default=""),
+    Column("usd", Float),
 )
 
 # What the agent worked out for the price inquiries of one LV file (boq.supply): the packages of items, who
