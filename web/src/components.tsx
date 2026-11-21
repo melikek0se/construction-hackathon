@@ -10,6 +10,7 @@ import {
   SEVERITIES,
   SEVERITY_LABEL,
   type Analysis,
+  type BidderQuestion,
   type Category,
   type Finding,
   type Item,
@@ -250,6 +251,8 @@ function FindingPlate({
   item,
   items,
   itemByOz,
+  asked,
+  onAsked,
 }: {
   finding: Finding;
   priced: boolean;
@@ -257,6 +260,8 @@ function FindingPlate({
   item: Item | undefined;
   items: Item[];
   itemByOz: Map<string, Item>;
+  asked?: BidderQuestion;
+  onAsked?: () => void;
 }) {
   return (
     <section className={`plate-card sev-${finding.severity}`}>
@@ -296,6 +301,28 @@ function FindingPlate({
           </>
         )}
       </dl>
+      {asked && (
+        <div className={`asked is-${asked.status}`}>
+          <span className="caption">
+            {asked.answer
+              ? asked.status === "partly" ? "The client answered in part" : "The client answered"
+              : asked.status === "sent" ? "Asked the client, no answer yet" : "Question to the client drafted"}
+            <button className="text-link" onClick={onAsked}>
+              Bidder questions
+            </button>
+          </span>
+          {asked.answer ? (
+            <>
+              <p className="q-quote" lang="de">
+                „{asked.answer.quote}“
+              </p>
+              {asked.answer.meaning && <p>{asked.answer.meaning}</p>}
+            </>
+          ) : (
+            <p lang="de">{asked.question}</p>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -306,6 +333,8 @@ export function ItemSheet({
   findingsByOz,
   price,
   selection,
+  asked,
+  onAsked,
   onSelect,
   onBack,
   onShowInTable,
@@ -315,6 +344,8 @@ export function ItemSheet({
   findingsByOz: Map<string, Finding[]>;
   price?: PriceSuggestion;
   selection: Selection;
+  asked: Map<string, BidderQuestion>; // the finding's question to the client, once it is in a message
+  onAsked: () => void;
   onSelect: (s: Selection) => void;
   onBack: () => void;
   onShowInTable: (oz: string) => void;
@@ -348,6 +379,8 @@ export function ItemSheet({
           {selected && (
             <FindingPlate
               finding={selected}
+              asked={asked.get(`${selected.check_id}|${selected.item_oz}|${selected.evidence}`)}
+              onAsked={onAsked}
               priced={priced}
               onOz={goTo}
               item={undefined}
@@ -394,6 +427,8 @@ export function ItemSheet({
           <FindingPlate
             key={i}
             finding={f}
+            asked={asked.get(`${f.check_id}|${f.item_oz}|${f.evidence}`)}
+            onAsked={onAsked}
             priced={priced}
             onOz={goTo}
             item={item}

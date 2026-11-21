@@ -91,6 +91,28 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   Seen in the browser: the top of the report page and the two buttons. Not done: printing to PDF, a read of
   the 34 German questions by someone who writes Bieterfragen for a living.
 
+- Bidder questions by e-mail (D-033; `src/boq/mail.py`, table `mails`, `web/src/Questions.tsx`, tests in
+  `tests/test_mail.py`): view "Questions" (also the "Bidder questions" button in the band, `&view=questions`).
+  Pick questions, the German message is written and can be changed, then "Open in mail program" (draft,
+  "Mark as sent") or "Send from …" when `SMTP_*` is set. Each question shows Not asked / Draft / Sent /
+  Partly answered / Answered. The client's reply is pasted into the message's card and read by Claude; an
+  answer needs a passage that is in the reply word for word. The answer also shows on the finding it
+  belongs to (item sheet). Seen in the browser on project D against the Docker API with a live reply read
+  (three questions sent, a made-up reply: 1 answered, 1 in part, 1 open, 5 s). Tried on 2026-11-21: a 40-question
+  message (15,000+ characters, umlauts, a line starting with a dot) through a real SMTP conversation on a
+  loopback socket arrives whole (`tests/test_mail.py`); and "Open in mail program" in Utku's Chrome. There
+  `mailto:` is handled by a web mail page (Yandex, not signed in), which replaced the app's tab and lost the
+  message; the link now opens in a new tab, so the app stays. Not tried: a mail provider with TLS and login
+  (needs an account in `.env`), and a mail program that actually takes the message (Gmail as Chrome's
+  handler, Outlook, Apple Mail). A very long message may be cut by some programs; "Copy the text" is the
+  way around.
+  The English copies of the six projects (`dataset/en`, D-022) are loaded in the Docker database as six more
+  projects named "… (EN)", for reading. Their rule findings are few (D: 0 against 4, E: 7 against 48), as
+  D-022 says; nothing in the app was changed for them.
+  "Download for Outlook (.eml)" gives the same message as a file (`GET /api/mails/{id}/message.eml`), for
+  messages too long for a link; whether Outlook opens it as a draft ready to send has not been seen on a
+  real Outlook (none is set up on the development Mac).
+  Next on the same table: price inquiries to suppliers as a second kind of mail.
 - Price suggestions (`src/boq/prices.py`, `GET /api/analyses/{id}/prices`, item sheet "Price from past bids",
   report section, CLI `--prices`). History: the three priced bids (643 items after dropping token prices, e.g. under
   1 EUR/m³ or 0.1 EUR per metre-week). A price is suggested only from items with the same unit, the same head word and the same nominal

@@ -5,6 +5,7 @@ client and are in German. Nothing here is estimated: every number is a count or 
 in the file, and the report says so where money is not known.
 """
 import datetime
+import hashlib
 import html
 import re
 from collections import Counter
@@ -68,21 +69,25 @@ def _quotes(evidence: str) -> str:
 def _questions(findings: list[Finding], by_oz: dict[str, Item]) -> list[dict]:
     """One bidder question per finding that needs the client, in LV order, without repeats."""
     order = {oz: n for n, oz in enumerate(by_oz)}
-    asked, out = set(), []
+    asked: dict[tuple, dict] = {}
     for f in sorted((f for f in findings if f.action == "ask_client"),
                     key=lambda f: order.get(f.item_oz or "", len(order))):
         item = by_oz.get(f.item_oz or "")
         text = f.question_de or "Die Leistungsbeschreibung ist an dieser Stelle nicht eindeutig. Wir bitten um Klarstellung."
-        key = (f.item_oz, text)
-        if key in asked:
+        finding = f"{f.check_id}|{f.item_oz}|{f.evidence}"  # how the page tells findings apart (as for the marks)
+        if (f.item_oz, text) in asked:
+            asked[f.item_oz, text]["findings"].append(finding)
             continue
-        asked.add(key)
-        out.append({
-            "no": len(out) + 1, "item_oz": f.item_oz, "related_oz": f.related_oz,
+        asked[f.item_oz, text] = {
+            "no": len(asked) + 1, "item_oz": f.item_oz, "related_oz": f.related_oz,
             "item_label": item.label if item else "", "page": item.source.page if item else None,
             "question": text, "evidence": _quotes(f.evidence), "severity": f.severity, "origin": f.origin,
-        })
-    return out
+            # the same question about the same item is the same question on the next analysis of the file:
+            # what was sent and what was answered is kept under this key (boq.mail)
+            "key": hashlib.sha1(f"{f.item_oz}\x00{text}".encode()).hexdigest()[:16],
+            "findings": [finding],
+        }
+    return list(asked.values())
 
 
 def build_report(boq: BoQ, findings: list[Finding], prices: dict | None = None) -> dict:

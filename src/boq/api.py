@@ -20,7 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import catalog, chat, db, retrieve
+from boq import catalog, chat, db, mail, retrieve
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -174,6 +174,24 @@ def _store(boq: BoQ, source: Path | None = None) -> tuple[str, list[Finding]]:
     return analysis_id, findings
 
 
+def _set_project(analysis_id: str, project_id: str) -> None:
+    """The project a file was opened from: in memory for the chat and the print-out, and kept with the
+    analysis, so the mail about the file is found again after a restart."""
+    _PROJECT_OF[analysis_id] = project_id
+    with db.engine().begin() as conn:
+        conn.execute(update(db.analyses).where(db.analyses.c.id == analysis_id).values(project_id=project_id))
+
+
+def _project_id(analysis_id: str) -> str | None:
+    if analysis_id not in _PROJECT_OF:
+        with db.engine().connect() as conn:
+            kept = conn.execute(select(db.analyses.c.project_id).where(db.analyses.c.id == analysis_id)).scalar()
+        if kept is None:
+            return None
+        _PROJECT_OF[analysis_id] = kept
+    return _PROJECT_OF[analysis_id]
+
+
 def _llm_findings(analysis_id: str) -> list[Finding]:
     with db.engine().connect() as conn:
         raw = conn.execute(select(db.analyses.c.llm_findings).where(db.analyses.c.id == analysis_id)).scalar()
@@ -260,7 +278,7 @@ def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None,
             label += " (2)"
         analysis_id, findings = _store(boq, (sources or {}).get(id(boq)))
         if project_id:
-            _PROJECT_OF[analysis_id] = project_id
+            _set_project(analysis_id, project_id)
         lvs[label] = boq
         rows.append({"name": label, "file": boq.file, "analysis_id": analysis_id, "items": len(boq.items),
                      "counts": {s: sum(f.severity == s for f in findings) for s in ("high", "warn", "info")}})
@@ -503,7 +521,7 @@ def open_project_file(project_id: str, index: int):
     analysis_id, findings = _store(boq, shown[0] if shown else _doc_path(doc) if _is_pdf(doc) else None)
     if shown:
         _PRINT_OUT[analysis_id] = shown[1:]
-    _PROJECT_OF[analysis_id] = project_id
+    _set_project(analysis_id, project_id)
     return _dump(analysis_id, boq, findings)
 
 
@@ -651,7 +669,7 @@ def _chat_documents(analysis_id: str, boq: BoQ) -> tuple[list[BoQ], list[dict]]:
     project). Of several versions of one LV the tender is read, a GAEB file before its print-out. The
     open file is read in addition by `chat.answer` if it is not among them, e.g. a bid without texts.
     Returns the documents and the project's files."""
-    project = catalog.find(_PROJECT_OF.get(analysis_id, ""))
+    project = catalog.find(_project_id(analysis_id) or "")
     if project is None:
         return [boq], []
     files = project["files"]
@@ -833,6 +851,151 @@ def report_html(analysis_id: str):
 def bidder_questions(analysis_id: str):
     return PlainTextResponse(render_questions(_report(analysis_id)), media_type="text/plain; charset=utf-8",
                              headers={"Content-Disposition": 'attachment; filename="bieterfragen.txt"'})
+
+
+# ---------------------------------------------------------------- bidder questions by e-mail
+
+def _questions_state(analysis_id: str) -> dict:
+    """The bidder questions of an LV with where each stands, the messages about it, and what is needed to
+    write the next one."""
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    project = catalog.find(project_id) if project_id else None
+    mails = mail.about(mail.BIDDER_QUESTIONS, project_id, boq.file)
+    account = mail.account()
+    return {
+        "lv": {"name": (project or {}).get("name") or boq.project or boq.name or boq.file, "file": boq.file,
+               "number": (project or {}).get("number") or boq.project_no, "client": boq.client},
+        "questions_due": ((project or {}).get("plan") or {}).get("questions_due"),
+        "questions": mail.standing(_report(analysis_id)["questions"], mails),
+        "mails": mails,
+        # the account the app can send from; None: the message is opened in the user's mail program
+        "account": account["from"] if account else None,
+    }
+
+
+def _picked(analysis_id: str, keys: list[str]) -> list[dict]:
+    """The questions with these keys, in LV order."""
+    questions = [q for q in _questions_state(analysis_id)["questions"] if q["key"] in set(keys)]
+    questions = [{k: v for k, v in q.items() if k not in ("status", "mail_id", "sent_at", "answer")} for q in questions]
+    if not questions:
+        raise HTTPException(422, "Pick at least one question.")
+    return questions
+
+
+@app.get("/api/analyses/{analysis_id}/questions")
+def questions(analysis_id: str):
+    return _questions_state(analysis_id)
+
+
+class Draft(BaseModel):
+    keys: list[str]  # the questions to ask, by key
+    sender: str = ""  # the closing lines: name, company
+
+
+@app.post("/api/analyses/{analysis_id}/questions/compose")
+def compose_questions(analysis_id: str, body: Draft):
+    """The German message with these questions, for the estimator to read and change before it goes out."""
+    state = _questions_state(analysis_id)
+    subject, text = mail.compose(state["lv"], _picked(analysis_id, body.keys), body.sender)
+    return {"subject": subject, "body": text}
+
+
+class Outgoing(BaseModel):
+    keys: list[str]
+    to: str
+    subject: str
+    body: str
+    via: str = "draft"  # "draft": the user sends it from their own mail program; "smtp": the app sends it now
+
+
+@app.post("/api/analyses/{analysis_id}/questions/mails")
+def mail_questions(analysis_id: str, body: Outgoing):
+    """Keep a message with bidder questions, and send it if asked to. A draft counts as sent only once the
+    user says so (PATCH /api/mails/{id}): the app cannot see what the mail program did with it."""
+    boq, _ = _analysis(analysis_id)
+    to, subject, text = body.to.strip(), body.subject.strip(), body.body.strip()
+    if "@" not in to or " " in to:
+        raise HTTPException(422, "Enter the e-mail address the questions go to.")
+    if not subject or not text:
+        raise HTTPException(422, "The message needs a subject and a text.")
+    if body.via not in ("draft", "smtp"):
+        raise HTTPException(422, "via is draft or smtp.")
+    asked = _picked(analysis_id, body.keys)
+    if body.via == "smtp":
+        try:
+            mail.send(to, subject, text + "\n")
+        except mail.MailUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+    # the questions as they stand now, whole: a question that was asked stays on the list even when a later
+    # analysis of the file no longer raises it (the AI review has not been run again, a rule has changed)
+    items = [{**q, "no": no} for no, q in enumerate(asked, 1)]
+    mail.keep(mail.BIDDER_QUESTIONS, _project_id(analysis_id), boq.file, to, subject, text, body.via, items,
+              sent=body.via == "smtp")
+    return _questions_state(analysis_id)
+
+
+def _mail(mail_id: str) -> dict:
+    found = mail.find(mail_id)
+    if found is None:
+        raise HTTPException(404, "This message is no longer kept.")
+    return found
+
+
+@app.get("/api/mails/{mail_id}/message.eml")
+def mail_file(mail_id: str):
+    """A kept message as a file to open in the mail program (Outlook): for messages too long for a link."""
+    found = _mail(mail_id)
+    return Response(mail.as_file(found["to"], found["subject"], found["body"] + "\n"), media_type="message/rfc822",
+                    headers={"Content-Disposition": 'attachment; filename="Bieterfragen.eml"'})
+
+
+class MailChange(BaseModel):
+    sent: bool
+
+
+@app.patch("/api/mails/{mail_id}")
+def change_mail(mail_id: str, body: MailChange):
+    """A draft opened in the mail program was sent (or was not, after all)."""
+    if _mail(mail_id)["via"] == "smtp":
+        raise HTTPException(422, "This message was sent by the app.")
+    mail.set_sent(mail_id, body.sent)
+    return _mail(mail_id)
+
+
+@app.delete("/api/mails/{mail_id}", status_code=204)
+def discard_mail(mail_id: str):
+    """Take a message out again. One that was sent, or that has a reply, stays: it is the record."""
+    found = _mail(mail_id)
+    if found["via"] == "smtp" or found["reply"]:
+        raise HTTPException(422, "A message that was sent by the app or has a reply is kept.")
+    mail.discard(mail_id)
+
+
+class Reply(BaseModel):
+    text: str
+
+
+@app.post("/api/mails/{mail_id}/reply")
+async def read_mail_reply(mail_id: str, body: Reply):
+    """The client's answer, pasted in: read against the questions of the message. A question counts as
+    answered only with the passage of the reply that answers it."""
+    found = _mail(mail_id)
+    reply = body.text.strip()
+    if len(reply) < 10:
+        raise HTTPException(422, "Paste the text of the client's reply.")
+    try:
+        read = await mail.read_reply(found["items"], reply)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:  # API or network failure: say so instead of a bare 500
+        raise HTTPException(502, f"Reading the reply failed: {exc}") from exc
+    mail.keep_reply(mail_id, reply, read["answers"])
+    if not found["sent_at"]:  # an answer came, so the questions went out
+        mail.set_sent(mail_id, True)
+    return {**_mail(mail_id), "dropped": read["dropped"]}
 
 
 if WEB_DIST.is_dir():  # production build of the frontend, if present

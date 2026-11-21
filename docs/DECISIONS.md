@@ -437,3 +437,30 @@ A date without a label is left out. No LLM: the result has to be the same every 
   tenders staying visible while the schedule is closed: left out, the database's project has no date ahead
   and the line would be empty.
 
+## D-033 — Bidder questions go by e-mail from the app: a draft by default, the reply pasted and read back
+
+**Decided** 2026-11-21 (Utku, after talking to the organisers: bidder questions run over e-mail).
+
+- One message per LV with all picked questions, German, written by the server (`mail.compose`) and
+  editable before it goes out. It states nothing the questions do not state.
+- Two ways out: opened in the estimator's own mail program (`mailto:`, kept as a draft until they mark it
+  as sent, because the app cannot see what the mail program did), or sent by the app when `SMTP_HOST` …
+  are set in `.env`. No account is needed for the demo and no mail leaves by accident.
+- A third way out (added the same day, when it was clear that companies write from their company
+  address, most likely in Outlook): the message as an `.eml` file with `X-Unsent: 1`, which a mail program
+  opens without the length limit of a link. Assumed for now: Outlook, plain e-mail, no tender platform.
+- The client's reply is pasted in and read against the questions of that message by Claude. A question
+  counts as answered only with a passage found word for word in the reply; otherwise it stays open. Same
+  rule as D-012.
+- What was asked is kept in the database per project and LV file (`db.mails`), under a key of item number
+  and question text, so it survives a new analysis of the file. A question that was asked stays on the
+  list even when a later analysis no longer raises it.
+- Not built: reading an inbox (Gmail API or IMAP). The Gmail MCP of the coding assistant is no part of
+  the app.
+- `db.mails` carries a `kind`. Price inquiries to suppliers (the other e-mail traffic of an estimator) are
+  meant to be the second kind on the same table, sending and reply reading, with their own message and
+  their own reading instructions.
+
+Revisit if: the client's tender platform, not e-mail, is where questions must go; or replies should arrive
+without pasting.
+
