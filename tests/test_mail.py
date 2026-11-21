@@ -135,7 +135,10 @@ def test_the_app_sends_only_with_an_account_and_says_why_not(database, monkeypat
     assert sent[4]["To"] == "vergabe@example.org" and sent[4]["From"] == "kalkulation@example.org"
     assert sent[4].get_content().strip() == "Text"
     assert [q["status"] for q in state["questions"]] == ["sent", "sent"]
-    assert client.delete(f"/api/mails/{state['mails'][0]['id']}").status_code == 422  # it went out: it stays
+    # a message that went out can still be taken off the list (the page asks twice); its questions are open again
+    assert client.delete(f"/api/mails/{state['mails'][0]['id']}").status_code == 204
+    after = client.get(f"/api/analyses/{analysis_id}/questions").json()
+    assert after["mails"] == [] and [q["status"] for q in after["questions"]] == ["new", "new"]
 
 
 def test_a_reply_answers_a_question_only_with_a_passage_that_is_in_it(database, monkeypatch):
@@ -353,3 +356,33 @@ def test_a_reply_in_the_inbox_is_found_read_and_put_up_as_amendments(database, m
     assert decide(allowance, status="accepted", value={"percent": "7,5"}).json()["value"]["percent"] == 7.5
     kept = {a["kind"]: a["status"] for a in client.get(f"/api/analyses/{analysis_id}/questions").json()["amendments"]}
     assert kept == {"settle": "accepted", "quantity": "accepted", "note": "proposed", "allowance": "accepted"}
+    # deleting the message takes its reply and what the reply changed with it
+    assert client.delete(f"/api/mails/{state['mails'][0]['id']}").status_code == 204
+    gone = client.get(f"/api/analyses/{analysis_id}/questions").json()
+    assert gone["mails"] == [] and gone["amendments"] == []
+
+
+def test_one_reply_answers_one_message_even_when_several_share_subject_and_address():
+    """Seen with a real mailbox: three messages to the same address with the same subject, one reply —
+    it was read into all three. A reply belongs to the message it names; without a name, to the newest
+    message written before it whose Message-ID is not on record."""
+    from email.message import EmailMessage
+
+    def ours(n, message_id):
+        return {"id": f"m{n}", "to": "vergabe@example.org", "subject": "Bieterfragen – Bachdurchlass",
+                "created": f"2026-11-21T2{n}:00:00+00:00", "message_id": message_id, "reply": None}
+
+    def reply(**headers):
+        m = EmailMessage()
+        m["Subject"], m["From"], m["Date"] = "Re: Bieterfragen – Bachdurchlass", "vergabe@example.org", "Sat, 21 Nov 2026 22:30:00 +0000"
+        for name, value in headers.items():
+            m[name.replace("_", "-")] = value
+        return m
+
+    waiting = [ours(0, None), ours(1, "<a@app>"), ours(2, "<b@app>"), ours(3, None)]
+    assert mail.answered_by(waiting, reply(In_Reply_To="<a@app>"))["id"] == "m1"
+    assert mail.answered_by(waiting, reply(In_Reply_To="<b@app>", References="<a@app> <b@app>"))["id"] == "m2"  # the one answered directly
+    # names a message that is not ours on record: one sent from the user's mail program, the newest before it
+    assert mail.answered_by(waiting, reply(In_Reply_To="<x@outlook>"))["id"] == "m0"
+    assert mail.answered_by(waiting, reply())["id"] == "m2"  # names nothing: the newest before it
+    assert mail.answered_by(waiting[1:3], reply(In_Reply_To="<x@outlook>")) is None

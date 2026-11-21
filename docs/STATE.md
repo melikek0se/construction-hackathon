@@ -313,6 +313,14 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   program; an incomplete bid can be downloaded (the view says how many items lack a price); no overheads
   or surcharges on the whole bid; the what-if and the risk report still read prices from priced files
   only, not from the bid in progress.
+  Since then (2026-11-21, late): a real reply was found in a real Gmail inbox and read. It showed a bug —
+  one reply was read into all three messages that shared subject and address — fixed: a reply belongs to
+  the message it names, else to the newest earlier message without a Message-ID on record
+  (`mail.answered_by`, test). The changes of one answer are now one decision under the question (note,
+  changed value, optional allowance in percent — empty means none; one Accept, one Reject, Take back), and
+  a question whose answer is decided is marked "Closed" with its text struck through. Every message card
+  can be deleted (a sent or answered one asks twice; its reply and decisions go with it, the API no
+  longer refuses). Checked in the browser on project D with Utku's real messages, read-only.
   Next on the same table: price inquiries to suppliers as a second kind of mail.
 - Price suggestions (`src/boq/prices.py`, `GET /api/analyses/{id}/prices`, item sheet "Price from past bids",
   report section, CLI `--prices`). History: the three priced bids (643 items after dropping token prices, e.g. under

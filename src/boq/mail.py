@@ -240,19 +240,41 @@ def _plain_subject(subject: str) -> str:
     return _squash(_REPLY_PREFIX.sub("", subject or "")).casefold()
 
 
-def reply_to(mail: dict, headers) -> bool:
-    """Whether a message with these headers answers this message of ours: it names ours, or it comes from
-    the address we wrote to and carries our subject behind a reply prefix. Our own message, which a
-    mailbox shows too when we wrote to ourselves, is not a reply."""
+def reply_to(mail: dict, headers) -> str | None:
+    """How a message with these headers answers this message of ours: "named" — it names ours
+    (In-Reply-To, References); "subject" — it comes from the address we wrote to and carries our subject
+    behind a reply prefix; None — it does not. Our own message, which a mailbox shows too when we wrote
+    to ourselves, is not a reply."""
     ours = (mail.get("message_id") or "").strip()
     if ours and (headers.get("Message-ID") or "").strip() == ours:
-        return False
-    named = f"{headers.get('In-Reply-To') or ''} {headers.get('References') or ''}"
-    if ours and ours in named:
-        return True
+        return None
+    if ours and ours in f"{headers.get('In-Reply-To') or ''} {headers.get('References') or ''}":
+        return "named"
     subject = str(headers.get("Subject") or "")
-    return (bool(_REPLY_PREFIX.match(subject)) and _plain_subject(subject) == _plain_subject(mail["subject"])
-            and parseaddr(str(headers.get("From") or ""))[1].casefold() == mail["to"].casefold())
+    if (_REPLY_PREFIX.match(subject) and _plain_subject(subject) == _plain_subject(mail["subject"])
+            and parseaddr(str(headers.get("From") or ""))[1].casefold() == mail["to"].casefold()):
+        return "subject"
+    return None
+
+
+def answered_by(waiting: list[dict], headers) -> dict | None:
+    """The one message of ours a message in the inbox answers. A reply that names a message answers that
+    one. Several messages to the same address share a subject, so by subject alone a reply goes to one
+    only: the newest written before it, among those it could not have named (sent from the user's own
+    mail program, so their Message-ID is not on record) — unless it names nothing at all."""
+    how = [(m, reply_to(m, headers)) for m in waiting]
+    named = [m for m, h in how if h == "named"]
+    if named:  # the one it answers directly, before one that is only further up the thread
+        direct = str(headers.get("In-Reply-To") or "")
+        return next((m for m in named if m["message_id"] in direct), named[0])
+    names_something = bool(str(headers.get("In-Reply-To") or "").strip())
+    by_subject = [m for m, h in how if h == "subject" and not (m.get("message_id") and names_something)]
+    try:
+        when = parsedate_to_datetime(str(headers.get("Date")))
+        earlier = [m for m in by_subject if datetime.fromisoformat(m["created"]) <= when]
+    except (TypeError, ValueError):
+        earlier = by_subject
+    return max(earlier, key=lambda m: m["created"]) if earlier else None
 
 
 def reply_text(message) -> str:
@@ -296,14 +318,14 @@ def find_replies(mails: list[dict]) -> list[tuple[dict, str]]:
                 if raw is None:
                     continue
                 headers = email.message_from_bytes(raw, policy=email.policy.default)
-                for m in waiting:
-                    if m["id"] in found or not reply_to(m, headers):
-                        continue
-                    _, got = server.uid("FETCH", uid, "(BODY.PEEK[])")
-                    whole = next((part[1] for part in got if isinstance(part, tuple)), None)
-                    text = reply_text(email.message_from_bytes(whole, policy=email.policy.default)) if whole else ""
-                    if text:
-                        found[m["id"]] = text
+                m = answered_by([m for m in waiting if m["id"] not in found], headers)
+                if m is None:
+                    continue
+                _, got = server.uid("FETCH", uid, "(BODY.PEEK[])")
+                whole = next((part[1] for part in got if isinstance(part, tuple)), None)
+                text = reply_text(email.message_from_bytes(whole, policy=email.policy.default)) if whole else ""
+                if text:
+                    found[m["id"]] = text
         finally:
             try:
                 server.logout()
