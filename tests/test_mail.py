@@ -63,7 +63,11 @@ def test_a_draft_is_kept_per_question_and_counts_as_sent_once_the_user_says_so(d
     mail_id = state["mails"][0]["id"]
     # the same message as a file for the mail program: unsent, whole, without a sender
     file = client.get(f"/api/mails/{mail_id}/message.eml")
-    assert file.headers["content-type"] == "message/rfc822" and ".eml" in file.headers["content-disposition"]
+    assert file.headers["content-type"] == "message/rfc822"
+    day = state["mails"][0]["created"][:10]
+    assert file.headers["content-disposition"] == f'attachment; filename="Bieterfragen_Bachdurchlass_152516_{day}.eml"'
+    assert mail.file_name("Bieterfragen – Straße & Brücke „Süd“ (79-222)", "2026-11-21T10:00:00") == \
+        "Bieterfragen_Strasse_Bruecke_Sued_79-222_2026-11-21.eml"
     message = message_from_string(file.content.decode(), policy=email_policy)
     assert message["X-Unsent"] == "1" and message["To"] == "vergabe@example.org" and message["From"] is None
     assert message["Subject"] == draft["subject"]

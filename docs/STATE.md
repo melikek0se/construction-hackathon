@@ -106,12 +106,16 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   (needs an account in `.env`), and a mail program that actually takes the message (Gmail as Chrome's
   handler, Outlook, Apple Mail). A very long message may be cut by some programs; "Copy the text" is the
   way around.
-  The English copies of the six projects (`dataset/en`, D-022) are loaded in the Docker database as six more
-  projects named "… (EN)", for reading. Their rule findings are few (D: 0 against 4, E: 7 against 48), as
-  D-022 says; nothing in the app was changed for them.
+  The English copies of the six projects (`dataset/en`, D-022) were loaded as projects for a while on
+  2026-11-21 and taken out again: their rule findings are few (D: 0 against 4, E: 7 against 48), as D-022
+  says. Work goes on with the German files.
   "Download for Outlook (.eml)" gives the same message as a file (`GET /api/mails/{id}/message.eml`), for
   messages too long for a link; whether Outlook opens it as a draft ready to send has not been seen on a
   real Outlook (none is set up on the development Mac).
+  The file is named after the subject and the day (`Bieterfragen_Bachdurchlass_152516_2026-11-21.eml`).
+  In the Docker dev environment the app sends to Mailpit (`mail` in `docker-compose.yml`, read at
+  http://localhost:8025; an `SMTP_HOST` in `.env` takes its place): "Send from kalkulation@polier.test" from
+  the page arrived there whole (2026-11-21). Mailpit delivers nothing; a real provider is still untried.
   Next on the same table: price inquiries to suppliers as a second kind of mail.
 - Price suggestions (`src/boq/prices.py`, `GET /api/analyses/{id}/prices`, item sheet "Price from past bids",
   report section, CLI `--prices`). History: the three priced bids (643 items after dropping token prices, e.g. under

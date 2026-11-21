@@ -947,7 +947,8 @@ def mail_file(mail_id: str):
     """A kept message as a file to open in the mail program (Outlook): for messages too long for a link."""
     found = _mail(mail_id)
     return Response(mail.as_file(found["to"], found["subject"], found["body"] + "\n"), media_type="message/rfc822",
-                    headers={"Content-Disposition": 'attachment; filename="Bieterfragen.eml"'})
+                    headers={"Content-Disposition":
+                             f'attachment; filename="{mail.file_name(found["subject"], found["created"])}"'})
 
 
 class MailChange(BaseModel):

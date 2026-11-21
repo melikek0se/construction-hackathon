@@ -130,7 +130,7 @@ export function QuestionsView({
       if (via === "file") {
         const link = document.createElement("a");
         link.href = `/api/mails/${next.mails[next.mails.length - 1].id}/message.eml`;
-        link.download = "Bieterfragen.eml";
+        link.download = ""; // the server names the file: subject and day
         link.click();
       }
     } catch (e) {
@@ -354,7 +354,7 @@ function MailCard({ mail, onChanged }: { mail: QuestionMail; onChanged: () => vo
           <button className="btn" disabled={busy !== null} onClick={() => act("sent", () => markMailSent(mail.id, true))}>
             Mark as sent
           </button>
-          <a className="text-link" href={`/api/mails/${mail.id}/message.eml`} download="Bieterfragen.eml">
+          <a className="text-link" href={`/api/mails/${mail.id}/message.eml`} download>
             Download .eml
           </a>
           <button className="text-link" disabled={busy !== null} onClick={() => act("discard", () => discardMail(mail.id))}>

@@ -13,6 +13,7 @@ suppliers are meant to be the second kind, with their own `compose` and their ow
 """
 import json
 import os
+import re
 import smtplib
 import ssl
 import uuid
@@ -111,6 +112,14 @@ def as_file(to: str, subject: str, body: str) -> bytes:
     message["To"], message["Subject"], message["X-Unsent"] = to, subject, "1"
     message.set_content(body, cte="quoted-printable")
     return message.as_bytes(policy=message.policy.clone(linesep="\r\n"))
+
+
+def file_name(subject: str, created: str) -> str:
+    """What the .eml file is called on the estimator's disk: the subject and the day, in plain letters,
+    e.g. Bieterfragen_Bachdurchlass_152516_2026-11-21.eml."""
+    plain = subject.translate(str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss", "Ä": "Ae", "Ö": "Oe", "Ü": "Ue"}))
+    words = re.findall(r"[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*", plain)
+    return "_".join(words)[:80].rstrip("_.-") + f"_{created[:10]}.eml"
 
 
 # ------------------------------------------------------------------ keeping

@@ -64,7 +64,7 @@ uv run boq FILE                        # parse an LV, print rule findings; --jso
                                        #   --report out.html (risk report), --questions out.txt (Bieterfragen),
                                        #   --prices (unit prices from the priced bids)
 uv run boq-seed                        # put the six dataset projects (and old LLM answers) into the database
-docker compose up --watch              # dev: UI :5173 (hot reload), API :8000 (auto-reload), Postgres :5432; new deps rebuild
+docker compose up --watch              # dev: UI :5173 (hot reload), API :8000 (auto-reload), Postgres :5432, caught mail :8025 (Mailpit); new deps rebuild
 docker compose --profile prod up --build  # the production image locally (as on Render): :8080, password "demo"
 uv run uvicorn boq.api:app --reload    # API without Docker (SQLite, or DATABASE_URL from .env)
 cd web && npm install && npm run dev   # UI without Docker, proxies /api to :8000
