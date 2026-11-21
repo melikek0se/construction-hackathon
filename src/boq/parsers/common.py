@@ -49,3 +49,12 @@ def tidy(text: str) -> str:
         if l or (out and out[-1]):
             out.append(l)
     return "\n".join(out).strip()
+
+
+# An e-mail address, or the token the dataset's anonymisation left in its place.
+EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+|\[EMAIL_\d+\]")
+
+
+def email_in(text: str) -> str:
+    m = EMAIL.search(text or "")
+    return m.group(0).rstrip(".") if m else ""

@@ -76,6 +76,38 @@ mails = Table(
     Column("reply", Text),  # the answer as it came back, pasted in
     Column("reply_at", DateTime(timezone=True)),
     Column("answers", JSON),  # the reply read against the items: per key a status and the passage of the reply
+    Column("message_id", Text),  # Message-ID of a message the app sent: a reply names it (In-Reply-To)
+    Column("reply_via", String(16)),  # "pasted" by the user, or "imap": found in the inbox
+)
+
+# What an answer of the client changes on our side, proposed by the app and decided by the estimator. The
+# client's file is never changed: an accepted amendment is laid over the LV as the app shows and prices it.
+amendments = Table(
+    "amendments", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("project_id", String(32), index=True),
+    Column("file", Text, nullable=False),
+    Column("item_oz", Text),
+    Column("kind", String(16), nullable=False),  # "settle", "quantity", "unit", "text", "allowance"
+    Column("value", JSON, nullable=False),  # what it does: note, findings closed, new quantity, percent ...
+    Column("quote", Text, nullable=False, default=""),  # the passage of the reply it rests on
+    Column("mail_id", String(32), index=True),
+    Column("key", String(32)),  # the question it answers
+    Column("status", String(16), nullable=False),  # "proposed", "accepted", "rejected"
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("decided", DateTime(timezone=True)),
+)
+
+# The estimator's unit prices on an LV file: the bid in progress (boq.bid).
+bid_prices = Table(
+    "bid_prices", metadata,
+    Column("n", Integer, primary_key=True, autoincrement=True),
+    Column("project_id", String(32), index=True),
+    Column("file", Text, nullable=False),
+    Column("item_oz", Text, nullable=False),
+    Column("unit_price", Text, nullable=False),  # decimal as text: the price before any allowance
+    Column("source", String(16), nullable=False),  # "own": typed in; "suggestion": taken from past bids
+    Column("updated", DateTime(timezone=True), nullable=False),
 )
 
 # A run of the pipeline (boq.pipeline) on a project, in the background (boq.runs). `state` is the record the

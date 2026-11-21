@@ -11,6 +11,10 @@ Nothing here is specific to bidder questions except the wording of the message a
 instructions: a row of `db.mails` is a message of some `kind` about some items. Price inquiries to
 suppliers are meant to be the second kind, with their own `compose` and their own schema for the reply.
 """
+import email
+import email.policy
+import html
+import imaplib
 import json
 import os
 import re
@@ -18,8 +22,9 @@ import smtplib
 import ssl
 import time
 import uuid
+from datetime import datetime, timedelta
 from email.message import EmailMessage
-from email.utils import formatdate, make_msgid
+from email.utils import formatdate, make_msgid, parseaddr, parsedate_to_datetime
 
 import anthropic
 from sqlalchemy import delete, insert, select, update
@@ -79,8 +84,9 @@ def account() -> dict | None:
             "from": os.environ.get("SMTP_FROM", "").strip() or user}
 
 
-def send(to: str, subject: str, body: str) -> None:
-    """Send one plain-text message through the account in .env. Raises MailUnavailable with the reason."""
+def send(to: str, subject: str, body: str) -> str:
+    """Send one plain-text message through the account in .env and return its Message-ID, by which a
+    reply is recognised. Raises MailUnavailable with the reason."""
     acc = account()
     if acc is None or not acc["from"]:
         raise MailUnavailable("No mail account is set. Put SMTP_HOST, SMTP_USER, SMTP_PASSWORD and SMTP_FROM "
@@ -96,13 +102,16 @@ def send(to: str, subject: str, body: str) -> None:
         else:
             server = smtplib.SMTP(acc["host"], acc["port"], timeout=30)
         with server:
+            server.ehlo()  # the server says what it offers only once greeted: without this, no STARTTLS
             if acc["port"] != 465 and server.has_extn("starttls"):
                 server.starttls(context=ssl.create_default_context())
+                server.ehlo()
             if acc["user"]:
                 server.login(acc["user"], acc["password"])
             server.send_message(message)
     except (smtplib.SMTPException, OSError) as exc:
         raise MailUnavailable(f"The mail server did not take the message: {exc}") from exc
+    return message["Message-ID"]
 
 
 def as_file(to: str, subject: str, body: str) -> bytes:
@@ -131,16 +140,17 @@ def _row(row) -> dict:
             "sent_at": row.sent_at.isoformat(timespec="seconds") if row.sent_at else None,
             "items": row.items, "reply": row.reply,
             "reply_at": row.reply_at.isoformat(timespec="seconds") if row.reply_at else None,
-            "answers": row.answers}
+            "answers": row.answers, "message_id": row.message_id, "reply_via": row.reply_via,
+            "project_id": row.project_id, "file": row.file}
 
 
 def keep(kind: str, project_id: str | None, file: str, to: str, subject: str, body: str, via: str,
-         items: list[dict], sent: bool) -> dict:
+         items: list[dict], sent: bool, message_id: str | None = None) -> dict:
     mail_id = uuid.uuid4().hex
     with db.engine().begin() as conn:
         conn.execute(insert(db.mails).values(
             id=mail_id, kind=kind, project_id=project_id, file=file, created=db.now(), to=to, subject=subject,
-            body=body, via=via, sent_at=db.now() if sent else None, items=items))
+            body=body, via=via, sent_at=db.now() if sent else None, items=items, message_id=message_id))
     return find(mail_id)
 
 
@@ -170,10 +180,10 @@ def discard(mail_id: str) -> None:
         conn.execute(delete(db.mails).where(db.mails.c.id == mail_id))
 
 
-def keep_reply(mail_id: str, reply: str, answers: dict) -> None:
+def keep_reply(mail_id: str, reply: str, answers: dict, via: str = "pasted") -> None:
     with db.engine().begin() as conn:
         conn.execute(update(db.mails).where(db.mails.c.id == mail_id)
-                     .values(reply=reply, reply_at=db.now(), answers=answers))
+                     .values(reply=reply, reply_at=db.now(), answers=answers, reply_via=via))
 
 
 def standing(questions: list[dict], mails: list[dict]) -> list[dict]:
@@ -201,6 +211,106 @@ def standing(questions: list[dict], mails: list[dict]) -> list[dict]:
     return out
 
 
+# ------------------------------------------------------------------ the inbox
+
+def inbox() -> dict | None:
+    """The mailbox the app may look into for replies, as set in .env; None: replies are pasted in. User and
+    password default to those of the sending account, which is the usual case (one mailbox for both)."""
+    host = os.environ.get("IMAP_HOST", "").strip()
+    if not host:
+        return None
+    return {"host": host, "port": int(os.environ.get("IMAP_PORT", "993")),
+            "user": os.environ.get("IMAP_USER", "").strip() or os.environ.get("SMTP_USER", "").strip(),
+            "password": os.environ.get("IMAP_PASSWORD", "") or os.environ.get("SMTP_PASSWORD", ""),
+            "folder": os.environ.get("IMAP_FOLDER", "").strip() or "INBOX"}
+
+
+_REPLY_PREFIX = re.compile(r"^\s*((re|aw|antwort|wg|fwd?)\s*(\[\d+\])?\s*:\s*)+", re.I)
+_HEADERS = "(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID IN-REPLY-TO REFERENCES SUBJECT FROM DATE)])"
+# Where the history a mail program puts under a reply begins.
+_HISTORY = re.compile(
+    r"^(>.*|-{2,}\s*(Ursprüngliche Nachricht|Original Message|Weitergeleitete Nachricht)\s*-{2,}.*|"
+    r"(Am|On)\b.{5,200}\b(schrieb|wrote)\b.*:?|(Von|From):\s.+|_{10,})$", re.I)
+
+
+def _plain_subject(subject: str) -> str:
+    return _squash(_REPLY_PREFIX.sub("", subject or "")).casefold()
+
+
+def reply_to(mail: dict, headers) -> bool:
+    """Whether a message with these headers answers this message of ours: it names ours, or it comes from
+    the address we wrote to and carries our subject behind a reply prefix. Our own message, which a
+    mailbox shows too when we wrote to ourselves, is not a reply."""
+    ours = (mail.get("message_id") or "").strip()
+    if ours and (headers.get("Message-ID") or "").strip() == ours:
+        return False
+    named = f"{headers.get('In-Reply-To') or ''} {headers.get('References') or ''}"
+    if ours and ours in named:
+        return True
+    subject = str(headers.get("Subject") or "")
+    return (bool(_REPLY_PREFIX.match(subject)) and _plain_subject(subject) == _plain_subject(mail["subject"])
+            and parseaddr(str(headers.get("From") or ""))[1].casefold() == mail["to"].casefold())
+
+
+def reply_text(message) -> str:
+    """What the client wrote: the plain text of the message (or its HTML, stripped) without the history
+    of the thread below it."""
+    part = message.get_body(preferencelist=("plain", "html"))
+    if part is None:
+        return ""
+    text = part.get_content()
+    if part.get_content_type() == "text/html":
+        text = re.sub(r"(?is)<(style|script)\b.*?</\1>", "", text)
+        text = re.sub(r"(?i)<br\s*/?>|</(p|div|tr|li|h\d)>", "\n", text)
+        text = html.unescape(re.sub(r"<[^>]+>", "", text))
+    lines = text.replace("\r\n", "\n").split("\n")
+    cut = next((i for i, line in enumerate(lines) if _HISTORY.match(line.strip())), len(lines))
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(line.rstrip() for line in lines[:cut])).strip()
+
+
+def find_replies(mails: list[dict]) -> list[tuple[dict, str]]:
+    """Look into the inbox for replies to these messages of ours: (message, the reply's text) for each
+    that has one, the newest reply where there are several. Nothing in the mailbox is changed or marked
+    read. Raises MailUnavailable where no inbox is set or the server refuses."""
+    box = inbox()
+    if box is None:
+        raise MailUnavailable("No inbox is set. Put IMAP_HOST (and IMAP_USER, IMAP_PASSWORD if they differ "
+                              "from the sending account) into .env and restart the server, or paste the reply.")
+    waiting = [m for m in mails if not m["reply"]]
+    if not waiting:
+        return []
+    since = min(datetime.fromisoformat(m["created"]) for m in waiting) - timedelta(days=1)
+    found: dict[str, str] = {}
+    try:
+        server = imaplib.IMAP4_SSL(box["host"], box["port"], ssl_context=ssl.create_default_context(), timeout=30)
+        try:
+            server.login(box["user"], box["password"])
+            server.select(box["folder"], readonly=True)
+            _, data = server.uid("SEARCH", None, "SINCE", since.strftime("%d-%b-%Y"))
+            for uid in reversed((data[0] or b"").split()[-500:]):  # newest first
+                _, got = server.uid("FETCH", uid, _HEADERS)
+                raw = next((part[1] for part in got if isinstance(part, tuple)), None)
+                if raw is None:
+                    continue
+                headers = email.message_from_bytes(raw, policy=email.policy.default)
+                for m in waiting:
+                    if m["id"] in found or not reply_to(m, headers):
+                        continue
+                    _, got = server.uid("FETCH", uid, "(BODY.PEEK[])")
+                    whole = next((part[1] for part in got if isinstance(part, tuple)), None)
+                    text = reply_text(email.message_from_bytes(whole, policy=email.policy.default)) if whole else ""
+                    if text:
+                        found[m["id"]] = text
+        finally:
+            try:
+                server.logout()
+            except (imaplib.IMAP4.error, OSError):
+                pass
+    except (imaplib.IMAP4.error, OSError) as exc:
+        raise MailUnavailable(f"The inbox could not be read: {exc}") from exc
+    return [(m, found[m["id"]]) for m in waiting if m["id"] in found]
+
+
 # ------------------------------------------------------------------ reading the reply
 
 REPLY_SCHEMA = {
@@ -215,8 +325,10 @@ REPLY_SCHEMA = {
                     "status": {"type": "string", "enum": ["answered", "partly", "not_answered"]},
                     "quote": {"type": "string"},
                     "meaning": {"type": "string"},
+                    "change_field": {"type": "string", "enum": ["none", "quantity", "unit", "text"]},
+                    "change_value": {"type": "string"},
                 },
-                "required": ["no", "status", "quote", "meaning"],
+                "required": ["no", "status", "quote", "meaning", "change_field", "change_value"],
                 "additionalProperties": False,
             },
         },
@@ -247,6 +359,12 @@ question then counts as not answered.
 - meaning is one or two sentences in English for the estimator: what the answer settles for pricing this \
 item, and for partly what is still open. Say only what the reply says; do not add what is usual, likely \
 or required by VOB. For not_answered it is empty.
+- change_field and change_value: only where the reply itself changes the bill of quantities for the \
+item — it states a new quantity ("Die Menge wird auf 150 m geändert"), another unit, or wording that is \
+added to or replaces the item's text. change_value is the new value exactly as the reply writes it and \
+must stand inside your quote: for quantity the number alone ("150", "1.250,5"), for unit the unit, for \
+text the new wording. A clarification of what is meant, an announcement that a corrected LV will follow, \
+or a figure that is not the item's quantity is no change: change_field none, change_value empty.
 - A reply often answers by number ("Zu Frage 2:"), by item ("Pos. 2.12") or in one running text. A general \
 sentence such as "die übrigen Fragen ergeben sich aus den Unterlagen" answers none of them.
 - Give one entry per question, in the order of the questions, with its number.
@@ -302,6 +420,23 @@ def match_answers(items: list[dict], reply: str, raw: list[dict]) -> dict:
         quote = _squash(a.get("quote", "")).strip("…\"„“' ")
         if status != "not_answered" and (len(quote) < 4 or quote not in text):
             status, dropped = "not_answered", dropped + 1
+        field, value = a.get("change_field"), _squash(a.get("change_value", "")).strip("\"„“' ")
+        if status == "not_answered" or field not in ("quantity", "unit", "text") or not value or not _stands_in(value, quote):
+            field, value = None, ""  # a change the passage does not state is none
+        if field == "quantity" and german_number(value) is None:
+            field, value = None, ""
         answers[q["key"]] = {"status": status, "quote": quote if status != "not_answered" else "",
-                             "meaning": a.get("meaning", "").strip() if status != "not_answered" else ""}
+                             "meaning": a.get("meaning", "").strip() if status != "not_answered" else "",
+                             "change": {"field": field, "value": value} if field else None}
     return {"answers": answers, "dropped": dropped}
+
+
+def _stands_in(value: str, quote: str) -> bool:
+    """The value as a word of its own in the passage: "t" is not in "nachgereicht", "150" not in "1.150"."""
+    return re.search(rf"(?<![\w.,]){re.escape(value)}(?![\w]|[.,]\d)", quote) is not None
+
+
+def german_number(text: str) -> str | None:
+    """"1.250,5" or "150" as a plain decimal ("1250.5"), None if it is no number."""
+    m = re.fullmatch(r"\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d+))?\s*", text)
+    return (m.group(1).replace(".", "") + (f".{m.group(2)}" if m.group(2) else "")) if m else None

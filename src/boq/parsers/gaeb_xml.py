@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal, InvalidOperation
 
 from boq.model import BoQ, Item, Remark, SourceRef
-from boq.parsers.common import classify, find_refs, norm_oz, tidy
+from boq.parsers.common import classify, email_in, find_refs, norm_oz, tidy
 from boq.units import normalise_unit
 
 _BLOCK = {"p", "br", "li", "tr", "div"}
@@ -135,6 +135,8 @@ def parse_gaeb_xml(path: str) -> BoQ:
             boq.project_no, boq.project = _child_text(el, "NamePrj"), _child_text(el, "LblPrj")
         elif name == "OWN" and not boq.client:
             boq.client = next((_child_text(a, "Name1") for a in el if _local(a) == "Address"), "")
+            boq.client_email = next((email_in(_child_text(a, "Email")) or email_in(_child_text(a, "Contact"))
+                                     for a in el if _local(a) == "Address"), "")
         elif name == "AddText":
             _remark(el, [], boq)
     for el in root.iter():

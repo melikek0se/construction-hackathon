@@ -184,6 +184,43 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   In the Docker dev environment the app sends to Mailpit (`mail` in `docker-compose.yml`, read at
   http://localhost:8025; an `SMTP_HOST` in `.env` takes its place): "Send from kalkulation@polier.test" from
   the page arrived there whole (2026-11-21). Mailpit delivers nothing; a real provider is still untried.
+  "To" is filled from the file where it names the client's address (`BoQ.client_email`): GAEB XML
+  `OWN/Address/Email`; PDF the address in the letterhead of most pages, else the first on a page that is
+  not LV (cover, VHB form), not for a bid (the contractor's own paper); GAEB 90 and Excel not read. In the
+  dataset every address is an anonymisation token (`[EMAIL_004]`), so there the field stays empty and a
+  line says the address is blanked out; with a real address tried on a changed copy of an X83 (API) and in
+  the UI with the API's answer replaced. Not tried: a real tender PDF with a real address. Only the opened
+  file is read, not its twin in the project (a GAEB file whose PDF print-out has the address).
+  Replies from the inbox and what they change (D-040; `src/boq/amendments.py`, table `amendments`): with
+  `IMAP_HOST` in `.env` the Questions view has "Check the inbox for replies"; a reply is recognised by the
+  `Message-ID` of the message the app sent, else by sender and subject, read like a pasted one, and the
+  mailbox is left untouched. From every read reply (pasted or found) the app puts up amendments under the
+  question: close the finding, note, new quantity / unit / wording (only if the quoted passage states it),
+  risk allowance in percent (the estimator sets the figure). Accept, Change, Reject, Take back. Accepted:
+  the finding shows as settled and leaves the counts, the item sheet shows the old quantity struck and the
+  new one, the notes and the allowance. Tried 2026-11-21 in Docker on project D with a real Claude call on a
+  made-up reply (5 s: one part answer, one quantity change 50 → 36 m³ found and proposed, one not answered)
+  and in the browser (accept, allowance refused without a figure, reject, settled finding, counts). With a
+  Gmail account in `.env` (app password) Utku sent a message from the app (2026-11-21, after a fix: the
+  sending code asked for STARTTLS before greeting the server, so Gmail refused the login; Mailpit takes
+  mail without either) and the IMAP login and opening the inbox worked. **Not yet seen: a real reply found
+  in a real inbox** — that step ran only against a stand-in in `tests/test_mail.py`. The tests run without
+  any mail account (`tests/conftest.py`), so the account in `.env` is never used by them. Not done: the accepted quantity and allowance do not
+  reach the prices, the what-if or the risk report yet (that is the bid side, next); settled findings stay
+  in the findings list and on the LV map; drafts sent from the user's own mail program have no Message-ID
+  on record, so their replies are matched by sender and subject only.
+  The bid (D-041; `src/boq/bid.py`, table `bid_prices`, `web/src/Bid.tsx`, `tests/test_bid.py`): view
+  "Bid" on every LV. One row per item: quantity (with the client's corrected one beside it), the price
+  suggested from past bids, the unit price typed in (German or plain decimals, saved on leaving the field),
+  the accepted allowance, the price that goes into the bid and the total; net total and what part of it
+  is allowance on top; "Take the n suggested prices" fills the empty items; "Download the bid (X84)" for a
+  GAEB XML file kept in a project, "Download as sheet (CSV)" for every LV. Tried 2026-11-21 in the browser
+  on project D (price typed, wrong input refused with the reason, suggestion taken, X84 downloaded and
+  read back: phase 84, 50 items, the two prices). Known limits: project D gets one suggestion out of 50
+  items (the history is thin); the X84 is not validated against the GAEB schema or opened in a GAEB
+  program; an incomplete bid can be downloaded (the view says how many items lack a price); no overheads
+  or surcharges on the whole bid; the what-if and the risk report still read prices from priced files
+  only, not from the bid in progress.
   Next on the same table: price inquiries to suppliers as a second kind of mail.
 - Price suggestions (`src/boq/prices.py`, `GET /api/analyses/{id}/prices`, item sheet "Price from past bids",
   report section, CLI `--prices`). History: the three priced bids (643 items after dropping token prices, e.g. under

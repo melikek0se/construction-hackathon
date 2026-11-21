@@ -55,6 +55,9 @@ class BoQ(BaseModel):
     project: str = ""  # the project's name, as opposed to `name`, which is the LV's own label
     lv_label: str = ""  # PDF only: the LV label of the page header (`name` stays the file name there)
     client: str = ""
+    # The client's e-mail address as the file gives it: where bidder questions go. In the dataset an
+    # anonymisation token ("[EMAIL_004]"), which is no address. PDF: of the party the print-out is from.
+    client_email: str = ""
     heading: str = ""  # PDF only: what the document calls itself ("Anfrage", "Angebot", ...)
     forms: int = 0  # PDF only: pages of contract forms (VHB), i.e. a package and not a bare LV
     items: list[Item] = Field(default_factory=list)

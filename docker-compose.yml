@@ -37,6 +37,11 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-kalkulation@polier.test}
+      # "Check the inbox for replies": only with a real mailbox in .env (Mailpit has none to read).
+      IMAP_HOST: ${IMAP_HOST:-}
+      IMAP_PORT: ${IMAP_PORT:-993}
+      IMAP_USER: ${IMAP_USER:-}
+      IMAP_PASSWORD: ${IMAP_PASSWORD:-}
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests

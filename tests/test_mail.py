@@ -110,8 +110,11 @@ def test_the_app_sends_only_with_an_account_and_says_why_not(database, monkeypat
         def __exit__(self, *_):
             return False
 
+        def ehlo(self):
+            sent.append("ehlo") if "ehlo" not in sent else None
+
         def has_extn(self, name):
-            return True
+            return "ehlo" in sent  # a server names its extensions only after the greeting
 
         def starttls(self, context=None):
             sent.append("tls")
@@ -128,9 +131,9 @@ def test_the_app_sends_only_with_an_account_and_says_why_not(database, monkeypat
     monkeypatch.setenv("SMTP_PASSWORD", "secret")
     state = client.post(f"/api/analyses/{analysis_id}/questions/mails", json=out).json()
     assert state["account"] == "kalkulation@example.org"
-    assert sent[:3] == [("smtp.example.org", 587), "tls", ("kalkulation@example.org", "secret")]
-    assert sent[3]["To"] == "vergabe@example.org" and sent[3]["From"] == "kalkulation@example.org"
-    assert sent[3].get_content().strip() == "Text"
+    assert sent[:4] == [("smtp.example.org", 587), "ehlo", "tls", ("kalkulation@example.org", "secret")]
+    assert sent[4]["To"] == "vergabe@example.org" and sent[4]["From"] == "kalkulation@example.org"
+    assert sent[4].get_content().strip() == "Text"
     assert [q["status"] for q in state["questions"]] == ["sent", "sent"]
     assert client.delete(f"/api/mails/{state['mails'][0]['id']}").status_code == 422  # it went out: it stays
 
@@ -158,8 +161,8 @@ def test_a_reply_answers_a_question_only_with_a_passage_that_is_in_it(database, 
     read = asyncio.run(mail.read_reply(state["mails"][0]["items"], reply, client=fake))
     assert read["dropped"] == 1  # "Körnung 0/32" is not in the reply
     assert read["answers"][keys[0]] == {"status": "answered", "quote": "Der Aushub ist bis 2,50 m Tiefe vorgesehen.",
-                                        "meaning": "Excavation to 2.50 m."}
-    assert read["answers"][keys[1]] == {"status": "not_answered", "quote": "", "meaning": ""}
+                                        "meaning": "Excavation to 2.50 m.", "change": None}
+    assert read["answers"][keys[1]] == {"status": "not_answered", "quote": "", "meaning": "", "change": None}
 
     async def reading(items, text, client=None):
         return read
@@ -226,3 +229,127 @@ def test_a_message_goes_through_a_real_smtp_conversation_whole(monkeypatch):
     # the transfer ends lines with CR LF; apart from that the text is the one that was written
     assert message.get_content().replace("\r\n", "\n").strip() == body.strip()
     assert len(body) > 15_000 and body.count("Frage ") == 40 and "\n.Muster Tiefbau GmbH" in body
+
+
+def test_the_clients_address_is_read_from_the_file(tmp_path):
+    """Where the questions go: the owner's address of a GAEB file, the letterhead or the cover of a PDF.
+    The dataset has tokens in place of addresses; a file with a real one gives the address."""
+    from pathlib import Path
+
+    from boq.parsers.gaeb_xml import parse_gaeb_xml
+    from boq.parsers.pdf import parse_pdf
+
+    dataset = Path(__file__).parent.parent / "dataset"
+    x83 = dataset / "01_gaeb_xml" / "[NUMMER_001]_leer.X83"
+    assert parse_gaeb_xml(str(x83)).client_email == "[EMAIL_004]"
+    real = tmp_path / "lv.x83"
+    real.write_text(x83.read_text(encoding="utf-8").replace("[EMAIL_004]", "vergabe@bauamt-musterstadt.de"), encoding="utf-8")
+    assert parse_gaeb_xml(str(real)).client_email == "vergabe@bauamt-musterstadt.de"
+    # every page of the inquiry carries the sender's letterhead
+    assert parse_pdf(str(dataset / "03_pdf_hochbau_projekt" / "LV_03_Malerarbeiten.pdf")).client_email == "[EMAIL_009]"
+    # a bid is the contractor's own paper: its letterhead is not the client's
+    assert parse_pdf(str(dataset / "04_pdf_tiefbau_sonstige" / "Angebot AN24-0305.pdf")).client_email == ""
+
+
+def test_a_reply_in_the_inbox_is_found_read_and_put_up_as_amendments(database, monkeypatch):
+    """The app sends, the client answers by e-mail, the app finds the answer in the inbox by the message it
+    names, reads it, and proposes what it changes on our side; the estimator decides each."""
+    from email.message import EmailMessage
+
+    client = TestClient(api.app)
+    analysis_id = opened(client, monkeypatch)
+    keys = [q["key"] for q in client.get(f"/api/analyses/{analysis_id}/questions").json()["questions"]]
+
+    class Smtp:
+        def __init__(self, *_, **__): pass
+        def __enter__(self): return self
+        def __exit__(self, *_): return False
+        def ehlo(self): pass
+        def has_extn(self, name): return False
+        def send_message(self, message): pass
+
+    monkeypatch.setattr(mail.smtplib, "SMTP", Smtp)
+    monkeypatch.setenv("SMTP_HOST", "smtp.example.org")
+    monkeypatch.setenv("SMTP_FROM", "kalkulation@example.org")
+    for name in ("SMTP_USER", "SMTP_PASSWORD", "IMAP_HOST", "IMAP_USER", "IMAP_PASSWORD"):
+        monkeypatch.setenv(name, "")  # empty, not unset: the developer's own .env must not fill them in
+    assert client.post(f"/api/analyses/{analysis_id}/questions/replies").status_code == 503  # no inbox set
+    state = client.post(f"/api/analyses/{analysis_id}/questions/mails", json={
+        "keys": keys, "to": "vergabe@example.org", "subject": "Bieterfragen – Bachdurchlass", "body": "Text",
+        "via": "smtp"}).json()
+    ours = state["mails"][0]["message_id"]
+    assert ours and state["inbox"] is None
+
+    def message(subject, sender, text, **headers):
+        m = EmailMessage()
+        m["Subject"], m["From"] = subject, sender
+        headers.setdefault("Message_ID", f"<{len(text)}@client.example>")
+        for name, value in headers.items():
+            m[name.replace("_", "-")] = value
+        m.set_content(text)
+        return m.as_bytes()
+
+    answer = ("Sehr geehrte Damen und Herren,\n\nzu Frage 1: Die Menge wird auf 150 m3 geändert, Aushubtiefe bis 2,50 m.\n"
+              "Zu Frage 2: Die Körnung wird nachgereicht.\n\nMit freundlichen Grüßen\n\n"
+              "Am 21.11.2026 um 18:00 schrieb kalkulation@example.org:\n> Frage 1 – Position 2.5\n> Körnung 0/32\n")
+    box = {b"1": message("Newsletter", "news@example.org", "Körnung 0/32 im Angebot"),
+           # our own message, as a mailbox shows it when the address written to is our own
+           b"2": message("AW: Bieterfragen – Bachdurchlass", "vergabe@example.org", "Text", Message_ID=ours),
+           b"3": message("AW: Bieterfragen – Bachdurchlass", "Vergabe <vergabe@example.org>", answer, In_Reply_To=ours)}
+    asked = []
+
+    class Imap:
+        error = mail.imaplib.IMAP4.error
+
+        def __init__(self, host, port, ssl_context=None, timeout=None): asked.append((host, port))
+        def login(self, user, password): asked.append((user, password))
+        def select(self, folder, readonly=False): asked.append((folder, readonly))
+        def logout(self): pass
+
+        def uid(self, command, *args):
+            if command == "SEARCH":
+                return "OK", [b" ".join(box)]
+            uid, what = args
+            raw = box[uid]
+            if "HEADER" in what:
+                raw = raw.split(b"\n\n", 1)[0] + b"\n\n"
+            return "OK", [(b"x", raw), b")"]
+
+    monkeypatch.setattr(mail.imaplib, "IMAP4_SSL", Imap)
+    monkeypatch.setenv("IMAP_HOST", "imap.example.org")
+    monkeypatch.setenv("IMAP_USER", "kalkulation@example.org")
+    monkeypatch.setenv("IMAP_PASSWORD", "secret")
+    read_texts = []
+
+    async def reading(items, text, client=None):
+        read_texts.append(text)
+        return mail.match_answers(items, text, [
+            {"no": 1, "status": "answered", "quote": "Die Menge wird auf 150 m3 geändert, Aushubtiefe bis 2,50 m.",
+             "meaning": "Excavate to 2.50 m; the quantity is now 150 m3.", "change_field": "quantity", "change_value": "150"},
+            {"no": 2, "status": "partly", "quote": "Die Körnung wird nachgereicht.", "meaning": "Grading follows later.",
+             "change_field": "unit", "change_value": "t"}])  # a change the passage does not state
+
+    monkeypatch.setattr(mail, "read_reply", reading)
+    state = client.post(f"/api/analyses/{analysis_id}/questions/replies").json()
+    assert state["found"] == 1 and state["inbox"] == "kalkulation@example.org"
+    assert asked == [("imap.example.org", 993), ("kalkulation@example.org", "secret"), ("INBOX", True)]
+    assert read_texts[0].startswith("Sehr geehrte") and "schrieb" not in read_texts[0] and "0/32" not in read_texts[0]
+    assert state["mails"][0]["reply_via"] == "imap"
+    assert [q["status"] for q in state["questions"]] == ["answered", "partly"]
+    proposed = [(a["item_oz"], a["kind"], a["status"]) for a in state["amendments"]]
+    assert proposed == [("2.5", "settle", "proposed"), ("2.5", "quantity", "proposed"),
+                        ("2.12", "note", "proposed"), ("2.12", "allowance", "proposed")]
+    settle, quantity, _, allowance = state["amendments"]
+    assert settle["value"]["findings"] == ["L-UNCLEAR-SCOPE|2.5|„nach Erfordernis“"] and quantity["value"] == {"to": "150", "number": "150"}
+    assert client.post(f"/api/analyses/{analysis_id}/questions/replies").json()["found"] == 0  # read once
+
+    def decide(amendment, **body):
+        return client.patch(f"/api/amendments/{amendment['id']}", json=body)
+
+    assert decide(settle, status="accepted").json()["status"] == "accepted"
+    assert decide(quantity, status="accepted", value={"to": "1.250,5"}).json()["value"]["number"] == "1250.5"
+    assert decide(quantity, status="accepted", value={"to": "viel"}).status_code == 422
+    assert decide(allowance, status="accepted").status_code == 422  # the app proposes no figure
+    assert decide(allowance, status="accepted", value={"percent": "7,5"}).json()["value"]["percent"] == 7.5
+    kept = {a["kind"]: a["status"] for a in client.get(f"/api/analyses/{analysis_id}/questions").json()["amendments"]}
+    assert kept == {"settle": "accepted", "quantity": "accepted", "note": "proposed", "allowance": "accepted"}

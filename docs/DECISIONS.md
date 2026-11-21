@@ -613,3 +613,39 @@ in the loop, step by step"). Extends D-037.
 
 Revisit if: questions should go out without the person (then the gate needs an approval, not a view), or
 several server workers run (D-037).
+
+## D-040 — The client's answers change our side, never the client's file; the estimator decides each change
+
+2026-11-21. Asked for: catch the reply, propose edits to the PDF or GAEB file from it, let the user accept or
+edit them. Decided with Utku: the LV is the client's document, a bidder who changes its text or quantities
+risks exclusion; what a bidder fills in is prices. So an answer never rewrites the file. It becomes
+*amendments* (`src/boq/amendments.py`, table `amendments`) laid over the LV as the app shows and prices it:
+`settle` (closes the findings of the question, with a note), `note` (part settled), `quantity` / `unit` /
+`text` (the client changed the item: only where the reply states the new value, which must stand in the
+quoted passage), `allowance` (the point stays open and is priced as a risk). Each is proposed and then
+accepted, changed or rejected by the estimator; each keeps the passage of the reply it rests on. The app
+proposes no figure for an allowance: it has no basis for one, the estimator sets the percent.
+
+Replies are found over IMAP where `.env` names an inbox (`IMAP_HOST` …; the same account as SMTP by
+default): the message that names ours (`In-Reply-To` / `References` against the stored `Message-ID`), else
+one from the address written to with our subject behind "AW:" / "Re:". Nothing in the mailbox is changed.
+Chosen over the Gmail API and Microsoft Graph (an app registration and a sign-in screen each), and over the
+Gmail MCP server (a tool of the coding assistant, not something the app can call). Pasting the reply stays.
+A new LV version issued by the client is uploaded as a new version, as before.
+
+## D-041 — The bid: unit prices on the client's LV, allowances inside the unit price, X84 from the client's X83
+
+2026-11-21. The bid side (`src/boq/bid.py`, table `bid_prices`, view "Bid"). The estimator fills in one
+unit price per item; a price suggested from past bids is shown beside it and becomes a price only when
+taken (one click per item, or all empty items at once; taken ones stay marked "from past bids"). A risk
+allowance accepted from the client's answers (D-040) is not a line of its own — the client's LV has no
+place for one — it raises the item's unit price: `price in the bid = unit price × (1 + percent)`, to cents.
+A quantity the client corrected in an answer is shown beside the file's quantity, but totals and the
+exported file use the file's quantity: the bid has to match the LV the client sent, the corrected LV has
+to come from the client. The bid goes out as GAEB DA XML phase 84 written from the kept X83 (namespace and
+`DP` to 84, `UP` and `IT` put into each priced item, everything else as it came), and as a CSV sheet for
+every format. The X84 is checked by reading it back with the app's parser (same items, texts, quantities;
+prices as entered); it is **not validated against the GAEB schema nor opened in another GAEB program**.
+Overheads, surcharges on the whole bid (GU-Zuschlag, Nachlass) and the split into labour / material /
+equipment are not modelled: the unit price is one figure.
+

@@ -21,7 +21,7 @@ from decimal import Decimal
 import pymupdf
 
 from boq.model import BoQ, Item, Remark, SourceRef
-from boq.parsers.common import classify, find_refs, norm_oz, tidy
+from boq.parsers.common import classify, email_in, find_refs, norm_oz, tidy
 from boq.units import normalise_unit
 
 _NUM = r"\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?"
@@ -230,6 +230,29 @@ def _about(boq: BoQ, pages: list[tuple[list[Line], float]]) -> None:
     boq.forms = len(forms)
     if not boq.heading and any(_CALL_FOR_BIDS in l.text for lines in forms[:10] for l in lines):
         boq.heading = _CALL_FOR_BIDS
+    if boq.heading not in _OWN_PAPER:
+        boq.client_email = _sender_email(pages, heads)
+
+
+# Headed with one of these, the print-out is the contractor's own paper: its letterhead is not the client's.
+_OWN_PAPER = {"Angebot", "Angebots-LV", "Nachtragsangebot", "Preisangebot", "Auftragsbestätigung"}
+
+
+def _sender_email(pages: list[tuple[list[Line], float]], heads: list[int | None]) -> str:
+    """The e-mail address of the party the print-out is from: the one in the letterhead of most pages,
+    else the first on a page that is not LV (cover letter, contract form). An address inside the LV's own
+    text is a manufacturer's and is left alone."""
+    on: dict[str, list[int]] = {}
+    for n, (lines, _) in enumerate(pages):
+        for address in dict.fromkeys(a for l in lines if (a := email_in(l.text))):
+            on.setdefault(address, []).append(n)
+    if not on:
+        return ""
+    address, where = max(on.items(), key=lambda kv: len(kv[1]))
+    if len(where) * 2 >= len(pages):
+        return address
+    first = sorted((where[0], address) for address, where in on.items())
+    return next((address for n, address in first if heads[n] is None), "")
 
 
 def _oz_column(body: list[Line]) -> float | None:
