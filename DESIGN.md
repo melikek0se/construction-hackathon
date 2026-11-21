@@ -97,8 +97,8 @@ components:
   band:
     backgroundColor: "{colors.signal-yellow}"
     textColor: "{colors.ink}"
-    height: "54px"
-    padding: "6px 20px"
+    height: "66px"
+    padding: "4px 20px"
   button-primary:
     backgroundColor: "{colors.signal-yellow}"
     textColor: "{colors.ink}"
@@ -199,7 +199,7 @@ Recorded from the build on 2026-11-21 (`web/src/styles.css`, last matching rule;
 
 The team's brief, binding: keep the yellow tone and the "under construction" image; yellow and white;
 industrial but modern; nothing round, nothing soft, nothing huge. The build answers with a white sheet under
-one yellow band. The band, 54px high with a black-and-yellow hazard stripe along its lower edge and a
+one yellow band. The band, 66px high with a black-and-yellow hazard stripe along both edges (a length of barrier tape) and a
 tower-crane mark as the logo, is the one piece of site on every page. Everything below it is a register: hairline
 rules, square corners, 12 to 15px text, small tracked capitals for labels, tabular figures.
 
@@ -302,12 +302,13 @@ shown in quieter ink with a dotted underline, never styled as errors.
 
 Every page is a column: band, an optional bar, then the content filling the height.
 
-- **Projects page.** Content is centred with a maximum width of 1320px and at least 28px at the sides (26px
-  above). A head line (title and totals left, drop hint and the primary button right), then the register: one
-  row per project on a four-column grid of index plate (30px), project (190 to 250px), steps (the rest) and net
-  total (132px), 20px between columns, 14px above and below, hairline between rows. Inside a row the three
-  steps Tender, Bid, Award each take one line of at least 28px on their own grid: step name, file chips,
-  fingerprint strip, counts, item count.
+- **Projects page.** Content is centred with a maximum width of 1320px and at least 28px at the sides. A head
+  line (title and the next date left, drop hint and the primary button right), then two parts, each under a
+  2px ink rule with a label-style heading. **Schedule:** one row per running tender on a grid of 380px (index
+  plate, name, its two dates as fields) and a time axis of eight weeks (two back, six ahead) with a hairline per
+  week, tinted weekends and an ink line for today. **Board:** five columns (Check, Questions, Pricing,
+  Submitted, Award) divided by hairlines, one outlined card per tender. The schedule holds dates and nothing
+  else, the board holds everything but dates (D-029).
 - **Workspace.** Under the band a bar with the versions of the LV, then two panes: the left pane takes the
   remaining width, the right pane is `clamp(360px, 32vw, 520px)` with a hairline on its left. Left: the verdict
   and the view switch (LV map, Item table, Remarks, What-if), the view, and the readout bar at the bottom of
@@ -344,8 +345,8 @@ Lines come in three weights: 1px `rule` between rows and inside cards; 1px `line
 ink for emphasis (1px under a table head and on a hovered or selected control, 2px on top of the register
 table and around the intake panel).
 
-The hazard stripe is the only pattern: black and yellow at 45 degrees, 8px per band, 6px high, drawn as the
-lower border of the band. It also runs under a notice while a file is being read and along the ground edge in
+The hazard stripe is the only pattern: black and yellow at 45 degrees, 9px per band, 9px high, drawn along both
+edges of the band and of every tape. It also runs across a card whose files are being read, under a notice while a file is being read and along the ground edge in
 the trade diagram.
 
 **The Round Belongs To The Signs Rule.** The circle and the rounded square exist as severity signs, and a
@@ -355,8 +356,10 @@ container, button or badge is round or pill-shaped.
 ## Components
 
 ### Band
-The site, once per page. Signal yellow, at least 54px high, 6px by 20px padding, hazard stripe as its lower
-border. Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
+The site, once per page, and a length of barrier tape: signal yellow, at least 66px high, a 9px hazard stripe
+along both edges (the same stripe as the loading tapes). The opening lays one of its tapes down as this band.
+On the projects page the free length carries the tape's lettering ("Errors", "Risks", "Change orders",
+"Bidder questions", Barlow Condensed 17px, drifting slowly). Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
 brand style; in the workspace the brand is the way back to the projects. Then the open project (15px, 600) over
 a file line (12.5px, yellow ink); a created project's name is an input that shows its frame only on hover and
 focus. Right: actions.
@@ -371,7 +374,10 @@ focus. Right: actions.
 - **Text link:** 600, 1px underline with 3px offset.
 - **Focus:** 2px ink outline, 2px offset, everywhere.
 - Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; `prefers-reduced-motion` removes all transitions.
-- The only larger motion is the loading tapes (520ms pull-in, then a steady run along the tape).
+- The larger motions are the loading tapes (520ms pull-in, then a steady run along the tape) and the opening
+  of the app: full yellow with two tapes while the projects are fetched, then the yellow is cut away on the
+  slant (900ms), one tape leaves, the other straightens into the band, and the schedule rows are un-taped one
+  after the other.
 
 ### Chips, tags and toggles
 - **File chip** (projects page) and **version button** (workspace bar): 24px high, white with a `line-2`
@@ -396,21 +402,29 @@ One component (`Sign`), drawn on a 24-unit grid and used at 14 to 18px: Stop is 
 Caution a yellow triangle with an ink outline and exclamation mark, Note a blue square with a white "i". A
 count always stands to the right of its sign; a zero count is shown faded (38%), not removed.
 
-### Register row and fingerprint strip (signature)
-A project is one row: a 30px yellow index plate with the project letter, name (15px, 600) over a sub-line and
-the project's sign counts, then the three steps. A step without a file reads "no file" in `dim`. The strip is
-22px high and as wide as its column: a `strip-base` bar with one vertical line per flagged item at the item's
-place in the LV (red and yellow 3px, blue 2px). Net total right-aligned with its source underneath ("award",
-"offer"), or "no prices". Hover: the row turns pale yellow, the plate inverts, the strip base warms. A step
-whose formats disagree says so in red under the strip. The table has a 2px ink rule on top and a legend line
-with the three signs beneath.
+### Schedule row
+Index plate, the tender's name (15px, 600) and two date fields that show a frame only when empty, hovered or
+focused. On the lane: time gone is a 14px ink bar, time left until submission a hatched frame, waiting for the
+client a 2px dashed line. A date is a 2px ink tick with its name and day beneath; submission and "bid sent"
+carry a small ink flag, a date within three days a yellow flag with an ink outline. A tender without dates
+says so on its lane. Hover: pale yellow.
 
-### Intake panel
-Files that were dropped and read but not yet kept. The one heavy frame in the product: a 2px ink border, a
-yellow header with a 2px ink rule under it, one 36px line per file (name, format tag, what it is, which LV),
-and a footer with the project-name field or destination select, the primary button and Cancel. While files are
-dragged over the page a pale-yellow veil with a 2px dashed ink border says "Drop to read the files"; a row that
-accepts files shows the same dashed line.
+### Board card and fingerprint strip (signature)
+A 1px `line-2` outline, white, 12px padding: index plate and name; the LV as a strip 22px high (a `strip-base`
+bar with one vertical line per flagged item at its place in the LV, red and yellow 3px, blue 2px) with the
+sign counts and the item count; what is open at this stage as a short list (a severity sign, or a 7px ink
+square; a hollow square for "nothing open"); the net total in the figure style where a priced file exists;
+the files behind a disclosure (open one, correct its step, add files, delete); for the first three stages a
+stage select. Hover: ink outline, pale yellow. While its files are being read a card has a hazard tape
+across it; the tape is wiped off to the right when the numbers arrive.
+
+### New-project dialog
+The one modal, and the one heavy frame: a 2px ink border, a yellow header with a 2px ink rule under it, on a
+white veil. First a dashed drop zone; then two columns, the files with the step each belongs to (three-way
+switch, the evidence beneath, a yellow "check" tag where the step was inferred) and what was read about the
+tender with its source, plus the two dates no file carries. Footer: a status line, Discard, the primary
+button; while files are kept a hazard stripe runs along its upper edge. While files are dragged over the page
+a pale-yellow veil with a 2px dashed ink border says "Drop to read the files".
 
 ### LV map (signature)
 One row per section, hairline between rows: a yellow index plate with the section number, the title (14.5px,
@@ -473,7 +487,7 @@ how to read it.
 ## Do's and Don'ts
 
 ### Do:
-- **Do** start every page with the band: yellow, 54px, hazard stripe below, crane mark and "LV CHECK" at the left.
+- **Do** start every page with the band: yellow, 66px, hazard stripe along both edges, crane mark and "LV CHECK" at the left.
 - **Do** keep the ground white and divide with 1px lines (`rule` between rows, `line-2` around controls and cards).
 - **Do** keep text between 12 and 15px, labels at 11px 600 capitals with 0.1em tracking, and figures tabular.
 - **Do** show severity as sign plus colour: red circle, yellow triangle, blue square, with the count beside it.

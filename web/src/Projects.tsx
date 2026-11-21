@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Sign } from "./components";
 import { eur } from "./format";
-import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Intake, type IntakeFile, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
+import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Intake, type IntakeFile, type Plan, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
+import "./home.css";
 
-/* The projects page: a dense register of every project the app knows. */
+/* The projects page: the running tenders on a schedule (their dates and nothing else), and under it
+   every tender on a board by the stage it is in (what is open on it and nothing about dates). */
 
-/* A tender moves through steps, and each step leaves documents: the tender itself (GAEB phase 83, its
-   print-out, the tender package), our bid (84, the submitted bid, an offer), the award (86). */
+/* A tender's files belong to one of three steps (the GAEB exchange phases 83, 84, 86). */
 const STEPS = ["tender", "bid", "award"] as const;
 type Step = (typeof STEPS)[number]; // the same three as `Step` in types.ts
 const STEP_LABEL: Record<Step, string> = { tender: "Tender", bid: "Bid", award: "Award" };
@@ -16,15 +17,64 @@ function stepOf(role: string): Step {
   return ["bid", "submitted bid", "offer"].includes(role) ? "bid" : "tender";
 }
 
-/** What sets a file apart from the others of its step, beyond its format. */
-function qualifier(role: string): string {
-  return { "tender package": "package", excerpt: "excerpt", "submitted bid": "as submitted" }[role] ?? "";
+/* The stages a tender moves through on the contractor's side. The last two follow from the files (a bid or
+   an award is there); the first three are the estimator's own and are set on the card. */
+const STAGES = ["check", "questions", "pricing", "submitted", "award"] as const;
+type Stage = (typeof STAGES)[number];
+const STAGE_LABEL: Record<Stage, string> = { check: "Check", questions: "Questions", pricing: "Pricing", submitted: "Submitted", award: "Award" };
+const STAGE_EMPTY: Record<Stage, string> = {
+  check: "No new tender. Drop its files anywhere on the page.",
+  questions: "No tender has questions out.",
+  pricing: "Nothing is being priced.",
+  submitted: "No bid is with a client.",
+  award: "No award yet.",
+};
+
+function stageOf(p: CatalogProject): Stage {
+  const steps = p.files.map((f) => stepOf(f.role));
+  if (steps.includes("award")) return "award";
+  if (steps.includes("bid")) return "submitted";
+  return p.plan.stage ?? "check";
 }
+
+type Change = { [K in keyof Plan]?: Plan[K] | null };
+
+/* ------------------------------------------------------------------ days */
+
+const DAY = 864e5;
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const parseDay = (iso: string | null | undefined) => {
+  const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(iso ?? "");
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+};
+const daysBetween = (a: Date, b: Date) => Math.round((startOfDay(b).getTime() - startOfDay(a).getTime()) / DAY);
+const dm = (d: Date) => d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+const wd = (d: Date) => `${d.toLocaleDateString("en-GB", { weekday: "short" })} ${dm(d)}`;
+const inDays = (n: number) => (n === 0 ? "today" : n === 1 ? "tomorrow" : n > 1 ? `in ${n} days` : n === -1 ? "yesterday" : `${-n} days ago`);
+
+function isoWeek(d: Date): number {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+  return Math.ceil(((t.getTime() - Date.UTC(t.getUTCFullYear(), 0, 1)) / DAY + 1) / 7);
+}
+
+/** The next hard date of a running tender: the question deadline or the submission, whichever comes first. */
+function nextDate(p: CatalogProject, today: Date): { what: string; day: Date; days: number } | null {
+  if (stageOf(p) === "award") return null;
+  const dates: [string, Date | null][] =
+    stageOf(p) === "submitted"
+      ? [["binding period ends", parseDay(p.plan.binding_until)]]
+      : [["questions close", parseDay(p.plan.questions_due)], ["submission", parseDay(p.plan.due)]];
+  const ahead = dates.flatMap(([what, day]) => (day && daysBetween(today, day) >= 0 ? [{ what, day, days: daysBetween(today, day) }] : []));
+  return ahead.sort((a, b) => a.days - b.days)[0] ?? null;
+}
+
+/* ------------------------------------------------------------------ shared marks */
 
 const MARK = ["", "info", "warn", "high"];
 
-/** A project's LV as one strip: a mark for every flagged item, where it stands in the LV. Marks keep a
- *  visible width however long the LV is, so one stop in a thousand items can still be seen. */
+/** An LV as one strip: a mark for every flagged item, where it stands in the LV. Marks keep a visible
+ *  width however long the LV is, so one stop in a thousand items can still be seen. */
 function Fingerprint({ marks, cuts = [] }: { marks: string; cuts?: number[] }) {
   const n = Math.max(1, marks.length);
   const H = 22;
@@ -36,161 +86,10 @@ function Fingerprint({ marks, cuts = [] }: { marks: string; cuts?: number[] }) {
       ))}
       {[...marks].map((m, i) =>
         m === "0" ? null : (
-          <line
-            key={i}
-            className={`fp-${MARK[+m]}`}
-            x1={i + 0.5}
-            x2={i + 0.5}
-            y1={m === "3" ? 0 : m === "2" ? H * 0.14 : H * 0.32}
-            y2={H}
-            vectorEffect="non-scaling-stroke"
-          />
+          <line key={i} className={`fp-${MARK[+m]}`} x1={i + 0.5} x2={i + 0.5} y1={m === "3" ? 0 : m === "2" ? H * 0.14 : H * 0.32} y2={H} vectorEffect="non-scaling-stroke" />
         ),
       )}
     </svg>
-  );
-}
-
-/** One step of a tender (tender, bid, award): the same line for every project.
- *
- *  A step holds files. Files of the same format are one choice: for a single LV that is one file (GAEB XML,
- *  GAEB 90, PDF: the same LV three ways), for a building it is all its trade LVs together. The chosen
- *  format's items are drawn as one strip, LV after LV, with its findings counted. */
-function StepLine({
-  step,
-  docs,
-  onOpenFile,
-  onOpenProject,
-  onSetStep,
-}: {
-  step: Step;
-  docs: ProjectDoc[];
-  onOpenFile?: (index: number) => void;
-  onOpenProject?: () => void;
-  onSetStep?: (index: number, step: Step) => void; // the selected file belongs to another step
-}) {
-  const [picked, setPicked] = useState(0);
-  if (docs.length === 0) {
-    return (
-      <span className="step-line none">
-        <span className="step-name">{STEP_LABEL[step]}</span>
-        <span className="step-none">no file</span>
-      </span>
-    );
-  }
-  const groups: { label: string; note: string; docs: ProjectDoc[] }[] = [];
-  for (const d of docs) {
-    const note = qualifier(d.role);
-    const group = groups.find((g) => g.label === d.format && g.note === note);
-    if (group) group.docs.push(d);
-    else groups.push({ label: d.format, note, docs: [d] });
-  }
-  const group = groups[Math.min(picked, groups.length - 1)];
-  const read = group.docs.filter((d) => d.counts);
-  const count = (sev: Severity) => read.reduce((n, d) => n + d.counts![sev], 0);
-  const items = read.reduce((n, d) => n + d.items, 0);
-  const cuts = read.slice(0, -1).reduce<number[]>((acc, d) => [...acc, (acc[acc.length - 1] ?? 0) + d.items], []);
-  const several = group.docs.length > 1;
-  // where the findings of a multi-LV step come from: the LVs that carry a stop or a caution
-  const sources = several ? read.filter((d) => d.counts!.high + d.counts!.warn > 0) : [];
-  // the same LV read from two formats should give the same findings; say so when it does not
-  const single = groups.filter((g) => g.docs.length === 1 && g.docs[0].counts && g.docs[0].items === items).map((g) => g.docs[0]);
-  const disagree = !several && single.some((d) => SEVERITIES.some((s) => d.counts![s] !== single[0].counts![s]));
-  const open = several ? onOpenProject : onOpenFile && (() => onOpenFile(group.docs[0].index));
-
-  return (
-    <span className="step-line">
-      <span className="step-name">{STEP_LABEL[step]}</span>
-      <span className="step-files" role="group" aria-label={`${STEP_LABEL[step]} files`}>
-        {groups.map((g, n) => (
-          <button
-            key={g.label + g.note}
-            className="file-chip"
-            aria-pressed={g === group}
-            title={g.docs.length === 1 ? g.docs[0].name : `${g.docs.length} files`}
-            onClick={(e) => (e.stopPropagation(), setPicked(n))}
-          >
-            {g.label}
-            {g.note && <small>{g.note}</small>}
-            {g.docs.length > 1 && <small>{g.docs.length} LVs</small>}
-          </button>
-        ))}
-        {onSetStep && !several && (
-          /* the step was read from the file (D-028); this is where a wrong one is put right */
-          <select
-            className="move-step"
-            value=""
-            aria-label={`Move ${group.docs[0].name} to another step`}
-            title={`${group.docs[0].name} is filed under ${STEP_LABEL[step]}. Move it if that is wrong.`}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => e.target.value && onSetStep(group.docs[0].index, e.target.value as Step)}
-          >
-            <option value="">Move to…</option>
-            {STEPS.filter((other) => other !== step).map((other) => (
-              <option key={other} value={other}>
-                {STEP_LABEL[other]}
-              </option>
-            ))}
-          </select>
-        )}
-      </span>
-      {read.length > 0 ? (
-        <>
-          <button
-            className="step-strip"
-            title={several ? "Open the project" : `Open ${group.docs[0].name}`}
-            disabled={!open}
-            onClick={(e) => (e.stopPropagation(), open?.())}
-          >
-            <Fingerprint marks={read.map((d) => d.marks).join("")} cuts={cuts} />
-          </button>
-          <span className="doc-counts">
-            {SEVERITIES.map((sev) => (
-              <span key={sev} className={count(sev) === 0 ? "zero" : ""}>
-                <Sign severity={sev} size={13} />
-                {count(sev)}
-              </span>
-            ))}
-          </span>
-          <span className="doc-items">{items.toLocaleString("de-DE")}</span>
-          {disagree && <span className="step-note">The formats of this step do not give the same findings. Select each to compare.</span>}
-          {several && (
-            <span className="step-sources">
-              {sources.length === 0 ? (
-                `No stop and no caution in any of the ${read.length} LVs.`
-              ) : (
-                <>
-                  Stops and cautions come from {sources.length} of {read.length} LVs:
-                  {sources.slice(0, 4).map((d) => (
-                    <button
-                      key={d.index}
-                      className="source-lv"
-                      title={`Open ${d.name}`}
-                      disabled={!onOpenFile}
-                      onClick={(e) => (e.stopPropagation(), onOpenFile?.(d.index))}
-                    >
-                      <span lang="de">{d.title || d.name}</span>
-                      {(["high", "warn"] as const).map(
-                        (sev) =>
-                          d.counts![sev] > 0 && (
-                            <b key={sev}>
-                              <Sign severity={sev} size={12} />
-                              {d.counts![sev]}
-                            </b>
-                          ),
-                      )}
-                    </button>
-                  ))}
-                  {sources.length > 4 && <span>and {sources.length - 4} more</span>}
-                </>
-              )}
-            </span>
-          )}
-        </>
-      ) : (
-        <span className="doc-error">could not be read</span>
-      )}
-    </span>
   );
 }
 
@@ -202,41 +101,442 @@ export function CraneIcon({ size = 24 }: { size?: number }) {
         <path d="M7 22V6M4 22h6M2 6h20M7 2v4M7 2l13 4M7 2 3 6M18 6v6" />
         <path d="M2 6h3v3H2z" fill="currentColor" />
         <path d="M16.5 12h3v2.5h-3z" fill="currentColor" />
-        <path d="M7 10l3-4M7 14l-0 0M7 18l0 0" />
+        <path d="M7 10l3-4" />
       </g>
     </svg>
   );
 }
 
+const plateOf = (p: CatalogProject) => (p.source === "demo" ? p.id : (p.name.match(/[A-Za-zÄÖÜ]/)?.[0] ?? "+").toUpperCase());
+
+/* ------------------------------------------------------------------ the opening */
+
+/** The page opens the way a site does: barrier tape across full yellow while the projects are fetched,
+ *  then the yellow is cut away on the slant, one tape leaves and the other straightens and is laid down
+ *  as the band of the page. `phase`: "loading" holds, "opening" plays that, "entering" lets go of the tape. */
+export function Opening({ phase }: { phase: "loading" | "opening" | "entering" }) {
+  const run = (text: string) => (
+    <div className="open-run" aria-hidden>
+      {Array.from({ length: 28 }, (_, i) => (
+        <span key={i}>{text}</span>
+      ))}
+    </div>
+  );
+  return (
+    <div className={`opening is-${phase}`} role="status">
+      <span className="visually-hidden">Reading the projects</span>
+      <div className="open-sheet" />
+      <div className="open-tape a">{run("Reading the projects")}</div>
+      <div className="open-tape b">{run("LV Check")}</div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ schedule */
+
+const SPAN = 56; // days on the schedule: two weeks back, six ahead
+
+/** A date of a tender, set in place: it shows a frame only when pointed at or focused. */
+function DayField({ label, value, disabled, onSet }: { label: string; value?: string; disabled: boolean; onSet: (v: string | null) => void }) {
+  return (
+    <label className={`day-field${value ? "" : " unset"}`}>
+      <span>{label}</span>
+      <input type="date" value={value ?? ""} disabled={disabled} onClick={(e) => e.stopPropagation()} onChange={(e) => onSet(e.target.value || null)} />
+    </label>
+  );
+}
+
+function Schedule({
+  projects,
+  busy,
+  cover,
+  onOpen,
+  onChange,
+}: {
+  projects: CatalogProject[];
+  busy: boolean;
+  cover: "veiled" | "unveil" | ""; // the page is opening: rows stay taped, then are uncovered one by one
+  onOpen: (p: CatalogProject) => void;
+  onChange: (p: CatalogProject, change: Change) => void;
+}) {
+  const today = startOfDay(new Date());
+  const start = new Date(today.getTime() - 14 * DAY);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // back to a Monday
+  const pos = (d: Date) => (daysBetween(start, d) / SPAN) * 100;
+  const x = (d: Date) => Math.max(0, Math.min(100, pos(d)));
+  const running = projects
+    .filter((p) => stageOf(p) !== "award")
+    .sort((a, b) => (nextDate(a, today)?.days ?? 9999) - (nextDate(b, today)?.days ?? 9999));
+  const closed = projects.length - running.length;
+
+  const bar = (kind: string, from: Date, to: Date) =>
+    x(to) > x(from) && <i className={`gbar ${kind}`} style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%` }} />;
+  const mark = (day: Date | null, label: string, flag = false) => {
+    if (!day || pos(day) < 0 || pos(day) > 100) return null;
+    const n = daysBetween(today, day);
+    return (
+      <i className={`gmark${flag ? " flag" : ""}${n >= 0 && n <= 3 ? " soon" : ""}${pos(day) > 80 ? " left" : ""}`} style={{ left: `${pos(day)}%` }}>
+        <span>
+          {label}
+          <small>
+            {wd(day)} · {inDays(n)}
+          </small>
+        </span>
+      </i>
+    );
+  };
+  const off = (day: Date | null, label: string) =>
+    day && (pos(day) < 0 || pos(day) > 100) ? (
+      <span className={`goff ${pos(day) < 0 ? "before" : "after"}`}>
+        {label} {dm(day)}
+        {day.getFullYear() !== today.getFullYear() ? day.getFullYear() : ""}
+      </span>
+    ) : null;
+
+  return (
+    <section className="sched" aria-label="Schedule of the running tenders">
+      <div className="sched-head">
+        <h2>
+          Schedule <small>{running.length === 0 ? "no running tender" : `${running.length} running tender${running.length > 1 ? "s" : ""}, next date first`}</small>
+        </h2>
+        <div className="weeks" aria-hidden>
+          {Array.from({ length: SPAN / 7 }, (_, w) => {
+            const d = new Date(start.getTime() + w * 7 * DAY);
+            return (
+              <span key={w} style={{ left: `${(w / (SPAN / 7)) * 100}%` }}>
+                KW {isoWeek(d)} · {dm(d)}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      <div className="sched-body">
+        {running.map((p, n) => {
+          const stage = stageOf(p);
+          const received = parseDay(p.created) ?? today;
+          const due = parseDay(p.plan.due), q = parseDay(p.plan.questions_due);
+          const sent = parseDay(p.plan.sent), bind = parseDay(p.plan.binding_until);
+          const dated = stage === "submitted" ? sent || bind : due || q;
+          return (
+            <div
+              key={p.id}
+              className={`sched-row ${cover}`}
+              style={{ "--i": n } as CSSProperties}
+              tabIndex={0}
+              aria-disabled={busy}
+              onClick={() => !busy && onOpen(p)}
+              onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && !busy && onOpen(p)}
+            >
+              <div className="sched-left">
+                <span className="plate">{plateOf(p)}</span>
+                <div>
+                  <b lang="de">{p.name}</b>
+                  <div className="day-fields">
+                    {stage === "submitted" ? (
+                      <>
+                        <DayField label="Sent" value={p.plan.sent} disabled={busy} onSet={(v) => onChange(p, { sent: v })} />
+                        <DayField label="Binding until" value={p.plan.binding_until} disabled={busy} onSet={(v) => onChange(p, { binding_until: v })} />
+                      </>
+                    ) : (
+                      <>
+                        <DayField label="Questions until" value={p.plan.questions_due} disabled={busy} onSet={(v) => onChange(p, { questions_due: v })} />
+                        <DayField label="Submission" value={p.plan.due} disabled={busy} onSet={(v) => onChange(p, { due: v })} />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="lane">
+                {Array.from({ length: SPAN / 7 }, (_, w) => (
+                  <i key={w} className="wkend" style={{ left: `${((w * 7 + 5) / SPAN) * 100}%`, width: `${(2 / SPAN) * 100}%` }} />
+                ))}
+                {!dated && <span className="lane-none">No date yet. A tender's dates stand on its notice, not in the LV: enter them on the left.</span>}
+                {stage === "submitted" ? (
+                  <>
+                    {sent && bar("past", received, sent)}
+                    {sent && bind && bar("wait", sent, bind)}
+                    {mark(sent, "Bid sent", true)}
+                    {mark(bind, "Binding until")}
+                    {off(sent, "sent")}
+                    {off(bind, "binding until")}
+                  </>
+                ) : (
+                  dated && (
+                    <>
+                      {bar("past", received, today)}
+                      {due && bar("todo", today, due)}
+                      {mark(q, "Questions close")}
+                      {mark(due, "Submission", true)}
+                      {off(due, "submission")}
+                    </>
+                  )
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {running.length === 0 && <p className="sched-empty">Nothing is running. A tender appears here as soon as its files are dropped, and stays until it is awarded.</p>}
+        <div className="today-wrap" aria-hidden>
+          <i className="today" style={{ left: `${x(today)}%` }}>
+            <b>Today</b>
+          </i>
+        </div>
+      </div>
+      {closed > 0 && (
+        <p className="sched-note">
+          {closed} awarded tender{closed > 1 ? "s are" : " is"} not on the schedule.
+        </p>
+      )}
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ board */
+
+/** What is still open on a tender at the stage it is in, from its files and the rule checks. */
+function openItems(p: CatalogProject, s: ProjectSummary, stage: Stage): { sign?: Severity; text: ReactNode; quiet?: boolean }[] {
+  const read = s.docs.filter((d) => d.counts);
+  const counted = p.kind === "trades" ? read : read.slice(0, 1);
+  const of = (step: Step) => read.filter((d) => stepOf(d.role) === step);
+  const out: { sign?: Severity; text: ReactNode; quiet?: boolean }[] = [];
+  const n = (count: number, one: string, many = `${one}s`) => <b>{`${count.toLocaleString("de-DE")} ${count === 1 ? one : many}`}</b>;
+  const unread = s.docs.length - read.length;
+  if (unread > 0) out.push({ text: <>{n(unread, "file")} could not be read</> });
+
+  if (stage === "award" || stage === "submitted") {
+    const [tender] = of("tender"), [later] = of(stage === "award" ? "award" : "bid");
+    if (tender && later && tender.items !== later.items)
+      out.push({ text: <>The {stage === "award" ? "award" : "bid"} has {n(later.items, "item")}, the tender {tender.items.toLocaleString("de-DE")}</> });
+    else out.push({ quiet: true, text: stage === "award" ? "Awarded. Same items as the tender." : "The bid is with the client." });
+    return out;
+  }
+  const questions = counted.reduce((sum, d) => sum + (d.questions ?? 0), 0);
+  if (s.counts.high > 0) out.push({ sign: "high", text: <>{n(s.counts.high, "stop")} cannot be priced as written</> });
+  if (questions > 0) out.push({ text: <>{n(questions, "item")} with a point to raise with the client</> });
+  if (s.counts.warn > 0)
+    out.push({
+      sign: "warn",
+      text: (
+        <>
+          {n(s.counts.warn, "caution")} push risk onto the bidder
+          {p.kind === "trades" && `, in ${counted.filter((d) => d.counts!.warn > 0).length} of ${counted.length} LVs`}
+        </>
+      ),
+    });
+  // the same LV read from two formats should give the same findings; say so when it does not
+  const twins = of("tender").filter((d) => d.items === counted[0]?.items);
+  if (p.kind !== "trades" && twins.some((d) => SEVERITIES.some((sev) => d.counts![sev] !== twins[0].counts![sev])))
+    out.push({ text: "The formats of the tender do not give the same findings" });
+  if (out.length === 0) out.push({ quiet: true, text: "Nothing open from the rule checks." });
+  return out;
+}
+
+function Card({
+  p,
+  s,
+  stage,
+  busy,
+  onOpen,
+  onChooseFiles,
+  onDropFiles,
+  onDelete,
+  onSetStep,
+  onChange,
+}: {
+  p: CatalogProject;
+  s: ProjectSummary | "failed" | undefined;
+  stage: Stage;
+  busy: boolean;
+  onOpen: (p: CatalogProject, file?: number) => void;
+  onChooseFiles: (target: string) => void;
+  onDropFiles: (files: FileList, target: string) => void;
+  onDelete: (p: CatalogProject) => void;
+  onSetStep: (p: CatalogProject, index: number, step: Step) => void;
+  onChange: (p: CatalogProject, change: Change) => void;
+}) {
+  const ready = s !== undefined && s !== "failed";
+  // A card whose files are still being read is closed off with tape; the tape is pulled once its numbers
+  // are there. A card that arrives with its numbers was never taped and just stands there.
+  const taped = useRef(!ready);
+  const [doomed, setDoomed] = useState(false); // Delete was clicked once
+  const [over, setOver] = useState(false);
+  const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
+
+  let strip: ReactNode = null;
+  if (ready) {
+    const read = s.docs.filter((d) => d.counts);
+    const shown = p.kind === "trades" ? read : read.slice(0, 1);
+    const cuts = shown.slice(0, -1).reduce<number[]>((acc, d) => [...acc, (acc[acc.length - 1] ?? 0) + d.items], []);
+    strip = shown.length > 0 && (
+      <div className="card-lv">
+        <Fingerprint marks={shown.map((d) => d.marks).join("")} cuts={cuts} />
+        <span className="doc-counts">
+          {SEVERITIES.map((sev) => (
+            <span key={sev} className={s.counts[sev] === 0 ? "zero" : ""}>
+              <Sign severity={sev} size={13} />
+              {s.counts[sev]}
+            </span>
+          ))}
+          <small>
+            {s.items.toLocaleString("de-DE")} items{p.kind === "trades" ? ` in ${s.lvs} LVs` : ""}
+          </small>
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <article
+      className={`card${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}`}
+      tabIndex={0}
+      aria-disabled={busy}
+      onClick={() => !busy && onOpen(p)}
+      onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && !busy && onOpen(p)}
+      // later files of a running tender are dropped onto its card
+      onDragOver={(e) => (e.preventDefault(), e.stopPropagation(), setOver(true))}
+      onDragLeave={() => setOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setOver(false);
+        onDropFiles(e.dataTransfer.files, p.id);
+      }}
+    >
+      <header>
+        <span className="plate">{plateOf(p)}</span>
+        <div className="card-name">
+          <b lang="de">{p.name}</b>
+          <small>{[p.name.startsWith(p.number) ? "" : p.number, p.trade].filter(Boolean).join(" · ") || (p.kind === "trades" ? `${p.files.length} trade LVs` : "one LV")}</small>
+        </div>
+      </header>
+
+      {!ready && <p className="card-wait">{s === "failed" ? "The files could not be read." : "Reading the files"}</p>}
+      {strip}
+      {ready && (
+        <ul className="open-list">
+          {openItems(p, s, stage).map((o, i) => (
+            <li key={i} className={o.quiet ? "quiet" : undefined}>
+              {o.sign ? <Sign severity={o.sign} size={14} /> : <i className={o.quiet ? "ok" : "dot"} />}
+              <span>{o.text}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {ready && s.net !== null && (
+        <p className="card-net">
+          <span>{s.net_from === "award" ? "Award" : s.net_from === "offer" ? "Offer" : "Bid"}, net</span>
+          <b className="num">{eur(s.net)}</b>
+        </p>
+      )}
+
+      <details className="card-files" onClick={stop}>
+        <summary>
+          {p.files.length} file{p.files.length > 1 ? "s" : ""}
+          <small>{STEPS.filter((step) => p.files.some((f) => stepOf(f.role) === step)).map((step) => STEP_LABEL[step].toLowerCase()).join(", ")}</small>
+        </summary>
+        <ul>
+          {p.files.map((f, index) => {
+            const doc: ProjectDoc | undefined = ready ? s.docs.find((d) => d.index === index) : undefined;
+            return (
+              <li key={index}>
+                <button className="file-open" disabled={busy} title={`Open ${f.name}`} onClick={() => onOpen(p, index)}>
+                  <b>{f.format}</b>
+                  <span>{doc?.title || f.name}</span>
+                </button>
+                {/* the step was read from the file (D-028); this is where a wrong one is put right */}
+                <select value={stepOf(f.role)} disabled={busy} aria-label={`Step of ${f.name}`} onChange={(e) => onSetStep(p, index, e.target.value as Step)}>
+                  {STEPS.map((step) => (
+                    <option key={step} value={step}>
+                      {STEP_LABEL[step]}
+                    </option>
+                  ))}
+                </select>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="card-actions">
+        <button className="btn-ghost small" disabled={busy} title="Add a later version or another LV to this tender" onClick={() => onChooseFiles(p.id)}>
+            Add files
+          </button>
+          {/* two clicks: the first arms the button, the second deletes the project and its files */}
+          <button
+            className={`btn-ghost small${doomed ? " armed" : ""}`}
+            disabled={busy}
+            onClick={() => {
+              if (doomed) onDelete(p);
+              setDoomed(!doomed);
+            }}
+            onBlur={() => setDoomed(false)}
+          >
+            {doomed ? "Delete for good?" : "Delete"}
+          </button>
+        </p>
+      </details>
+
+      {(stage === "check" || stage === "questions" || stage === "pricing") && (
+        <label className="stage-move" onClick={stop}>
+          <span>Stage</span>
+          <select value={stage} disabled={busy} aria-label={`Stage of ${p.name}`} onChange={(e) => onChange(p, { stage: e.target.value as Plan["stage"] })}>
+            {(["check", "questions", "pricing"] as const).map((st) => (
+              <option key={st} value={st}>
+                {STAGE_LABEL[st]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+    </article>
+  );
+}
+
+/* ------------------------------------------------------------------ new project */
+
 interface Pending {
-  files: File[];
+  files: File[]; // none yet: the dialog is open and waits for files
   info: Intake | null; // null while the server is still reading the files
   target: string | null; // the project the files were dropped on, if any
 }
 
 /** Dropped files, read but not yet kept. The server has read which tender they belong to and which step
- *  of it each file is; the panel shows that with its evidence, so the user checks instead of filling in.
- *  Only what was inferred asks for a look, and every step can be corrected with one click. */
-function IntakePanel({
+ *  of it each file is; the dialog shows that with its evidence, so the user checks instead of filling in.
+ *  Only what no file carries is asked for: the tender's dates. */
+function NewProjectDialog({
   pending,
   projects,
   busy,
+  error,
+  onFiles,
+  onChoose,
   onConfirm,
   onCancel,
 }: {
   pending: Pending;
   projects: CatalogProject[];
   busy: boolean;
-  onConfirm: (name: string, target: string | null, roles: (string | null)[]) => void;
+  error: string | null;
+  onFiles: (files: FileList, target: string | null) => void;
+  onChoose: (target: string | null) => void;
+  onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) => void;
   onCancel: () => void;
 }) {
   const { info, files } = pending;
+  const dialog = useRef<HTMLDialogElement>(null);
   const [name, setName] = useState("");
   const [target, setTarget] = useState<string | null>(pending.target);
   const [steps, setSteps] = useState<Record<number, Step>>({}); // the user's corrections, by file index
+  const [due, setDue] = useState("");
+  const [questionsDue, setQuestionsDue] = useState("");
+  const [over, setOver] = useState(false);
+
+  useEffect(() => {
+    const d = dialog.current;
+    if (d && !d.open) d.showModal();
+  }, []);
   useEffect(() => {
     setName(info?.name ?? "");
-    if (info?.suggested && pending.target === null) setTarget(info.suggested.id);
+    setSteps({});
+    setTarget(pending.target ?? info?.suggested?.id ?? null);
   }, [info, pending.target]);
 
   const rows: IntakeFile[] = [...(info?.files ?? [])].sort((a, b) => a.lv - b.lv || a.index - b.index);
@@ -244,168 +544,225 @@ function IntakePanel({
   const present = STEPS.filter((s) => rows.some((f) => stepNow(f) === s));
   const toCheck = rows.filter((f) => !f.certain && steps[f.index] === undefined).length;
   const into = projects.find((p) => p.id === target);
+  const waiting = files.length === 0;
 
   function confirm() {
     if (!info) return;
     const roles: (string | null)[] = files.map(() => null);
     for (const f of info.files) if (stepNow(f) !== f.step) roles[f.index] = stepNow(f);
-    onConfirm(name.trim(), target, roles);
+    onConfirm(name.trim(), target, roles, target ? {} : { due: due || undefined, questions_due: questionsDue || undefined });
   }
 
   return (
-    <section className="intake" aria-label="Files waiting to be kept">
+    <dialog
+      ref={dialog}
+      className={`new-project${over ? " over" : ""}`}
+      aria-label={into ? `Add files to ${into.name}` : "New project"}
+      onCancel={(e) => (e.preventDefault(), !busy && onCancel())}
+      onClick={(e) => e.target === e.currentTarget && !busy && onCancel()} // a click on the veil
+      onDragOver={(e) => (e.preventDefault(), e.stopPropagation(), setOver(true))}
+      onDragLeave={() => setOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setOver(false);
+        if (!busy) onFiles(e.dataTransfer.files, target);
+      }}
+    >
       <header>
-        <b>Intake</b>
-        {info ? (
-          <span>
-            {into ? `Adds to ${into.name}: ` : "New tender: "}
-            {info.lvs === 1 ? "one LV" : `${info.lvs} LVs`} in {rows.length} file{rows.length > 1 ? "s" : ""} (
-            {present.map((s) => STEP_LABEL[s].toLowerCase()).join(", ")})
-            {info.left_out.length > 0 && `, ${info.left_out.length} left out`}
-            {toCheck > 0 && (
-              <em>
-                {toCheck} step{toCheck > 1 ? "s" : ""} to check
-              </em>
-            )}
-          </span>
-        ) : (
-          <span>
-            Reading {files.length} file{files.length > 1 ? "s" : ""}
-          </span>
-        )}
+        <b>{into ? "Add files" : "New project"}</b>
+        <span>
+          {waiting ? (
+            into ? `to ${into.name}` : "from the files of a tender"
+          ) : info ? (
+            <>
+              {into ? `to ${into.name}: ` : ""}
+              {info.lvs === 1 ? "one LV" : `${info.lvs} LVs`} in {rows.length} file{rows.length > 1 ? "s" : ""} ({present.map((s) => STEP_LABEL[s].toLowerCase()).join(", ")})
+              {info.left_out.length > 0 && `, ${info.left_out.length} left out`}
+              {toCheck > 0 && <em>{toCheck} step{toCheck > 1 ? "s" : ""} to check</em>}
+            </>
+          ) : (
+            `reading ${files.length} file${files.length > 1 ? "s" : ""}`
+          )}
+        </span>
+        <button className="btn-ghost small" onClick={onCancel} disabled={busy}>
+          Close
+        </button>
       </header>
-      <ul className="intake-files">
-        {!info &&
-          files.map((f, i) => (
-            <li key={i} className="reading">
-              <span />
-              <span className="intake-name">{f.name}</span>
-              <span className="intake-why">being read</span>
-            </li>
-          ))}
-        {rows.map((f, i) => {
-          const first = i === 0 || rows[i - 1].lv !== f.lv;
-          const corrected = steps[f.index] !== undefined && steps[f.index] !== f.step;
-          return (
-            <li key={f.index} className={first && i > 0 ? "new-lv" : undefined}>
-              <span className="intake-lv" lang="de" title={f.title}>
-                {first ? f.title : ""}
-              </span>
-              <span className="intake-name" title={f.name}>
-                {f.name}
-                <small>
-                  {FORMAT_LABEL[f.format]} · {f.items.toLocaleString("de-DE")} items
-                  {qualifier(f.role) && !corrected && ` · ${qualifier(f.role)}`}
-                </small>
-              </span>
-              <span className="intake-step" role="group" aria-label={`Step of ${f.name}`}>
-                {STEPS.map((s) => (
-                  <button
-                    key={s}
-                    aria-pressed={stepNow(f) === s}
-                    disabled={busy}
-                    onClick={() => setSteps((old) => ({ ...old, [f.index]: s }))}
-                  >
-                    {STEP_LABEL[s]}
-                  </button>
+
+      {waiting ? (
+        <div className="np-drop">
+          <p>
+            <b>Drop the files of the tender here.</b>
+            The LV as GAEB, PDF or Excel, in every version you have: the app reads which tender it is and which step each file belongs to.
+          </p>
+          <button className="btn-new" onClick={() => onChoose(target)}>
+            Choose files
+          </button>
+          <small>GAEB XML (X83, X84, X86) · GAEB 90 (D83, D84, D86) · PDF with a text layer · Excel</small>
+        </div>
+      ) : (
+        <div className="np-body">
+          <section>
+            <h3>The files and the step each belongs to</h3>
+            <ul className="np-files">
+              {!info &&
+                files.map((f, i) => (
+                  <li key={i} className="reading">
+                    <span className="np-name">{f.name}</span>
+                    <span className="np-why">being read</span>
+                  </li>
                 ))}
-              </span>
-              <span className="intake-why">
-                {corrected ? (
-                  "set by you"
-                ) : (
-                  <>
-                    {!f.certain && steps[f.index] === undefined && <i>check</i>}
-                    {f.evidence.join(" · ")}
-                  </>
+              {rows.map((f, i) => {
+                const first = i === 0 || rows[i - 1].lv !== f.lv;
+                const corrected = steps[f.index] !== undefined && steps[f.index] !== f.step;
+                return (
+                  <li key={f.index} className={first && i > 0 ? "new-lv" : undefined}>
+                    {first && info!.lvs > 1 && (
+                      <span className="np-lv" lang="de">
+                        {f.title}
+                      </span>
+                    )}
+                    <span className="np-name" title={f.name}>
+                      {f.name}
+                    </span>
+                    <span className="np-step" role="group" aria-label={`Step of ${f.name}`}>
+                      {STEPS.map((s) => (
+                        <button key={s} aria-pressed={stepNow(f) === s} disabled={busy} onClick={() => setSteps((old) => ({ ...old, [f.index]: s }))}>
+                          {STEP_LABEL[s]}
+                        </button>
+                      ))}
+                    </span>
+                    <span className="np-why">
+                      {!corrected && !f.certain && steps[f.index] === undefined && <i>check</i>}
+                      {FORMAT_LABEL[f.format]} · {f.items.toLocaleString("de-DE")} items · {corrected ? "step set by you" : f.evidence.join(" · ")}
+                    </span>
+                  </li>
+                );
+              })}
+              {info?.left_out.map((f, i) => (
+                <li key={`out${i}`} className="left-out">
+                  <span className="np-name">{f.name}</span>
+                  <span className="np-why">left out: {f.reason}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="np-fields">
+            <h3>{target ? "Where the files go" : "The tender"}</h3>
+            <label className="wide">
+              <span>Goes into</span>
+              <select value={target ?? ""} onChange={(e) => setTarget(e.target.value || null)} disabled={!info || busy}>
+                <option value="">A new project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <small>{info?.suggested && target === info.suggested.id ? `suggested: ${info.suggested.reason}` : " "}</small>
+            </label>
+            {target === null && (
+              <>
+                <label className="wide">
+                  <span>Project name</span>
+                  <input value={name} maxLength={80} placeholder={info ? "Name this tender" : ""} onChange={(e) => setName(e.target.value)} disabled={!info || busy} />
+                  <small>
+                    {info?.source && name === info.name
+                      ? `read from ${info.source.file}: ${info.source.where}`
+                      : info && !info.name
+                        ? "the files do not name their project"
+                        : " "}
+                  </small>
+                </label>
+                {info?.client && (
+                  <p className="np-fact wide">
+                    <span>Client</span>
+                    <b lang="de">{info.client}</b>
+                    <small>read from the files</small>
+                  </p>
                 )}
-              </span>
-            </li>
-          );
-        })}
-        {info?.left_out.map((f, i) => (
-          <li key={`out${i}`} className="left-out">
-            <span />
-            <span className="intake-name">{f.name}</span>
-            <span className="intake-why">left out: {f.reason}</span>
-          </li>
-        ))}
-      </ul>
-      <footer>
-        <label>
-          <span>Goes into</span>
-          <select value={target ?? ""} onChange={(e) => setTarget(e.target.value || null)} disabled={!info || busy}>
-            <option value="">A new project</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <small>{info?.suggested && target === info.suggested.id ? `suggested: ${info.suggested.reason}` : " "}</small>
-        </label>
-        {target === null && (
-          <label className="grow">
-            <span>Project name</span>
-            <input
-              value={name}
-              maxLength={80}
-              placeholder={info ? "Name this tender" : ""}
-              onChange={(e) => setName(e.target.value)}
-              disabled={!info || busy}
-            />
-            <small>
-              {info?.source && name === info.name
-                ? `read from ${info.source.file}: ${info.source.where}`
-                : info && !info.name
-                  ? "the files do not name their project"
-                  : " "}
-            </small>
-          </label>
-        )}
-        <button className="btn-ghost" onClick={onCancel} disabled={busy}>
-          Discard
-        </button>
-        <button className="btn-new" onClick={confirm} disabled={!info || busy}>
-          {target ? "Add to project" : "Create project"}
-        </button>
-      </footer>
-    </section>
+                <label>
+                  <span>Submission deadline</span>
+                  <input type="date" value={due} onChange={(e) => setDue(e.target.value)} disabled={!info || busy} />
+                  <small>Not in an LV file. It stands on the tender notice.</small>
+                </label>
+                <label>
+                  <span>Questions until</span>
+                  <input type="date" value={questionsDue} max={due || undefined} onChange={(e) => setQuestionsDue(e.target.value)} disabled={!info || busy} />
+                  <small>Set by the client. Both can be entered later.</small>
+                </label>
+              </>
+            )}
+          </section>
+        </div>
+      )}
+
+      {!waiting && (
+        <footer className={busy ? "busy" : undefined}>
+          {error && !busy ? (
+            <span className="np-error" role="alert">
+              {error}
+            </span>
+          ) : (
+            <span>{busy ? "Keeping the files and checking every item" : "Nothing is kept until you confirm."}</span>
+          )}
+          <button className="btn-ghost" onClick={onCancel} disabled={busy}>
+            Discard
+          </button>
+          <button className="btn-new" onClick={confirm} disabled={!info || busy}>
+            {target ? "Add to project" : "Create project"}
+          </button>
+        </footer>
+      )}
+    </dialog>
   );
 }
+
+/* ------------------------------------------------------------------ the page */
 
 export function ProjectsPage({
   projects,
   summaries,
   busy,
   pending,
+  error,
+  cover,
   onOpen,
+  onNew,
   onChooseFiles,
   onDropFiles,
   onConfirm,
   onCancel,
   onDelete,
   onSetStep,
+  onChange,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
   busy: boolean;
   pending: Pending | null;
+  error: string | null; // shown in the dialog while it is open: it covers the notice bar
+  cover: "veiled" | "unveil" | "";
   onOpen: (project: CatalogProject, file?: number) => void;
+  onNew: () => void;
   onChooseFiles: (target: string | null) => void;
   onDropFiles: (files: FileList, target: string | null) => void;
-  onConfirm: (name: string, target: string | null, roles: (string | null)[]) => void;
+  onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) => void;
   onCancel: () => void;
   onDelete: (project: CatalogProject) => void;
   onSetStep: (project: CatalogProject, index: number, step: Step) => void;
+  onChange: (project: CatalogProject, change: Change) => void;
 }) {
-  const [doomed, setDoomed] = useState<string | null>(null); // the project whose Delete was clicked once
-  const [over, setOver] = useState<string | null>(null); // the project row files are being dragged onto
-  const known = projects.flatMap((p) => {
-    const s = summaries[p.id];
-    return s && s !== "failed" ? [s] : [];
-  });
-  const total = (pick: (s: ProjectSummary) => number) => known.reduce((n, s) => n + pick(s), 0);
+  const today = startOfDay(new Date());
+  const upcoming = projects
+    .flatMap((p) => {
+      const next = nextDate(p, today);
+      return next ? [{ p, ...next }] : [];
+    })
+    .sort((a, b) => a.days - b.days);
+  const thisWeek = upcoming.filter((u) => u.days <= 7).length;
 
   return (
     <main className="register">
@@ -413,20 +770,28 @@ export function ProjectsPage({
         <div>
           <h1>Projects</h1>
           <p>
-            {projects.length} projects
-            {known.length > 0 && (
+            {projects.length === 0 ? (
+              "No tender yet."
+            ) : (
               <>
-                {" · "}
-                {total((s) => s.items).toLocaleString("de-DE")} items · {total((s) => s.counts.high)} stops ·{" "}
-                {total((s) => s.counts.warn)} cautions · {total((s) => s.counts.info)} notes
-                {known.length < projects.length && " so far"}
+                {projects.length} tender{projects.length > 1 ? "s" : ""}
+                {upcoming.length > 0 && (
+                  <>
+                    {" · "}
+                    <b>
+                      {thisWeek} date{thisWeek === 1 ? "" : "s"} this week
+                    </b>
+                    {" · next: "}
+                    {upcoming[0].what} for <span lang="de">{upcoming[0].p.name}</span>, {wd(upcoming[0].day)}
+                  </>
+                )}
               </>
             )}
           </p>
         </div>
         <div className="register-new">
           <span>Drop the files of a tender anywhere, or</span>
-          <button className="btn-new" disabled={busy || pending !== null} onClick={() => onChooseFiles(null)}>
+          <button className="btn-new" disabled={busy || pending !== null} onClick={onNew}>
             <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
               <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
             </svg>
@@ -436,138 +801,55 @@ export function ProjectsPage({
       </header>
 
       {pending && (
-        <IntakePanel
-          key={pending.files.map((f) => f.name).join("|")}
+        <NewProjectDialog
+          key={pending.target ?? "new"}
           pending={pending}
           projects={projects}
           busy={busy}
+          error={error}
+          onFiles={onDropFiles}
+          onChoose={onChooseFiles}
           onConfirm={onConfirm}
           onCancel={onCancel}
         />
       )}
 
-      <div className="register-table" role="table" aria-label="Projects">
-        <div className="register-cols" role="row">
-          <span role="columnheader">No.</span>
-          <span role="columnheader">Project</span>
-          <span role="columnheader" className="step-cols">
-            <span>Step</span>
-            <span>Files</span>
-            <span>Items of the selected file</span>
-            <span>Findings</span>
-            <span className="r">Items</span>
-          </span>
-          <span role="columnheader" className="r">
-            Net total
-          </span>
+      <Schedule projects={projects} busy={busy} cover={cover} onOpen={onOpen} onChange={onChange} />
+
+      <section className="board-wrap" aria-label="Tenders by stage">
+        <h2>
+          Board <small>every tender by the stage it is in, and what is open on it</small>
+        </h2>
+        <div className="board">
+          {STAGES.map((stage) => {
+            const here = projects.filter((p) => stageOf(p) === stage);
+            return (
+              <section key={stage} className="col" aria-label={STAGE_LABEL[stage]}>
+                <h3>
+                  {STAGE_LABEL[stage]}
+                  <small>{here.length || "none"}</small>
+                </h3>
+                {here.map((p) => (
+                  <Card
+                    key={p.id}
+                    p={p}
+                    s={summaries[p.id]}
+                    stage={stage}
+                    busy={busy}
+                    onOpen={onOpen}
+                    onChooseFiles={onChooseFiles}
+                    onDropFiles={onDropFiles}
+                    onDelete={onDelete}
+                    onSetStep={onSetStep}
+                    onChange={onChange}
+                  />
+                ))}
+                {here.length === 0 && <p className="col-empty">{STAGE_EMPTY[stage]}</p>}
+              </section>
+            );
+          })}
         </div>
-        {projects.map((p) => {
-          const s = summaries[p.id];
-          const ready = s !== undefined && s !== "failed";
-          return (
-            <div
-              key={p.id}
-              role="row"
-              tabIndex={0}
-              aria-disabled={busy}
-              className={`register-row${over === p.id ? " over" : ""}`}
-              onClick={() => !busy && onOpen(p)}
-              onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && !busy && onOpen(p)}
-              // later files of a running tender are dropped onto its row
-              onDragOver={(e) => (e.preventDefault(), e.stopPropagation(), setOver(p.id))}
-              onDragLeave={() => setOver(null)}
-              onDrop={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setOver(null);
-                onDropFiles(e.dataTransfer.files, p.id);
-              }}
-            >
-              <span role="cell" className="reg-id">
-                {p.source === "upload" ? "+" : p.id}
-              </span>
-              <span role="cell" className="reg-name">
-                <b lang="de">{p.name}</b>
-                <small>
-                  {[p.name.startsWith(p.number) ? "" : p.number, p.trade].filter(Boolean).join(" · ") ||
-                    (p.created
-                      ? `Created ${new Date(p.created).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}`
-                      : "")}
-                </small>
-                {ready && (
-                  <span className="reg-total">
-                    {SEVERITIES.map((sev) => (
-                      <span key={sev} className={s.counts[sev] === 0 ? "zero" : ""}>
-                        <Sign severity={sev} size={14} />
-                        <b>{s.counts[sev]}</b>
-                      </span>
-                    ))}
-                    <span>
-                      {s.items.toLocaleString("de-DE")} items
-                      {p.kind === "trades" ? ` in ${s.lvs} LVs` : ""}
-                    </span>
-                  </span>
-                )}
-                <span className="reg-actions">
-                  <button
-                    className="btn-ghost add-files"
-                    disabled={busy}
-                    title="Add a later version or another LV to this project"
-                    onClick={(e) => (e.stopPropagation(), onChooseFiles(p.id))}
-                  >
-                    Add files
-                  </button>
-                  {/* two clicks: the first arms the button, the second deletes the project and its files */}
-                  <button
-                    className={`btn-ghost add-files${doomed === p.id ? " armed" : ""}`}
-                    disabled={busy}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (doomed === p.id) onDelete(p);
-                      setDoomed(doomed === p.id ? null : p.id);
-                    }}
-                    onBlur={() => setDoomed((d) => (d === p.id ? null : d))}
-                  >
-                    {doomed === p.id ? "Delete for good?" : "Delete"}
-                  </button>
-                </span>
-              </span>
-              {ready ? (
-                <>
-                  <span role="cell" className="reg-docs">
-                    {/* the same three lines for every project, whatever it holds */}
-                    {STEPS.map((step) => (
-                      <StepLine
-                        key={step}
-                        step={step}
-                        docs={s.docs.filter((d) => stepOf(d.role) === step)}
-                        onOpenFile={busy ? undefined : (index) => onOpen(p, index)}
-                        onOpenProject={busy ? undefined : () => onOpen(p)}
-                        onSetStep={busy ? undefined : (index, to) => onSetStep(p, index, to)}
-                      />
-                    ))}
-                  </span>
-                  <span role="cell" className="r num reg-net">
-                    {s.net !== null ? (
-                      <>
-                        {eur(s.net)}
-                        <small>{s.net_from}</small>
-                      </>
-                    ) : (
-                      <small>no prices</small>
-                    )}
-                  </span>
-                </>
-              ) : (
-                <span role="cell" className="reg-wait">
-                  {s === "failed" ? "Could not be read" : "Reading the files"}
-                </span>
-              )}
-            </div>
-          );
-        })}
-        {projects.length === 0 && <p className="register-empty">No project yet. Drop the LVs of a building here to make the first one.</p>}
-      </div>
+      </section>
 
       <footer className="register-foot">
         {SEVERITIES.map((sev) => (
@@ -577,7 +859,7 @@ export function ProjectsPage({
             {sev === "high" ? "cannot be priced as written" : sev === "warn" ? "risk pushed onto the bidder" : "wording worth knowing"}
           </span>
         ))}
-        <span className="formats">GAEB XML · GAEB 90 · Excel · PDF with a text layer</span>
+        <span className="formats">Submitted and Award follow from the files of a tender; the stages before are set on its card.</span>
       </footer>
     </main>
   );

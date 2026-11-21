@@ -330,3 +330,31 @@ number 4/6 (B has none by hand, E's is inside its LV title), name 5/6 (D's is on
 Revisit if: real tenders use headers the label list does not know (then a model reads the first page as a
 fallback), deadlines are wanted (form 211 is blank in the dataset), or ZIP / folder drops are needed.
 
+## D-029 — Home page: schedule on top, board under it; new project in a dialog; barrier-tape opening
+Status: decided · 2026-11-21 (Atahan, after comparing three options each as a clickable mock-up); replaces the register of D-020 on the projects page
+
+- **Two parts, each with only its own matter.** The schedule shows the running tenders on a time axis and
+  nothing but dates (question deadline, submission, sent, end of binding period), which are set in place.
+  The board shows every tender in one of five stages (Check, Questions, Pricing, Submitted, Award) and
+  nothing about dates: the LV strip, the counts, what is open at that stage, the files, the net total.
+- **Stages.** Submitted and Award follow from the files (a bid or an award is there). The three before are
+  the estimator's own and are set on the card. Research found tables, not boards, in the bid tools; the
+  board was chosen anyway because the stages read at once on a projector.
+- **Dates are the user's.** No LV file carries them, so they are asked for at creation (optional) and edited
+  on the schedule. They live in `projects.plan` (JSON), with the stage. Nothing is invented: a tender without
+  dates says so on its lane; demo projects are seeded without dates.
+- **Open items are only what the app knows:** stops, cautions, items with a point for the client, formats
+  that disagree, a bid or award whose item count differs from the tender. Not shown because not known:
+  whether questions were sent, how much is priced, addenda.
+- **New project is a modal dialog** (`<dialog>`): files first, then what was read with its evidence, then the
+  two dates. Same intake rules as D-028.
+- **Opening.** Full yellow with two barrier tapes while the projects are fetched, then the yellow is cut away
+  on the slant; schedule rows are uncovered one after the other, a board card keeps a tape across it until
+  its files are read. The one-off wipes also run with "reduce motion" set (the loops do not): a deliberate
+  exception for the demo, to be reversed in `home.css` if the product is used for real.
+- **The band is the tape** (Atahan: the header fell behind the opening). Hazard stripes along both edges,
+  66px; the opening ends with one tape straightening into it; on the projects page its free length carries
+  the lettering.
+- **Columns added to a table are added to an existing database on start** (`db._add_new_columns`); D-026's
+  "a column change means a new database" still holds for every other change.
+

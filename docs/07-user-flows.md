@@ -134,3 +134,22 @@ field used for the name was the LV label (the trade), not the project; a PDF's s
   (what changed between the tender and the re-issued tender) — the flow the sources stress most (point 3).
 - Deadline, client and bidder-question status on the project.
 - ZIP upload; removing a file or a project.
+
+## Home page as schedule and board (2026-11-21, D-029)
+
+Researched the same day: how a tender runs on the contractor's side and what bid tools show per project.
+Hard dates under VOB/A are the submission deadline (§ 10), the question deadline (set by the client, in
+practice 10 to 12 days before submission; above the EU threshold answers are due 6 days before, § 12a EU),
+the end of the binding period, and the answer deadlines for clarification (§ 15) and missing documents
+(§ 16a). Procore and BuildingConnected list bids as a table by status, sorted by due date, with a calendar
+second; estimators check the nearest deadline first and name missed addenda as the worst failure. Sources:
+[VOB/A § 10](https://lxgesetze.de/vob-a-2019/10), [§ 12a EU](https://lxgesetze.de/vob-a-2019/12a-EU),
+[ibau on bidder questions](https://www.ibau.de/akademie/wissenswertes/bis-wann-muessen-bieterfragen-beantwortet-werden/),
+[Procore bid board](https://v2.support.procore.com/product-manuals/bid-board-company/tutorials/view-the-bid-board),
+[BuildingConnected opportunity fields](https://aps.autodesk.com/en/docs/buildingconnected/v2/reference/http/buildingconnected-opportunities-POST),
+[ConstructConnect on tracking bids](https://www.constructconnect.com/blog/how-to-track-multiple-construction-bids-without-losing-your-mind).
+What users want rests on vendor blogs only; no forum thread, survey or German practitioner was found.
+
+Built from it: deadline and stage on the project (two of the "not built" points above). Still not built:
+client on the project, bidder-question status, addenda and version comparison, ZIP upload.
+

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   catalogSummary,
+  changeProject,
   createProject,
   intakeFiles,
   listCatalog,
@@ -14,7 +15,7 @@ import {
   setFileStep,
   runLlmReview,
 } from "./api";
-import { CraneIcon, ProjectsPage } from "./Projects";
+import { CraneIcon, Opening, ProjectsPage } from "./Projects";
 import { LoadingTapes } from "./Loading";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
@@ -25,7 +26,7 @@ import "./chat.css";
 import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity } from "./types";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf";
 const VIEWS: [View, string][] = [
@@ -45,6 +46,7 @@ export default function App() {
   // The project that is open, and which of its files when it is one LV in several versions.
   const [current, setCurrent] = useState<{ project: CatalogProject; file: number } | null>(null);
   // Files that were dropped or chosen and are waiting for a decision: what they are, and where they go.
+  // With no files yet the dialog is open and asks for them.
   const [pending, setPending] = useState<{ files: File[]; info: Intake | null; target: string | null } | null>(null);
   const addTarget = useRef<string | null>(null);
   const [apiDown, setApiDown] = useState(false);
@@ -89,8 +91,27 @@ export default function App() {
     return list;
   }, []);
 
+  // The opening: full yellow with barrier tape until the projects are there (and for at least a moment,
+  // so it does not flicker), then the yellow is cut away and the page stands. A link straight into a
+  // project skips it. "entering" lasts while the rows of the page are still being uncovered.
+  const [intro, setIntro] = useState<"loading" | "opening" | "entering" | "done">(() =>
+    /[?&](project|sample)=/.test(location.search) ? "done" : "loading",
+  );
   useEffect(() => {
-    refreshCatalog().catch(() => setApiDown(true));
+    const shown = Date.now();
+    let timers: number[] = [];
+    const open = () => {
+      const wait = Math.max(0, 1100 - (Date.now() - shown));
+      timers = [
+        window.setTimeout(() => setIntro((i) => (i === "loading" ? "opening" : i)), wait),
+        window.setTimeout(() => setIntro((i) => (i === "opening" ? "entering" : i)), wait + 950),
+        window.setTimeout(() => setIntro("done"), wait + 3200),
+      ];
+    };
+    refreshCatalog()
+      .catch(() => setApiDown(true))
+      .then(open);
+    return () => timers.forEach(clearTimeout);
   }, [refreshCatalog]);
 
   // Each project's numbers need its files parsed on the server: ask one after the other, so a building of
@@ -223,12 +244,12 @@ export default function App() {
     );
   }, []);
 
-  async function confirmIntake(name: string, target: string | null, roles: (string | null)[]) {
+  async function confirmIntake(name: string, target: string | null, roles: (string | null)[], dates: { due?: string; questions_due?: string }) {
     if (!pending) return;
     setBusy(target ? "the added files" : name || "the new project");
     setError(null);
     try {
-      const { id } = await createProject(pending.files, name, target, roles);
+      const { id } = await createProject(pending.files, name, target, roles, dates);
       asked.current.delete(id); // its numbers have changed
       setSummaries(({ [id]: _old, ...rest }) => rest);
       const saved = (await refreshCatalog()).find((p) => p.id === id);
@@ -262,6 +283,20 @@ export default function App() {
       await refreshCatalog();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  // A date or the stage of a tender, set on the projects page: shown at once, then kept.
+  async function changePlan(p: CatalogProject, change: { [K in keyof Plan]?: Plan[K] | null }) {
+    setError(null);
+    const plan = Object.fromEntries(Object.entries({ ...p.plan, ...change }).filter(([, v]) => v != null)) as Plan;
+    setCatalog((list) => list.map((x) => (x.id === p.id ? { ...x, plan } : x)));
+    try {
+      const saved = await changeProject(p.id, change);
+      setCatalog((list) => list.map((x) => (x.id === p.id ? saved : x)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      void refreshCatalog();
     }
   }
 
@@ -391,6 +426,16 @@ export default function App() {
           <CraneIcon size={26} />
           LV Check
         </button>
+        {!project && !analysis && (
+          /* the projects page: the free length of the tape carries what the app looks for */
+          <div className="band-run" aria-hidden>
+            <div>
+              {Array.from({ length: 12 }, (_, i) =>
+                ["Errors", "Risks", "Change orders", "Bidder questions"].map((word) => <span key={`${i}${word}`}>{word}</span>),
+              )}
+            </div>
+          </div>
+        )}
         {project && !analysis && (
           <>
             <div className="doc">
@@ -474,7 +519,9 @@ export default function App() {
         </nav>
       )}
 
-      {busy && <LoadingTapes what={busy} />}
+      {intro !== "done" && <Opening phase={intro} />}
+      {/* while the new-project dialog is open it says itself that it is working */}
+      {busy && !pending && <LoadingTapes what={busy} />}
       {/* the AI review reads every section with Claude: seconds when cached, a minute or two otherwise */}
       {!busy && ai === "running" && analysis && (
         <LoadingTapes doing="AI review in progress" what={analysis.boq.name || analysis.boq.file} />
@@ -508,6 +555,10 @@ export default function App() {
           summaries={summaries}
           busy={busy !== null}
           pending={pending}
+          error={error}
+          cover={intro === "done" ? "" : intro === "entering" ? "unveil" : "veiled"}
+          onNew={() => setPending({ files: [], info: null, target: null })}
+          onChange={(p, change) => void changePlan(p, change)}
           onOpen={(p, file) => {
             if (file === undefined || p.kind === "versions") return openProject(p, file ?? 0);
             // one trade LV of a building, opened straight from the list
@@ -520,7 +571,7 @@ export default function App() {
             fileInput.current?.click();
           }}
           onDropFiles={upload}
-          onConfirm={(name, target, roles) => void confirmIntake(name, target, roles)}
+          onConfirm={(name, target, roles, dates) => void confirmIntake(name, target, roles, dates)}
           onCancel={() => setPending(null)}
           onDelete={(p) => void removeProject(p)}
           onSetStep={(p, index, step) => void moveFile(p, index, step)}

@@ -215,3 +215,25 @@ def test_a_priced_pdf_that_says_nothing_is_a_bid_to_check_and_the_user_can_corre
     changed = client.patch(f"/api/catalog/{created['id']}/files/0", json={"step": "bid"}).json()
     assert changed["files"][0]["role"] == "bid"
     assert client.patch(f"/api/catalog/{created['id']}/files/0", json={"step": "draft"}).status_code == 422
+
+
+def test_a_tender_keeps_its_dates_and_stage():
+    """The dates of a tender stand in no LV file: they are given at creation or set later, one at a time."""
+    x83 = DATASET / "01_gaeb_xml" / "GAEB-[PROJEKT_004].X83"
+    created = client.post("/api/projects", files=[("files", (x83.name, x83.read_bytes()))],
+                          data={"name": "Dated", "due": "2026-12-03"}).json()
+    url = f"/api/catalog/{created['id']}"
+    assert next(p for p in client.get("/api/catalog").json() if p["id"] == created["id"])["plan"] == {"due": "2026-12-03"}
+    changed = client.patch(url, json={"questions_due": "2026-11-23", "stage": "questions"}).json()
+    assert changed["plan"] == {"due": "2026-12-03", "questions_due": "2026-11-23", "stage": "questions"}
+    assert changed["name"] == "Dated"  # a change of dates leaves the name alone
+    assert client.patch(url, json={"due": None}).json()["plan"] == {"questions_due": "2026-11-23", "stage": "questions"}
+    assert client.patch(url, json={"due": "3.12.2026"}).status_code == 422
+    assert client.patch(url, json={"stage": "award"}).status_code == 422  # award follows from the files
+    client.delete(url)
+
+
+def test_summary_says_what_is_open_on_each_document():
+    docs = client.get("/api/catalog/A/summary").json()["docs"]
+    assert docs[0]["questions"] == 2 and docs[0]["priced"] == 0  # the tender: two points for the client, no price
+    assert docs[2]["priced"] == 197  # the award is priced throughout

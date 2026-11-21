@@ -10,7 +10,7 @@ import tempfile
 import uuid
 from collections import OrderedDict
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 from fastapi import FastAPI, Form, HTTPException, Request, Response, UploadFile
@@ -362,14 +362,17 @@ async def intake(files: list[UploadFile], project: str | None = Form(None)):
 
 @app.post("/api/projects")
 async def create_project(files: list[UploadFile], name: str | None = Form(None), project: str | None = Form(None),
-                         roles: str | None = Form(None)):
+                         roles: str | None = Form(None), due: str | None = Form(None),
+                         questions_due: str | None = Form(None)):
     """Keep files as a new project, or add them to an existing one.
 
     One LV in several versions and several trade LVs are both projects; which it is follows from the
     item numbers of the files. Several LVs are also analysed against each other, as before. What each
     file is (tender, bid, award) is read from the files as in the intake; `roles`, a JSON list with one
-    entry per uploaded file (null = as read), is what the user corrected there.
+    entry per uploaded file (null = as read), is what the user corrected there. `due` and `questions_due`
+    (YYYY-MM-DD) are the tender's dates, which no LV file carries; they are kept with a new project.
     """
+    plan = {k: v for k, v in _plan({"due": due, "questions_due": questions_due}).items() if v}
     uploads, _ = await _read_uploads(files)
     new = [boq for _, _, _, boq in uploads]
     try:
@@ -389,7 +392,7 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     else:
         found = intake_rules.identity(new)
         title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
-        project_id = catalog.save_project(title, stored, kind, number=found["number"])
+        project_id = catalog.save_project(title, stored, kind, number=found["number"], plan=plan)
     if kind == "trades":
         # where the uploads are now; by position, not by name: trade LVs often share a file name
         sources = {id(b): _doc_path(f) for b, f in zip(boqs, _catalog(project_id)["files"]) if _is_pdf(f)}
@@ -418,7 +421,7 @@ def catalog_summary(project_id: str):
     Parses every file, so it is asked for per project and kept with the project until its files change."""
     project = _catalog(project_id)
     kept = catalog.summary(project_id)
-    if kept is None:
+    if kept is None or kept.get("v") != 2:  # v: summaries kept by an earlier version are worked out again
         rank = {"info": 1, "warn": 2, "high": 3}
         docs, net, net_from = [], None, None
         for index, f in enumerate(project["files"]):
@@ -426,11 +429,14 @@ def catalog_summary(project_id: str):
                 boq = _parse_doc(f)
             except HTTPException as exc:  # one unreadable document must not hide the others
                 docs.append({"index": index, "name": f["name"], "role": f["role"], "format": f["format"],
-                             "title": "", "items": 0, "counts": None, "marks": "", "error": str(exc.detail)})
+                             "title": "", "items": 0, "counts": None, "marks": "", "error": str(exc.detail),
+                             "questions": 0, "priced": 0})
                 continue
-            counts, worst = {"high": 0, "warn": 0, "info": 0}, {}
+            counts, worst, ask = {"high": 0, "warn": 0, "info": 0}, {}, set()
             for finding in run_checks(boq):
                 counts[finding.severity] += 1
+                if finding.action == "ask_client":
+                    ask.add(finding.item_oz)
                 if finding.item_oz:
                     worst[finding.item_oz] = max(worst.get(finding.item_oz, 0), rank[finding.severity])
             docs.append({"index": index, "name": f["name"], "role": f["role"], "format": f["format"],
@@ -438,13 +444,15 @@ def catalog_summary(project_id: str):
                          # the document's fingerprint: one digit per item in LV order, 0 none .. 3 stop
                          "marks": "".join(str(worst.get(i.oz, 0)) for i in boq.items), "error": None})
             totals = [i.total for i in boq.items if i.total is not None]
+            # what is open on it: points to raise with the client, and how much of it carries a price
+            docs[-1] |= {"questions": len(ask), "priced": len(totals)}
             if totals and f["role"] in ("bid", "award", "offer") and f["format"].startswith("GAEB"):
                 net, net_from = float(sum(totals)), f["role"]  # a priced GAEB version gives the net total
         # The project's own numbers: one LV in several versions counts once (the document it opens with),
         # trade LVs all count.
         counted = [d for d in docs if d["counts"]]
         counted = counted if project["kind"] == "trades" else counted[:1]
-        kept = {"lvs": len(counted), "items": sum(d["items"] for d in counted),
+        kept = {"v": 2, "lvs": len(counted), "items": sum(d["items"] for d in counted),
                 "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
                 "net": net, "net_from": net_from, "docs": docs}
         catalog.keep_summary(project_id, kept)
@@ -515,17 +523,48 @@ def open_project(project_id: str):
     return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources, project_id)}
 
 
-class Rename(BaseModel):
-    name: str
+PLAN_DATES = ("due", "questions_due", "sent", "binding_until")
+PLAN_STAGES = ("check", "questions", "pricing")  # submitted and award follow from the files
+
+
+def _plan(values: dict) -> dict:
+    """The dates and the stage of a tender as they are kept: ISO days, "" or null to take one out."""
+    plan = {}
+    for key, value in values.items():
+        value = (value or "").strip() or None
+        if key == "stage":
+            if value is not None and value not in PLAN_STAGES:
+                raise HTTPException(422, f"A stage is one of: {', '.join(PLAN_STAGES)}.")
+        elif value is not None:
+            try:
+                value = date.fromisoformat(value).isoformat()
+            except ValueError:
+                raise HTTPException(422, f"{key} must be a day as YYYY-MM-DD.") from None
+        plan[key] = value
+    return plan
+
+
+class ProjectChange(BaseModel):
+    """What can be changed on a project: its name, the stage of the tender, its dates. Only what is sent."""
+    name: str | None = None
+    stage: str | None = None
+    due: str | None = None  # submission deadline (Angebotsfrist)
+    questions_due: str | None = None  # last day for bidder questions
+    sent: str | None = None  # the day the bid went out
+    binding_until: str | None = None  # end of the binding period (Bindefrist)
 
 
 @app.patch("/api/catalog/{project_id}")
-def rename_project(project_id: str, body: Rename):
-    name = body.name.strip()[:80]
-    if not name:
-        raise HTTPException(422, "A project needs a name.")
-    if not catalog.rename(project_id, name):
-        raise HTTPException(404, f"No project {project_id}.")
+def change_project(project_id: str, body: ProjectChange):
+    sent = body.model_dump(exclude_unset=True)
+    _catalog(project_id)
+    if "name" in sent:
+        name = (sent.pop("name") or "").strip()[:80]
+        if not name:
+            raise HTTPException(422, "A project needs a name.")
+        catalog.rename(project_id, name)
+    if sent:
+        catalog.set_plan(project_id, _plan(sent))
     return _catalog(project_id)
 
 

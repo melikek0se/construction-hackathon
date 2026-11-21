@@ -182,6 +182,15 @@ export interface Project {
 }
 
 /** A project of the projects page: one LV in several versions, or the trade LVs of one building. */
+/** Where a tender stands and its dates. No LV file carries them: the user sets them. Days are YYYY-MM-DD. */
+export interface Plan {
+  stage?: "check" | "questions" | "pricing"; // submitted and award follow from the files
+  due?: string; // submission deadline (Angebotsfrist)
+  questions_due?: string; // last day for bidder questions
+  sent?: string; // the day the bid went out
+  binding_until?: string; // end of the binding period (Bindefrist)
+}
+
 export interface CatalogProject {
   id: string;
   number: string;
@@ -191,6 +200,7 @@ export interface CatalogProject {
   kind: "versions" | "trades";
   source: "demo" | "upload"; // demo: seeded from the challenge dataset; both can be changed
   created: string | null;
+  plan: Plan;
   files: { name: string; role: string; format: string }[];
 }
 
@@ -242,6 +252,8 @@ export interface ProjectDoc {
   counts: Record<Severity, number> | null; // null: the document could not be read
   marks: string; // one digit per item in LV order: 0 none, 1 note, 2 caution, 3 stop
   error: string | null;
+  questions: number; // items with a point to raise with the client
+  priced: number; // items that carry a total
 }
 
 export interface Sample {

@@ -279,6 +279,15 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   Not seen: narrow widths, a real mouse drag. A file is moved to another step from the project row ("Move to…" beside the selected file; seen once in
   headless Chrome: a PDF bid moved to Award). Not built: ZIP / folders, deadline. Untested on tenders outside the dataset: the header labels are the ones these six projects use.
 
+- Home page rebuilt (2026-11-21, D-029): a schedule of the running tenders on top (dates only, set in place),
+  a board of all tenders by stage under it (strip, counts, open items, files, net), new project in a modal
+  dialog, barrier-tape opening. Backend: `projects.plan` (stage, due, questions_due, sent, binding_until),
+  `PATCH /api/catalog/{id}` takes them, `POST /api/projects` takes `due` and `questions_due`, the summary
+  carries `questions` and `priced` per document. Styles in `web/src/home.css`. Checked through a script in
+  headless Chrome at 1440 wide against a seeded SQLite database (opening, schedule, board, dialog with one
+  real X83 read). Not checked: a person clicking through, creating a project from the dialog end to end in
+  a browser, widths under 1180px, the Docker Postgres picking up the new column.
+
 ## In progress
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against

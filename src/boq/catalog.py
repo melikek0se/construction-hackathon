@@ -56,6 +56,7 @@ def file_format(name: str) -> str:
 def _project(row, files: list) -> dict:
     return {"id": row.id, "number": row.number, "name": row.name, "trade": row.trade, "note": row.note,
             "kind": row.kind, "source": row.source, "created": row.created.isoformat(timespec="seconds"),
+            "plan": row.plan or {},
             "files": [{"id": f.id, "name": f.name, "role": f.role, "format": f.format} for f in files]}
 
 
@@ -100,12 +101,14 @@ def _add_documents(conn, project_id: str, uploads: list[tuple[str, bytes, str]])
 
 
 def save_project(name: str, uploads: list[tuple[str, bytes, str]], kind: str, *, project_id: str | None = None,
-                 source: str = "upload", number: str = "", trade: str = "", note: str = "") -> str:
+                 source: str = "upload", number: str = "", trade: str = "", note: str = "",
+                 plan: dict | None = None) -> str:
     """Keep a new project with its files: (file name, bytes, role) each. Returns its id."""
     project_id = project_id or uuid.uuid4().hex[:12]
     with db.engine().begin() as conn:
         conn.execute(insert(db.projects).values(id=project_id, name=name, number=number, trade=trade, note=note,
-                                                kind=kind, source=source, created=db.now()))
+                                                kind=kind, source=source, created=db.now(),
+                                                plan=plan or None))
         _add_documents(conn, project_id, uploads)
     return project_id
 
@@ -150,6 +153,17 @@ def rename(project_id: str, name: str) -> bool:
     with db.engine().begin() as conn:
         return bool(conn.execute(update(db.projects).where(db.projects.c.id == project_id)
                                  .values(name=name)).rowcount)
+
+
+def set_plan(project_id: str, changes: dict) -> bool:
+    """Change where the tender stands and its dates; a value of None takes an entry out."""
+    with db.engine().begin() as conn:
+        row = conn.execute(select(db.projects.c.plan).where(db.projects.c.id == project_id)).first()
+        if row is None:
+            return False
+        plan = {k: v for k, v in {**(row.plan or {}), **changes}.items() if v is not None}
+        conn.execute(update(db.projects).where(db.projects.c.id == project_id).values(plan=plan or None))
+    return True
 
 
 def summary(project_id: str) -> dict | None:

@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
+import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -62,24 +62,33 @@ export async function createProject(
   name?: string,
   addTo?: string | null,
   roles?: (string | null)[],
+  dates?: { due?: string; questions_due?: string }, // the tender's dates, for a new project
 ): Promise<{ id: string }> {
   const form = new FormData();
   for (const file of files) form.append("files", file);
   if (name) form.append("name", name);
   if (addTo) form.append("project", addTo);
   if (roles?.some((r) => r !== null)) form.append("roles", JSON.stringify(roles));
+  if (dates?.due) form.append("due", dates.due);
+  if (dates?.questions_due) form.append("questions_due", dates.questions_due);
   return read(await fetch("/api/projects", { method: "POST", body: form }));
 }
 
-export async function renameProject(id: string, name: string): Promise<CatalogProject> {
+/** Change a project's name, the stage of its tender or one of its dates; null takes a date out. */
+export async function changeProject(
+  id: string,
+  change: { name?: string } & { [K in keyof Plan]?: Plan[K] | null },
+): Promise<CatalogProject> {
   return read(
     await fetch(`/api/catalog/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(change),
     }),
   );
 }
+
+export const renameProject = (id: string, name: string) => changeProject(id, { name });
 
 /** Say that a file of a project belongs to another step of the tender than was read from it. */
 export async function setFileStep(id: string, index: number, step: string): Promise<CatalogProject> {
