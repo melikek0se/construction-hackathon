@@ -356,51 +356,41 @@
   color: var(--ink);
 }
 
-/* what an answer changes on our side: one row per amendment, under its question */
-.q-amend {
+/* what an answer changes on our side: one decision under its question */
+.q-decision {
   display: grid;
   gap: 8px;
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.q-amend-row {
-  display: grid;
-  gap: 6px;
-  padding: 10px 12px;
+  margin-top: 10px;
+  padding: 12px;
   border: 1px solid var(--ink);
   background: var(--plate);
 }
 
-.q-amend-row.is-accepted {
-  border-color: var(--line);
-  border-left: 4px solid var(--ink);
-}
-
-.q-amend-row.is-rejected {
-  border-color: var(--line);
-  color: var(--mute);
-}
-
-.q-amend-row.is-rejected p {
-  text-decoration: line-through;
-}
-
-.q-amend-row .caption {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.q-amend-row p {
+.q-decision p {
   margin: 0;
 }
 
-.q-percent {
-  display: flex !important;
+.q-decision.is-decided {
+  border-color: var(--line-2);
+  border-left: 4px solid var(--ink);
+  background: var(--tint);
+}
+
+.q-decision.is-rejected {
+  border-left-color: var(--line-2);
+  color: var(--mute);
+}
+
+.q-percent > span:last-child {
+  display: flex;
   align-items: baseline;
+  justify-content: flex-start;
   gap: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
 }
 
 .q-percent input {
@@ -408,12 +398,22 @@
   text-align: right;
 }
 
-.q-percent span {
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  letter-spacing: 0 !important;
-  text-transform: none !important;
-  color: var(--ink) !important;
+/* a question whose answer has been dealt with: struck through and set back */
+.q-row.is-closed .q-text {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  color: var(--mute);
+}
+
+.q-row.is-closed .q-quote,
+.q-row.is-closed .q-answer {
+  opacity: 0.6;
+}
+
+.q-where .tag.q-closed {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
 }
 
 /* on the item sheet: what the client's answers changed for this item */
@@ -566,4 +566,16 @@
 
 .bid-table .tag {
   margin-left: 6px;
+}
+
+.q-remove {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+  justify-content: flex-end;
+}
+
+.q-remove span {
+  margin-right: auto;
+  color: var(--mute);
 }

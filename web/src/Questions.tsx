@@ -163,6 +163,8 @@ export function QuestionsView({
     );
   }
   const proposals = (key: string) => state.amendments.filter((a) => a.key === key);
+  // A question is closed once what its answer changes on our side has been decided, one way or the other.
+  const closed = (key: string) => proposals(key).length > 0 && proposals(key).every((a) => a.status !== "proposed");
   const open = state.amendments.filter((a) => a.status === "proposed").length;
 
   const ready = keys.length > 0 && /^\S+@\S+$/.test(to.trim()) && subject.trim() !== "" && body.trim() !== "";
@@ -217,7 +219,7 @@ export function QuestionsView({
         <div className="q-cols">
           <ol className="q-list">
             {questions.map((q) => (
-              <li key={q.key} className={`q-row is-${q.status}`}>
+              <li key={q.key} className={`q-row is-${q.status}${closed(q.key) ? " is-closed" : ""}`}>
                 <input
                   type="checkbox"
                   aria-label={`Ask question ${q.no}`}
@@ -234,6 +236,7 @@ export function QuestionsView({
                       <span className="oz-link">LV</span>
                     )}
                     <span lang="de">{q.item_label}</span>
+                    {closed(q.key) && <span className="tag q-closed">Closed</span>}
                     <span className={`tag q-status is-${q.status}`}>
                       {STATUS[q.status]}
                       {q.sent_at && q.status === "sent" ? ` ${stamp(q.sent_at).slice(0, 10)}` : ""}
@@ -256,13 +259,7 @@ export function QuestionsView({
                       {q.answer.meaning && <p>{q.answer.meaning}</p>}
                     </div>
                   )}
-                  {proposals(q.key).length > 0 && (
-                    <ul className="q-amend">
-                      {proposals(q.key).map((a) => (
-                        <AmendmentRow key={a.id} amendment={a} onChanged={onReload} />
-                      ))}
-                    </ul>
-                  )}
+                  {proposals(q.key).length > 0 && <Decision amendments={proposals(q.key)} onChanged={onReload} />}
                 </div>
               </li>
             ))}
@@ -370,88 +367,120 @@ export function QuestionsView({
   );
 }
 
-const AMEND: Record<Amendment["kind"], string> = {
-  settle: "Close the finding",
-  note: "Note on the item",
-  quantity: "New quantity",
-  unit: "New unit",
-  text: "New wording",
-  allowance: "Risk allowance",
-};
+const CHANGE: Record<string, string> = { quantity: "New quantity", unit: "New unit", text: "New wording" };
 
-/** What one answer changes on our side, to accept, change or reject. The value can be changed before it
-    is accepted: the note, the new quantity, the percent of an allowance (which the app never proposes). */
-function AmendmentRow({ amendment: a, onChanged }: { amendment: Amendment; onChanged: () => void }) {
-  const field = a.kind === "allowance" ? "percent" : a.kind === "settle" || a.kind === "note" ? "note" : "to";
-  const start = a.value[field] == null ? "" : String(a.value[field]);
-  const [text, setText] = useState(start);
-  const [editing, setEditing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+/** What one answer changes on our side, as one decision: the note (what the answer settles), a value the
+    client changed (quantity, unit, wording), and for a point the answer leaves open a risk allowance in
+    percent — optional, an empty field means none; the app proposes no figure. Accept takes all of it as
+    it stands in the fields, Reject none of it. Behind it are several amendments (boq/amendments.py). */
+function Decision({ amendments, onChanged }: { amendments: Amendment[]; onChanged: () => void }) {
+  const note = amendments.find((a) => a.kind === "settle" || a.kind === "note");
+  const change = amendments.find((a) => a.kind in CHANGE);
+  const allowance = amendments.find((a) => a.kind === "allowance");
+  const open = amendments.some((a) => a.status === "proposed");
+  const [noteText, setNoteText] = useState(note?.value.note ?? "");
+  const [changeText, setChangeText] = useState(change?.value.to ?? "");
+  const [percent, setPercent] = useState(allowance?.value.percent != null ? String(allowance.value.percent) : "");
   const [busy, setBusy] = useState(false);
-  useEffect(() => setText(start), [start]);
+  const [error, setError] = useState<string | null>(null);
 
-  const decide = (status: Amendment["status"]) => {
+  const run = (steps: () => Promise<unknown>) => {
     setBusy(true);
     setError(null);
-    decideAmendment(a.id, status, status === "accepted" ? { [field]: text.trim() } : undefined).then(
+    steps().then(
       () => {
         setBusy(false);
-        setEditing(false);
         onChanged();
       },
       (e) => {
         setBusy(false);
         setError(e instanceof Error ? e.message : String(e));
+        onChanged(); // what was decided before the refusal shows as decided
       },
     );
   };
-  const proposed = a.status === "proposed";
-  const input = proposed && (editing || a.kind === "allowance");
+  const accept = () =>
+    run(async () => {
+      // the figure first: it is the one that can be refused, and then nothing else has been decided
+      if (allowance) {
+        if (percent.trim()) await decideAmendment(allowance.id, "accepted", { percent: percent.trim() as unknown as number });
+        else await decideAmendment(allowance.id, "rejected");
+      }
+      if (change) await decideAmendment(change.id, "accepted", { to: changeText.trim() });
+      if (note) await decideAmendment(note.id, noteText.trim() ? "accepted" : "rejected", noteText.trim() ? { note: noteText.trim() } : undefined);
+    });
+  const all = (status: Amendment["status"]) =>
+    run(async () => {
+      for (const a of amendments) await decideAmendment(a.id, status);
+    });
+
+  const settled = note?.kind === "settle";
+  const accepted = amendments.filter((a) => a.status === "accepted");
+  const title = settled ? "The answer settles this" : note ? "The answer settles part of this" : "The answer leaves this open";
+  if (!open) {
+    const keptAllowance = accepted.find((a) => a.kind === "allowance");
+    const keptChange = accepted.find((a) => a.kind in CHANGE);
+    const keptNote = accepted.find((a) => a.kind === "settle" || a.kind === "note");
+    return (
+      <div className={`q-decision is-decided${accepted.length === 0 ? " is-rejected" : ""}`}>
+        <span className="caption">
+          {accepted.length === 0 ? "Rejected: nothing changes on our side" : settled && keptNote ? "Closed: the finding is settled" : "Closed"}
+        </span>
+        {keptNote && <p>{keptNote.value.note}</p>}
+        {keptChange && (
+          <p>
+            {CHANGE[keptChange.kind]}: <b lang="de">{keptChange.value.to}</b>
+          </p>
+        )}
+        {keptAllowance && (
+          <p>
+            Priced with a risk allowance of <b>{keptAllowance.value.percent} %</b> on this item.
+          </p>
+        )}
+        {allowance && !keptAllowance && accepted.length > 0 && <p className="quiet">No risk allowance.</p>}
+        {error && <p className="q-error" role="alert">{error}</p>}
+        <div className="q-actions">
+          <button className="text-link" disabled={busy} onClick={() => all("proposed")}>
+            Take back
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
-    <li className={`q-amend-row is-${a.status}`}>
-      <span className="caption">
-        {AMEND[a.kind]}
-        {!proposed && <span className={`tag is-${a.status}`}>{a.status === "accepted" ? "Accepted" : "Rejected"}</span>}
-      </span>
-      {input ? (
-        a.kind === "allowance" ? (
-          <label className="q-percent">
-            <input type="text" inputMode="decimal" value={text} placeholder="0" aria-label="Allowance in percent" onChange={(e) => setText(e.target.value)} />
-            <span>% on the price of this item. {a.value.note}</span>
-          </label>
-        ) : field === "note" ? (
-          <textarea rows={2} value={text} aria-label={AMEND[a.kind]} onChange={(e) => setText(e.target.value)} />
-        ) : (
-          <input type="text" lang="de" value={text} aria-label={AMEND[a.kind]} onChange={(e) => setText(e.target.value)} />
-        )
-      ) : (
-        <p lang={field === "to" ? "de" : undefined}>
-          {a.kind === "allowance" ? (a.value.percent != null ? `${a.value.percent} % on the price of this item. ${a.value.note ?? ""}` : a.value.note) : start}
-        </p>
+    <div className="q-decision">
+      <span className="caption">{title}</span>
+      {note && (
+        <label>
+          <span>{settled ? "Note, and the finding is closed" : "Note on the item"}</span>
+          <textarea rows={2} value={noteText} onChange={(e) => setNoteText(e.target.value)} />
+        </label>
+      )}
+      {change && (
+        <label>
+          <span>{CHANGE[change.kind]}, as the client states it</span>
+          <input type="text" lang="de" value={changeText} onChange={(e) => setChangeText(e.target.value)} />
+        </label>
+      )}
+      {allowance && (
+        <label className="q-percent">
+          <span>Risk allowance for what stays open</span>
+          <span>
+            <input type="text" inputMode="decimal" value={percent} placeholder="none" onChange={(e) => setPercent(e.target.value)} />
+            % on the price of this item. Leave it empty for none.
+          </span>
+        </label>
       )}
       {error && <p className="q-error" role="alert">{error}</p>}
       <div className="q-actions">
-        {proposed ? (
-          <>
-            <button className="btn" disabled={busy || (input && text.trim() === "")} onClick={() => decide("accepted")}>
-              Accept
-            </button>
-            {a.kind !== "allowance" && !editing && (
-              <button className="text-link" disabled={busy} onClick={() => setEditing(true)}>
-                Change
-              </button>
-            )}
-            <button className="text-link" disabled={busy} onClick={() => decide("rejected")}>
-              Reject
-            </button>
-          </>
-        ) : (
-          <button className="text-link" disabled={busy} onClick={() => decide("proposed")}>
-            Take back
-          </button>
-        )}
+        <button className="btn" disabled={busy || (change !== undefined && changeText.trim() === "")} onClick={accept}>
+          Accept
+        </button>
+        <button className="text-link" disabled={busy} onClick={() => all("rejected")}>
+          Reject
+        </button>
       </div>
-    </li>
+    </div>
   );
 }
 
@@ -461,6 +490,7 @@ function MailCard({ mail, onChanged }: { mail: QuestionMail; onChanged: () => vo
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [removing, setRemoving] = useState(false); // asked once, waiting for the second click
 
   const act = (what: string, run: () => Promise<unknown>) => {
     setBusy(what);
@@ -504,9 +534,6 @@ function MailCard({ mail, onChanged }: { mail: QuestionMail; onChanged: () => vo
           <a className="text-link" href={`/api/mails/${mail.id}/message.eml`} download>
             Download .eml
           </a>
-          <button className="text-link" disabled={busy !== null} onClick={() => act("discard", () => discardMail(mail.id))}>
-            Discard the draft
-          </button>
         </div>
       )}
 
@@ -551,6 +578,32 @@ function MailCard({ mail, onChanged }: { mail: QuestionMail; onChanged: () => vo
         </div>
       )}
       {error && <p className="q-error" role="alert">{error}</p>}
+      {/* Off the list. A draft goes at once; a message that was sent or answered asks a second time, since
+          its reply and what was decided from it go with it. */}
+      <div className="q-actions q-remove">
+        {!removing ? (
+          <button
+            className="text-link"
+            disabled={busy !== null}
+            onClick={() => (mail.sent_at || mail.reply ? setRemoving(true) : act("discard", () => discardMail(mail.id)))}
+          >
+            {mail.sent_at || mail.reply ? "Delete this message" : "Discard the draft"}
+          </button>
+        ) : (
+          <>
+            <span>
+              {mail.reply ? "The reply and what was decided from it go too. " : ""}
+              {mail.sent_at ? "The message itself stays with the recipient." : ""}
+            </span>
+            <button className="btn" disabled={busy !== null} onClick={() => act("discard", () => discardMail(mail.id))}>
+              Delete
+            </button>
+            <button className="text-link" disabled={busy !== null} onClick={() => setRemoving(false)}>
+              Keep it
+            </button>
+          </>
+        )}
+      </div>
     </section>
   );
 }

@@ -1180,10 +1180,11 @@ def change_mail(mail_id: str, body: MailChange):
 
 @app.delete("/api/mails/{mail_id}", status_code=204)
 def discard_mail(mail_id: str):
-    """Take a message out again. One that was sent, or that has a reply, stays: it is the record."""
+    """Take a message out of the list, with the reply read into it and what that reply changed on our
+    side. Nothing is recalled: a message that went out stays in the recipient's mailbox. The page asks
+    twice before it removes one that was sent or answered."""
     found = _mail(mail_id)
-    if found["via"] == "smtp" or found["reply"]:
-        raise HTTPException(422, "A message that was sent by the app or has a reply is kept.")
+    amendments.discard_for(mail_id)
     mail.discard(mail_id)
     runs.nudge(found["project_id"])
 
