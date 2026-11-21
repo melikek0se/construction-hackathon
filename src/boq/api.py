@@ -21,7 +21,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import catalog, chat, db, mail, pipeline, retrieve, runs, spend
+from boq import amendments, bid, catalog, chat, db, mail, pipeline, retrieve, runs, spend
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -1026,12 +1026,18 @@ def _questions_state(analysis_id: str) -> dict:
     account = mail.account()
     return {
         "lv": {"name": (project or {}).get("name") or boq.project or boq.name or boq.file, "file": boq.file,
-               "number": (project or {}).get("number") or boq.project_no, "client": boq.client},
+               "number": (project or {}).get("number") or boq.project_no, "client": boq.client,
+               # the client's address as the file gives it; an anonymised file has a token there, no address
+               "email": boq.client_email},
         "questions_due": ((project or {}).get("plan") or {}).get("questions_due"),
         "questions": mail.standing(_report(analysis_id)["questions"], mails),
         "mails": mails,
         # the account the app can send from; None: the message is opened in the user's mail program
         "account": account["from"] if account else None,
+        # the mailbox the app can look into for replies; None: replies are pasted in
+        "inbox": (mail.inbox() or {}).get("user") or None,
+        # what the answers change on our side: proposed by the app, decided by the estimator
+        "amendments": amendments.about(project_id, boq.file),
     }
 
 
@@ -1083,16 +1089,17 @@ def mail_questions(analysis_id: str, body: Outgoing):
     if body.via not in ("draft", "smtp"):
         raise HTTPException(422, "via is draft or smtp.")
     asked = _picked(analysis_id, body.keys)
+    message_id = None
     if body.via == "smtp":
         try:
-            mail.send(to, subject, text + "\n")
+            message_id = mail.send(to, subject, text + "\n")
         except mail.MailUnavailable as exc:
             raise HTTPException(503, str(exc)) from exc
     # the questions as they stand now, whole: a question that was asked stays on the list even when a later
     # analysis of the file no longer raises it (the AI review has not been run again, a rule has changed)
     items = [{**q, "no": no} for no, q in enumerate(asked, 1)]
     mail.keep(mail.BIDDER_QUESTIONS, _project_id(analysis_id), boq.file, to, subject, text, body.via, items,
-              sent=body.via == "smtp")
+              sent=body.via == "smtp", message_id=message_id)
     runs.nudge(_project_id(analysis_id))  # the run waiting for the questions looks again
     return _questions_state(analysis_id)
 
@@ -1149,6 +1156,13 @@ async def read_mail_reply(mail_id: str, body: Reply):
     reply = body.text.strip()
     if len(reply) < 10:
         raise HTTPException(422, "Paste the text of the client's reply.")
+    dropped = await _take_reply(found, reply, "pasted")
+    return {**_mail(mail_id), "dropped": dropped}
+
+
+async def _take_reply(found: dict, reply: str, via: str) -> int:
+    """Read a reply against the questions of its message, keep it, and put up what it changes on our side.
+    Returns how many passages the reading gave that are not in the reply."""
     try:
         with spend.scope(project_id=found["project_id"]):
             read = await mail.read_reply(found["items"], reply)
@@ -1158,11 +1172,118 @@ async def read_mail_reply(mail_id: str, body: Reply):
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:  # API or network failure: say so instead of a bare 500
         raise HTTPException(502, f"Reading the reply failed: {exc}") from exc
-    mail.keep_reply(mail_id, reply, read["answers"])
+    mail.keep_reply(found["id"], reply, read["answers"], via)
     if not found["sent_at"]:  # an answer came, so the questions went out
-        mail.set_sent(mail_id, True)
+        mail.set_sent(found["id"], True)
+    amendments.propose(_mail(found["id"]))
     runs.nudge(found["project_id"])  # all answered: the run goes on to the prices
-    return {**_mail(mail_id), "dropped": read["dropped"]}
+    return read["dropped"]
+
+
+@app.post("/api/analyses/{analysis_id}/questions/replies")
+async def check_replies(analysis_id: str):
+    """Look into the inbox for replies to the messages of this LV that have none yet, and read each one
+    found. `found` says how many came in."""
+    state = _questions_state(analysis_id)
+    try:
+        replies = mail.find_replies(state["mails"])
+    except mail.MailUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    for found, text in replies:
+        await _take_reply(found, text[:mail.MAX_REPLY_CHARS], "imap")
+    return {**_questions_state(analysis_id), "found": len(replies)}
+
+
+class Decision(BaseModel):
+    status: str  # "accepted", "rejected", or "proposed" to take a decision back
+    value: dict | None = None  # the amendment as the estimator changed it
+
+
+@app.patch("/api/amendments/{amendment_id}")
+def decide_amendment(amendment_id: str, body: Decision):
+    """Accept, change or reject what an answer of the client changes on our side."""
+    try:
+        return amendments.decide(amendment_id, body.status, body.value)
+    except LookupError:
+        raise HTTPException(404, "This amendment is no longer kept.") from None
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+# ---------------------------------------------------------------- the bid
+
+def _bid(analysis_id: str) -> dict:
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    state = bid.sheet(boq, _prices(boq), amendments.about(project_id, boq.file), bid.entered(project_id, boq.file))
+    return {**state, "file": boq.file, "format": boq.format,
+            # the bid can go back as GAEB XML where the LV came as GAEB XML and its file is kept
+            "x84": boq.format == "gaeb_xml" and _source_bytes(analysis_id) is not None}
+
+
+def _source_bytes(analysis_id: str) -> bytes | None:
+    """The file an analysis was read from, where it is kept: a document of its project."""
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    if project_id is None:
+        return None
+    doc = next((d for d in _catalog(project_id)["files"] if d["name"] == boq.file), None)
+    return catalog.file_bytes(doc["id"]) if doc else None
+
+
+@app.get("/api/analyses/{analysis_id}/bid")
+def bid_sheet(analysis_id: str):
+    """The bid in progress: per item the suggested price, the price entered, allowance, total; and the sums."""
+    return _bid(analysis_id)
+
+
+class BidPrices(BaseModel):
+    prices: dict[str, str | None] = {}  # item number -> unit price as typed; empty or null clears it
+    take_suggestions: bool = False  # put the suggested price into every item that has none
+
+
+@app.put("/api/analyses/{analysis_id}/bid")
+def set_bid_prices(analysis_id: str, body: BidPrices):
+    boq, _ = _analysis(analysis_id)
+    known = {i.oz for i in boq.items}
+    changes: dict[str, tuple] = {}
+    for oz, text in body.prices.items():
+        if oz not in known:
+            raise HTTPException(422, f"The LV has no item {oz}.")
+        try:
+            changes[oz] = (bid.price_of(text), "own")
+        except ValueError as exc:
+            raise HTTPException(422, f"Item {oz}: {exc}") from exc
+    if body.take_suggestions:
+        for row in _bid(analysis_id)["rows"]:
+            if row["unit_price"] is None and row["suggestion"] and row["item_oz"] not in changes:
+                changes[row["item_oz"]] = (bid.price_of(f"{row['suggestion']['unit_price']:.2f}"), "suggestion")
+    bid.keep(_project_id(analysis_id), boq.file, changes)
+    return _bid(analysis_id)
+
+
+@app.get("/api/analyses/{analysis_id}/bid.csv")
+def bid_csv(analysis_id: str):
+    boq, _ = _analysis(analysis_id)
+    name = mail.file_name(f"Angebot {Path(boq.file).stem}", db.now().isoformat())[:-4] + ".csv"
+    return Response(bid.as_csv(boq, _bid(analysis_id)), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+@app.get("/api/analyses/{analysis_id}/bid.x84")
+def bid_x84(analysis_id: str):
+    """The bid as GAEB XML phase 84: the client's file with the unit prices in it."""
+    boq, _ = _analysis(analysis_id)
+    source = _source_bytes(analysis_id)
+    if source is None or boq.format != "gaeb_xml":
+        raise HTTPException(422, "The bid can be written as X84 only for a GAEB XML file kept in a project.")
+    try:
+        data = bid.as_x84(source, _bid(analysis_id))
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    name = mail.file_name(f"Angebot {Path(boq.file).stem}", db.now().isoformat())[:-4] + ".x84"
+    return Response(data, media_type="application/xml",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
 class _WebApp(StaticFiles):

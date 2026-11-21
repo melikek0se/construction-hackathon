@@ -382,6 +382,24 @@ export interface QuestionAnswer {
   status: "answered" | "partly" | "not_answered";
   quote: string; // word for word from the reply
   meaning: string; // English, for the estimator
+  change?: { field: "quantity" | "unit" | "text"; value: string } | null; // where the reply changes the item itself
+}
+
+/** What an answer of the client changes on our side: proposed by the app, decided by the estimator. The
+    client's file stays as it came; accepted amendments are laid over the LV as the app shows it. */
+export interface Amendment {
+  id: string;
+  item_oz: string | null;
+  kind: "settle" | "note" | "quantity" | "unit" | "text" | "allowance";
+  // settle: note, findings (closed, as `check | item | evidence`) · note: note · quantity: to, number ·
+  // unit, text: to · allowance: percent (null until the estimator sets it), note
+  value: { note?: string; findings?: string[]; to?: string; number?: string | null; percent?: number | null };
+  quote: string; // the passage of the reply it rests on
+  mail_id: string;
+  key: string; // the question it answers
+  status: "proposed" | "accepted" | "rejected";
+  created: string;
+  decided: string | null;
 }
 
 /** A bidder question (Bieterfrage) and where it stands. */
@@ -416,15 +434,18 @@ export interface QuestionMail {
   reply: string | null;
   reply_at: string | null;
   answers: Record<string, QuestionAnswer> | null;
+  reply_via: "pasted" | "imap" | null; // imap: the app found the reply in the inbox
 }
 
 /** GET /api/analyses/{id}/questions */
 export interface QuestionsState {
-  lv: { name: string; file: string; number: string; client: string };
+  lv: { name: string; file: string; number: string; client: string; email: string }; // email: the client's address as the file gives it, or a token ("[EMAIL_004]") where it was anonymised, or ""
   questions_due: string | null; // last day for bidder questions, if the project has it
   questions: BidderQuestion[];
   mails: QuestionMail[];
   account: string | null; // the address the app can send from; null: drafts only
+  inbox: string | null; // the mailbox the app can look into for replies; null: replies are pasted in
+  amendments: Amendment[];
 }
 
 /** The six stations of the pipeline (src/boq/pipeline.py, STAGES), in the estimator's order of work. */
@@ -513,4 +534,35 @@ export interface Spend {
   keys: string[];
   by_purpose: { purpose: string; requests: number; cached: number; usd: number; input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number }[];
   calls: SpendCall[];
+}
+
+/** One item of the bid in progress (GET /api/analyses/{id}/bid). */
+export interface BidRow {
+  item_oz: string;
+  label: string;
+  section: string;
+  qty: number | null; // the quantity of the file: what the bid is made on
+  unit: string;
+  kind: string;
+  qty_answered: number | null; // the quantity the client gave in an answer; the file still has `qty`
+  suggestion: { unit_price: number; low: number | null; high: number | null; confidence: string; sources: number } | null;
+  unit_price: number | null; // entered, before any allowance
+  source: "own" | "suggestion" | "file" | null;
+  allowance_percent: number | null; // accepted from an open point of the client's answers
+  price: number | null; // what goes into the bid: unit price with the allowance
+  total: number | null;
+}
+
+export interface Bid {
+  rows: BidRow[];
+  items: number;
+  priced: number;
+  missing: number;
+  net: number;
+  allowances: number; // the part of `net` that is risk allowance
+  corrected_quantities: number;
+  from_suggestions: number;
+  file: string;
+  format: string;
+  x84: boolean; // the bid can be downloaded as GAEB XML phase 84
 }

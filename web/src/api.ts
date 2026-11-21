@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, WhatIfResult, TenderDate } from "./types";
+import type { Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -230,6 +230,20 @@ export async function readReply(mailId: string, text: string): Promise<QuestionM
   return read(await fetch(`/api/mails/${mailId}/reply`, json("POST", { text })));
 }
 
+/** Look into the inbox for replies to the messages of this LV; each one found is read. */
+export async function checkReplies(id: string): Promise<QuestionsState & { found: number }> {
+  return read(await fetch(`/api/analyses/${id}/questions/replies`, { method: "POST" }));
+}
+
+/** Accept, reject or take back what an answer changes on our side; `value` is the amendment as changed. */
+export async function decideAmendment(
+  id: string,
+  status: Amendment["status"],
+  value?: Amendment["value"],
+): Promise<Amendment> {
+  return read(await fetch(`/api/amendments/${id}`, json("PATCH", { status, value })));
+}
+
 /** The latest pipeline run of every project that has one: where each project stands. */
 export async function listRuns(): Promise<Run[]> {
   return read(await fetch("/api/runs"));
@@ -254,4 +268,14 @@ export async function changeRun(runId: string, what: "go-on" | "retry" | "cancel
 /** Runs the pipeline on a project again, in the background. */
 export async function startRun(projectId: string): Promise<Run> {
   return read(await fetch(`/api/catalog/${projectId}/runs`, { method: "POST" }));
+}
+
+/** The bid in progress: per item the suggested price, the price entered, allowance and total. */
+export async function getBid(id: string): Promise<Bid> {
+  return read(await fetch(`/api/analyses/${id}/bid`));
+}
+
+/** Set unit prices as typed (an empty text clears one), or take the suggested price wherever none is set. */
+export async function setBidPrices(id: string, prices: Record<string, string>, takeSuggestions = false): Promise<Bid> {
+  return read(await fetch(`/api/analyses/${id}/bid`, json("PUT", { prices, take_suggestions: takeSuggestions })));
 }

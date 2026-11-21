@@ -34,11 +34,12 @@ import "./questions.css";
 import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
+import { BidView } from "./Bid";
 import { QuestionsView } from "./Questions";
 import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type Route } from "./router";
-import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run } from "./types";
+import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
-type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions";
+type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions" | "bid";
 const VIEWS: [View, string][] = [
   ["plan", "LV map"],
   ["table", "Item table"],
@@ -46,6 +47,7 @@ const VIEWS: [View, string][] = [
   ["whatif", "What-if"],
   ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
   ["questions", "Questions"], // bidder questions: asked by e-mail, the client's reply read back in
+  ["bid", "Bid"], // the estimator's unit prices on the LV, and the file that goes back (X84)
 ];
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
 const ALL = new Set<Severity>(SEVERITIES);
@@ -110,6 +112,18 @@ export default function App() {
   const askedByFinding = useMemo(() => {
     const map = new Map<string, QuestionsState["questions"][number]>();
     for (const q of questions?.questions ?? []) if (q.status !== "new") for (const f of q.findings) map.set(f, q);
+    return map;
+  }, [questions]);
+  // What the client's answers changed on our side, once the estimator accepted it: the findings they
+  // settle (by `check | item | evidence`) and the amendments per item.
+  const settledFindings = useMemo(
+    () => new Set((questions?.amendments ?? []).filter((a) => a.status === "accepted" && a.kind === "settle").flatMap((a) => a.value.findings ?? [])),
+    [questions],
+  );
+  const amendedByOz = useMemo(() => {
+    const map = new Map<string, Amendment[]>();
+    for (const a of questions?.amendments ?? [])
+      if (a.status === "accepted" && a.item_oz) map.set(a.item_oz, [...(map.get(a.item_oz) ?? []), a]);
     return map;
   }, [questions]);
   // Questions about the project are asked in the panel a click on Polier opens (Agent.tsx). A conversation
@@ -746,16 +760,21 @@ export default function App() {
   const stats = useMemo(() => {
     if (!analysis) return null;
     const counts: Record<Severity, number> = { high: 0, warn: 0, info: 0 };
-    for (const f of analysis.findings) counts[f.severity]++;
+    let closed = 0; // settled by an answer of the client: no longer counted as open
+    for (const f of analysis.findings) {
+      if (settledFindings.has(`${f.check_id}|${f.item_oz}|${f.evidence}`)) closed++;
+      else counts[f.severity]++;
+    }
     const totals = analysis.boq.items.flatMap((i) => (i.total === null ? [] : [Number(i.total)]));
     const heaviest = [...sections].sort((a, b) => weight(b.counts) - weight(a.counts))[0];
     return {
       counts,
+      closed,
       priced: totals.length > 0,
       net: totals.reduce((a, b) => a + b, 0),
       heaviest: heaviest && weight(heaviest.counts) > 0 ? heaviest : null,
     };
-  }, [analysis, sections]);
+  }, [analysis, sections, settledFindings]);
 
   const relatedOz = useMemo(() => {
     const f = selection.finding !== null ? analysis?.findings[selection.finding] : null;
@@ -1078,6 +1097,7 @@ export default function App() {
                         . Most risk points: section <b>{stats.heaviest.key}</b> ({weight(stats.heaviest.counts)})
                       </>
                     )}
+                    {stats.closed > 0 && `. ${stats.closed} settled by the client's answers`}
                     {prices && `. Past bids price ${prices.with_price} of ${prices.items} items.`}
                   </p>
                 )}
@@ -1154,6 +1174,15 @@ export default function App() {
             {view === "pdf" && !analysis.pdf && (
               <p className="pdf-status">This PDF was uploaded on its own and not kept, so there are no pages to show. Add it to a project to read it here.</p>
             )}
+            {view === "bid" && (
+              <BidView
+                key={analysis.id}
+                analysisId={analysis.id}
+                amended={questions?.amendments.filter((a) => a.status === "accepted").length ?? 0}
+                onItem={(oz) => setSelection({ oz, finding: null })}
+                onQuestions={() => setView("questions")}
+              />
+            )}
             {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} />}
             {view === "questions" && (
               <QuestionsView
@@ -1176,6 +1205,8 @@ export default function App() {
                 price={selection.oz ? priceByOz.get(selection.oz) : undefined}
                 selection={selection}
                 asked={askedByFinding}
+                settled={settledFindings}
+                amended={selection.oz ? amendedByOz.get(selection.oz) ?? [] : []}
                 onAsked={() => setView("questions")}
                 onSelect={setSelection}
                 onBack={() => setSelection(NONE)}

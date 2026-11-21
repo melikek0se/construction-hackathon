@@ -1,11 +1,13 @@
 /* Bidder questions by e-mail. The questions that need the client are picked, the German message is written
    by the server and can be changed, and it goes out from the estimator's own mail program (a draft) or, where
    the server has an account, from the app. What was asked is kept; when the client answers, the reply is
-   pasted in and read against the questions. */
+   pasted in — or found in the inbox, where the server may look into one — and read against the questions.
+   What an answer changes on our side (a finding settled, a quantity corrected, a point to price as a risk)
+   is put up under its question for the estimator to accept, change or reject. */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { composeQuestions, discardMail, mailQuestions, markMailSent, readReply } from "./api";
+import { checkReplies, composeQuestions, decideAmendment, discardMail, mailQuestions, markMailSent, readReply } from "./api";
 import { dayText } from "./controls";
-import type { BidderQuestion, QuestionMail, QuestionsState } from "./types";
+import type { Amendment, BidderQuestion, QuestionMail, QuestionsState } from "./types";
 
 const SENDER_KEY = "lvcheck.mail.sender"; // the signature under the message (name, company), kept in this browser
 const TO_KEY = "lvcheck.mail.to"; // the client's address per LV file
@@ -52,6 +54,7 @@ export function QuestionsView({
   onItem: (oz: string) => void;
 }) {
   const file = state?.lv.file ?? "";
+  const fromFile = state?.lv.email ?? ""; // the client's address as the LV gives it
   // Picked for the next message: at first every question that is in no message yet.
   const [picked, setPicked] = useState<Set<string> | null>(null);
   const [to, setTo] = useState("");
@@ -62,6 +65,8 @@ export function QuestionsView({
   const [busy, setBusy] = useState<"draft" | "file" | "smtp" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [checked, setChecked] = useState<string | null>(null); // what the last look into the inbox found
 
   const questions = state?.questions ?? [];
   const keys = useMemo(() => {
@@ -70,8 +75,8 @@ export function QuestionsView({
   }, [questions, picked]);
 
   useEffect(() => {
-    if (file) setTo(stored(TO_KEY)[file] ?? "");
-  }, [file]);
+    if (file) setTo(stored(TO_KEY)[file] || (fromFile.includes("@") ? fromFile : ""));
+  }, [file, fromFile]);
 
   // The message follows the picked questions and the signature until it is changed by hand.
   const asked = useRef(0);
@@ -140,6 +145,26 @@ export function QuestionsView({
     }
   }
 
+  const waiting = state.mails.filter((m) => !m.reply).length;
+  function lookForReplies() {
+    setChecking(true);
+    setChecked(null);
+    setError(null);
+    checkReplies(analysisId).then(
+      (next) => {
+        setChecking(false);
+        setChecked(next.found === 0 ? "No reply in the inbox yet." : `${next.found} ${next.found === 1 ? "reply" : "replies"} came in and ${next.found === 1 ? "was" : "were"} read.`);
+        onState(next);
+      },
+      (e) => {
+        setChecking(false);
+        setChecked(e instanceof Error ? e.message : String(e));
+      },
+    );
+  }
+  const proposals = (key: string) => state.amendments.filter((a) => a.key === key);
+  const open = state.amendments.filter((a) => a.status === "proposed").length;
+
   const ready = keys.length > 0 && /^\S+@\S+$/.test(to.trim()) && subject.trim() !== "" && body.trim() !== "";
 
   return (
@@ -163,6 +188,25 @@ export function QuestionsView({
           Download as text
         </a>
       </div>
+      {(state.inbox || open > 0) && (
+        <div className="q-inbox">
+          {state.inbox && (
+            <>
+              <button className="btn" disabled={checking || waiting === 0} onClick={lookForReplies}>
+                {checking ? "Looking into the inbox" : "Check the inbox for replies"}
+              </button>
+              <span className="quiet">
+                {checked ?? (waiting === 0 ? "Every message has its reply." : `${waiting} ${waiting === 1 ? "message waits" : "messages wait"} for a reply · inbox of ${state.inbox}`)}
+              </span>
+            </>
+          )}
+          {open > 0 && (
+            <span className="q-open">
+              <b>{open}</b> {open === 1 ? "change" : "changes"} from the answers to decide
+            </span>
+          )}
+        </div>
+      )}
 
       {questions.length === 0 ? (
         <p className="quiet q-none">
@@ -212,6 +256,13 @@ export function QuestionsView({
                       {q.answer.meaning && <p>{q.answer.meaning}</p>}
                     </div>
                   )}
+                  {proposals(q.key).length > 0 && (
+                    <ul className="q-amend">
+                      {proposals(q.key).map((a) => (
+                        <AmendmentRow key={a.id} amendment={a} onChanged={onReload} />
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </li>
             ))}
@@ -229,6 +280,17 @@ export function QuestionsView({
                   <label>
                     <span>To</span>
                     <input type="email" value={to} placeholder="vergabestelle@…" onChange={(e) => setTo(e.target.value)} />
+                    {fromFile.includes("@") ? (
+                      to === fromFile ? (
+                        <small className="quiet">Read from the LV. Check that questions go to this address.</small>
+                      ) : (
+                        <small className="quiet">
+                          The LV names <button type="button" className="text-link" onClick={() => setTo(fromFile)}>{fromFile}</button>.
+                        </small>
+                      )
+                    ) : fromFile ? (
+                      <small className="quiet">The LV names an address, but this copy has it blanked out ({fromFile}).</small>
+                    ) : null}
                   </label>
                   <label>
                     <span>Subject</span>
@@ -308,6 +370,91 @@ export function QuestionsView({
   );
 }
 
+const AMEND: Record<Amendment["kind"], string> = {
+  settle: "Close the finding",
+  note: "Note on the item",
+  quantity: "New quantity",
+  unit: "New unit",
+  text: "New wording",
+  allowance: "Risk allowance",
+};
+
+/** What one answer changes on our side, to accept, change or reject. The value can be changed before it
+    is accepted: the note, the new quantity, the percent of an allowance (which the app never proposes). */
+function AmendmentRow({ amendment: a, onChanged }: { amendment: Amendment; onChanged: () => void }) {
+  const field = a.kind === "allowance" ? "percent" : a.kind === "settle" || a.kind === "note" ? "note" : "to";
+  const start = a.value[field] == null ? "" : String(a.value[field]);
+  const [text, setText] = useState(start);
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => setText(start), [start]);
+
+  const decide = (status: Amendment["status"]) => {
+    setBusy(true);
+    setError(null);
+    decideAmendment(a.id, status, status === "accepted" ? { [field]: text.trim() } : undefined).then(
+      () => {
+        setBusy(false);
+        setEditing(false);
+        onChanged();
+      },
+      (e) => {
+        setBusy(false);
+        setError(e instanceof Error ? e.message : String(e));
+      },
+    );
+  };
+  const proposed = a.status === "proposed";
+  const input = proposed && (editing || a.kind === "allowance");
+  return (
+    <li className={`q-amend-row is-${a.status}`}>
+      <span className="caption">
+        {AMEND[a.kind]}
+        {!proposed && <span className={`tag is-${a.status}`}>{a.status === "accepted" ? "Accepted" : "Rejected"}</span>}
+      </span>
+      {input ? (
+        a.kind === "allowance" ? (
+          <label className="q-percent">
+            <input type="text" inputMode="decimal" value={text} placeholder="0" aria-label="Allowance in percent" onChange={(e) => setText(e.target.value)} />
+            <span>% on the price of this item. {a.value.note}</span>
+          </label>
+        ) : field === "note" ? (
+          <textarea rows={2} value={text} aria-label={AMEND[a.kind]} onChange={(e) => setText(e.target.value)} />
+        ) : (
+          <input type="text" lang="de" value={text} aria-label={AMEND[a.kind]} onChange={(e) => setText(e.target.value)} />
+        )
+      ) : (
+        <p lang={field === "to" ? "de" : undefined}>
+          {a.kind === "allowance" ? (a.value.percent != null ? `${a.value.percent} % on the price of this item. ${a.value.note ?? ""}` : a.value.note) : start}
+        </p>
+      )}
+      {error && <p className="q-error" role="alert">{error}</p>}
+      <div className="q-actions">
+        {proposed ? (
+          <>
+            <button className="btn" disabled={busy || (input && text.trim() === "")} onClick={() => decide("accepted")}>
+              Accept
+            </button>
+            {a.kind !== "allowance" && !editing && (
+              <button className="text-link" disabled={busy} onClick={() => setEditing(true)}>
+                Change
+              </button>
+            )}
+            <button className="text-link" disabled={busy} onClick={() => decide("rejected")}>
+              Reject
+            </button>
+          </>
+        ) : (
+          <button className="text-link" disabled={busy} onClick={() => decide("proposed")}>
+            Take back
+          </button>
+        )}
+      </div>
+    </li>
+  );
+}
+
 /** One message: who it went to and when, and the place for the client's reply. */
 function MailCard({ mail, onChanged }: { mail: QuestionMail; onChanged: () => void }) {
   const [reply, setReply] = useState("");
@@ -366,7 +513,7 @@ function MailCard({ mail, onChanged }: { mail: QuestionMail; onChanged: () => vo
       {mail.reply ? (
         <div className="q-reply">
           <p>
-            <b>Reply read {mail.reply_at ? stamp(mail.reply_at) : ""}</b>: {n("answered")} answered, {n("partly")} in part,{" "}
+            <b>{mail.reply_via === "imap" ? "Reply found in the inbox" : "Reply read"} {mail.reply_at ? stamp(mail.reply_at) : ""}</b>: {n("answered")} answered, {n("partly")} in part,{" "}
             {n("not_answered")} still open.
             {note && ` ${note}`}
           </p>

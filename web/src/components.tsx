@@ -17,6 +17,7 @@ import {
   type Item,
   type PriceSuggestion,
   type Severity,
+  type Amendment,
 } from "./types";
 
 const ITEMS_PER_PAGE = 50;
@@ -283,6 +284,7 @@ function FindingPlate({
   items,
   itemByOz,
   asked,
+  settled,
   onAsked,
 }: {
   finding: Finding;
@@ -292,10 +294,11 @@ function FindingPlate({
   items: Item[];
   itemByOz: Map<string, Item>;
   asked?: BidderQuestion;
+  settled?: boolean; // closed by an answer of the client that the estimator accepted
   onAsked?: () => void;
 }) {
   return (
-    <section className={`plate-card sev-${finding.severity}`}>
+    <section className={`plate-card sev-${finding.severity}${settled ? " is-settled" : ""}`}>
       <header>
         <Sign severity={finding.severity} size={30} />
         <h3>{CATEGORY_LABEL[finding.category]}</h3>
@@ -335,7 +338,9 @@ function FindingPlate({
       {asked && (
         <div className={`asked is-${asked.status}`}>
           <span className="caption">
-            {asked.answer
+            {settled
+              ? "Settled by the client's answer"
+              : asked.answer
               ? asked.status === "partly" ? "The client answered in part" : "The client answered"
               : asked.status === "sent" ? "Asked the client, no answer yet" : "Question to the client drafted"}
             <button className="text-link" onClick={onAsked}>
@@ -365,6 +370,8 @@ export function ItemSheet({
   price,
   selection,
   asked,
+  settled,
+  amended,
   onAsked,
   onSelect,
   onBack,
@@ -376,6 +383,8 @@ export function ItemSheet({
   price?: PriceSuggestion;
   selection: Selection;
   asked: Map<string, BidderQuestion>; // the finding's question to the client, once it is in a message
+  settled: Set<string>; // findings closed by an accepted answer, by `check | item | evidence`
+  amended: Amendment[]; // what the client's answers changed for the selected item, accepted
   onAsked: () => void;
   onSelect: (s: Selection) => void;
   onBack: () => void;
@@ -411,6 +420,7 @@ export function ItemSheet({
             <FindingPlate
               finding={selected}
               asked={asked.get(`${selected.check_id}|${selected.item_oz}|${selected.evidence}`)}
+              settled={settled.has(`${selected.check_id}|${selected.item_oz}|${selected.evidence}`)}
               onAsked={onAsked}
               priced={priced}
               onOz={goTo}
@@ -424,6 +434,8 @@ export function ItemSheet({
     );
   }
 
+  const newQty = amended.find((a) => a.kind === "quantity");
+  const newUnit = amended.find((a) => a.kind === "unit");
   const found = findingsByOz.get(item.oz) ?? [];
   const ordered = selected ? [selected, ...found.filter((f) => f !== selected)] : found;
   const marks = (selected ? [selected] : found).flatMap((f) => quotedFragments(f.evidence));
@@ -446,12 +458,43 @@ export function ItemSheet({
         </p>
         <p className="facts">
           <span>
-            <b className="num">{qty(item.qty)}</b> {item.unit_raw || item.unit}
+            {newQty || newUnit ? (
+              <>
+                <s>
+                  <span className="num">{qty(item.qty)}</span> {item.unit_raw || item.unit}
+                </s>{" "}
+                <b className="num">{newQty ? qty(newQty.value.number ?? null) : qty(item.qty)}</b>{" "}
+                {newUnit?.value.to ?? (item.unit_raw || item.unit)}
+              </>
+            ) : (
+              <>
+                <b className="num">{qty(item.qty)}</b> {item.unit_raw || item.unit}
+              </>
+            )}
           </span>
           {item.kind !== "normal" && <span className="tag">{KIND_LABEL[item.kind]}</span>}
           {item.up !== null && <span>Unit price {eur(item.up)}</span>}
           {item.total !== null && <span>Total {eur(item.total)}</span>}
         </p>
+        {amended.length > 0 && (
+          <div className="amended">
+            <span className="caption">
+              From the client's answers
+              <button className="text-link" onClick={onAsked}>
+                Bidder questions
+              </button>
+            </span>
+            {amended.map((a) => (
+              <p key={a.id}>
+                {a.kind === "quantity" && <>The client changed the quantity to <b lang="de">{a.value.to}</b>. The file still has the old one.</>}
+                {a.kind === "unit" && <>The client changed the unit to <b lang="de">{a.value.to}</b>.</>}
+                {a.kind === "text" && <>The client changed the wording: <span lang="de">{a.value.to}</span></>}
+                {(a.kind === "settle" || a.kind === "note") && a.value.note}
+                {a.kind === "allowance" && <>Risk allowance of <b>{a.value.percent} %</b> on the price of this item. {a.value.note}</>}
+              </p>
+            ))}
+          </div>
+        )}
 
         {ordered.length === 0 && <p className="quiet none">The rule checks found nothing on this item.</p>}
         {ordered.map((f, i) => (
@@ -459,6 +502,7 @@ export function ItemSheet({
             key={i}
             finding={f}
             asked={asked.get(`${f.check_id}|${f.item_oz}|${f.evidence}`)}
+            settled={settled.has(`${f.check_id}|${f.item_oz}|${f.evidence}`)}
             onAsked={onAsked}
             priced={priced}
             onOz={goTo}

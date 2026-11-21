@@ -202,6 +202,13 @@
   color: var(--ink);
 }
 
+/* under a field: where its value came from */
+.questions label small {
+  font-size: 13px;
+  color: var(--mute);
+  overflow-wrap: anywhere;
+}
+
 .questions input[type="email"],
 .questions input[type="text"],
 .questions textarea {
@@ -328,4 +335,235 @@
 
 .asked .q-quote {
   color: var(--ink);
+}
+
+/* the inbox: look for replies, and how many changes from the answers wait for a decision */
+.q-inbox {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: var(--tint);
+  border: 1px solid var(--line);
+}
+
+.q-inbox .q-open {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+/* what an answer changes on our side: one row per amendment, under its question */
+.q-amend {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.q-amend-row {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--ink);
+  background: var(--plate);
+}
+
+.q-amend-row.is-accepted {
+  border-color: var(--line);
+  border-left: 4px solid var(--ink);
+}
+
+.q-amend-row.is-rejected {
+  border-color: var(--line);
+  color: var(--mute);
+}
+
+.q-amend-row.is-rejected p {
+  text-decoration: line-through;
+}
+
+.q-amend-row .caption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.q-amend-row p {
+  margin: 0;
+}
+
+.q-percent {
+  display: flex !important;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.q-percent input {
+  width: 5em !important;
+  text-align: right;
+}
+
+.q-percent span {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--ink) !important;
+}
+
+/* on the item sheet: what the client's answers changed for this item */
+.amended {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--ink);
+  background: var(--tint);
+}
+
+.amended p {
+  margin: 0;
+}
+
+.amended .q-quote {
+  color: var(--mute);
+}
+
+.facts s {
+  color: var(--mute);
+}
+
+.plate-card.is-settled {
+  opacity: 0.62;
+}
+
+.plate-card.is-settled .plate-title {
+  text-decoration: line-through;
+}
+
+/* ------------------------------------------------------------------ the bid */
+.bid {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 24px 40px;
+}
+
+.bid a.text-link {
+  color: var(--ink);
+}
+
+.bid-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.bid-sum {
+  display: grid;
+  gap: 2px;
+}
+
+.bid-sum b {
+  font-family: var(--display);
+  font-size: 40px;
+  line-height: 1;
+}
+
+.bid-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.bid-actions a.btn {
+  text-decoration: none;
+}
+
+.bid-out {
+  background: var(--ink);
+  color: #fff;
+}
+
+.bid-note {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  background: var(--tint);
+  border-left: 4px solid var(--line-2);
+}
+
+.bid-note.is-open {
+  border-left-color: var(--yellow);
+}
+
+.bid-table {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.bid-table th,
+.bid-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.bid-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--plate);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+  border-bottom: 1px solid var(--ink);
+}
+
+.bid-table .r {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bid-table .bid-section th {
+  padding-top: 14px;
+  background: var(--tint);
+  font-weight: 600;
+}
+
+.bid-table small {
+  display: block;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.bid-table input {
+  width: 7.5em;
+  padding: 4px 6px;
+  text-align: right;
+  background: var(--plate);
+  border: 1px solid var(--line-2);
+  font: inherit;
+}
+
+.bid-table tr.is-open input {
+  border-color: var(--ink);
+  background: var(--hover);
+}
+
+.bid-table .tag {
+  margin-left: 6px;
 }

@@ -29,3 +29,12 @@ def database(seeded_db, tmp_path, monkeypatch):
     shutil.copy(seeded_db, copy)
     db.use(f"sqlite:///{copy}")
     yield
+
+
+@pytest.fixture(autouse=True)
+def no_mail_account(monkeypatch):
+    """No test uses the developer's own mail account from .env: nothing is sent, no inbox is read. A test
+    that needs an account sets a made-up one."""
+    for name in ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM",
+                 "IMAP_HOST", "IMAP_PORT", "IMAP_USER", "IMAP_PASSWORD", "IMAP_FOLDER"):
+        monkeypatch.delenv(name, raising=False)
