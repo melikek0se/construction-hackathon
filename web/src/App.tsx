@@ -35,11 +35,13 @@ import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
 import { BidView } from "./Bid";
+import { InquiriesView } from "./Inquiries";
 import { QuestionsView } from "./Questions";
+import { SuppliersDialog } from "./Suppliers";
 import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type Route } from "./router";
 import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
-type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions" | "bid";
+type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions" | "inquiries" | "bid";
 const VIEWS: [View, string][] = [
   ["plan", "LV map"],
   ["table", "Item table"],
@@ -47,6 +49,7 @@ const VIEWS: [View, string][] = [
   ["whatif", "What-if"],
   ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
   ["questions", "Questions"], // bidder questions: asked by e-mail, the client's reply read back in
+  ["inquiries", "Price inquiries"], // suppliers and subcontractors asked for prices, their quotes compared
   ["bid", "Bid"], // the estimator's unit prices on the LV, and the file that goes back (X84)
 ];
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
@@ -211,6 +214,9 @@ export default function App() {
   // going, now and then otherwise (a run can be started from another window).
   const [runs, setRuns] = useState<Run[]>([]);
   const [runsOpen, setRunsOpen] = useState(false);
+  // the directory of suppliers; `directoryAt` counts its changes, so the inquiries on the page are read again
+  const [directoryOpen, setDirectoryOpen] = useState(false);
+  const [directoryAt, setDirectoryAt] = useState(0);
   const [startingRun, setStartingRun] = useState(false);
   const refreshRuns = useCallback(() => listRuns().then(setRuns, () => undefined), []);
   const running = runs.some((r) => r.active);
@@ -292,21 +298,26 @@ export default function App() {
     }
   }, [runs]);
 
-  // The opening: full yellow with barrier tape until the projects are there (and for at least a moment,
-  // so it does not flicker), then the yellow rolls up like a shutter and the page stands. A link straight into a
-  // project skips it. "entering" lasts while the rows of the page are still being uncovered.
+  // The opening: full yellow with barrier tape until the projects are there with their numbers (and for at
+  // least a moment, so it does not flicker), then the yellow rolls up like a shutter and the page stands
+  // complete: no card is still being read behind it. A link straight into a project skips it. "entering"
+  // lasts while the rows of the page are still being uncovered.
   const [intro, setIntro] = useState<"loading" | "opening" | "entering" | "done">(() => (DEEP_LINK ? "done" : "loading"));
+  const [listed, setListed] = useState(false); // the list of projects is there (or the server is not)
+  const introShown = useRef(Date.now());
+  const introOpened = useRef(false);
+  const introTimers = useRef<number[]>([]);
+  const openIntro = useCallback(() => {
+    if (introOpened.current) return;
+    introOpened.current = true;
+    const wait = Math.max(0, 1100 - (Date.now() - introShown.current));
+    introTimers.current = [
+      window.setTimeout(() => setIntro((i) => (i === "loading" ? "opening" : i)), wait),
+      window.setTimeout(() => setIntro((i) => (i === "opening" ? "entering" : i)), wait + 950),
+      window.setTimeout(() => setIntro("done"), wait + 3200),
+    ];
+  }, []);
   useEffect(() => {
-    const shown = Date.now();
-    let timers: number[] = [];
-    const open = () => {
-      const wait = Math.max(0, 1100 - (Date.now() - shown));
-      timers = [
-        window.setTimeout(() => setIntro((i) => (i === "loading" ? "opening" : i)), wait),
-        window.setTimeout(() => setIntro((i) => (i === "opening" ? "entering" : i)), wait + 950),
-        window.setTimeout(() => setIntro("done"), wait + 3200),
-      ];
-    };
     refreshCatalog()
       .then((list) => {
         // a link to a project that is not there: nothing will open, so the sheet must not stay across
@@ -319,9 +330,18 @@ export default function App() {
         setApiDown(true);
         if (DEEP_LINK) openGate();
       })
-      .then(open);
-    return () => timers.forEach(clearTimeout);
+      .then(() => setListed(true));
   }, [refreshCatalog, openGate]);
+  // The shutter waits for every card's numbers, but not for ever: a project whose files take long to read
+  // (a building of many PDFs, read for the first time) comes up taped after eight seconds.
+  const allIn = listed && catalog.every((p) => summaries[p.id] !== undefined);
+  useEffect(() => {
+    if (!listed) return;
+    if (allIn) return openIntro();
+    const late = window.setTimeout(openIntro, 8000);
+    return () => window.clearTimeout(late);
+  }, [listed, allIn, openIntro]);
+  useEffect(() => () => introTimers.current.forEach((t) => window.clearTimeout(t)), []);
 
   // Each project's numbers need its files parsed on the server: ask one after the other, so a building of
   // 27 PDFs does not hold up the small ones.
@@ -694,6 +714,11 @@ export default function App() {
     try {
       const saved = await changeProject(p.id, change);
       setCatalog((list) => list.map((x) => (x.id === p.id ? saved : x)));
+      if (change.stage) {
+        // a tender taken on from the intake starts its checks, and its card gets the rule findings
+        void refreshRuns();
+        void catalogSummary(p.id).then((summary) => setSummaries((s) => ({ ...s, [p.id]: summary })), () => undefined);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       void refreshCatalog();
@@ -864,6 +889,9 @@ export default function App() {
         {!project && (!analysis || !stats) && (
           <div className="actions">
             {catalog.length > 0 && <RunsSwitch runs={runs} onOpen={() => setRunsOpen(true)} />}
+            <button className="btn plain" onClick={() => setDirectoryOpen(true)} title="Who is asked for prices, and who is asking">
+              Suppliers
+            </button>
             <button className="btn band-new" disabled={busy !== null || pending !== null} onClick={() => setPending({ files: [], info: null, target: null })}>
               <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
                 <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
@@ -995,6 +1023,7 @@ export default function App() {
           }}
         />
       )}
+      {directoryOpen && <SuppliersDialog onClose={() => setDirectoryOpen(false)} onChanged={() => setDirectoryAt((n) => n + 1)} />}
       {runsOpen && (
         <RunsDialog
           runs={current ? history : runs}
@@ -1181,6 +1210,17 @@ export default function App() {
                 amended={questions?.amendments.filter((a) => a.status === "accepted").length ?? 0}
                 onItem={(oz) => setSelection({ oz, finding: null })}
                 onQuestions={() => setView("questions")}
+              />
+            )}
+            {view === "inquiries" && (
+              <InquiriesView
+                key={analysis.id}
+                analysisId={analysis.id}
+                at={`${directoryAt}|${questions?.questions.map((q) => q.status).join("") ?? ""}`}
+                onItem={(oz) => setSelection({ oz, finding: null })}
+                onQuestions={() => setView("questions")}
+                onBid={() => setView("bid")}
+                onDirectory={() => setDirectoryOpen(true)}
               />
             )}
             {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} />}

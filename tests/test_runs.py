@@ -44,12 +44,13 @@ def test_a_run_records_every_step_and_its_ai_findings_open_with_the_file(monkeyp
                         origin="llm", title="stub", evidence="„x“", explanation="y", action="ask_client")]
 
     _stub_review(monkeypatch, review)
-    # one LV as X83 and D83. Its findings raise questions, so the run stops before the prices.
+    # one LV as X83 and D83. Its findings raise questions: they stay open, the prices are worked out beside them.
     assert runs.start(pid, "test", wait=True)["status"] == "waiting"
     done = client.get("/api/runs", params={"project": pid}).json()[0]
     assert done["status"] == "waiting" and not done["active"] and done["waiting_for"].endswith("to send")
+    assert done["questions"]["to_send"] == done["questions"]["total"] > 0 and done["questions"]["out"] == 0
     assert [s["id"] for s in done["stages"]] == [s for s, _ in pipeline.STAGES]
-    assert [s["status"] for s in done["stages"]] == ["done", "done", "done", "skipped", "waiting", "queued"]
+    assert [s["status"] for s in done["stages"]] == ["done", "done", "done", "skipped", "waiting", "done"]
     by_doc = {}
     for row in done["steps"]:
         by_doc.setdefault(row["doc"], []).append(row)
@@ -111,24 +112,24 @@ def test_a_building_is_compared_across_its_lvs_and_a_new_project_starts_a_run(mo
     assert client.post("/api/catalog/Z/runs").status_code == 404
 
 
-def test_the_run_waits_for_the_questions_and_goes_on_to_the_prices_when_told(monkeypatch):
+def test_the_prices_do_not_wait_for_the_questions_and_the_person_can_close_them(monkeypatch):
     pid = _tender()
     _stub_review(monkeypatch, lambda ctx: [])
     waiting = runs.start(pid, "test", wait=True)
     gate = next(r for r in waiting["steps"] if r["step"] == "Q-GATE" and r["doc"] == 0)
     prices = next(r for r in waiting["steps"] if r["step"] == "P-PRICES" and r["doc"] == 0)
-    assert gate["status"] == "waiting" and prices["status"] == "held"
-    assert catalog.find(pid)["plan"].get("stage") == "questions"  # the tender moved on along the board
+    assert gate["status"] == "waiting" and prices["status"] == "done"
+    assert "stage" not in catalog.find(pid)["plan"]  # the run does not move the tender: the estimator does
 
     rules_before = [r["ms"] for r in waiting["steps"] if r["stage"] == "rules"]
-    runs.go_on(waiting["id"], wait=True)  # the person goes on without the answers
+    runs.go_on(waiting["id"], wait=True)  # the person closes the questions without the answers
     done = runs.find(waiting["id"])
     gate = next(r for r in done["steps"] if r["step"] == "Q-GATE" and r["doc"] == 0)
     prices = next(r for r in done["steps"] if r["step"] == "P-PRICES" and r["doc"] == 0)
-    assert done["status"] == "done" and "gone on without" in gate["detail"] and prices["status"] == "done"
+    assert done["status"] == "done" and "closed without" in gate["detail"] and prices["status"] == "done"
+    assert done["questions"]["to_send"] == 0 and done["questions"]["total"] > 0
     assert "unit price" in prices["detail"] or "carries its prices" in prices["detail"]
     assert [r["ms"] for r in done["steps"] if r["stage"] == "rules"] == rules_before  # nothing was run twice
-    assert catalog.find(pid)["plan"].get("stage") == "pricing"
     assert client.post("/api/runs/nope/go-on").status_code == 404
 
 
@@ -191,3 +192,31 @@ def test_a_run_is_stopped_after_the_step_it_is_on_and_can_be_taken_up_again(monk
     runs.retry(stopped["id"], wait=True)
     again = runs.find(stopped["id"])
     assert again["status"] == "waiting" and not any(r["status"] == "cancelled" for r in again["steps"])
+
+
+def test_a_tender_found_in_the_mail_stands_in_the_intake_until_it_is_taken_on_and_a_bid_can_be_lost(monkeypatch):
+    _stub_review(monkeypatch, lambda ctx: [])
+    monkeypatch.setattr(runs, "AUTO", True)
+    started = []
+    monkeypatch.setattr(runs, "start", lambda pid, trigger, wait=False: started.append((pid, trigger)))
+    path = DATASET / "01_gaeb_xml" / "GAEB-[PROJEKT_004].X83"
+    made = client.post("/api/projects", files=[("files", (path.name, path.read_bytes()))],
+                       data={"found": '{"via": "mail", "sender": "vergabe@example.org", "subject": "Ausschreibung"}'})
+    pid = made.json()["id"]
+    try:
+        plan = catalog.find(pid)["plan"]
+        assert plan["stage"] == "intake" and plan["found"]["sender"] == "vergabe@example.org" and not started
+        unread = client.get(f"/api/catalog/{pid}/summary").json()  # read, and nothing checked: the rules neither
+        assert not unread["checked"] and unread["items"] == 50 and not any(unread["counts"].values())
+        more = DATASET / "04_pdf_tiefbau_sonstige" / "LV-Ausdruck-[PROJEKT_004].pdf"
+        client.post("/api/projects", files=[("files", (more.name, more.read_bytes()))], data={"project": pid})
+        assert len(catalog.find(pid)["files"]) == 2 and not started  # more files for it: still nothing runs
+        assert client.patch(f"/api/catalog/{pid}", json={"stage": "check"}).json()["plan"]["stage"] == "check"
+        assert started == [(pid, "taken on")]
+        assert client.get(f"/api/catalog/{pid}/summary").json()["checked"]
+        assert client.patch(f"/api/catalog/{pid}", json={"outcome": "lost"}).json()["plan"]["outcome"] == "lost"
+        assert "outcome" not in client.patch(f"/api/catalog/{pid}", json={"outcome": ""}).json()["plan"]
+        assert client.patch(f"/api/catalog/{pid}", json={"outcome": "nope"}).status_code == 422
+        assert client.patch(f"/api/catalog/{pid}", json={"stage": "questions"}).status_code == 422
+    finally:
+        catalog.remove_project(pid)

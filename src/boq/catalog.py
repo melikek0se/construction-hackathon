@@ -53,10 +53,18 @@ def file_format(name: str) -> str:
         "GAEB XML" if ext.startswith(".x") else "GAEB 90"
 
 
+def _plan(plan: dict | None) -> dict:
+    """The plan as it is kept, read by today's rules: "questions" was a stage of its own until D-042."""
+    plan = dict(plan or {})
+    if plan.get("stage") == "questions":
+        plan["stage"] = "check"
+    return plan
+
+
 def _project(row, files: list) -> dict:
     return {"id": row.id, "number": row.number, "name": row.name, "trade": row.trade, "note": row.note,
             "kind": row.kind, "source": row.source, "created": row.created.isoformat(timespec="seconds"),
-            "plan": row.plan or {},
+            "plan": _plan(row.plan),
             "files": [{"id": f.id, "name": f.name, "role": f.role, "format": f.format} for f in files]}
 
 

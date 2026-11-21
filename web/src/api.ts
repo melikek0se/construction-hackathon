@@ -1,4 +1,4 @@
-import type { Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
+import type { Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -278,4 +278,73 @@ export async function getBid(id: string): Promise<Bid> {
 /** Set unit prices as typed (an empty text clears one), or take the suggested price wherever none is set. */
 export async function setBidPrices(id: string, prices: Record<string, string>, takeSuggestions = false): Promise<Bid> {
   return read(await fetch(`/api/analyses/${id}/bid`, json("PUT", { prices, take_suggestions: takeSuggestions })));
+}
+
+/* ------------------------------------------------------------------ price inquiries */
+
+const send = (method: string, body: unknown): RequestInit => ({ method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+export async function listSuppliers(): Promise<Supplier[]> {
+  return read(await fetch("/api/suppliers"));
+}
+
+export async function saveSupplier(values: Partial<Supplier>, id?: string): Promise<Supplier> {
+  return read(await fetch(id ? `/api/suppliers/${id}` : "/api/suppliers", json(id ? "PATCH" : "POST", values)));
+}
+
+export async function removeSupplier(id: string): Promise<void> {
+  const response = await fetch(`/api/suppliers/${id}`, { method: "DELETE" });
+  if (!response.ok) await read(response);
+}
+
+export async function getCompany(): Promise<Company> {
+  return read(await fetch("/api/company"));
+}
+
+export async function saveCompany(values: Partial<Company>): Promise<Company> {
+  return read(await fetch("/api/company", send("PUT", values)));
+}
+
+export async function getSupply(id: string): Promise<SupplyState> {
+  return read(await fetch(`/api/analyses/${id}/supply`));
+}
+
+/** Work out the packages (again). Asks Claude: seconds, and a little money. */
+export async function planSupply(id: string): Promise<SupplyState> {
+  return read(await fetch(`/api/analyses/${id}/supply/plan`, { method: "POST" }));
+}
+
+export async function setPackageSuppliers(id: string, pkg: string, ask: string[]): Promise<SupplyState> {
+  return read(await fetch(`/api/analyses/${id}/supply/packages/${pkg}`, send("PUT", { ask })));
+}
+
+export async function composeInquiry(id: string, pkg: string, supplierId: string, remind = false): Promise<{ subject: string; body: string; to: string }> {
+  return read(await fetch(`/api/analyses/${id}/supply/compose`, send("POST", { package: pkg, supplier_id: supplierId, remind })));
+}
+
+export async function mailInquiry(
+  id: string,
+  message: { package: string; supplier_id: string; to: string; subject: string; body: string; via: "draft" | "smtp" },
+): Promise<SupplyState> {
+  return read(await fetch(`/api/analyses/${id}/supply/mails`, send("POST", message)));
+}
+
+/** A supplier's reply: pasted text, or the filled-in sheet / the quote as a file. */
+export async function readQuote(mailId: string, text: string, file: File | null): Promise<{ lines: number; unmatched: { pos: string; unit_price: number; note: string }[]; dropped: number }> {
+  const form = new FormData();
+  form.append("text", text);
+  if (file) form.append("file", file);
+  return read(await fetch(`/api/mails/${mailId}/quote`, { method: "POST", body: form }));
+}
+
+export async function checkQuoteReplies(id: string): Promise<SupplyState> {
+  return read(await fetch(`/api/analyses/${id}/supply/replies`, { method: "POST" }));
+}
+
+export async function chooseQuote(id: string, pkg: string, mode: "single" | "split" | "assume" | null, quote: string | null = null): Promise<SupplyState> {
+  return read(await fetch(`/api/analyses/${id}/supply/choose`, send("POST", { package: pkg, mode, quote })));
+}
+
+export async function quotesToBid(id: string): Promise<SupplyState> {
+  return read(await fetch(`/api/analyses/${id}/supply/to-bid`, { method: "POST" }));
 }

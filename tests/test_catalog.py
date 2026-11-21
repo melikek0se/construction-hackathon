@@ -225,12 +225,12 @@ def test_a_tender_keeps_its_dates_and_stage():
                           data={"name": "Dated", "due": "2026-12-03"}).json()
     url = f"/api/catalog/{created['id']}"
     assert next(p for p in client.get("/api/catalog").json() if p["id"] == created["id"])["plan"] == {"due": "2026-12-03", "exec_end": "2025-11-28"}  # the file states when the work is done
-    changed = client.patch(url, json={"questions_due": "2026-11-23", "stage": "questions"}).json()
-    assert changed["plan"] == {"due": "2026-12-03", "exec_end": "2025-11-28", "questions_due": "2026-11-23", "stage": "questions"}
+    changed = client.patch(url, json={"questions_due": "2026-11-23", "stage": "pricing"}).json()
+    assert changed["plan"] == {"due": "2026-12-03", "exec_end": "2025-11-28", "questions_due": "2026-11-23", "stage": "pricing"}
     assert changed["name"] == "Dated"  # a change of dates leaves the name alone
-    assert client.patch(url, json={"due": None, "exec_end": None}).json()["plan"] == {"questions_due": "2026-11-23", "stage": "questions"}
+    assert client.patch(url, json={"due": None, "exec_end": None}).json()["plan"] == {"questions_due": "2026-11-23", "stage": "pricing"}
     assert client.patch(url, json={"due": "3.12.2026"}).status_code == 422
-    assert client.patch(url, json={"stage": "award"}).status_code == 422  # award follows from the files
+    assert client.patch(url, json={"stage": "questions"}).status_code == 422  # the questions are no stage (D-042)
     client.delete(url)
 
 

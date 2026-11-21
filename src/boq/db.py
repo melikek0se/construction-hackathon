@@ -78,6 +78,7 @@ mails = Table(
     Column("answers", JSON),  # the reply read against the items: per key a status and the passage of the reply
     Column("message_id", Text),  # Message-ID of a message the app sent: a reply names it (In-Reply-To)
     Column("reply_via", String(16)),  # "pasted" by the user, or "imap": found in the inbox
+    Column("meta", JSON),  # price inquiries: the package and the supplier the message went to
 )
 
 # What an answer of the client changes on our side, proposed by the app and decided by the estimator. The
@@ -108,6 +109,60 @@ bid_prices = Table(
     Column("unit_price", Text, nullable=False),  # decimal as text: the price before any allowance
     Column("source", String(16), nullable=False),  # "own": typed in; "suggestion": taken from past bids
     Column("updated", DateTime(timezone=True), nullable=False),
+)
+
+# The directory of who sells what (boq.supply): suppliers of material and subcontractors for whole trades.
+# Filled by the estimator, by the quotes that come in (what a supplier offered) and by a web search the
+# estimator confirms; an LV does not say who sells a product.
+suppliers = Table(
+    "suppliers", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("name", Text, nullable=False),
+    Column("kind", String(16), nullable=False),  # "supplier" (material) or "subcontractor" (a whole trade)
+    Column("email", Text, nullable=False, default=""),
+    Column("contact", Text, nullable=False, default=""),
+    Column("phone", Text, nullable=False, default=""),
+    Column("place", Text, nullable=False, default=""),
+    Column("groups", JSON, nullable=False),  # material groups or trades, as words: ["Rohre", "Armaturen"]
+    Column("products", JSON, nullable=False),  # what it offered or is known to sell: [{"name", "maker"}]
+    Column("note", Text, nullable=False, default=""),
+    Column("source", String(16), nullable=False),  # "user", "quote" (learned from a reply), "web", "demo"
+)
+
+# What the agent worked out for the price inquiries of one LV file (boq.supply): the packages of items, who
+# is to be asked about each, the items that wait for the client; and what the estimator chose per package.
+supply_plans = Table(
+    "supply_plans", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("project_id", String(32), index=True),
+    Column("file", Text, nullable=False),
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("plan", JSON, nullable=False),
+    Column("chosen", JSON),  # per package id: {"mode": "single" | "split" | "assume", "quote": id}
+)
+
+# A quote as it came back and was read: its terms and one line per item it prices. Kept for good: the next
+# tender with the same item finds the price here, with its date and validity.
+quotes = Table(
+    "quotes", metadata,
+    Column("id", String(32), primary_key=True),
+    Column("created", DateTime(timezone=True), nullable=False),
+    Column("project_id", String(32), index=True),
+    Column("file", Text, nullable=False),
+    Column("mail_id", String(32), index=True),
+    Column("supplier_id", String(32), index=True),
+    Column("package", String(16), nullable=False),
+    Column("terms", JSON, nullable=False),  # basis, freight, discount_pct, skonto, valid_until, binding, note
+    Column("lines", JSON, nullable=False),  # per item: oz, unit_price, unit, product, alternative, note, label
+    Column("text", Text, nullable=False, default=""),  # the reply as it arrived
+)
+
+# Small facts about the firm itself that every inquiry carries (boq.supply.company): one row per key.
+settings = Table(
+    "settings", metadata,
+    Column("key", String(32), primary_key=True),
+    Column("value", JSON, nullable=False),
 )
 
 # A run of the pipeline (boq.pipeline) on a project, in the background (boq.runs). `state` is the record the

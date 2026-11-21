@@ -1,4 +1,4 @@
-/* The projects page: schedule on top, board under it, the new-project dialog, and the opening.
+/* The projects page: the schedule docked under the band, the board under it, the new-project dialog, and the opening.
    Tokens and the page head (.register, .register-head, .btn-new, .btn-ghost) are in styles.css. */
 
 .register {
@@ -1926,4 +1926,407 @@
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+/* ------------------------------------------------------------------ whose move it is, intake, result (D-042) */
+
+/* before the card's one line: Polier is working, it waits for you, it waits for the client, or how it ended */
+.now-who {
+  display: inline-block;
+  margin-right: 7px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  box-shadow: inset 0 0 0 1px var(--ink);
+  color: var(--ink);
+}
+
+.now-who.is-polier {
+  background: var(--yellow);
+}
+
+.now-who.is-you,
+.now-who.is-end {
+  background: var(--ink);
+  color: #fff;
+}
+
+.card .run-seg-line:has(.now-who.is-you) {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.card .run-seg-line:has(.now-who.is-polier, .now-who.is-client) {
+  font-weight: 400;
+  color: var(--mute);
+}
+
+/* a tender the agent found: where, from whom, under which subject */
+.card-found {
+  display: grid;
+  gap: 2px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--mute);
+}
+
+.card-found span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.card-decide {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+
+.card-decide button {
+  flex: 1;
+  justify-content: center;
+  height: 28px;
+}
+
+/* a tender that did not become a contract stands back */
+.card.is-result:has(.now-who.is-end):not(:hover) .card-lv,
+.card.is-result .open-list .quiet {
+  color: var(--mute);
+}
+
+.card-unchecked {
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.card-unchecked b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ the schedule docked under the band */
+
+/* One lane, stuck under the band while the board scrolls: all deadlines, or the lane of the card pointed at. */
+.register .sched.dock {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  border-top: 0;
+  border-bottom: 2px solid var(--ink);
+  background: #fff;
+}
+
+.sched.dock .sched-rail {
+  border-bottom: 0;
+}
+
+.sched.dock .rail-lane {
+  min-height: 68px;
+}
+
+.sched.dock .sched-row {
+  border-bottom: 0;
+}
+
+.sched.dock .sched-empty {
+  max-width: none;
+  padding: 24px 20px;
+}
+
+/* ------------------------------------------------------------------ the card: countdown, stage block, whose move */
+
+.card.kc {
+  gap: 12px;
+  padding-bottom: 0;
+}
+
+.card.kc > * {
+  min-width: 0;
+}
+
+.card.kc:hover,
+.card.kc:focus-visible,
+.card.kc.pinned {
+  background: #fff;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.card.kc .card-name b {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* top right: the days left to the next hard date; it holds the tender's dates open on the schedule */
+.kc-days {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--text);
+  color: var(--ink);
+  text-align: right;
+  cursor: pointer;
+}
+
+.kc-days b {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+}
+
+.kc-days.soon b {
+  padding: 3px 5px 1px;
+  background: var(--yellow);
+}
+
+.kc-days span {
+  font-size: 10.5px;
+  line-height: 1.15;
+  color: var(--mute);
+}
+
+.kc-days.none span {
+  padding: 5px 7px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.kc-days:hover:not(:disabled) span,
+.kc-days:focus-visible span,
+.kc-days[aria-pressed="true"] span {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.kc-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.card-lv > .kc-date {
+  margin-left: 0;
+}
+
+.kc-block {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.kc-block p,
+.kc-block ul {
+  margin: 0;
+}
+
+.kc-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.kc-quiet {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--mute);
+}
+
+.kc-quiet b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.kc-q {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.kc-q b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.kc-q .hot {
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: inset 0 -6px 0 var(--yellow);
+}
+
+.card.kc .card-found .kc-label {
+  color: var(--dim);
+}
+
+.card.kc .card-net {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* the foot: whose move it is. The one filled surface of the card; yellow when it is the estimator's */
+.kc-now {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin: 0 -12px;
+  padding: 4px 12px;
+  border-top: 1px solid var(--line-2);
+  background: var(--tint);
+  font-size: 12.5px;
+  line-height: 1.2;
+  color: var(--mute);
+}
+
+.kc-now > b {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.kc-now > span:not(.kc-move) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kc-now.is-you {
+  border-top-color: var(--ink);
+  background: var(--yellow);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Polier is working on it: the hazard stripe runs along the top of the foot */
+.kc-now.is-polier {
+  padding-top: 8px;
+  background: repeating-linear-gradient(-45deg, var(--ink) 0 4px, var(--yellow) 4px 8px) 0 0 / 11.31px 4px repeat-x, #fff;
+  animation: seg-run 600ms linear infinite;
+}
+
+.kc-now.is-end > b {
+  padding: 2px 6px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.kc-now.is-decide {
+  padding: 8px 12px;
+  background: #fff;
+}
+
+.kc-decide {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+}
+
+.kc-decide button {
+  flex: 1;
+  justify-content: center;
+  height: 28px;
+}
+
+.kc-decide .btn-ghost {
+  border: 1px solid var(--line-2);
+}
+
+.kc-move {
+  flex: none;
+  margin-left: auto;
+}
+
+.kc-move .sel {
+  height: 24px;
+  padding: 0 6px 0 7px;
+  gap: 5px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kc-move .sel:hover:not(:disabled),
+.kc-move .sel[aria-expanded="true"] {
+  background: #fff;
+  border-color: var(--ink);
+}
+
+/* a tender that did not become a contract stands back */
+.card.kc.back {
+  color: var(--mute);
+}
+
+.card.kc.back .plate {
+  background: var(--rule);
+}
+
+/* the foot may run to two lines beside the stage select */
+.kc-now > span:not(.kc-move):not(.kc-decide) {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* room at the foot, so the last cards scroll clear of Polier */
+.register:has(> .sched.dock) .register-body {
+  padding-bottom: 130px;
+}
+
+/* how far the bid is: the items that carry a unit price */
+.kc-label b {
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+.kc-bar {
+  display: block;
+  height: 6px;
+  margin-top: 5px;
+  background: var(--rule);
+}
+
+.kc-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+
+.kc-bar + .kc-quiet {
+  margin-top: 4px;
 }

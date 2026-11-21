@@ -10,9 +10,10 @@ The steps stand at six stations (`STAGES`), which are the estimator's own order 
   rules      the rules: totals, quantities, units, wording, missing items, the structure of the LV
   ai         Claude reads the LV, then looks at its own findings a second time
   compare    a later version against the tender; the LVs of a building against each other
-  questions  what has to be asked of the client is drafted, and the run WAITS here for the person: the
-             questions go out (or the person goes on without), the answers come back
-  prices     only then: unit prices from past bids, and what has no reliable price
+  questions  what has to be asked of the client is drafted; the station stays open (waiting) until the
+             questions are out and answered, the person closes them, or the last day for them is over
+  prices     beside the questions, not after them: unit prices from past bids, and what has no reliable
+             price. A bidder can ask until shortly before the bid, so the prices do not wait (D-042)
 
 To add a step: write the function where it belongs, then add a `Step` to `STEPS` below. Nothing else has to
 change: the run, its record and the pages take it from here.
@@ -34,7 +35,7 @@ from typing import Literal
 
 from boq import dates as tender_dates
 from boq import intake
-from boq import mail
+from boq import mail, supply
 from boq.checks import llm, rules
 from boq.checks.companion_rules import RULES as COMPANION_RULES
 from boq.checks.companions import check_companions
@@ -229,23 +230,23 @@ def _draft_questions(ctx: Context) -> list:
 
 
 def _questions_gate(ctx: Context) -> list:
-    """The estimator's own rule: nothing is priced on a guess while the client can still be asked. Passes
-    when there is nothing to ask, everything is answered, the day for questions is over, the project
-    already holds a bid or an award (questions are asked before the bid), or the person goes on without
-    the answers."""
+    """Whether the questions to the client are still open. Closed when there is nothing to ask, everything
+    is answered, the day for questions is over, the project already holds a bid or an award (questions are
+    asked before the bid), or the person closes them. While they are open the run waits here; the prices
+    are worked out beside it."""
     tally = _tally(_questions(ctx))
     ctx.keep("questions", tally)
     waiting = tally["to_send"] + tally["out"]
     last_day = (ctx.project.get("plan") or {}).get("questions_due")
     bid_out = any(intake.step_of(f["role"]) != "tender" for f in ctx.project.get("files") or [])
     if not tally["total"]:
-        ctx.tell("nothing to ask: on to the prices")
+        ctx.tell("nothing to ask")
     elif bid_out and waiting:
         ctx.tell(f"the bid is out: {waiting} question{'' if waiting == 1 else 's'} can no longer be asked")
     elif not waiting:
         ctx.tell(f"all {tally['total']} answered by the client")
     elif ctx.waived:
-        ctx.tell(f"gone on without the client's answer to {waiting} question{'' if waiting == 1 else 's'}")
+        ctx.tell(f"closed without the client's answer to {waiting} question{'' if waiting == 1 else 's'}: priced as a risk")
     elif last_day and last_day < date.today().isoformat():
         ctx.tell(f"the last day for questions ({date.fromisoformat(last_day):%d.%m.%Y}) is over: "
                  f"{waiting} stay open and have to be priced as a risk")
@@ -274,6 +275,36 @@ def _prices(ctx: Context) -> list:
                         "estimate": found["estimate"], "by_confidence": found["by_confidence"]})
     ctx.tell(f"{found['with_price']} of {found['items']} items with a unit price from past bids; "
              f"{without} without a reliable price: ask suppliers")
+    return []
+
+
+def _inquiries(ctx: Context) -> list:
+    """The price inquiries of this LV planned: which items are asked for outside, in which packages, of
+    whom in the directory. Items that cannot be priced as written wait for the client; items a quote at
+    hand still prices are not asked for again. Nothing is sent: the estimator reads and sends each one."""
+    boq, project_id = ctx.boq, ctx.project.get("id")
+    if any(i.total is not None for i in boq.items):
+        raise Skip("the file carries its prices")
+    wait, _ = supply.held(_questions(ctx))
+    hand = supply.at_hand(boq, project_id)
+    old = supply.find_plan(project_id, boq.file)
+    if old and old["plan"].get("hash") == supply.lv_hash(boq) and set(old["plan"].get("held") or {}) == set(wait):
+        packages = old["plan"]["packages"]  # nothing changed: the plan stands, and what was chosen with it
+    else:
+        try:
+            packages = asyncio.run(supply.plan(boq, set(wait) | set(hand)))
+        except llm.LLMUnavailable as exc:
+            raise Skip(str(exc)) from exc
+        supply.keep_plan(project_id, boq.file, {"hash": supply.lv_hash(boq), "packages": packages, "held": wait,
+                                                "at_hand": sorted(hand)}, old)
+    asked = sum(len(p["items"]) for p in packages)
+    nobody = sum(1 for p in packages if not p["ask"])
+    ctx.keep("inquiries", {"packages": len(packages), "items": asked, "held": len(wait), "at_hand": len(hand)})
+    ctx.tell(f"{len(packages)} package{'' if len(packages) == 1 else 's'} for {asked} items to ask outside"
+             + (f"; {nobody} with nobody in the directory to ask" if nobody else "")
+             + (f"; {len(wait)} item{' waits' if len(wait) == 1 else 's wait'} for the client" if wait else "")
+             + (f"; {len(hand)} priced by quotes at hand" if hand else "") if packages
+             else "nothing has to be asked outside")
     return []
 
 
@@ -324,18 +355,22 @@ STEPS: list[Step] = [
     Step("P-INTERFACES", "Between the LVs: work expected from others, work tendered twice", "deterministic",
          "project", "compare", _interfaces,
          about="What an LV expects from another trade and no LV contains; the same work in two LVs."),
-    # questions: the run waits here for the person
+    # questions: a thread that stays open beside the prices
     Step("Q-DRAFT", "Bidder questions drafted", "deterministic", "document", "questions", _draft_questions,
          once_per_lv=True, report=True, about="One question in German per finding that only the client can settle."),
-    Step("Q-GATE", "Questions sent and answered, or gone on without", "human", "document", "questions",
+    Step("Q-GATE", "Questions sent and answered, or closed", "human", "document", "questions",
          _questions_gate, once_per_lv=True, report=True,
-         about="Nothing is priced on a guess while the client can still be asked. You send the questions "
-               "(or go on without); the run goes on when the answers are read."),
-    # prices: after the gate
+         about="You send the questions; the client's answers are read back in. Open until all are answered, "
+               "the last day for questions is over, or you close them."),
+    # prices: beside the questions
     Step("P-PRICES", "Unit prices from past bids", "deterministic", "document", "prices", _prices,
          once_per_lv=True, report=True,
          about="A unit price per item from the priced bids at hand, with its source; and the items that "
                "have no reliable price and go to suppliers."),
+    Step("P-INQUIRIES", "Price inquiries planned", "agentic", "document", "prices", _inquiries,
+         once_per_lv=True, report=True,
+         about="Which items are asked for outside, in packages per material group (suppliers) or trade "
+               "(subcontractors), and whom in the directory to ask. Items that wait for the client are held back."),
 ]
 
 

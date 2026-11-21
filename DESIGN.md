@@ -304,11 +304,11 @@ Every page is a column: band, an optional bar, then the content filling the heig
 
 - **Projects page.** Content is centred with a maximum width of 1320px and at least 28px at the sides. A head
   line (title and the next date left, drop hint and the primary button right), then two parts, each under a
-  2px ink rule with a label-style heading. **Schedule:** one row per running tender on a grid of 380px (index
-  plate, name, its two dates as fields) and a time axis of eight weeks (two back, six ahead) with a hairline per
-  week, tinted weekends and an ink line for today. **Board:** five columns (Check, Questions, Pricing,
-  Submitted, Award) divided by hairlines, one outlined card per tender. The schedule holds dates and nothing
-  else, the board holds everything but dates (D-029).
+  2px ink rule with a label-style heading. **Board:** five columns (Intake, Check, Pricing,
+  Submitted, Result; D-042) divided by hairlines, one outlined card per tender. **Schedule** (D-043): one lane
+  docked under the band, above the board, the full width, over a 2px ink rule: the line of all deadlines, or the
+  lane of the tender whose card is pointed at; held open from the count on a card, it lists that tender's dates
+  under the lane. It stays under the band while the board scrolls.
 - **Workspace.** Under the band a bar with the versions of the LV, then two panes: the left pane takes the
   remaining width, the right pane is `clamp(360px, 32vw, 520px)` with a hairline on its left. Left: the verdict
   and the view switch (LV map, Item table, Remarks, What-if), the view, and the readout bar at the bottom of
@@ -363,7 +363,7 @@ brand style, on the projects page only. An open LV or project has the way back i
 with a 1px ink line, a chevron and "Projects" (or "Project" for an LV opened from a building), one step up;
 hover ink. Then the name in Barlow Condensed 25px 600, alone (the file line under it was dropped: the versions bar says it); a created project's name is an input that shows its frame only on hover and
 focus. Right: actions. On the projects page there are two: "Pipeline" (white with an ink line; absent while
-there is no project) and "New project" (ink). The schedule under the band is always open; it has no switch.
+there is no project) and "New project" (ink). The schedule is docked under the band (D-043); it has no switch.
 
 ### Buttons
 - **Shape:** 2px radius, 30 to 32px high, 12px side padding, Barlow 700 12px capitals with 0.08em tracking.
@@ -418,6 +418,7 @@ Caution a yellow triangle with an ink outline and exclamation mark, Note a blue 
 count always stands to the right of its sign; a zero count is shown faded (38%), not removed.
 
 ### Schedule row
+Since D-043 the schedule shows one row at a time, in the dock under the band of the projects page.
 The axis has two scales: eight weeks by the day, a hatched break (`line-2` hatching between two hairlines),
 thirteen months by the month. A row is 68px: index plate, the tender's name (15px, 600) with its stage
 beneath, the days left to the next date as a 30px figure (on a yellow plate within three days) and a square
@@ -430,13 +431,23 @@ the line of all tenders: 20px plates with the tender's letter (yellow = submissi
 stacked when they fall together, and 4px yellow bars for the work. Hover: pale yellow.
 
 ### Board card and fingerprint strip (signature)
-A 1px `line-2` outline, white, 12px padding: index plate and name; the LV as a strip 22px high (a `strip-base`
-bar with one vertical line per flagged item at its place in the LV, red and yellow 3px, blue 2px) with the
-sign counts and the item count; what is open at this stage as a short list (a severity sign, or a 7px ink
-square; a hollow square for "nothing open"); the net total in the figure style where a priced file exists;
-no file list (files, their steps and deleting are in the project's settings); for the first three stages a
-stage select. Hover: ink outline, pale yellow. While its files are being read a card has a hazard tape
-across it; the tape is wiped off to the right when the numbers arrive.
+A 1px `line-2` outline, white, 12px padding (D-043). Top: index plate, name (two lines at most) with its size
+beneath, and at the right the days to the next hard date as a 30px figure with what it counts to in 10.5px
+under it (on a yellow plate within three days; "Dates" as a small outlined button where no date is ahead);
+it holds the tender's lane open on the schedule. Then the LV as a strip 22px high (a `strip-base` bar with one
+vertical line per flagged item at its place in the LV, red and yellow 3px, blue 2px) with the sign counts; not
+on an intake card, where nothing is checked yet. Then, under a hairline, what the stage asks: where an intake
+tender was found; on Check and Pricing "N new, N gone" since the last check and the bidder questions (to send
+on a yellow underline, with client, answered); what is open as a short list (a severity sign, or a 7px ink
+square); the net total in the figure style where a priced file exists; the work period on a bid. No file
+list (files, their steps and deleting are in the project's settings), no pipeline marks. The foot, 36px,
+edge to edge, is the one filled surface and says whose move it is: YOUR MOVE on yellow with an ink rule,
+POLIER under a running 4px hazard stripe, CLIENT or "Nothing open" on `tint`; a tender that ended carries
+WON / LOST / NO BID / CANCELLED on an ink chip and stands back in `mute` unless won. The stage select (Check,
+Pricing, No bid) or the result select sits at the right of the foot without a frame until hover; an intake
+card has "Take it on" (yellow) and "Pass" there instead. Hover, focus and held dates: a 2px ink outline, the
+ground stays white. While its files are being read a card has a hazard tape across it; the tape is wiped off
+to the right when the numbers arrive.
 
 ### New-project dialog
 The one modal, drawn as a site sign: a white board with a 2px ink frame standing on two 14px ink posts that

@@ -84,9 +84,9 @@ def account() -> dict | None:
             "from": os.environ.get("SMTP_FROM", "").strip() or user}
 
 
-def send(to: str, subject: str, body: str) -> str:
-    """Send one plain-text message through the account in .env and return its Message-ID, by which a
-    reply is recognised. Raises MailUnavailable with the reason."""
+def send(to: str, subject: str, body: str, attachments: list[tuple[str, bytes]] | None = None) -> str:
+    """Send one plain-text message through the account in .env, with files (name, bytes) if any, and return
+    its Message-ID, by which a reply is recognised. Raises MailUnavailable with the reason."""
     acc = account()
     if acc is None or not acc["from"]:
         raise MailUnavailable("No mail account is set. Put SMTP_HOST, SMTP_USER, SMTP_PASSWORD and SMTP_FROM "
@@ -96,6 +96,8 @@ def send(to: str, subject: str, body: str) -> str:
     message["From"], message["To"], message["Subject"] = acc["from"], to, subject
     message["Date"], message["Message-ID"] = formatdate(localtime=True), make_msgid()
     message.set_content(body)
+    for name, data in attachments or []:
+        message.add_attachment(data, maintype="application", subtype="octet-stream", filename=name)
     try:
         if acc["port"] == 465:  # TLS from the first byte; every other port starts plain and upgrades
             server = smtplib.SMTP_SSL(acc["host"], acc["port"], timeout=30, context=ssl.create_default_context())
@@ -141,16 +143,17 @@ def _row(row) -> dict:
             "items": row.items, "reply": row.reply,
             "reply_at": row.reply_at.isoformat(timespec="seconds") if row.reply_at else None,
             "answers": row.answers, "message_id": row.message_id, "reply_via": row.reply_via,
-            "project_id": row.project_id, "file": row.file}
+            "project_id": row.project_id, "file": row.file, "meta": row.meta}
 
 
 def keep(kind: str, project_id: str | None, file: str, to: str, subject: str, body: str, via: str,
-         items: list[dict], sent: bool, message_id: str | None = None) -> dict:
+         items: list[dict], sent: bool, message_id: str | None = None, meta: dict | None = None) -> dict:
     mail_id = uuid.uuid4().hex
     with db.engine().begin() as conn:
         conn.execute(insert(db.mails).values(
             id=mail_id, kind=kind, project_id=project_id, file=file, created=db.now(), to=to, subject=subject,
-            body=body, via=via, sent_at=db.now() if sent else None, items=items, message_id=message_id))
+            body=body, via=via, sent_at=db.now() if sent else None, items=items, message_id=message_id,
+            meta=meta))
     return find(mail_id)
 
 

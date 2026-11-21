@@ -27,7 +27,7 @@ from pathlib import Path
 
 from sqlalchemy import insert, select, update
 
-from boq import catalog, db, pipeline, spend
+from boq import amendments, bid, catalog, db, pipeline, spend, supply
 from boq import intake as intake_rules
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
@@ -38,7 +38,6 @@ RUNS_AT_ONCE = 2
 AGENTIC_AT_ONCE = 3  # documents an agentic step works on at the same time within one run
 
 PENDING = ("queued", "held", "waiting", "interrupted", "running")  # rows a run still has to work through
-_STAGE_ORDER = ("check", "pricing")  # where a run moves a tender on the board (projects.plan.stage)
 
 _pool = ThreadPoolExecutor(max_workers=RUNS_AT_ONCE, thread_name_prefix="run")
 _lock = threading.Lock()
@@ -324,7 +323,7 @@ def _work(run: dict, results: dict | None = None) -> None:
 
         # 5. questions, a thread that stays open until the client has answered (or the person closes it);
         # 6. prices, worked out beside it: a question can be asked until shortly before the bid, so nothing
-        # waits for the answers (D-040)
+        # waits for the answers (D-042)
         waived = set(run.get("waived") or [])
         for n in order:
             key = str(doc_id[n])
@@ -339,7 +338,8 @@ def _work(run: dict, results: dict | None = None) -> None:
         waiting = any(r["status"] == "waiting" for r in rows)
         with _lock:
             run.update(status="waiting" if waiting else "done", finished=_now())
-        _move_stage(project, "pricing" if any(r["stage"] == "prices" and r["status"] == "done" for r in rows) else None)
+        # The run does not move the tender along the board: price suggestions being ready is not the
+        # estimator pricing. The card stays in Check until the estimator moves it (D-044).
     except _Cancelled:
         with _lock:
             for r in run["steps"]:
@@ -359,16 +359,6 @@ def _work(run: dict, results: dict | None = None) -> None:
         finally:
             with _lock:
                 _live.pop(run["id"], None)
-
-
-def _move_stage(project: dict, stage: str | None) -> None:
-    """The tender moves on along the board with the run: to "pricing" when the prices are worked out.
-    Forward only; what the person set later is not taken back, and a tender not taken on yet (intake) or
-    one with an outcome stays where it is."""
-    plan = project.get("plan") or {}
-    now = plan.get("stage") or "check"
-    if stage and not plan.get("outcome") and now in _STAGE_ORDER and _STAGE_ORDER.index(stage) > _STAGE_ORDER.index(now):
-        catalog.set_plan(project["id"], {"stage": stage})
 
 
 def _since(run: dict, results: dict) -> dict | None:
@@ -560,6 +550,9 @@ def _view(run: dict) -> dict:
     if questions and not held_up:  # nothing waits any more: closed by the person, the deadline or the bid
         questions |= {"to_send": 0, "out": 0}
     return {**view, "total": len(steps), "finished_steps": len(done), "counts": counts, "questions": questions,
+            "inquiries": supply.tally(view["project_id"]),
+            # what else is the estimator's on this project: answers to decide on, and how far the bid is
+            "decisions": amendments.tally(view["project_id"]), "bid": bid.tally(view["project_id"]),
             "stages": _stages(steps), "usd": round(sum(spent), 3) if spent else None,
             "waiting_for": waiting["detail"] if waiting else None,
             "active": view["status"] in ("queued", "running")}

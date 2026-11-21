@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { Sign } from "./components";
 import { DateField, Select } from "./controls";
 import { eur } from "./format";
-import { RunSegs } from "./Runs";
 import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type DateKind, type FoundDate, type Intake, type IntakeFile, type Plan, type ProjectSummary, type Run, type Severity, type TenderDate } from "./types";
 import "./home.css";
 
@@ -20,23 +19,39 @@ export function stepOf(role: string): Step {
   return ["bid", "submitted bid", "offer"].includes(role) ? "bid" : "tender";
 }
 
-/* The stages a tender moves through on the contractor's side. The last two follow from the files (a bid or
-   an award is there); the first three are the estimator's own and are set on the card. */
-const STAGES = ["check", "questions", "pricing", "submitted", "award"] as const;
+/* Where a tender stands on the contractor's side (D-042). A column says where it stands, not what is being
+   done on it: the bidder questions run beside the checks and the prices, so they are a line on the card
+   and no column. Intake holds what the agent found and nobody has taken on yet; files dropped by the
+   estimator are taken on by that and start in Check. Submitted follows from the files (a bid is there);
+   Result holds every way a tender ends, not only the award. */
+const STAGES = ["intake", "check", "pricing", "submitted", "result"] as const;
 export type Stage = (typeof STAGES)[number];
-export const STAGE_LABEL: Record<Stage, string> = { check: "Check", questions: "Questions", pricing: "Pricing", submitted: "Submitted", award: "Award" };
+export const STAGE_LABEL: Record<Stage, string> = { intake: "Intake", check: "Check", pricing: "Pricing", submitted: "Submitted", result: "Result" };
 const STAGE_EMPTY: Record<Stage, string> = {
+  intake: "Tenders Polier finds in your mail stand here until you take them on or pass. No mailbox is connected yet.",
   check: "No new tender. Drop its files anywhere on the page.",
-  questions: "No tender has questions out.",
   pricing: "Nothing is being priced.",
   submitted: "No bid is with a client.",
-  award: "No award yet.",
+  result: "No tender has ended yet.",
 };
 
+export type Outcome = NonNullable<Plan["outcome"]>;
+const OUTCOME_LABEL: Record<Outcome, string> = { won: "Won", lost: "Lost", passed: "No bid", cancelled: "Cancelled" };
+const OUTCOME_SAYS: Record<Outcome, string> = {
+  won: "The contract is ours.",
+  lost: "The contract went to another bidder.",
+  passed: "No bid was made.",
+  cancelled: "The client cancelled the tender.",
+};
+
+/** How a tender ended: as said on its card, else won when an award is among its files. */
+export function outcomeOf(p: CatalogProject): Outcome | null {
+  return p.plan.outcome ?? (p.files.some((f) => stepOf(f.role) === "award") ? "won" : null);
+}
+
 export function stageOf(p: CatalogProject): Stage {
-  const steps = p.files.map((f) => stepOf(f.role));
-  if (steps.includes("award")) return "award";
-  if (steps.includes("bid")) return "submitted";
+  if (outcomeOf(p)) return "result";
+  if (p.files.some((f) => stepOf(f.role) === "bid")) return "submitted";
   return p.plan.stage ?? "check";
 }
 
@@ -63,7 +78,7 @@ function isoWeek(d: Date): number {
 
 /** The next hard date of a running tender: the question deadline or the submission, whichever comes first. */
 function nextDate(p: CatalogProject, plan: Plan, today: Date): { what: string; day: Date; days: number } | null {
-  if (stageOf(p) === "award") return null;
+  if (stageOf(p) === "result") return null;
   const dates: [string, Date | null][] =
     stageOf(p) === "submitted"
       ? [["binding period ends", parseDay(plan.binding_until)]]
@@ -286,7 +301,7 @@ export function datesOf(p: CatalogProject, s: ProjectSummary | "failed" | undefi
 
 /** The days a tender's row shows: question deadline and submission while it runs, sent and binding period after. */
 function laneDays(p: CatalogProject, plan: Plan): Date[] {
-  const keys: (keyof Plan)[] = stageOf(p) === "check" || stageOf(p) === "questions" || stageOf(p) === "pricing" ? ["questions_due", "due"] : ["sent", "binding_until", "due"];
+  const keys: (keyof Plan)[] = stageOf(p) === "intake" || stageOf(p) === "check" || stageOf(p) === "pricing" ? ["questions_due", "due"] : ["sent", "binding_until", "due"];
   const days = keys.map((k) => parseDay(plan[k] as string | undefined)).filter((d): d is Date => d !== null);
   if (days.length) return days;
   return (["opening", "exec_start", "exec_end"] as const).map((k) => parseDay(plan[k])).filter((d): d is Date => d !== null);
@@ -311,7 +326,7 @@ const PLAN_DAYS = ["questions_due", "due", "opening", "sent", "binding_until", "
 function openingStart(projects: CatalogProject[], summaries: Record<string, ProjectSummary | "failed">): Date {
   const home = homeStart(), today = startOfDay(new Date());
   const sets = projects
-    .filter((p) => stageOf(p) !== "award")
+    .filter((p) => stageOf(p) !== "result")
     .map((p) => {
       const plan = datesOf(p, summaries[p.id]);
       return PLAN_DAYS.map((k) => parseDay(plan[k])).filter((d): d is Date => d !== null);
@@ -333,13 +348,19 @@ function Schedule({
   summaries,
   busy,
   focus,
+  hover,
   onFocus,
   onOpen,
+  onEnter,
+  onLeave,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
   busy: boolean;
   focus: Focus;
+  hover: string | null; // the card pointed at: its lane is shown while it is
+  onEnter: () => void;
+  onLeave: () => void;
   onFocus: (id: string | null) => void;
   onOpen: (p: CatalogProject) => void;
 }) {
@@ -360,11 +381,13 @@ function Schedule({
   const x = (d: Date) => Math.max(0, Math.min(100, pos(d)));
   const seen = (d: Date) => pos(d) >= 0 && pos(d) <= 100;
   const planned = new Map(projects.map((p) => [p.id, datesOf(p, summaries[p.id])]));
-  // an awarded tender is shown only while its dates were asked for
+  // a tender that has ended is shown only while its dates were asked for
   const running = projects
-    .filter((p) => stageOf(p) !== "award" || p.id === focus?.id)
+    .filter((p) => stageOf(p) !== "result" || p.id === focus?.id)
     .sort((a, b) => (nextDate(a, planned.get(a.id)!, today)?.days ?? 9999) - (nextDate(b, planned.get(b.id)!, today)?.days ?? 9999));
-  const closed = projects.filter((p) => stageOf(p) === "award" && p.id !== focus?.id).length;
+  /* The schedule is one lane docked under the band: the line of all tenders, or the lane of the one
+     tender whose card is pointed at or whose dates are held open. */
+  const one = projects.find((p) => p.id === (focus?.id ?? hover));
 
   /** Moves the schedule so a day stands a week in from its left edge, where days are drawn one by one. */
   const goTo = (day: Date) => move(monday(addDays(day, -7)));
@@ -380,7 +403,6 @@ function Schedule({
     const p = projects.find((q) => q.id === focus.id);
     if (!p) return;
     goToProject(p);
-    requestAnimationFrame(() => rowRefs.current.get(p.id)?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focus]);
 
@@ -443,7 +465,7 @@ function Schedule({
   const atHome = start.getTime() === homeStart().getTime();
 
   return (
-    <section id="schedule" className="sched" aria-label="Schedule of the running tenders">
+    <section id="schedule" className="sched dock" aria-label="Schedule of the running tenders" onMouseEnter={onEnter} onMouseLeave={onLeave}>
       <div className="sched-head">
         <div className="sched-title">
           <div className="sched-nav" role="group" aria-label="Move the schedule">
@@ -482,7 +504,7 @@ function Schedule({
         </div>
       </div>
       <div className="sched-body">
-        {running.length > 0 && (
+        {!one && running.length > 0 && (
           <div className="sched-rail">
             <div className="rail-label">All tenders</div>
             <div className="rail-lane" style={{ height: Math.max(12 + Math.max(1, railTiers.length) * 22, 14 + works.length * 8) }}>
@@ -510,7 +532,7 @@ function Schedule({
             </div>
           </div>
         )}
-        {running.map((p) => {
+        {(one ? [one] : []).map((p) => {
           const stage = stageOf(p);
           const plan = planned.get(p.id)!;
           const s = summaries[p.id];
@@ -519,7 +541,7 @@ function Schedule({
           const due = parseDay(plan.due), q = parseDay(plan.questions_due), opening = parseDay(plan.opening);
           const sent = parseDay(plan.sent), bind = parseDay(plan.binding_until);
           const workFrom = parseDay(plan.exec_start), workTo = parseDay(plan.exec_end);
-          const late = stage === "submitted" || stage === "award";
+          const late = stage === "submitted" || stage === "result";
           const next = nextDate(p, plan, today);
           const days = laneDays(p, plan);
           // every date the tender has, in the order it runs; the opening only where it is not the deadline's day
@@ -584,8 +606,8 @@ function Schedule({
                 <span className={`sched-count${next ? (next.days <= 3 ? " soon" : "") : " none"}`} title={next ? `${next.what[0].toUpperCase()}${next.what.slice(1)} ${wd(next.day)}, ${inDays(next.days)}` : undefined}>
                   <b className="num">{next ? next.days : "–"}</b>
                   <span>
-                    {next ? (next.days === 1 ? "day to" : "days to") : stage === "award" ? "tender" : "no date"}
-                    <em>{next ? next.what.split(" ")[0] : stage === "award" ? "awarded" : days.length ? "ahead" : "in its files"}</em>
+                    {next ? (next.days === 1 ? "day to" : "days to") : stage === "result" ? "tender" : "no date"}
+                    <em>{next ? next.what.split(" ")[0] : stage === "result" ? OUTCOME_LABEL[outcomeOf(p) ?? "won"].toLowerCase() : days.length ? "ahead" : "in its files"}</em>
                   </span>
                 </span>
                 <button
@@ -629,14 +651,14 @@ function Schedule({
             </div>
           );
         })}
-        {running.length === 0 && <p className="sched-empty">Nothing is running. A tender appears here as soon as its files are dropped, and stays until it is awarded.</p>}
+        {!one && running.length === 0 && <p className="sched-empty">Nothing is running. A tender appears here as soon as its files are dropped, and stays until it is awarded.</p>}
         {seen(today) && (
           <div className="today-wrap" aria-hidden>
             <i className="today" style={{ left: `${x(today)}%` }} />
           </div>
         )}
       </div>
-      {running.length > 0 && (
+      {focus && one && (
         <p className="sched-legend" aria-hidden>
           <span><i className="lg left" />time left until submission</span>
           <span><i className="lg gone" />time gone</span>
@@ -645,11 +667,6 @@ function Schedule({
           <span><i className="lg sent" />bid sent</span>
           <span><i className="lg bind" />binding period</span>
           <span><i className="lg work" />work</span>
-        </p>
-      )}
-      {closed > 0 && (
-        <p className="sched-note">
-          {closed} awarded tender{closed > 1 ? "s are" : " is"} not on the schedule. Their dates open from their cards.
         </p>
       )}
     </section>
@@ -668,11 +685,12 @@ function openItems(p: CatalogProject, s: ProjectSummary, stage: Stage): { sign?:
   const unread = s.docs.length - read.length;
   if (unread > 0) out.push({ text: <>{n(unread, "file")} could not be read</> });
 
-  if (stage === "award" || stage === "submitted") {
-    const [tender] = of("tender"), [later] = of(stage === "award" ? "award" : "bid");
+  if (stage === "result" || stage === "submitted") {
+    const award = stage === "result" && of("award").length > 0;
+    const [tender] = of("tender"), [later] = of(award ? "award" : "bid");
+    if (stage === "result") out.push({ quiet: true, text: OUTCOME_SAYS[outcomeOf(p) ?? "won"] });
     if (tender && later && tender.items !== later.items)
-      out.push({ text: <>The {stage === "award" ? "award" : "bid"} has {n(later.items, "item")}, the tender {tender.items.toLocaleString("de-DE")}</> });
-    else out.push({ quiet: true, text: stage === "award" ? "Awarded. Same items as the tender." : "The bid is with the client." });
+      out.push({ text: <>The {award ? "award" : "bid"} has {n(later.items, "item")}, the tender {tender.items.toLocaleString("de-DE")}</> });
     return out;
   }
   // the same LV read from two formats should give the same findings; say so when it does not
@@ -682,26 +700,80 @@ function openItems(p: CatalogProject, s: ProjectSummary, stage: Stage): { sign?:
   return out;
 }
 
+/** Whose move it is on a tender, in one line: Polier is working on it, it waits for the estimator, or it
+ *  waits for the client. Null where the pipeline's own line says all there is (checked, nothing open). */
+function nowOf(
+  p: CatalogProject,
+  s: ProjectSummary | "failed" | undefined,
+  run: Run | undefined,
+  stage: Stage,
+): { who: "polier" | "you" | "client" | "supplier" | "end"; label: string; text: string } | null {
+  const count = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+  if (stage === "result") {
+    const o = outcomeOf(p) ?? "won";
+    return { who: "end", label: OUTCOME_LABEL[o], text: "" };
+  }
+  if (run?.active) {
+    const on = run.stages.find((x) => x.status === "running");
+    return { who: "polier", label: "Polier", text: on ? `${on.title} · ${on.line || "running"}` : "waiting for a free worker" };
+  }
+  const plan = datesOf(p, s);
+  if (stage === "intake") {
+    const due = parseDay(plan.due);
+    const days = due ? daysBetween(new Date(), due) : null;
+    const read = days === null ? "No submission date in the files" : days < 0 ? `Submission was ${inDays(days)}: too late` : `Submission ${inDays(days)}${days <= 7 ? ": tight" : ""}`;
+    return { who: "you", label: "You", text: read }; // the two buttons under it say what there is to decide
+  }
+  if (stage === "submitted") {
+    const until = parseDay(plan.binding_until);
+    return { who: "client", label: "Client", text: until ? `Bid binding until ${dm(until)}` : "The bid is with the client" };
+  }
+  if (run && (run.status === "failed" || run.status === "interrupted" || run.status === "cancelled"))
+    return { who: "you", label: "You", text: run.status === "cancelled" ? "The checks were stopped: run them again" : "A check did not finish: see the pipeline" };
+  const q = run?.questions;
+  // price inquiries to suppliers and subcontractors (D-044): drafts are the estimator's move, sent ones the supplier's
+  const inq = run?.inquiries;
+  const inquiries = (n: number) => `${n} price ${n === 1 ? "inquiry" : "inquiries"}`;
+  // what waits for the estimator, in one line: questions and inquiries to send, answers to decide on
+  const decide = run?.decisions?.proposed ?? 0;
+  const mine = [
+    q && q.to_send > 0 && `${count(q.to_send, "question")} to send`,
+    decide > 0 && `${count(decide, "change")} from the client's answers to decide`,
+    inq && inq.to_send > 0 && `${inquiries(inq.to_send)} to send`,
+  ].filter((t): t is string => !!t);
+  if (mine.length > 0) return { who: "you", label: "You", text: mine.join(" · ") };
+  if (q && q.out > 0) {
+    const until = parseDay(plan.questions_due);
+    return { who: "client", label: "Client", text: `${count(q.out, "question")} out, no answer yet${until ? ` · until ${dm(until)}` : ""}` };
+  }
+  if (inq && inq.out > 0) return { who: "supplier", label: "Supplier", text: `${inquiries(inq.out)} out, ${inq.answered} answered` };
+  return null;
+}
+
 function Card({
   p,
   s,
   run,
   stage,
   busy,
+  pinned,
   onOpen,
   onDropFiles,
   onChange,
   onDates,
+  onPoint,
 }: {
   p: CatalogProject;
   s: ProjectSummary | "failed" | undefined;
   run: Run | undefined; // the project's latest pipeline run: where it stands
   stage: Stage;
   busy: boolean;
+  pinned: boolean; // its dates are held open on the schedule
   onOpen: (p: CatalogProject, file?: number) => void;
   onDropFiles: (files: FileList, target: string) => void;
   onChange: (p: CatalogProject, change: Change) => void;
   onDates: (p: CatalogProject) => void;
+  onPoint: (id: string | null) => void; // the card is pointed at: the schedule shows its lane
 }) {
   const ready = s !== undefined && s !== "failed";
   // A card whose files are still being read is closed off with tape; the tape is pulled once its numbers
@@ -710,8 +782,24 @@ function Card({
   const [over, setOver] = useState(false);
   const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
+  /* Top right: the days left to the next hard date, the first figure read on a card. It names that date;
+     the submission is written out only where the count is to something else. */
+  const today = startOfDay(new Date());
+  const plan = datesOf(p, s);
+  const next = nextDate(p, plan, today);
+  const due = parseDay(plan.due);
+  const also = stage !== "submitted" && stage !== "result" && next && due && due.getTime() !== next.day.getTime() && daysBetween(today, due) >= 0 ? due : null;
+  const alsoDue = also && (
+    <span className="kc-date" title="Submission">
+      <i className="lg due" />
+      Submission {wd(also)}
+    </span>
+  );
+
+  // in the intake nothing is checked yet: no strip, no counts, only how much there is to check
+  const unchecked = ready && s.checked === false;
   let strip: ReactNode = null;
-  if (ready) {
+  if (ready && !unchecked) {
     const read = s.docs.filter((d) => d.counts);
     const shown = p.kind === "trades" ? read : read.slice(0, 1);
     const cuts = shown.slice(0, -1).reduce<number[]>((acc, d) => [...acc, (acc[acc.length - 1] ?? 0) + d.items], []);
@@ -725,22 +813,195 @@ function Card({
               {s.counts[sev]}
             </span>
           ))}
-          <small>
-            {s.items.toLocaleString("de-DE")} items{p.kind === "trades" ? ` in ${s.lvs} LVs` : ""}
-          </small>
+          {alsoDue}
         </span>
       </div>
     );
   }
+  const size = ready
+    ? `${s.items.toLocaleString("de-DE")} items${p.kind === "trades" ? ` in ${s.lvs} LVs` : ""}${unchecked ? ", not checked yet" : ""}`
+    : p.kind === "trades" ? `${p.files.length} trade LVs` : "";
 
+  /* The middle of the card is what its stage asks: where an intake tender was found; on a tender being
+     checked or priced what changed since the last check and how its bidder questions stand; on a bid the
+     net and when the work would run. */
   const open = ready ? openItems(p, s, stage) : [];
+  const found = p.plan.found;
+  const working = stage === "check" || stage === "pricing";
+  const since = working && run?.since && run.since.new + run.since.gone > 0 ? run.since : null;
+  const q = working && run?.questions && run.questions.total > 0 ? run.questions : null;
+  const inq = working && run?.inquiries && run.inquiries.packages > 0 ? run.inquiries : null;
+  // the client's answers: changes still to decide, and what the accepted ones did
+  const dec = working && run?.decisions ? run.decisions : null;
+  // the bid: unit prices entered, against the items of the LV (several trade LVs: over all of them)
+  const bidOf = working && ready && run?.bid ? run.bid : null;
+  const priced = bidOf ? Math.min(p.kind === "trades" ? bidOf.priced_all : bidOf.priced, ready ? s.items : 0) : 0;
+  const workFrom = parseDay(plan.exec_start), workTo = parseDay(plan.exec_end);
+  const net = ready && s.net !== null;
+  const block: ReactNode[] = [];
+  if (stage === "intake" && found)
+    block.push(
+      <p key="found" className="card-found" title={found.subject}>
+        <span className="kc-label">
+          Found in your {found.via ?? "mail"}
+          {found.received && parseDay(found.received) ? ` · ${dm(parseDay(found.received)!)}` : ""}
+        </span>
+        {found.subject && <span lang="de">„{found.subject}“</span>}
+        {found.sender}
+      </p>,
+    );
+  if (since)
+    block.push(
+      <p key="since" className="kc-quiet">
+        Since the last check: <b>{since.new} new</b>, {since.gone} gone
+      </p>,
+    );
+  if (q)
+    block.push(
+      <div key="q">
+        <span className="kc-label">Bidder questions</span>
+        <p className="kc-q">
+          <span className={q.to_send ? "hot" : undefined}>
+            <b>{q.to_send}</b> to send
+          </span>
+          <span>
+            <b>{q.out}</b> with client
+          </span>
+          <span>
+            <b>{q.answered}</b> answered
+          </span>
+        </p>
+      </div>,
+    );
+  if (dec && dec.proposed + dec.quantities + dec.allowances > 0)
+    block.push(
+      <div key="dec">
+        <span className="kc-label">The client's answers</span>
+        <p className="kc-q">
+          {dec.proposed > 0 && (
+            <span className="hot">
+              <b>{dec.proposed}</b> to decide
+            </span>
+          )}
+          {dec.quantities > 0 && (
+            <span>
+              <b>{dec.quantities}</b> quantit{dec.quantities === 1 ? "y" : "ies"} corrected
+            </span>
+          )}
+          {dec.allowances > 0 && (
+            <span>
+              <b>{dec.allowances}</b> allowance{dec.allowances === 1 ? "" : "s"}
+            </span>
+          )}
+        </p>
+      </div>,
+    );
+  if (bidOf && ready && s.items > 0)
+    block.push(
+      <div key="bid">
+        <span className="kc-label">
+          Bid · <b>{priced.toLocaleString("de-DE")}</b> of {s.items.toLocaleString("de-DE")} items priced
+        </span>
+        <i className="kc-bar">
+          <i style={{ width: `${(priced / s.items) * 100}%` }} />
+        </i>
+        {bidOf.from_suggestions > 0 && (
+          <p className="kc-quiet">
+            {bidOf.from_suggestions} taken from past bids
+          </p>
+        )}
+      </div>,
+    );
+  if (inq)
+    block.push(
+      <div key="inq">
+        <span className="kc-label">
+          Price inquiries · {inq.packages} package{inq.packages === 1 ? "" : "s"}
+        </span>
+        <p className="kc-q">
+          <span className={inq.to_send ? "hot" : undefined}>
+            <b>{inq.to_send}</b> to send
+          </span>
+          <span>
+            <b>{inq.out}</b> out
+          </span>
+          <span>
+            <b>{inq.answered}</b> answered
+          </span>
+        </p>
+        {inq.held > 0 && (
+          <p className="kc-quiet">
+            {inq.held} item{inq.held === 1 ? " waits" : "s wait"} for the client's answer
+          </p>
+        )}
+      </div>,
+    );
+  if (open.length > 0)
+    block.push(
+      <ul key="open" className="open-list">
+        {open.map((o, i) => (
+          <li key={i} className={o.quiet ? "quiet" : undefined}>
+            {o.sign ? <Sign severity={o.sign} size={14} /> : <i className={o.quiet ? "ok" : "dot"} />}
+            <span>{o.text}</span>
+          </li>
+        ))}
+      </ul>,
+    );
+  if (net)
+    block.push(
+      <p key="net" className="card-net">
+        <span>{s.net_from === "award" ? "Award" : s.net_from === "offer" ? "Offer" : "Bid"}, net</span>
+        <b className="num">{eur(s.net!)}</b>
+      </p>,
+    );
+  if ((stage === "submitted" || stage === "result") && workFrom && workTo)
+    block.push(
+      <p key="work" className="kc-quiet">
+        Work {dm(workFrom)} – {dmY(workTo)}
+      </p>,
+    );
+
+  /* The foot of the card says whose move it is, and is the one filled surface on it: yellow when it is
+     the estimator's. The stage (or how a bid ended) is changed from the same band. */
+  const now = nowOf(p, s, run, stage);
+  const move =
+    stage === "check" || stage === "pricing" ? (
+      <Select
+        className="kc-sel"
+        value={stage as string}
+        options={[...(["check", "pricing"] as const).map((st) => ({ value: st as string, label: STAGE_LABEL[st] })), { value: "passed", label: "No bid" }]}
+        disabled={busy}
+        aria-label={`Stage of ${p.name}`}
+        onChange={(st) => onChange(p, st === "passed" ? { outcome: "passed" } : { stage: st as "check" | "pricing" })}
+      />
+    ) : stage === "submitted" || (stage === "result" && p.plan.outcome) ? (
+      // a bid that is out ends one way or another; an award among the files says "won" by itself
+      <Select
+        className="kc-sel"
+        value={p.plan.outcome ?? "open"}
+        options={[
+          { value: "open", label: stage === "submitted" ? "Open" : "Open again" },
+          ...(Object.keys(OUTCOME_LABEL) as Outcome[])
+            .filter((o) => o === p.plan.outcome || (stage === "submitted" ? o !== "passed" : true))
+            .map((o) => ({ value: o as string, label: OUTCOME_LABEL[o] })),
+        ]}
+        disabled={busy}
+        aria-label={`Result of ${p.name}`}
+        onChange={(o) => onChange(p, { outcome: o === "open" ? null : (o as Outcome) })}
+      />
+    ) : null;
+  const who = stage === "intake" ? "decide" : (now?.who ?? "none");
   return (
     <article
-      className={`card${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}`}
+      className={`card kc is-${stage}${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}${pinned ? " pinned" : ""}${stage === "result" && outcomeOf(p) !== "won" ? " back" : ""}`}
       tabIndex={0}
       aria-disabled={busy}
       onClick={() => !busy && onOpen(p)}
       onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && !busy && onOpen(p)}
+      onMouseEnter={() => onPoint(p.id)}
+      onMouseLeave={() => onPoint(null)}
+      onFocus={() => onPoint(p.id)}
+      onBlur={() => onPoint(null)}
       // later files of a running tender are dropped onto its card
       onDragOver={(e) => (e.preventDefault(), e.stopPropagation(), setOver(true))}
       onDragLeave={() => setOver(false)}
@@ -755,49 +1016,59 @@ function Card({
         <span className="plate">{plateOf(p)}</span>
         <div className="card-name">
           <b lang="de">{p.name}</b>
-          <small>{[p.name.startsWith(p.number) ? "" : p.number, p.trade].filter(Boolean).join(" · ") || (p.kind === "trades" ? `${p.files.length} trade LVs` : "one LV")}</small>
+          <small>{[p.name.startsWith(p.number) ? "" : p.number, p.trade, size].filter(Boolean).join(" · ")}</small>
         </div>
-        {/* the dates live on the schedule; this opens it at this tender's */}
-        <button className="card-dates" disabled={busy} title="Show this tender's dates on the schedule" aria-label={`Dates of ${p.name}`} onClick={(e) => (e.stopPropagation(), onDates(p))}>
-          <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden>
-            <path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" strokeWidth="2" />
-          </svg>
-          Dates
+        {/* the dates live on the schedule above the board; this holds this tender's open there */}
+        <button
+          className={`kc-days${next ? (next.days <= 3 ? " soon" : "") : " none"}`}
+          disabled={busy}
+          aria-pressed={pinned}
+          aria-label={`Dates of ${p.name}`}
+          title={`${next ? `${next.what[0].toUpperCase()}${next.what.slice(1)} ${wd(next.day)}. ` : ""}${pinned ? "Let go of its dates" : "Hold its dates open on the schedule, with where they were read"}`}
+          onClick={(e) => (e.stopPropagation(), onDates(p))}
+        >
+          {next ? (
+            <>
+              <b className="num">{next.days}</b>
+              <span>
+                {next.days === 1 ? "day" : "days"} to
+                <br />
+                {next.what.split(" ")[0]}
+              </span>
+            </>
+          ) : (
+            <span>Dates</span>
+          )}
         </button>
       </header>
 
       {!ready && <p className="card-wait">{s === "failed" ? "The files could not be read." : "Reading the files"}</p>}
       {strip}
-      {run && <RunSegs run={run} />}
-      {ready && open.length > 0 && (
-        <ul className="open-list">
-          {open.map((o, i) => (
-            <li key={i} className={o.quiet ? "quiet" : undefined}>
-              {o.sign ? <Sign severity={o.sign} size={14} /> : <i className={o.quiet ? "ok" : "dot"} />}
-              <span>{o.text}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {ready && s.net !== null && (
-        <p className="card-net">
-          <span>{s.net_from === "award" ? "Award" : s.net_from === "offer" ? "Offer" : "Bid"}, net</span>
-          <b className="num">{eur(s.net)}</b>
-        </p>
-      )}
+      {!strip && alsoDue && <div className="card-lv">{alsoDue}</div>}
+      {block.length > 0 && <div className="kc-block">{block}</div>}
 
-      {(stage === "check" || stage === "questions" || stage === "pricing") && (
-        <label className="stage-move" onClick={stop}>
-          <span>Stage</span>
-          <Select
-            value={stage}
-            options={(["check", "questions", "pricing"] as const).map((st) => ({ value: st, label: STAGE_LABEL[st] }))}
-            disabled={busy}
-            aria-label={`Stage of ${p.name}`}
-            onChange={(st) => onChange(p, { stage: st })}
-          />
-        </label>
-      )}
+      <footer className={`kc-now is-${who}`}>
+        {stage === "intake" ? (
+          <span className="kc-decide" onClick={stop}>
+            <button className="btn-new" disabled={busy} title="The checks start on its files" onClick={() => onChange(p, { stage: "check" })}>
+              Take it on
+            </button>
+            <button className="btn-ghost" disabled={busy} title="No bid: it goes to Result as passed" onClick={() => onChange(p, { outcome: "passed" })}>
+              Pass
+            </button>
+          </span>
+        ) : (
+          <>
+            {now && <b>{now.who === "you" ? "Your move" : now.label}</b>}
+            <span>{now ? now.text : !ready ? "" : run ? "Nothing open" : "Not checked yet"}</span>
+            {move && (
+              <span className="kc-move" onClick={stop}>
+                {move}
+              </span>
+            )}
+          </>
+        )}
+      </footer>
     </article>
   );
 }
@@ -1127,17 +1398,30 @@ export function ProjectsPage({
   onChange: (project: CatalogProject, change: Change) => void;
 }) {
   const [focus, setFocus] = useState<Focus>(null);
+  /* The card pointed at. Leaving a card lets go of it a moment later, so the pointer can cross to the
+     schedule, where the lane then stays for as long as the pointer is on it. */
+  const [hover, setHover] = useState<string | null>(null);
+  const letGo = useRef(0);
+  const point = (id: string | null) => {
+    window.clearTimeout(letGo.current);
+    if (id) setHover(id);
+    else letGo.current = window.setTimeout(() => setHover(null), 300);
+  };
+  useEffect(() => () => window.clearTimeout(letGo.current), []);
   return (
     <main className="register">
-      {/* the schedule runs the full width of the window, straight under the band */}
+      {/* the schedule: one lane docked under the band, the full width of the window; it stays while the board scrolls */}
       {projects.length > 0 && (
         <Schedule
           projects={projects}
           summaries={summaries}
           busy={busy}
           focus={focus}
+          hover={hover}
           onFocus={(id) => setFocus(id ? { id, n: (focus?.n ?? 0) + 1 } : null)}
           onOpen={onOpen}
+          onEnter={() => window.clearTimeout(letGo.current)}
+          onLeave={() => point(null)}
         />
       )}
 
@@ -1185,10 +1469,9 @@ export function ProjectsPage({
                     onOpen={onOpen}
                     onDropFiles={onDropFiles}
                     onChange={onChange}
-                    onDates={(p) => {
-                      setFocus({ id: p.id, n: (focus?.n ?? 0) + 1 });
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
+                    pinned={focus?.id === p.id}
+                    onDates={(p) => setFocus(focus?.id === p.id ? null : { id: p.id, n: (focus?.n ?? 0) + 1 })}
+                    onPoint={point}
                   />
                 ))}
                 {here.length === 0 && <p className="col-empty">{STAGE_EMPTY[stage]}</p>}

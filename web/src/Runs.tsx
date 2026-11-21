@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { getSpend } from "./api";
 import { Sign } from "./components";
 import { SEVERITIES, SEVERITY_LABEL, type Run, type RunStage, type RunStep, type Severity, type Spend, type StageId } from "./types";
@@ -31,7 +31,7 @@ function took(ms: number | null): string {
 const STATUS: Record<Run["status"], string> = {
   queued: "Waiting",
   running: "Running",
-  waiting: "Your move",
+  waiting: "Questions open",
   done: "Done",
   failed: "Failed",
   interrupted: "Interrupted",
@@ -172,7 +172,7 @@ function RunCard({ run, open, showProject }: { run: Run; open: boolean; showProj
           <i style={{ clipPath: `inset(0 ${(1 - share) * 100}% 0 0)` }} />
         </span>
         {run.active && <span className="run-now">{nowDoing(run)}</span>}
-        {run.status === "waiting" && <span className="run-now">Waits at the questions: {run.waiting_for}</span>}
+        {run.status === "waiting" && <span className="run-now">Questions open: {run.waiting_for}</span>}
         {run.error && <span className="run-now err">{run.error}</span>}
       </summary>
       {groups.map((g, i) => (
@@ -194,8 +194,8 @@ const ABOUT: Record<StageId, string> = {
   rules: "Rules without a model: totals, quantities, units, wording, missing items, the structure of the LV.",
   ai: "Claude reads the LV section by section, then looks at the findings a second time and takes out what is said twice.",
   compare: "A later version against its tender; the LVs of a building against each other.",
-  questions: "What only the client can settle is drafted as bidder questions. Nothing is priced on a guess while the client can still be asked: the run waits here for you.",
-  prices: "After the questions: unit prices from past bids with their source, and the items that have no reliable price.",
+  questions: "What only the client can settle is drafted as bidder questions. You send them, the client's answers are read back in; the station stays open until then. The prices do not wait for it.",
+  prices: "Beside the questions: unit prices from past bids with their source, and the items that have no reliable price.",
 };
 
 function any(counts: Record<Severity, number>): boolean {
@@ -226,20 +226,22 @@ function stageSays(s: RunStage): { text: string; counts: boolean } {
 }
 
 /** The six stations as marks, with one line under them: on a project's card. */
-export function RunSegs({ run }: { run: Run }) {
+export function RunSegs({ run, line: said }: { run: Run; line?: ReactNode }) {
   const on = run.stages.find((s) => s.status === "running") ?? run.stages.find((s) => s.status === "waiting");
+  // the card says whose move it is (Polier, you, the client); without that, what the run itself has to say
   const line =
-    run.status === "waiting"
-      ? `Your move · questions: ${run.waiting_for}`
+    said ??
+    (run.status === "waiting"
+      ? `Questions: ${run.waiting_for}`
       : run.active
         ? on
           ? `${on.title} · ${on.line || "running"}`
           : "Waiting for a free worker"
         : run.status === "done"
           ? `Checked ${ago(run.finished ?? run.created)}${run.since && run.since.new + run.since.gone > 0 ? ` · ${run.since.new} new, ${run.since.gone} gone` : ""}`
-          : `${STATUS[run.status]} ${ago(run.finished ?? run.created)}`;
+          : `${STATUS[run.status]} ${ago(run.finished ?? run.created)}`);
   return (
-    <div className={`run-segs is-${run.status}`} title="The pipeline on this project: read, rules, AI review, compare, questions, prices">
+    <div className={`run-segs is-${run.status}`} title="The pipeline on this project: read, rules, AI review, compare, questions, prices (the prices do not wait for the questions)">
       <span className="run-seg-row" aria-hidden>
         {run.stages.map((s) => (
           <i key={s.id} className={`is-${s.status}`} />
@@ -360,7 +362,7 @@ export function PipelineStrip({
               <button onClick={() => setOpen(open === s.id ? null : s.id)} aria-expanded={open === s.id} title={ABOUT[s.id]}>
                 <b>
                   <span className="num">{n + 1}</span>
-                  {s.status === "waiting" ? "Your move" : s.title}
+                  {s.status === "waiting" ? (run.questions?.to_send ? "Your move" : "With the client") : s.title}
                 </b>
                 <span className="pipe-says">{says.counts ? <Counts counts={s.counts} /> : s.status === "waiting" ? `Questions: ${says.text}` : says.text}</span>
               </button>
@@ -412,8 +414,9 @@ export function PipelineStrip({
           {stage.status === "waiting" && (
             <div className="pipe-move">
               <p>
-                <b>{run.waiting_for}.</b> The prices are worked out once the questions are answered, or when you go on without the
-                answers; what stays open is then priced as a risk.
+                <b>{run.waiting_for}.</b> {run.questions?.to_send ? "It is your move: the questions have to go out." : "It is the client's move."} The
+                prices are worked out beside this. Close the questions if you will not wait for the answers; what stays open is then priced
+                as a risk.
               </p>
               {onQuestions && (
                 <button className="btn-new" onClick={onQuestions}>
@@ -421,7 +424,7 @@ export function PipelineStrip({
                 </button>
               )}
               <button className="btn-ghost small" onClick={() => onChange("go-on")}>
-                Go on to the prices
+                Close the questions
               </button>
             </div>
           )}
@@ -572,7 +575,7 @@ function RunsTable({ projects, runs, onOpen }: { projects: { id: string; name: s
                   const says = stageSays(s);
                   return (
                     <td key={s.id} className={`is-${s.status}`} title={s.line}>
-                      {says.counts ? <Counts counts={s.counts} /> : s.status === "waiting" ? <b>your move: {says.text}</b> : says.text}
+                      {says.counts ? <Counts counts={s.counts} /> : s.status === "waiting" ? <b>{run.questions?.to_send ? "your move" : "with the client"}: {says.text}</b> : says.text}
                     </td>
                   );
                 })
@@ -640,8 +643,8 @@ export function RunsDialog({
           <p className="runs-empty">
             <b>No run yet.</b>
             A run starts by itself when a project is created or gets files: every file is read, every rule is run on
-            it, Claude reviews one file per LV, versions and LVs are compared, the bidder questions are drafted; the
-            prices follow once the questions are dealt with.
+            it, Claude reviews one file per LV, versions and LVs are compared, the bidder questions are drafted and
+            the prices are worked out beside them.
             {project ? " Start one for this project below." : ""}
           </p>
         )}

@@ -22,6 +22,12 @@ something.
 - **Q9. May the dataset be in a public repository?**
 - **Q10. Any restrictions or sponsors on LLM / API choice?** Are API credits provided?
 
+- **Q14. Price inquiries (2026-11-21, for the people who set the challenge; `docs/09-price-inquiries.md`
+  found no source for any of these):** How many suppliers are asked per material group, and is it the
+  same few every time? How long do they take to answer and how many never do? Is the list sent as Excel,
+  GAEB or in the text of the mail? For a trade the firm does not do: is the whole trade LV forwarded to
+  subcontractors, and what is done when none answers in time? Is a supplier ever written to cold?
+
 ## For the brother (civil engineer)
 
 See the list at the end of `04-field-insights.md`. Most important: would an indicative price obtained by phone be used

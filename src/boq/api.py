@@ -21,7 +21,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import amendments, bid, catalog, chat, db, mail, pipeline, retrieve, runs, spend
+from boq import amendments, bid, catalog, chat, db, mail, pipeline, retrieve, runs, spend, supply
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -407,7 +407,8 @@ async def intake(files: list[UploadFile], project: str | None = Form(None)):
 @app.post("/api/projects")
 async def create_project(files: list[UploadFile], name: str | None = Form(None), project: str | None = Form(None),
                          roles: str | None = Form(None), due: str | None = Form(None),
-                         questions_due: str | None = Form(None), dates: str | None = Form(None)):
+                         questions_due: str | None = Form(None), dates: str | None = Form(None),
+                         found: str | None = Form(None)):
     """Keep files as a new project, or add them to an existing one.
 
     One LV in several versions and several trade LVs are both projects; which it is follows from the
@@ -418,7 +419,23 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     (boq.dates). `dates`, a JSON object, says all of a new tender's dates at once (any of PLAN_DATES): what
     it names is kept as said, "" meaning none, also where the files state a day. Files added to a project
     fill only the dates it does not have yet, unless `dates` says otherwise.
+
+    `found`, a JSON object, is for the agent that reads the mailbox: where it found this tender (`via`, e.g.
+    "mail"; `sender`, `subject`, `received` as YYYY-MM-DD, all optional). A new project with `found` stands
+    in the intake: its files are kept and read, but no check runs until the estimator takes it on
+    (PATCH with stage "check") or passes (outcome "passed").
     """
+    where = None
+    if found:
+        try:
+            where = json.loads(found)
+        except ValueError:
+            where = None
+        if not isinstance(where, dict) or any(k not in FOUND_KEYS or not isinstance(v, str) for k, v in where.items()):
+            raise HTTPException(422, f"found is an object of strings with any of: {', '.join(FOUND_KEYS)}.")
+        if project:
+            raise HTTPException(422, "found is for a new project: files for a project that exists are added to it.")
+        where = {k: v.strip()[:200] for k, v in where.items() if v.strip()} or {"via": "mail"}
     try:
         said_dates = json.loads(dates) if dates else {}
     except ValueError:
@@ -451,9 +468,15 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     else:
         found = intake_rules.identity(new)
         title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
+        if where is not None:
+            plan |= {"stage": "intake", "found": where}
         project_id = catalog.save_project(title, stored, kind, number=found["number"], plan=plan)
+        if where is not None:
+            return {"id": project_id, "kind": kind, "name": title}
     # Nothing is analysed here: the pipeline runs on the project in the background (boq.runs) and the pages
     # show how far it is.
+    if existing and existing["plan"].get("stage") == "intake":  # not taken on yet: more files, still no check
+        return {"id": project_id, "kind": kind, "name": title}
     runs.autostart(project_id, "files added" if existing else "project created")
     return {"id": project_id, "kind": kind, "name": title}
 
@@ -479,7 +502,11 @@ def catalog_summary(project_id: str):
     Parses every file, so it is asked for per project and kept with the project until its files change."""
     project = _catalog(project_id)
     kept = catalog.summary(project_id)
-    if kept is None or kept.get("v") != 4:  # v: summaries kept by an earlier version are worked out again
+    # A tender in the intake is read and nothing else: no check runs on it before the estimator takes it on,
+    # the rules neither, so that a card never shows half an analysis (D-042). Its summary is not kept.
+    unchecked = project["plan"].get("stage") == "intake"
+    # v: summaries kept by an earlier version are worked out again
+    if kept is None or kept.get("v") != 4 or unchecked or not kept.get("checked", True):
         rank = {"info": 1, "warn": 2, "high": 3}
         docs, net, net_from, dates = [], None, None, []
         for index, f in enumerate(project["files"]):
@@ -496,7 +523,7 @@ def catalog_summary(project_id: str):
             # the rules, and what the project's pipeline run added to this file (AI review, changes against
             # the tender): the same findings the file shows when it is opened
             from_run = (runs.llm_findings(project_id, f["id"]) or []) + runs.version_findings(project_id, f["id"])
-            for finding in run_checks(boq) + from_run:
+            for finding in [] if unchecked else run_checks(boq) + from_run:
                 counts[finding.severity] += 1
                 if finding.action == "ask_client":
                     ask.add(finding.item_oz)
@@ -515,12 +542,13 @@ def catalog_summary(project_id: str):
         # trade LVs all count.
         counted = [d for d in docs if d["counts"]]
         counted = counted if project["kind"] == "trades" else counted[:1]
-        kept = {"v": 4, "lvs": len(counted), "items": sum(d["items"] for d in counted),
+        kept = {"v": 4, "checked": not unchecked, "lvs": len(counted), "items": sum(d["items"] for d in counted),
                 "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
                 "net": net, "net_from": net_from, "docs": docs,
                 # the tender's dates as its files state them, each with where it was read (boq.dates)
                 "dates": tender_dates.merge(dates)}
-        catalog.keep_summary(project_id, kept)
+        if not unchecked:
+            catalog.keep_summary(project_id, kept)
     return kept
 
 
@@ -630,7 +658,7 @@ def _run(found: dict | None) -> dict:
 
 @app.post("/api/runs/{run_id}/go-on")
 def run_go_on(run_id: str):
-    """A run that waits for the bidder questions goes on to the prices without the client's answers."""
+    """The bidder questions a run waits for are closed without the client's answers; the run is done."""
     return _run(runs.go_on(run_id))
 
 
@@ -649,7 +677,11 @@ def run_cancel(run_id: str):
 
 
 PLAN_DATES = ("questions_due", "due", "opening", "sent", "binding_until", "exec_start", "exec_end")
-PLAN_STAGES = ("check", "questions", "pricing")  # submitted and award follow from the files
+# intake: found for the estimator (in the mail), not taken on yet. Submitted follows from the files.
+PLAN_STAGES = ("intake", "check", "pricing")
+# how a tender ended; an award among the files is "won" without being said. passed: no bid was made.
+PLAN_OUTCOMES = ("won", "lost", "passed", "cancelled")
+FOUND_KEYS = ("via", "sender", "subject", "received")
 
 
 def _plan(values: dict) -> dict:
@@ -660,6 +692,9 @@ def _plan(values: dict) -> dict:
         if key == "stage":
             if value is not None and value not in PLAN_STAGES:
                 raise HTTPException(422, f"A stage is one of: {', '.join(PLAN_STAGES)}.")
+        elif key == "outcome":
+            if value is not None and value not in PLAN_OUTCOMES:
+                raise HTTPException(422, f"An outcome is one of: {', '.join(PLAN_OUTCOMES)}.")
         elif value is not None:
             try:
                 value = date.fromisoformat(value).isoformat()
@@ -673,6 +708,7 @@ class ProjectChange(BaseModel):
     """What can be changed on a project: its name, the stage of the tender, its dates. Only what is sent."""
     name: str | None = None
     stage: str | None = None
+    outcome: str | None = None  # how it ended: won, lost, passed (no bid), cancelled by the client; "" = open again
     due: str | None = None  # submission deadline (Angebotsfrist)
     questions_due: str | None = None  # last day for bidder questions
     sent: str | None = None  # the day the bid went out
@@ -685,7 +721,7 @@ class ProjectChange(BaseModel):
 @app.patch("/api/catalog/{project_id}")
 def change_project(project_id: str, body: ProjectChange):
     sent = body.model_dump(exclude_unset=True)
-    _catalog(project_id)
+    before = _catalog(project_id)
     if "name" in sent:
         name = (sent.pop("name") or "").strip()[:80]
         if not name:
@@ -693,6 +729,9 @@ def change_project(project_id: str, body: ProjectChange):
         catalog.rename(project_id, name)
     if sent:
         catalog.set_plan(project_id, _plan(sent))
+        # a tender found in the mail is only read; the checks start when the estimator takes it on
+        if before["plan"].get("stage") == "intake" and sent.get("stage") in ("check", "pricing"):
+            runs.autostart(project_id, "taken on")
     return _catalog(project_id)
 
 
@@ -794,7 +833,8 @@ async def ask_project(analysis_id: str, body: Question):
     return {**out, "documents": names, "whole": whole}
 
 
-_STAGE = {"check": "Check", "questions": "Questions (bidder questions are out)", "pricing": "Pricing"}
+_STAGE = {"intake": "Intake (found for the estimator, not taken on yet)", "check": "Check", "pricing": "Pricing"}
+_OUTCOME = {"won": "won", "lost": "lost", "passed": "no bid was made", "cancelled": "cancelled by the client"}
 _DATE = {"sent_out": "tender sent out", "questions_due": "bidder questions until", "due": "submission deadline",
          "opening": "bid opening", "binding_until": "bid binding until", "exec_start": "work starts",
          "exec_end": "work done by"}
@@ -815,7 +855,8 @@ def _overview() -> list[dict]:
             summary = None
         roles = {f["role"] for f in p["files"]}
         plan = p.get("plan") or {}
-        stage = ("Award (an award is among the files)" if "award" in roles
+        stage = (f"Result: {_OUTCOME[plan['outcome']]}" if plan.get("outcome") in _OUTCOME
+                 else "Result: won (an award is among the files)" if "award" in roles
                  else "Submitted (a bid is among the files)" if roles & {"bid", "submitted bid", "offer"}
                  else _STAGE.get(plan.get("stage") or "check", "Check"))
         lines = [f"stage: {stage}"]
@@ -837,7 +878,10 @@ def _overview() -> list[dict]:
             lines.append(f"bid sent: {plan['sent']}")
         if not any(plan.get(k) for k in ("due", "opening")) and not any(d["kind"] in ("due", "opening") for d in stated):
             lines.append("submission deadline: not stated in the files and not set")
-        if summary:
+        if summary and not summary.get("checked", True):
+            lines.append(f"not checked yet: {_count(summary['items'], 'item')} read, no check has run (it is in the intake)")
+            lines += [f"file: {f['name']} — {f['role']}, {f['format']}" for f in p["files"]]
+        elif summary:
             c = summary["counts"]
             lines.append(f"rule findings: {_count(c['high'], 'stop')}, {_count(c['warn'], 'caution')}, "
                          f"{_count(c['info'], 'note')} on {_count(summary['items'], 'item')} in "
@@ -1284,6 +1328,390 @@ def bid_x84(analysis_id: str):
     name = mail.file_name(f"Angebot {Path(boq.file).stem}", db.now().isoformat())[:-4] + ".x84"
     return Response(data, media_type="application/xml",
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+# ---------------------------------------------------------------- price inquiries (boq.supply)
+
+class Company(BaseModel):
+    name: str | None = None
+    contact: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    place: str | None = None
+    own_trades: str | None = None
+    nu_surcharge: float | None = None
+
+
+@app.get("/api/company")
+def get_company():
+    """The firm's own particulars, which every inquiry carries: a supplier asks who is asking first."""
+    return supply.company()
+
+
+@app.put("/api/company")
+def put_company(body: Company):
+    if body.nu_surcharge is not None and not 0 <= body.nu_surcharge <= 50:
+        raise HTTPException(422, "The surcharge on subcontractors is a percentage between 0 and 50.")
+    return supply.set_company(body.model_dump(exclude_unset=True))
+
+
+class SupplierEntry(BaseModel):
+    name: str | None = None
+    kind: str | None = None
+    email: str | None = None
+    contact: str | None = None
+    phone: str | None = None
+    place: str | None = None
+    groups: list[str] | None = None
+    products: list[dict] | None = None
+    note: str | None = None
+    source: str | None = None
+
+
+def _entry(body: SupplierEntry, new: bool) -> dict:
+    values = body.model_dump(exclude_unset=True)
+    if new and not (values.get("name") or "").strip():
+        raise HTTPException(422, "A supplier needs a name.")
+    if "name" in values and not (values["name"] or "").strip():
+        raise HTTPException(422, "A supplier needs a name.")
+    if values.get("kind") is not None and values["kind"] not in supply.KINDS:
+        raise HTTPException(422, f"kind is one of: {', '.join(supply.KINDS)}.")
+    if values.get("email") and ("@" not in values["email"] or " " in values["email"].strip()):
+        raise HTTPException(422, "That is no e-mail address.")
+    if values.get("source") is not None and values["source"] not in ("user", "web"):
+        raise HTTPException(422, "source is user or web.")
+    return {k: v.strip() if isinstance(v, str) else v for k, v in values.items()}
+
+
+@app.get("/api/suppliers")
+def list_suppliers():
+    """The directory: who sells what (suppliers of material) and who does which trade (subcontractors)."""
+    return supply.suppliers()
+
+
+@app.post("/api/suppliers")
+def add_supplier(body: SupplierEntry):
+    return supply.save_supplier(_entry(body, new=True))
+
+
+@app.patch("/api/suppliers/{supplier_id}")
+def change_supplier(supplier_id: str, body: SupplierEntry):
+    if supply.supplier(supplier_id) is None:
+        raise HTTPException(404, "This supplier is no longer in the directory.")
+    return supply.save_supplier(_entry(body, new=False), supplier_id)
+
+
+@app.delete("/api/suppliers/{supplier_id}", status_code=204)
+def delete_supplier(supplier_id: str):
+    """Take an entry out of the directory. Its quotes stay: they are prices with a date."""
+    supply.remove_supplier(supplier_id)
+
+
+def _asked(boq: BoQ, ozs: list[str]) -> list[dict]:
+    """Items as an inquiry carries them."""
+    by_oz = {i.oz: i for i in boq.items}
+    return [{"oz": oz, "label": by_oz[oz].label, "qty": float(by_oz[oz].qty) if by_oz[oz].qty is not None else None,
+             "unit": by_oz[oz].unit_raw or by_oz[oz].unit} for oz in ozs if oz in by_oz]
+
+
+def _supply_state(analysis_id: str) -> dict:
+    """The price inquiries of an LV as they stand: the packages with who is asked and what came back, the
+    comparison per package, the items that wait for the client, and where every item's price comes from."""
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    project = catalog.find(project_id) if project_id else None
+    dates = (project or {}).get("plan") or {}
+    questions = mail.standing(_report(analysis_id)["questions"], mail.about(mail.BIDDER_QUESTIONS, project_id, boq.file))
+    wait, assume = supply.held(questions)
+    hand = supply.at_hand(boq, project_id)
+    kept = supply.find_plan(project_id, boq.file)
+    directory = supply.suppliers()
+    names = {s["id"]: s["name"] for s in directory}
+    account = mail.account()
+    base = {"lv": {"name": (project or {}).get("name") or boq.project or boq.name or boq.file, "file": boq.file,
+                   "number": (project or {}).get("number") or boq.project_no},
+            "due": dates.get("due"), "binding_until": dates.get("binding_until"), "reply_by": supply.reply_by(dates),
+            "account": account["from"] if account else None, "inbox": (mail.inbox() or {}).get("user") or None,
+            "company": supply.company(), "suppliers": directory,
+            "priced_file": any(i.total is not None for i in boq.items)}
+    if kept is None:
+        return {**base, "plan": None, "packages": [], "waits": [{"oz": oz, "question": q} for oz, q in wait.items()],
+                "released": [], "prices": {}, "counts": {}}
+    plan_, chosen = kept["plan"], kept["chosen"]
+    items = {i.oz: i for i in boq.items}
+    mails = mail.about(supply.PRICE_INQUIRY, project_id, boq.file)
+    quotes = supply.quotes_for(project_id, boq.file)
+    comparisons, packages = {}, []
+    for p in plan_["packages"]:
+        mine = [q for q in quotes if q["package"] == p["id"]]
+        comparisons[p["id"]] = supply.compare(p, items, mine, names, dates)
+        ask = []
+        for sid in p["ask"]:
+            sent = [m for m in mails if (m["meta"] or {}).get("package") == p["id"] and (m["meta"] or {}).get("supplier_id") == sid]
+            latest = sent[-1] if sent else None
+            quote = next((q for q in mine if q["supplier_id"] == sid), None)
+            ask.append({"supplier_id": sid, "supplier": names.get(sid, "(removed from the directory)"),
+                        "email": next((s["email"] for s in directory if s["id"] == sid), ""),
+                        "mail": latest and {"id": latest["id"], "to": latest["to"], "sent_at": latest["sent_at"],
+                                            "created": latest["created"], "via": latest["via"], "subject": latest["subject"],
+                                            "reminders": len(sent) - 1},
+                        "quote": quote and quote["id"],
+                        "status": "answered" if quote else "sent" if latest and latest["sent_at"] else "drafted" if latest else "new"})
+        packages.append({**p, "items": [{**row, "provisional": assume.get(row["oz"])} for row in _asked(boq, p["items"])],
+                         "ask": ask, "comparison": comparisons[p["id"]], "chosen": chosen.get(p["id"])})
+    suggestions = _prices(boq)
+    assumed = {s["item_oz"]: s for s in (suggestions or {}).get("suggestions", [])}
+    prices = supply.item_prices(plan_, chosen, comparisons, items, wait, hand, assumed)
+    # the client has answered since the plan was made: these items can be asked for now
+    released = [oz for oz in plan_.get("held") or {} if oz not in wait and oz in items]
+    for oz in released:
+        if prices[oz]["status"] in ("own", "assumed"):
+            prices[oz] = {**prices[oz], "released": True}
+    counts: dict[str, int] = {}
+    for p in prices.values():
+        counts[p["status"]] = counts.get(p["status"], 0) + 1
+    return {**base, "plan": {"id": kept["id"], "created": kept["created"]}, "packages": packages,
+            "waits": [{"oz": oz, "label": items[oz].label, "question": q} for oz, q in wait.items() if oz in items],
+            "released": released, "prices": prices, "counts": counts}
+
+
+@app.get("/api/analyses/{analysis_id}/supply")
+def supply_state(analysis_id: str):
+    return _supply_state(analysis_id)
+
+
+@app.post("/api/analyses/{analysis_id}/supply/plan")
+async def plan_supply(analysis_id: str):
+    """Work out the packages of this LV (again): which items are asked for, of whom. Items that wait for
+    the client and items a quote at hand prices are left out."""
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    questions = mail.standing(_report(analysis_id)["questions"], mail.about(mail.BIDDER_QUESTIONS, project_id, boq.file))
+    wait, _ = supply.held(questions)
+    hand = supply.at_hand(boq, project_id)
+    try:
+        with spend.scope(project_id=project_id, file=boq.file):
+            packages = await supply.plan(boq, set(wait) | set(hand))
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(502, f"Planning the price inquiries failed: {exc}") from exc
+    supply.keep_plan(project_id, boq.file, {"hash": supply.lv_hash(boq), "packages": packages, "held": wait,
+                                            "at_hand": sorted(hand)}, supply.find_plan(project_id, boq.file))
+    return _supply_state(analysis_id)
+
+
+def _package(analysis_id: str, package_id: str) -> tuple[dict, dict]:
+    boq, _ = _analysis(analysis_id)
+    kept = supply.find_plan(_project_id(analysis_id), boq.file)
+    package = next((p for p in (kept or {"plan": {"packages": []}})["plan"]["packages"] if p["id"] == package_id), None)
+    if package is None:
+        raise HTTPException(404, "This package is not in the plan any more.")
+    return kept, package
+
+
+class Asked(BaseModel):
+    ask: list[str]  # directory ids, in the order they are asked
+
+
+@app.put("/api/analyses/{analysis_id}/supply/packages/{package_id}")
+def set_package_suppliers(analysis_id: str, package_id: str, body: Asked):
+    """Who is asked about a package: the estimator's choice over the agent's."""
+    kept, package = _package(analysis_id, package_id)
+    known = {s["id"] for s in supply.suppliers()}
+    ask = [s for s in dict.fromkeys(body.ask) if s in known]
+    if len(ask) > supply.MAX_ASKED:
+        raise HTTPException(422, f"At most {supply.MAX_ASKED} per package: a supplier who is one of many asked stops answering.")
+    package["ask"] = ask
+    supply.change_plan(kept["id"], plan_=kept["plan"])
+    return _supply_state(analysis_id)
+
+
+class InquiryDraft(BaseModel):
+    package: str
+    supplier_id: str
+    remind: bool = False  # a reminder about the inquiry already sent to this supplier
+
+
+def _dates(analysis_id: str) -> dict:
+    project_id = _project_id(analysis_id)
+    return ((catalog.find(project_id) if project_id else None) or {}).get("plan") or {}
+
+
+@app.post("/api/analyses/{analysis_id}/supply/compose")
+def compose_inquiry(analysis_id: str, body: InquiryDraft):
+    """The German inquiry about a package to one supplier, for the estimator to read and change."""
+    state = _supply_state(analysis_id)
+    boq, _ = _analysis(analysis_id)
+    _, package = _package(analysis_id, body.package)
+    to = supply.supplier(body.supplier_id)
+    if to is None:
+        raise HTTPException(404, "This supplier is no longer in the directory.")
+    if body.remind:
+        asked = next((a["mail"] for p in state["packages"] if p["id"] == body.package for a in p["ask"]
+                      if a["supplier_id"] == body.supplier_id and a["mail"]), None)
+        if asked is None:
+            raise HTTPException(422, "There is no inquiry to remind of.")
+        subject, text = supply.remind(_mail(asked["id"]), _dates(analysis_id))
+    else:
+        by_oz = {i.oz: i for i in boq.items}
+        subject, text = supply.compose(state["lv"], package, [by_oz[oz] for oz in package["items"] if oz in by_oz],
+                                       to, _dates(analysis_id))
+    return {"subject": subject, "body": text, "to": to["email"]}
+
+
+class Inquiry(BaseModel):
+    package: str
+    supplier_id: str
+    to: str
+    subject: str
+    body: str
+    via: str = "draft"
+
+
+@app.post("/api/analyses/{analysis_id}/supply/mails")
+def mail_inquiry(analysis_id: str, body: Inquiry):
+    """Keep an inquiry, and send it if asked to, with the items as an Excel sheet to fill in. Nothing goes
+    out that the estimator has not read: this is called from the message they see."""
+    boq, _ = _analysis(analysis_id)
+    _, package = _package(analysis_id, body.package)
+    if supply.supplier(body.supplier_id) is None:
+        raise HTTPException(404, "This supplier is no longer in the directory.")
+    to, subject, text = body.to.strip(), body.subject.strip(), body.body.strip()
+    if "@" not in to or " " in to:
+        raise HTTPException(422, "Enter the e-mail address the inquiry goes to.")
+    if not subject or not text:
+        raise HTTPException(422, "The message needs a subject and a text.")
+    if body.via not in ("draft", "smtp"):
+        raise HTTPException(422, "via is draft or smtp.")
+    asked, message_id = _asked(boq, package["items"]), None
+    if body.via == "smtp":
+        try:
+            message_id = mail.send(to, subject, text + "\n", [(f"Preisanfrage_{package['id']}.xlsx", supply.sheet(asked))])
+        except mail.MailUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+    mail.keep(supply.PRICE_INQUIRY, _project_id(analysis_id), boq.file, to, subject, text, body.via, asked,
+              sent=body.via == "smtp", message_id=message_id,
+              meta={"package": body.package, "supplier_id": body.supplier_id})
+    return _supply_state(analysis_id)
+
+
+@app.get("/api/mails/{mail_id}/items.xlsx")
+def inquiry_sheet(mail_id: str):
+    """The items of an inquiry as the Excel sheet the supplier fills in (attached by the app when it sends;
+    downloaded here to attach by hand)."""
+    found = _mail(mail_id)
+    return Response(supply.sheet(found["items"]),
+                    media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="Preisanfrage_{mail_id[:6]}.xlsx"'})
+
+
+async def _take_quote(found: dict, text: str, sheet: bytes | None) -> dict:
+    """Read a supplier's reply (the filled-in sheet, else its text) against the items of the inquiry and
+    keep it as a quote."""
+    try:
+        if sheet is not None:
+            read = supply.read_sheet(sheet, found["items"])
+        else:
+            with spend.scope(project_id=found["project_id"], file=found["file"]):
+                read = await supply.read_quote(found["items"], text)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(502, f"Reading the quote failed: {exc}") from exc
+    if not read["lines"]:
+        raise HTTPException(422, "No price for an asked item was found in this reply"
+                            + (f" ({len(read['unmatched'])} lines could not be matched to an item)." if read["unmatched"] else "."))
+    mail.keep_reply(found["id"], text or "(Excel sheet)", {"unmatched": read["unmatched"], "dropped": read["dropped"]},
+                    "pasted")
+    if not found["sent_at"]:
+        mail.set_sent(found["id"], True)
+    supply.keep_quote(found, found["file"], read, text)
+    return read
+
+
+@app.post("/api/mails/{mail_id}/quote")
+async def read_quote(mail_id: str, text: str = Form(""), file: UploadFile | None = None):
+    """A supplier's reply to an inquiry: the filled-in Excel sheet, a quote as PDF, or the text of the
+    e-mail pasted in. Read into one line per item; a line that fits no asked item is kept apart."""
+    found = _mail(mail_id)
+    if found["kind"] != supply.PRICE_INQUIRY:
+        raise HTTPException(422, "This message is no price inquiry.")
+    sheet, text = None, text.strip()
+    if file is not None:
+        data = await file.read()
+        name = (file.filename or "").lower()
+        if name.endswith((".xlsx", ".xlsm")):
+            sheet = data
+        elif name.endswith(".pdf"):
+            import pymupdf
+
+            with pymupdf.open(stream=data, filetype="pdf") as doc:
+                text = "\n".join(page.get_text() for page in doc).strip()
+        else:
+            text = data.decode("utf-8", "replace").strip()
+    if sheet is None and len(text) < 10:
+        raise HTTPException(422, "Paste the supplier's reply, or upload the filled-in sheet or the quote as PDF.")
+    read = await _take_quote(found, text, sheet)
+    return {"unmatched": read["unmatched"], "dropped": read["dropped"], "lines": len(read["lines"])}
+
+
+@app.post("/api/analyses/{analysis_id}/supply/replies")
+async def check_quote_replies(analysis_id: str):
+    """Look into the inbox for replies to the inquiries of this LV that have none yet, and read each one."""
+    boq, _ = _analysis(analysis_id)
+    try:
+        replies = mail.find_replies(mail.about(supply.PRICE_INQUIRY, _project_id(analysis_id), boq.file))
+    except mail.MailUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    read = 0
+    for found, text in replies:
+        try:
+            await _take_quote(found, text[:supply.MAX_REPLY_CHARS], None)
+            read += 1
+        except HTTPException as exc:
+            if exc.status_code != 422:  # a reply without prices (a decline, a question back) is left for the person
+                raise
+    return {**_supply_state(analysis_id), "found": len(replies), "read": read}
+
+
+class Choice(BaseModel):
+    package: str
+    mode: str | None  # "single", "split", "assume" (take no quote: past bids), or null to take the choice back
+    quote: str | None = None
+
+
+@app.post("/api/analyses/{analysis_id}/supply/choose")
+def choose_quote(analysis_id: str, body: Choice):
+    """What the estimator takes for a package: one supplier's quote, the cheapest line per item, or none."""
+    kept, _ = _package(analysis_id, body.package)
+    chosen = dict(kept["chosen"])
+    if body.mode is None:
+        chosen.pop(body.package, None)
+    elif body.mode not in ("single", "split", "assume") or (body.mode == "single" and not body.quote):
+        raise HTTPException(422, "mode is single (with a quote), split or assume.")
+    else:
+        chosen[body.package] = {"mode": body.mode, "quote": body.quote if body.mode == "single" else None}
+    supply.change_plan(kept["id"], chosen=chosen)
+    return _supply_state(analysis_id)
+
+
+@app.post("/api/analyses/{analysis_id}/supply/to-bid")
+def quotes_to_bid(analysis_id: str):
+    """Put the prices of the quotes the estimator took into the bid, where a quote is a whole unit price:
+    subcontractors' prices with the firm's surcharge. A supplier's price is the material part only and is
+    not a unit price; those stay beside the bid for the estimator to build on."""
+    boq, _ = _analysis(analysis_id)
+    state = _supply_state(analysis_id)
+    kinds = {row["oz"]: p["kind"] for p in state["packages"] for row in p["items"]}
+    have = bid.entered(_project_id(analysis_id), boq.file)
+    changes = {oz: (bid.price_of(f"{p['unit_price']:.2f}"), "quote") for oz, p in state["prices"].items()
+               if p["status"] == "quoted" and p.get("taken") and kinds.get(oz) == "subcontract" and oz not in have}
+    bid.keep(_project_id(analysis_id), boq.file, changes)
+    return {**_supply_state(analysis_id), "taken": len(changes)}
+
 
 
 class _WebApp(StaticFiles):

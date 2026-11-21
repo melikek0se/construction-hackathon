@@ -649,3 +649,91 @@ prices as entered); it is **not validated against the GAEB schema nor opened in 
 Overheads, surcharges on the whole bid (GU-Zuschlag, Nachlass) and the split into labour / material /
 equipment are not modelled: the unit price is one figure.
 
+## D-042 — The board says where a tender stands: Intake, Check, Pricing, Submitted, Result; questions run beside the prices
+
+**Decided** 2026-11-21 (Atahan, after the research in `reports/Alman ihale teklif aşamaları.md`: "do all of
+it; assume the Gmail MCP will be added"). Changes D-039 in one point (the gate) and D-029 in the columns.
+
+- **A column is where the tender stands, the card's one line is whose move it is.** The line under the six
+  marks starts with POLIER (a run is going), YOU (questions to send, a decision in the intake, a check that
+  did not finish) or CLIENT (questions out, the bid is out); a tender that ended carries how.
+- **Questions is no column and no gate.** No process model and no bid tool found has it as a stage; a bidder
+  can ask until shortly before the bid. `Q-GATE` still says whether the questions are open (run status
+  `waiting`), but `P-PRICES` no longer waits behind it (`held` is gone). `go-on` now closes the questions.
+  A run's view carries `questions` {total, to_send, out, answered}. A plan kept with stage "questions" is
+  read as "check".
+- **Intake** holds only what the agent found (the mail agent to come): `POST /api/projects` with `found`
+  ({via, sender, subject, received}) keeps the files with stage "intake" and starts no run. "Take it on"
+  (PATCH stage "check") starts the checks; "Pass" sets outcome "passed". Files dropped by the estimator are
+  taken on by that and start in Check, as before.
+  Nothing is checked in the intake, the free rules neither: a card with rule findings and no AI findings
+  reads as a finished analysis (`catalog_summary` gives `checked: false` and counts nothing).
+- **Result replaces Award**: `plan.outcome` is won, lost, passed (no bid) or cancelled (by the client); an
+  award among the files is "won" without being said. Set on the card of a submitted tender ("No bid" also
+  from Check and Pricing), and taken back with "Open again".
+- **Left out on purpose** (in the research, not on the board): the price decision and release before the
+  bid (Schlussblatt), the hand-over to the site after the award, the client's requests after submission
+  (Nachforderung, Aufklärung, Bindefristverlängerung), excluded and binding-period-expired as outcomes of
+  their own. The intake's "read" is the deadline only; a real go/no-go needs a company profile.
+
+Revisit if: the mail agent is built (it calls `POST /api/projects` with `found`; whether it reads the LV
+before the estimator decides is open), or an estimator says Check and Pricing are one stage to them (the
+research found Check as preparatory work inside the calculation, not as a stage of its own).
+
+## D-043 — Projects page: the board on top, the schedule one lane docked under it; the card's foot says whose move it is
+
+**Decided** 2026-11-21 (Atahan, after five prototypes of the board and the schedule as one view; he chose
+"the board, the timeline at the bottom, better cards"). Changes D-029 in the order of the page and in what
+the schedule shows; the columns are D-040's.
+
+- **Every tender stands on the page once, as its card.** The schedule no longer has a row per tender. It is
+  one lane stuck to the foot of the window: the line of all deadlines, or the lane of the one tender whose
+  card is pointed at. The count at the top right of a card holds that tender's lane open and lists its
+  dates with where they were read (the old "Dates" button; where no date is ahead the button still says
+  "Dates").
+- **The card**, top to bottom: plate, name, size; the days to the next hard date as its first figure; the
+  fingerprint and the counts (not in the intake); a block that depends on the stage (intake: where it was
+  found; check and pricing: new/gone since the last check, the bidder questions to send / with the client /
+  answered; then what is open, the net, when the work would run); the foot.
+- **The foot is whose move it is (D-040) and the one filled surface of a card**: yellow for YOUR MOVE, the
+  running hazard stripe for Polier, tint for the client or nothing open. The stage select and the result
+  select moved into it. The six station marks left the card (the strip under the band shows them).
+- **Not on the card, on purpose**: a "worst item", a count of items priced from past bids, a mark for a
+  version that arrived after the last check. The prototype showed them with made-up data; the API gives
+  none of them yet (the two agents asked: the price count would show how thin the price history is, and
+  nothing computes money at stake).
+
+- **Revised the same day:** the lane is docked under the band, above the board (Atahan, after seeing it at
+  the foot: "better at the top"). One lane, the cards and the pointing are as decided above; the title's
+  "on top / under it" is the first version.
+
+Revisit if: there are more tenders than a board shows at once and comparing them on the time axis is
+missed (prototype A, one row per tender, was the alternative), or the API gets a worst item per project.
+
+## D-044 — Price inquiries: packages per material group or trade, the estimator sends, quotes compared on cost on site
+
+**Decided** 2026-11-21 (Atahan: "do all of it", after `docs/09-price-inquiries.md`). Builds on D-042.
+
+- Three kinds of item, priced three ways: own work (no inquiry), material (suppliers, the quote is the
+  material part only), a foreign trade (subcontractors, the quote is the whole unit price plus the firm's
+  surcharge, 10 % unless set). Which is which is decided by Claude from the item texts and from what the
+  firm says its own people do (`supply.plan`); the answer is checked against the LV and the directory.
+- An inquiry is a package to at most five directory entries, never a line to everybody.
+- The gate is per item, not per tender (replaces the idea behind D-039's gate): an item with an open
+  question to the client of severity "high" (cannot be priced as written) is in no package until answered;
+  other open questions are asked for and marked provisional. Everything else is asked for at once.
+- The app writes, the estimator sends: no inquiry and no reminder goes out unread. An unknown supplier is
+  never written to by the app on its own (§ 7 UWG, `docs/09`).
+- Replies are forced into our lines: an Excel sheet to fill in goes with every inquiry. Free text and PDF
+  are read by Claude, a line counting only with its passage in the reply and an asked item number.
+- Comparison on cost on site (discount off, freight on, Skonto shown and not worked in), per package; the
+  proposal is rule-made and says why (one complete supplier unless the split saves 3 % or more).
+  Another product than tendered is flagged and never chosen silently.
+- The directory is filled by the estimator and by incoming quotes, not from LVs (they do not say who sells).
+- **The run no longer moves the card** from Check to Pricing: price suggestions being ready is not the
+  estimator pricing. The estimator moves it (changes D-042 in this point).
+- A run's view carries `inquiries` {packages, to_send, out, answered, held}.
+
+Revisit if: a practitioner says how many are really asked and how late answers come (`OPEN_QUESTIONS.md`);
+the unit price gets its split into labour / material / equipment (then a supplier's price can enter the
+bid); the mail agent reads the inbox by itself (then quotes arrive without "Check the inbox").

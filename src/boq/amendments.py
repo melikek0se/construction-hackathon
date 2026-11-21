@@ -78,6 +78,20 @@ def about(project_id: str | None, file: str) -> list[dict]:
     return [_row(r) for r in rows]
 
 
+def tally(project_id: str) -> dict | None:
+    """How the changes from the client's answers stand on a project, for its card: those still to decide
+    (the estimator's move), and of the accepted ones the quantities the client corrected and the allowances;
+    None while no answer has proposed anything."""
+    with db.engine().connect() as conn:
+        rows = conn.execute(select(db.amendments.c.kind, db.amendments.c.status)
+                            .where(db.amendments.c.project_id == project_id)).all()
+    if not rows:
+        return None
+    accepted = [r.kind for r in rows if r.status == "accepted"]
+    return {"proposed": sum(1 for r in rows if r.status == "proposed"), "accepted": len(accepted),
+            "quantities": accepted.count("quantity"), "allowances": accepted.count("allowance")}
+
+
 def find(amendment_id: str) -> dict | None:
     with db.engine().connect() as conn:
         row = conn.execute(select(db.amendments).where(db.amendments.c.id == amendment_id)).first()

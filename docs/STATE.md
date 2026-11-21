@@ -14,6 +14,86 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 ## Done
 
+- Price inquiries to suppliers and subcontractors (2026-11-21, D-044; research and what is built:
+  `docs/09-price-inquiries.md`; `src/boq/supply.py`, tables `suppliers`, `supply_plans`, `quotes`, `settings`;
+  `web/src/Inquiries.tsx`, `Suppliers.tsx`, `supply.css`): view "Price inquiries" on every LV, "Suppliers" in
+  the band. Directory and firm particulars; packages per material group / trade (Claude, also pipeline step
+  `P-INQUIRIES`); German inquiry with an Excel sheet; replies read (sheet, PDF, pasted text, inbox);
+  comparison on cost on site with a proposal; taken subcontractor prices into Utku's bid.
+  Also merged: origin/main e11f93e (Utku: inbox replies, amendments, bid); decisions renumbered (board D-042,
+  docked schedule D-043). The run no longer moves a card from Check to Pricing.
+  Checked: `tests/test_supply.py` (plan held against LV and directory; sheet out and back, two quotes
+  compared, discount, freight, missing item, other product, expired, proposal, choice, directory learns the
+  product; free-text lines kept only with their passage and an asked item), full pytest 197 passed,
+  type-check. In the dev stack on project D (50 items): six example suppliers (`….example` addresses, marked
+  "example"), a plan of five packages **put in by hand**, three inquiries written, three filled-in sheets
+  read back, the view seen in headless Chrome at 1500 wide.
+  With a working key (same evening), on project D through the dev API: the plan by Claude (8 s, 0.03 USD:
+  six packages for 25 of 50 items — pipes, shafts, bulk material for suppliers; asphalt, landscaping,
+  structural analysis for subcontractors, the last with nobody in the directory; item 1.1 held for the
+  client); a made-up reply in free German text read by Claude (9 s, 0.03 USD: the supplier's own numbering
+  1) to 4) matched to our items, one other product flagged, the item it does not make left without a
+  price, an unasked extra kept apart, ex works plus freight, "freibleibend", valid until); the pipeline
+  step on a real run ("6 packages for 25 items to ask outside; 1 with nobody in the directory to ask").
+  Known from that reply: a discount on part of the items only is not worked in (it is said in the terms).
+  A new plan keeps the id of a package that is still mostly the same items, so its inquiries stay with it.
+  Not checked: a quote as PDF, sending through SMTP with the sheet attached, replies found in an inbox, the
+  Suppliers dialog and the composer and reader clicked in a browser, a reminder, "Put the taken
+  subcontractor prices into the bid" in the browser.
+  Not built: suppliers found by web search; the app sending by itself; a supplier's material price inside
+  the bid's unit price; the card line for inquiries (the field `run.inquiries` is there).
+
+- Board by where the tender stands (2026-11-21, D-042; research: `reports/Alman ihale teklif aşamaları.md`):
+  columns Intake · Check · Pricing · Submitted · Result. Questions is no column: the prices no longer wait
+  for the bidder questions (`runs.py`, `pipeline.py`), the questions stay open beside them. Every card has
+  one line on whose move it is (POLIER / YOU / CLIENT, `nowOf` in `Projects.tsx`). Intake is for tenders an
+  agent found (`POST /api/projects` with `found`, no run until "Take it on"); nothing fills it yet, the
+  mail agent is not built. Result holds won, lost, no bid, cancelled (`plan.outcome`).
+  To see an intake card: `curl -X POST localhost:8000/api/projects -F files=@<LV> --form-string
+  'found={"via":"mail","sender":"…","subject":"…","received":"2026-11-21"}'`.
+  Checked: `tests/test_runs.py` (prices done while the questions wait, closing them, intake → taken on
+  starts a run, outcome set and taken back), full pytest 190 passed, type-check; the page in headless
+  Chrome at 1440 wide with one intake card, a "6 questions to send" card, a submitted and two won cards.
+  Clicked through in headless Chrome, no console error: "Pass" (to Result as No bid) and "Open again"
+  (back to Intake), Result "Lost" on a submitted card and back, the stage select Pricing → Check → Pricing,
+  the strip's questions station ("Your move", "Close the questions") with the prices station done beside it.
+  Not checked in the browser: "Take it on" (it starts a paid AI review; the API test covers it), a CLIENT
+  line with questions out, the settings dialog's stage select.
+  In the intake nothing is checked, the rules neither (Atahan: half an analysis on the card confuses): the
+  summary of an intake project has `checked: false`, zero counts and is not kept; the card says "268 items ·
+  not checked yet". Files added to an intake project start no run. Opening an intake project's LV still
+  shows the rule findings there (the LV page runs the rules when a file is opened).
+  Known: a run recorded before this change shows no questions count until the project is run again.
+
+- Projects page, board over a docked schedule (2026-11-21, D-043): the board is on top; the schedule is one
+  lane stuck to the foot of the window (all deadlines, or the lane of the card pointed at; the count on a
+  card holds its lane open with the dates and their sources). New card: countdown top right, fingerprint
+  and counts, a stage block (found / new·gone / questions to send·with client·answered / open / net / work),
+  whose move it is as the filled foot with the stage or result select in it; `RunSegs` is no longer on the
+  card. `web/src/Projects.tsx` (`Card`, `Schedule`, `ProjectsPage`), `home.css` (last two blocks).
+  Checked: `npm run build`; in headless Chrome at 1500 wide against the dev database: the page, a card
+  pointed at (its lane in the dock), a count clicked (lane held, dates and legend listed).
+  Not checked in the browser: the selects in the foot, a POLIER foot (no run was going), drag and drop of
+  files onto a card, widths under 1180px, the page with no project.
+  Revised the same day (Atahan): the lane is docked under the band, not at the foot; it stays there while
+  the board scrolls, and held dates open downwards. Polier is back at the foot of the window. Checked in
+  headless Chrome: the page, a card pointed at, a count clicked.
+  Price inquiries on the card (D-044's `run.inquiries`): a line in the stage block (packages, to send / out /
+  answered, items held for the client) and in the foot: YOUR MOVE "N price inquiries to send" (named with the
+  questions where both wait), else SUPPLIER "N out, M answered" when nothing is the estimator's or the
+  client's move. Checked in headless Chrome on project a1344a2b6dbc (block and foot with both waiting); the
+  SUPPLIER foot was not seen (no project has inquiries out and nothing to send).
+  Answers to decide and the bid on the card: the run view (`GET /api/runs`) carries `decisions`
+  (`amendments.tally`: proposed, accepted, quantities, allowances) and `bid` (`bid.tally`: priced on the
+  fullest file, priced_all, from_suggestions), counted from the tables alone. Card: "The client's answers"
+  (N to decide, quantities corrected, allowances), "Bid · X of N items priced" with a bar and how many came
+  from past bids; the foot names every move of the estimator in one line (questions to send · changes to
+  decide · price inquiries to send). No net and no "bid ready" on the card: both need the LV read (the Bid
+  view has them). `tests/test_card_tallies.py`; seen in headless Chrome on a1344a2b6dbc with rows put in
+  for the look and taken out again. A project without a run shows neither (they ride on the run view).
+  Not built (shown in the prototype with made-up data): worst item per project, "new version, not
+  checked".
+
 - Projects page, band (2026-11-21): two buttons at the top right, "Pipeline" and "New project" (moved up from the
   board's head, which keeps only the drop hint). The schedule is always open: its switch in the band
   (`ScheduleSwitch`) and the sliding wrapper are gone. Checked: type-check, the page in headless Chrome at 1440

@@ -137,6 +137,10 @@ field used for the name was the LV label (the trade), not the project; a PDF's s
 
 ## Home page as schedule and board (2026-11-21, D-029)
 
+The board's columns were researched again the same day and changed (D-042): the full report with its
+sources and their limits is `reports/Alman ihale teklif aşamaları.md`, the notes behind it are in
+`research_notes/`.
+
 Researched the same day: how a tender runs on the contractor's side and what bid tools show per project.
 Hard dates under VOB/A are the submission deadline (§ 10), the question deadline (set by the client, in
 practice 10 to 12 days before submission; above the EU threshold answers are due 6 days before, § 12a EU),

@@ -76,6 +76,23 @@ def keep(project_id: str | None, file: str, prices: dict[str, tuple[Decimal | No
                                                           unit_price=str(price), source=source, updated=db.now()))
 
 
+def tally(project_id: str) -> dict | None:
+    """How far the bid of a project is, for its card: the items with a unit price entered, counted on the
+    LV file that has the most (`priced`: the same LV in two formats is priced once) and over all files
+    (`priced_all`: a project of several trade LVs), and how many were taken from past bids. None while no
+    price is entered. Counted from the kept prices alone: the net needs the LV read, the bid view has it."""
+    with db.engine().connect() as conn:
+        rows = conn.execute(select(db.bid_prices.c.file, db.bid_prices.c.source)
+                            .where(db.bid_prices.c.project_id == project_id)).all()
+    if not rows:
+        return None
+    per_file: dict[str, int] = {}
+    for r in rows:
+        per_file[r.file] = per_file.get(r.file, 0) + 1
+    return {"priced": max(per_file.values()), "priced_all": len(rows),
+            "from_suggestions": sum(1 for r in rows if r.source == "suggestion")}
+
+
 # ------------------------------------------------------------------ the sheet
 
 def sheet(boq: BoQ, suggestions: dict | None, amendments: list[dict], kept: dict[str, dict]) -> dict:

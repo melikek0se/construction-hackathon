@@ -56,7 +56,7 @@ export function ProjectSettings({
   const stated = planOf(found); // what the files give without doubt
   const days = datesOf(p, summary);
   const stage = stageOf(p);
-  const own = stage === "check" || stage === "questions" || stage === "pricing";
+  const own = stage === "intake" || stage === "check" || stage === "pricing";
 
   /** What stands under a date: whether it was set here or read, and what the files say if that differs. */
   const under = (kind: keyof Plan & string, hint: string): { text: string; de?: boolean } => {
@@ -159,7 +159,7 @@ export function ProjectSettings({
               <span>Stage</span>
               <Select
                 value={stage}
-                options={(["check", "questions", "pricing"] as const).map((st) => ({ value: st, label: STAGE_LABEL[st] }))}
+                options={(stage === "intake" ? (["intake", "check", "pricing"] as const) : (["check", "pricing"] as const)).map((st) => ({ value: st, label: STAGE_LABEL[st] }))}
                 disabled={busy}
                 aria-label="Stage of the tender"
                 onChange={(st) => onChange({ stage: st })}
@@ -170,7 +170,7 @@ export function ProjectSettings({
             <p className="np-fact wide">
               <span>Stage</span>
               <b>{STAGE_LABEL[stage]}</b>
-              <small>follows from the files: {stage === "award" ? "an award" : "a bid"} is among them</small>
+              <small>{stage === "submitted" ? "follows from the files: a bid is among them" : p.plan.outcome ? "as said on its card" : "follows from the files: an award is among them"}</small>
             </p>
           )}
 

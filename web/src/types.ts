@@ -186,7 +186,11 @@ export interface Project {
 /** Where a tender stands and its dates. Read from the files where these state them (FoundDate), else set
  *  by the user. Days are YYYY-MM-DD. */
 export interface Plan {
-  stage?: "check" | "questions" | "pricing"; // submitted and award follow from the files
+  // intake: found for the estimator (in the mail), not taken on yet. Submitted follows from the files.
+  stage?: "intake" | "check" | "pricing";
+  // how the tender ended; an award among the files is "won" without being said. passed: no bid was made
+  outcome?: "won" | "lost" | "passed" | "cancelled";
+  found?: { via?: string; sender?: string; subject?: string; received?: string }; // where the agent found it
   due?: string; // submission deadline (Angebotsfrist)
   questions_due?: string; // last day for bidder questions
   sent?: string; // the day the bid went out
@@ -256,6 +260,7 @@ export interface Intake {
 }
 
 export interface ProjectSummary {
+  checked?: boolean; // false in the intake: the files are read, no check has run on them yet (absent on summaries kept before D-042: checked)
   lvs: number;
   items: number;
   counts: Record<Severity, number>;
@@ -488,7 +493,7 @@ export interface Run {
   project_id: string;
   project: string; // its name when the run started
   trigger: string; // "project created", "files added", "started by hand"
-  // waiting: it stopped at the bidder questions and goes on when they are dealt with
+  // waiting: everything else is done and the bidder questions are still open (to send, or with the client)
   status: "queued" | "running" | "waiting" | "done" | "failed" | "interrupted" | "cancelled";
   active: boolean; // queued or running
   stopping: boolean; // asked to stop: it does after the step it is on (an AI step can take a minute)
@@ -502,7 +507,17 @@ export interface Run {
   finished_steps: number;
   counts: Record<Severity, number>;
   usd: number | null;
-  waiting_for: string | null; // what the person has to do, when the run waits
+  waiting_for: string | null; // how the bidder questions stand, while they are open
+  // the bidder questions of the project: to_send is the estimator's move, out is the client's
+  questions: { total: number; to_send: number; out: number; answered: number } | null;
+  // the price inquiries of the project (null: none planned): to_send is the estimator's move, out the suppliers'
+  inquiries: { packages: number; to_send: number; out: number; answered: number; held: number } | null;
+  // changes proposed from the client's answers (null: none yet): proposed is the estimator's move; of the
+  // accepted ones, the quantities the client corrected and the risk allowances
+  decisions: { proposed: number; accepted: number; quantities: number; allowances: number } | null;
+  // the bid (null: no price entered): items with a unit price on the LV file that has the most, over all
+  // files (several trade LVs), and how many of them were taken from past bids
+  bid: { priced: number; priced_all: number; from_suggestions: number } | null;
   since: { new: number; gone: number } | null; // against the run before it on this project
 }
 
@@ -565,4 +580,118 @@ export interface Bid {
   file: string;
   format: string;
   x84: boolean; // the bid can be downloaded as GAEB XML phase 84
+}
+
+/* ------------------------------------------------------------------ price inquiries (src/boq/supply.py) */
+
+/** An entry of the directory: a supplier of material, or a subcontractor for a whole trade. */
+export interface Supplier {
+  id: string;
+  name: string;
+  kind: "supplier" | "subcontractor";
+  email: string;
+  contact: string;
+  phone: string;
+  place: string;
+  groups: string[]; // material groups or trades, as words
+  products: { name: string; maker: string }[]; // what it offered in quotes, or is known to sell
+  note: string;
+  source: "user" | "quote" | "web" | "demo";
+  created: string;
+}
+
+/** The firm's own particulars, which every inquiry carries. */
+export interface Company {
+  name: string;
+  contact: string;
+  email: string;
+  phone: string;
+  place: string;
+  own_trades: string; // what the firm does itself; everything else is a subcontractor's
+  nu_surcharge: number; // per cent on a subcontractor's price
+}
+
+export interface QuoteLine {
+  oz: string;
+  unit_price: number; // as quoted
+  net: number; // after the quote's discount
+  unit: string;
+  product: string;
+  alternative: boolean; // another product than tendered
+  unit_differs: boolean; // priced in another unit than asked: not comparable as it stands
+  note: string;
+  quote: string | null; // the passage of the reply, for a quote read from free text
+}
+
+export interface QuoteColumn {
+  quote: string;
+  supplier_id: string;
+  supplier: string;
+  date: string;
+  terms: { basis: "free_to_site" | "ex_works" | "unknown"; freight: number | null; discount_pct: number | null; skonto: string; valid_until: string; binding: string; note: string };
+  covered: number;
+  goods: number;
+  freight: number;
+  total: number; // goods after discount, plus freight: what the package costs on site
+  flags: string[];
+  lines: Record<string, QuoteLine>;
+}
+
+export interface Comparison {
+  columns: QuoteColumn[];
+  single: string | null; // the cheapest quote that prices every item
+  split: { lines: Record<string, { quote: string; net: number }>; total: number; suppliers: number; covered: number };
+  proposal: { mode: "single" | "split"; quote: string | null; why: string } | null;
+}
+
+export interface SupplyPackage {
+  id: string;
+  name: string; // German, as on the inquiry
+  kind: "material" | "subcontract";
+  why: string;
+  items: { oz: string; label: string; qty: number | null; unit: string; provisional: string | null }[];
+  ask: {
+    supplier_id: string;
+    supplier: string;
+    email: string;
+    mail: { id: string; to: string; sent_at: string | null; created: string; via: string; subject: string; reminders: number } | null;
+    quote: string | null;
+    status: "new" | "drafted" | "sent" | "answered";
+  }[];
+  comparison: Comparison;
+  chosen: { mode: "single" | "split" | "assume"; quote: string | null } | null;
+}
+
+/** Where the price of an item comes from, as it stands. */
+export interface ItemPrice {
+  status: "waits" | "at_hand" | "quoted" | "asked" | "assumed" | "own";
+  unit_price?: number;
+  source?: string;
+  date?: string;
+  valid_until?: string | null;
+  part?: string; // "material", or the whole unit price
+  taken?: boolean; // the estimator took this quote (else it is the proposal)
+  alternative?: boolean;
+  why?: string;
+}
+
+export interface SupplyState {
+  lv: { name: string; file: string; number: string };
+  due: string | null;
+  binding_until: string | null;
+  reply_by: string | null;
+  account: string | null;
+  inbox: string | null;
+  company: Company;
+  suppliers: Supplier[];
+  priced_file: boolean;
+  plan: { id: string; created: string } | null;
+  packages: SupplyPackage[];
+  waits: { oz: string; label?: string; question: string }[]; // cannot be priced as written: not asked for until answered
+  released: string[]; // held when the plan was made, answered since
+  prices: Record<string, ItemPrice>;
+  counts: Record<string, number>;
+  found?: number;
+  read?: number;
+  taken?: number;
 }

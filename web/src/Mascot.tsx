@@ -7,12 +7,13 @@
    - when the pointer comes close it leans in; over it, it looks at you and smiles with its eyes
    - click: it crouches, hops, lands with a squash; files dragged over the page: it bounces, excited
    - blinks at random, sometimes twice, and on big gaze shifts
-   - now and then it turns its back, in a three-quarter turn (the cheeks to one side, the face free on the other), shows two
+   - now and then, on its own, one of three bits (the turn-around most often, then the split, the strip least):
+     it turns its back, in a three-quarter turn (the cheeks to one side, the face free on the other), shows two
      big round cheeks (the body itself swelling out, so the only line is the cleft between them) and bounces them up and down together (long on the way up, piled flat and wide at the
      bottom), looking
      back at you over its shoulder (the eyes slide round the head) with lowered lids, a blush and a wink, then
      turns to the front again
-   - the strip (never on its own, only when asked): a pole dance, at full size. The free mascot draws on a
+   - the strip: a pole dance, at full size. The free mascot draws on a
      canvas three times its box (up and to the left, where the page has room), so it can leave its corner.
      A scaffold tube drops in beside it and two round hands in yellow gloves appear (only for the strip);
      it takes hold and sways, swings round the tube twice with one arm
@@ -360,7 +361,9 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
     let cheekX = CHEEK.x, cheekY = CHEEK_Y; // where the right cheek's centre is now, for the hands
     let splitT = -1;
     const tmp = new THREE.Vector3();
-    let moonIn = rand(18, 40), moonT = -1;
+    // the three bits it does on its own (the turn-around, the split, the strip): one clock for all of them,
+    // counting only while none is playing, so the pause is between the end of one and the start of the next
+    let bitIn = rand(18, 40), moonT = -1;
 
     const hop = () => {
       if (!calm && hopT < 0) hopT = 0;
@@ -391,11 +394,18 @@ export function Mascot({ size = 120, crop = true, free = false, title = "Polier"
       const near = pointer.at > 0 && dist < 220;
 
       // where to look
-      moonIn -= dt;
-      if (moonIn <= 0 && moonT < 0 && stripT < 0 && splitT < 0 && !calm && !dragging && bounceT <= 0 && hopT < 0 && !over) moonT = 0;
+      const idle = moonT < 0 && stripT < 0 && splitT < 0;
+      if (idle) bitIn -= dt;
+      if (bitIn <= 0 && idle && !calm && !dragging && bounceT <= 0 && hopT < 0 && !over) {
+        const pick = Math.random(); // mostly the turn-around; the strip, the longest, least often
+        if (pick < 0.5) moonT = 0;
+        else if (pick < 0.8) splitT = 0;
+        else stripT = 0;
+        bitIn = rand(30, 70);
+      }
       if (moonT >= 0) {
         moonT += dt;
-        if (moonT > MOON_FOR || dragging) { moonT = -1; moonIn = rand(30, 70); }
+        if (moonT > MOON_FOR || dragging) moonT = -1;
       }
       const mooning = moonT >= 0;
       if (stripT >= 0) {
