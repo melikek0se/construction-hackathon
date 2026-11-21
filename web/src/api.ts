@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, Finding, Prices, Sample, WhatIfResult } from "./types";
+import type { Adjustment, Analysis, Finding, Prices, Project, Sample, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -24,6 +24,26 @@ export async function analyzeFile(file: File): Promise<Analysis> {
   const form = new FormData();
   form.append("file", file);
   return read(await fetch("/api/analyze", { method: "POST", body: form }));
+}
+
+/** Dataset folders that hold the trade LVs of one building. */
+export async function listSampleProjects(): Promise<{ folder: string; files: number }[]> {
+  return read(await fetch("/api/projects/samples"));
+}
+
+export async function openSampleProject(folder: string): Promise<Project> {
+  return read(await fetch(`/api/projects/sample?folder=${encodeURIComponent(folder)}`));
+}
+
+export async function createProject(files: File[]): Promise<Project> {
+  const form = new FormData();
+  for (const file of files) form.append("files", file);
+  return read(await fetch("/api/projects", { method: "POST", body: form }));
+}
+
+/** An LV the server analysed earlier, e.g. one LV of a project. */
+export async function loadAnalysis(id: string): Promise<Analysis> {
+  return read(await fetch(`/api/analyses/${id}`));
 }
 
 /** Unit-price suggestions from past bids; null when the LV has prices already. */

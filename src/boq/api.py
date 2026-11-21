@@ -18,6 +18,7 @@ from boq.env import load_env
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
 from boq.prices import load_history, suggest_prices
+from boq.project import analyse_project, lv_name
 from boq.report import build_report, render_html, render_questions
 from boq.whatif import Scenario, what_if
 
@@ -34,10 +35,10 @@ app = FastAPI(title="BoQ analysis")
 # a restart forgets them and the user uploads again.
 _ANALYSES: OrderedDict[str, tuple[BoQ, list[Finding]]] = OrderedDict()
 _LLM_FINDINGS: dict[str, list[Finding]] = {}  # AI findings of an analysis, once the review has run
-_KEEP = 20
+_KEEP = 120  # a project of thirty trade LVs must stay openable LV by LV
 
 
-def _analyze(path: Path, name: str) -> dict:
+def _parse(path: Path, name: str) -> BoQ:
     try:
         boq = parse_file(str(path))
     except Exception as exc:  # malformed upload: report it, do not crash the server
@@ -48,13 +49,41 @@ def _analyze(path: Path, name: str) -> dict:
     if not boq.items:
         raise HTTPException(422, f"No LV items found in {name}. PDFs need a text layer and a printed "
                                  f"item list (item number, description, quantity, unit).")
+    return boq
+
+
+def _store(boq: BoQ) -> tuple[str, list[Finding]]:
     findings = run_checks(boq)
     analysis_id = uuid.uuid4().hex
     _ANALYSES[analysis_id] = (boq, findings)
     while len(_ANALYSES) > _KEEP:
         _LLM_FINDINGS.pop(_ANALYSES.popitem(last=False)[0], None)
+    return analysis_id, findings
+
+
+def _dump(analysis_id: str, boq: BoQ, findings: list[Finding]) -> dict:
     return {"id": analysis_id, "boq": boq.model_dump(mode="json"),
             "findings": [f.model_dump(mode="json") for f in findings]}
+
+
+def _analyze(path: Path, name: str) -> dict:
+    boq = _parse(path, name)
+    analysis_id, findings = _store(boq)
+    return _dump(analysis_id, boq, findings)
+
+
+def _project(name: str, boqs: list[BoQ]) -> dict:
+    """Analyse each LV on its own, then what the LVs expect from each other."""
+    lvs, rows = {}, []
+    for boq in boqs:
+        label = lv_name(boq)
+        while label in lvs:  # two files of the same name
+            label += " (2)"
+        analysis_id, findings = _store(boq)
+        lvs[label] = boq
+        rows.append({"name": label, "file": boq.file, "analysis_id": analysis_id, "items": len(boq.items),
+                     "counts": {s: sum(f.severity == s for f in findings) for s in ("high", "warn", "info")}})
+    return {"name": name, "lvs": rows, **analyse_project(lvs)}
 
 
 def _samples() -> dict[str, Path]:
@@ -78,6 +107,53 @@ async def analyze_upload(file: UploadFile):
         path = Path(tmp) / f"upload{suffix}"
         path.write_bytes(data)
         return _analyze(path, name)
+
+
+@app.get("/api/analyses/{analysis_id}")
+def get_analysis(analysis_id: str):
+    """An LV analysed earlier in this server process, e.g. one LV of a project."""
+    boq, findings = _analysis(analysis_id)
+    return _dump(analysis_id, boq, sort_findings(findings + _LLM_FINDINGS.get(analysis_id, [])))
+
+
+@app.post("/api/projects")
+async def create_project(files: list[UploadFile]):
+    """Several LVs of one building: each is analysed, then the interfaces between them."""
+    if len(files) < 2:
+        raise HTTPException(422, "A project needs at least two LV files.")
+    boqs = []
+    with tempfile.TemporaryDirectory() as tmp:
+        for n, file in enumerate(files):
+            name = Path(file.filename or f"upload{n}").name
+            suffix = Path(name).suffix.lower()
+            if suffix not in SUPPORTED:
+                raise HTTPException(415, f"{name}: {suffix or 'this file type'} is not supported.")
+            path = Path(tmp) / f"upload{n}{suffix}"
+            path.write_bytes(await file.read(MAX_BYTES + 1))
+            boqs.append(_parse(path, name))
+    return _project(f"{len(boqs)} LVs", boqs)
+
+
+def _sample_projects() -> dict[str, list[Path]]:
+    """Dataset folders that hold the trade LVs of one building (files named LV_<nr>_<trade>)."""
+    folders: dict[str, list[Path]] = {}
+    for rel, path in _samples().items():
+        if path.name.startswith("LV_"):
+            folders.setdefault(rel.split("/")[0], []).append(path)
+    return {folder: files for folder, files in folders.items() if len(files) >= 2}
+
+
+@app.get("/api/projects/samples")
+def list_sample_projects():
+    return [{"folder": folder, "files": len(files)} for folder, files in _sample_projects().items()]
+
+
+@app.get("/api/projects/sample")
+def open_sample_project(folder: str):
+    files = _sample_projects().get(folder)
+    if files is None:
+        raise HTTPException(404, f"No project folder {folder} in the dataset.")
+    return _project(folder.split("_", 1)[-1].replace("_", " "), [_parse(p, p.name) for p in files])
 
 
 @app.get("/api/samples")
