@@ -359,9 +359,13 @@ Status: decided · 2026-11-21 (Atahan, after comparing three options each as a c
   on the slant; schedule rows are uncovered one after the other, a board card keeps a tape across it until
   its files are read. The one-off wipes also run with "reduce motion" set (the loops do not): a deliberate
   exception for the demo, to be reversed in `home.css` if the product is used for real.
-- **The band is a length of tape** (Atahan: the header fell behind the opening). Hazard stripes along both
-  edges, 66px, nothing on it but the brand and the page's controls. Tried and dropped the same day: words
-  running along the band (read as buttons) and the opening ending with a tape straightening into the band.
+- **The band** (Atahan, after four header options as a mock-up): yellow, 70px, one hazard stripe along the
+  lower edge at twice the tape's height (18px), nothing along the top, nothing on it but the brand and the
+  page's controls. Tried and dropped: words running along the band (read as buttons), the opening ending
+  with a tape straightening into the band, a stripe along both edges, a white header with a slanted plate.
+- **The dialog is a site sign** (Atahan, from three options): a white board on two posts, the title on a
+  yellow plate cut on the slant like the opening, set up from below. Dropped: a hazard-striped frame with the
+  opening's tapes behind it, a panel lowered on crane cables with a storey-by-storey progress rail.
 - **Columns added to a table are added to an existing database on start** (`db._add_new_columns`); D-026's
   "a column change means a new database" still holds for every other change.
 

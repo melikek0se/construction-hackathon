@@ -97,7 +97,7 @@ components:
   band:
     backgroundColor: "{colors.signal-yellow}"
     textColor: "{colors.ink}"
-    height: "66px"
+    height: "70px"
     padding: "4px 20px"
   button-primary:
     backgroundColor: "{colors.signal-yellow}"
@@ -199,7 +199,7 @@ Recorded from the build on 2026-11-21 (`web/src/styles.css`, last matching rule;
 
 The team's brief, binding: keep the yellow tone and the "under construction" image; yellow and white;
 industrial but modern; nothing round, nothing soft, nothing huge. The build answers with a white sheet under
-one yellow band. The band, 66px high with a black-and-yellow hazard stripe along both edges (a length of barrier tape) and a
+one yellow band. The band, 70px high with one black-and-yellow hazard stripe, 18px, along its lower edge and a
 tower-crane mark as the logo, is the one piece of site on every page. Everything below it is a register: hairline
 rules, square corners, 12 to 15px text, small tracked capitals for labels, tabular figures.
 
@@ -356,9 +356,9 @@ container, button or badge is round or pill-shaped.
 ## Components
 
 ### Band
-The site, once per page, and a length of barrier tape: signal yellow, at least 66px high, a 9px hazard stripe
-along both edges (the same stripe as the loading tapes). It carries no lettering beyond the brand: words
-running along it were tried and read as buttons. Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
+The site, once per page: signal yellow, at least 70px high, one hazard stripe along its lower edge, 18px,
+twice the height of the stripe on the tapes; nothing along the top. It carries no lettering beyond the brand:
+words running along it were tried and read as buttons, a stripe along both edges was tried and dropped. Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
 brand style; in the workspace the brand is the way back to the projects. Then the open project (15px, 600) over
 a file line (12.5px, yellow ink); a created project's name is an input that shows its frame only on hover and
 focus. Right: actions.
@@ -418,10 +418,13 @@ stage select. Hover: ink outline, pale yellow. While its files are being read a 
 across it; the tape is wiped off to the right when the numbers arrive.
 
 ### New-project dialog
-The one modal, and the one heavy frame: a 2px ink border, a yellow header with a 2px ink rule under it, on a
-white veil. First a dashed drop zone; then two columns, the files with the step each belongs to (three-way
+The one modal, drawn as a site sign: a white board with a 2px ink frame standing on two 14px ink posts that
+run down out of the window, on a white veil. Its title (Barlow Condensed 700, 20px) stands on a yellow plate
+at the left of the head, cut off on the slant with a hazard stripe along the cut, as the opening cuts the
+yellow away; the rest of the head is white with a 2px ink rule under it. It is set up from below (520ms).
+First a dashed drop zone; then two columns, the files with the step each belongs to (three-way
 switch, the evidence beneath, a yellow "check" tag where the step was inferred) and what was read about the
-tender with its source, plus the two dates no file carries. Footer: a status line, Discard, the primary
+tender with its source, plus the two dates no file carries. Footer (tint): a status line, Discard, the primary
 button; while files are kept a hazard stripe runs along its upper edge. While files are dragged over the page
 a pale-yellow veil with a 2px dashed ink border says "Drop to read the files".
 
@@ -486,7 +489,7 @@ how to read it.
 ## Do's and Don'ts
 
 ### Do:
-- **Do** start every page with the band: yellow, 66px, hazard stripe along both edges, crane mark and "LV CHECK" at the left.
+- **Do** start every page with the band: yellow, 70px, one 18px hazard stripe below, crane mark and "LV CHECK" at the left.
 - **Do** keep the ground white and divide with 1px lines (`rule` between rows, `line-2` around controls and cards).
 - **Do** keep text between 12 and 15px, labels at 11px 600 capitals with 0.1em tracking, and figures tabular.
 - **Do** show severity as sign plus colour: red circle, yellow triangle, blue square, with the count beside it.

@@ -836,13 +836,34 @@
   background: #fff;
   border: 2px solid var(--ink);
   color: var(--ink);
-  overflow: hidden;
+  overflow: visible; /* its posts stand out below it */
 }
 
+/* The dialog is a site sign: a white board on two posts, its title on a yellow plate cut off on the slant
+   the way the opening cuts the yellow away. It is set up from below. */
 .new-project[open] {
   display: flex;
   flex-direction: column;
-  animation: dialog-in 260ms var(--ease) both;
+  animation: dialog-in 520ms var(--ease) both;
+}
+
+.new-project::before,
+.new-project::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 2px);
+  width: 14px;
+  height: 100vh;
+  background: var(--ink);
+  pointer-events: none;
+}
+
+.new-project::before {
+  left: 13%;
+}
+
+.new-project::after {
+  right: 13%;
 }
 
 .new-project::backdrop {
@@ -857,11 +878,7 @@
 
 @keyframes dialog-in {
   from {
-    clip-path: inset(0 0 100% 0);
-    translate: 0 -10px;
-  }
-  to {
-    clip-path: inset(0 0 0 0);
+    translate: 0 60vh;
   }
 }
 
@@ -874,28 +891,50 @@
 .new-project > header {
   flex: none;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 14px;
-  padding: 9px 14px;
-  background: var(--yellow);
+  min-height: 48px;
+  padding: 0 14px 0 0;
+  background: #fff;
   border-bottom: 2px solid var(--ink);
   font-size: 13px;
-  color: var(--yellow-ink);
+  color: var(--mute);
 }
 
+/* the title plate: yellow, ending in a slanted hazard stripe */
 .new-project > header b {
-  font-size: 12px;
+  position: relative;
+  isolation: isolate;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 0 62px 0 16px;
+  background: var(--hazard);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
+  font-family: var(--display);
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  line-height: 1;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--ink);
+}
+
+.new-project > header b::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--yellow);
+  clip-path: polygon(0 0, calc(100% - 20px) 0, calc(100% - 44px) 100%, 0 100%);
 }
 
 .new-project > header em {
   margin-left: 10px;
   padding: 1px 6px;
-  background: var(--ink);
-  color: var(--yellow);
+  background: var(--yellow);
+  color: var(--ink);
   font-style: normal;
   font-size: 11px;
   font-weight: 700;
@@ -905,13 +944,6 @@
 
 .new-project > header button {
   margin-left: auto;
-  align-self: center;
-  border-color: var(--ink);
-}
-
-.new-project > header button:hover:not(:disabled) {
-  background: var(--ink);
-  color: var(--yellow);
 }
 
 .np-drop {
@@ -1178,6 +1210,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
+  background: var(--tint);
   border-top: 1px solid var(--rule);
 }
 
@@ -1387,7 +1420,7 @@
   }
 
   .new-project[open] {
-    animation: dialog-in 260ms var(--ease) both !important;
+    animation: dialog-in 520ms var(--ease) both !important;
   }
 }
 

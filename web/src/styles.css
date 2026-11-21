@@ -239,13 +239,13 @@ input[type="search"]::placeholder {
   display: flex;
   align-items: center;
   gap: 22px;
-  min-height: 66px;
+  min-height: 70px;
   padding: 4px 20px;
   background: var(--yellow);
-  /* the band is a length of barrier tape: hazard stripes along both edges, as on the tapes of the opening
-     and of loading; no lettering on it beyond the brand */
-  border-block: 9px solid;
-  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 9px, var(--yellow) 9px 18px) 9;
+  /* yellow with one hazard stripe along its lower edge, twice as high as the stripe on the tapes of the
+     opening and of loading; nothing along the top, no lettering beyond the brand */
+  border-bottom: 18px solid;
+  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 9px, var(--yellow) 9px 18px) 18;
 }
 
 
