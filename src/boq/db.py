@@ -197,6 +197,17 @@ quotes = Table(
     Column("text", Text, nullable=False, default=""),  # the reply as it arrived
 )
 
+# What Polier did, one row per thing (boq.events): read by the estimator after being away.
+events = Table(
+    "events", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("created", DateTime(timezone=True), nullable=False, index=True),
+    Column("project_id", String(32), index=True),
+    Column("kind", String(16), nullable=False),  # tender, answer, quote, asks, decline, released, run, call
+    Column("text", Text, nullable=False),
+    Column("move", String(16), nullable=False, default=""),  # whose move it leaves: you, client, supplier, ""
+)
+
 # Small facts about the firm itself that every inquiry carries (boq.supply.company): one row per key.
 settings = Table(
     "settings", metadata,

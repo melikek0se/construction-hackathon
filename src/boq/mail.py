@@ -178,6 +178,14 @@ def about(kind: str, project_id: str | None, file: str) -> list[dict]:
     return [_row(r) for r in rows]
 
 
+def unanswered(kind: str) -> list[dict]:
+    """Every message of one kind, of all projects, that went out and has no reply read into it yet."""
+    with db.engine().connect() as conn:
+        rows = conn.execute(select(db.mails).where(db.mails.c.kind == kind, db.mails.c.sent_at.isnot(None),
+                                                   db.mails.c.reply.is_(None)).order_by(db.mails.c.created)).all()
+    return [_row(r) for r in rows]
+
+
 def set_sent(mail_id: str, sent: bool) -> None:
     with db.engine().begin() as conn:
         conn.execute(update(db.mails).where(db.mails.c.id == mail_id).values(sent_at=db.now() if sent else None))

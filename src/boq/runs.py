@@ -27,7 +27,7 @@ from pathlib import Path
 
 from sqlalchemy import insert, select, update
 
-from boq import amendments, bid, catalog, db, pipeline, spend, supply
+from boq import amendments, bid, catalog, db, events, pipeline, spend, supply
 from boq import intake as intake_rules
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
@@ -338,6 +338,18 @@ def _work(run: dict, results: dict | None = None) -> None:
         waiting = any(r["status"] == "waiting" for r in rows)
         with _lock:
             run.update(status="waiting" if waiting else "done", finished=_now())
+        if not run.get("told"):  # said once per run, not again each time a waiting run is taken up
+            run["told"] = True
+            found = {"high": 0, "warn": 0, "info": 0}
+            for r in rows:
+                if not r["report"] and not r.get("twin"):
+                    for severity, n in (r["counts"] or {}).items():
+                        found[severity] += n
+            said = [r["detail"] for r in rows if r["step"] in ("Q-DRAFT", "P-INQUIRIES") and r["status"] == "done" and r["detail"]]
+            events.record(project["id"], "run", f"The checks ran on {len(order)} file{'' if len(order) == 1 else 's'}: "
+                          f"{found['high']} stop{'' if found['high'] == 1 else 's'}, {found['warn']} caution{'' if found['warn'] == 1 else 's'}, "
+                          f"{found['info']} note{'' if found['info'] == 1 else 's'}." + "".join(f" {d[0].upper()}{d[1:]}." for d in said),
+                          "you" if waiting else "")
         # The run does not move the tender along the board: price suggestions being ready is not the
         # estimator pricing. The card stays in Check until the estimator moves it (D-044).
     except _Cancelled:

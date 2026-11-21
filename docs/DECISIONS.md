@@ -796,3 +796,23 @@ Status: decided · 2026-11-22 (Atahan: "implement all of it"). Changes D-044 in 
 
 Revisit if: a legal read says a first inquiry to a published address needs more than the estimator's own
 send; the card should weigh into who is asked by rule and not only as a hint to the model.
+
+## D-048 — The mailbox is watched by the server; what Polier did is on record; a hand-over sheet for the site
+
+**Decided** 2026-11-22 (Atahan: "do all of it", items 2 and 3 of that morning's list). Builds on D-045.
+
+- **Sweep** (`sweep_inbox` in `api.py`, `POST /api/inbox/sweep`, a task in `lifespan` every three minutes
+  where an inbox is set): one look for answers to bidder questions and replies to price inquiries of every
+  project, and for new tenders. What is found is read and applied as if pasted. Sending stays with the
+  estimator; reading, matching and preparing the next step do not need a click.
+- **Record** (`src/boq/events.py`, table `events`, `GET /api/events`): one line per thing the app did or
+  read (tender found, answer read, quote read, asks back, decline, run ended), with whose move it leaves.
+  Shown as "What Polier did" in the Pipeline dialog.
+- **Hand-over sheet** (`render_handover`, `GET /api/analyses/{id}/handover.html`, linked from the Bid view):
+  the findings ordered by VOB/B §2 mechanism with what the site has to do for the claim to stand, the
+  bidder questions with the client's answers (and the ones never asked, with the warning that silence can
+  cost a claim), what the answers changed, the prices that rest on an assumption. No new analysis.
+- **Hindsight test of the findings** (`scripts/eval_findings.py`): not a number for the pitch. The dataset's
+  later files change no quantities; the only signal is token prices in bids (40 items), and the findings
+  point at them barely more often than at other items (rules: 18 % against 7 %; with the AI review 25 %
+  against 19 %). The dataset holds no ground truth for LV defects.

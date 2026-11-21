@@ -387,6 +387,22 @@ export async function getPartners(): Promise<PartnersOverview> {
   return read(await fetch("/api/partners"));
 }
 
+// The partners page is not needed to show the projects, so nothing of it is asked for while they load. Once
+// they stand, the directory is read in the background (App.tsx), and the page opens on that copy and reads
+// it again behind it; if the button is pressed first, the page reads it itself.
+let warm: PartnersOverview | null = null;
+
+export function warmPartners(): void {
+  getPartners().then((d) => (warm = d), () => undefined);
+}
+
+/** The copy read in the background, once: a later visit reads afresh. */
+export function takeWarmPartners(): PartnersOverview | null {
+  const d = warm;
+  warm = null;
+  return d;
+}
+
 export async function getPartner(id: string): Promise<PartnerProfile> {
   return read(await fetch(`/api/partners/${id}`));
 }

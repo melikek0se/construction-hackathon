@@ -20,6 +20,7 @@ import {
   saveCompany,
   saveDiscovery,
   saveSupplier,
+  takeWarmPartners,
   type HistoryRead,
 } from "./api";
 import { Select } from "./controls";
@@ -72,7 +73,8 @@ export function PartnersPage({
   onOpenTender: (projectId: string, file: number) => void;
   onChanged: () => void;
 }) {
-  const [data, setData] = useState<PartnersOverview | null>(null);
+  // the copy read in the background after the projects page stood, if there is one; read again right away
+  const [data, setData] = useState<PartnersOverview | null>(takeWarmPartners);
   const [searches, setSearches] = useState<PartnerSearch[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");

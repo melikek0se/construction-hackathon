@@ -592,6 +592,61 @@ function RunsTable({ projects, runs, onOpen }: { projects: { id: string; name: s
   );
 }
 
+/* ------------------------------------------------------------------ what Polier did */
+
+interface Happening {
+  id: number;
+  at: string;
+  project_id: string | null;
+  project: string;
+  kind: string; // tender, answer, quote, asks, decline, released, run, call
+  text: string;
+  move: "you" | "client" | "supplier" | "";
+}
+
+const MOVE = { you: "Your move", client: "With the client", supplier: "With the supplier", "": "" } as const;
+
+/** What Polier did on its own, newest first (src/boq/events.py): mail read, quotes compared, checks run.
+ *  The record to read after being away; a line that leaves the next move with the estimator says so. */
+function Happened({ projectId, at }: { projectId: string | null; at: string }) {
+  const [list, setList] = useState<Happening[] | null>(null);
+  const [all, setAll] = useState(false);
+  useEffect(() => {
+    const load = () =>
+      fetch(`/api/events${projectId ? `?project=${encodeURIComponent(projectId)}` : ""}`)
+        .then((r) => (r.ok ? r.json() : []))
+        .then(setList, () => setList([]));
+    void load();
+    const t = window.setInterval(load, 20000);
+    return () => window.clearInterval(t);
+  }, [projectId, at]);
+  if (!list || list.length === 0) return null;
+  const shown = all ? list : list.slice(0, 6);
+  return (
+    <section className="happened" aria-label="What Polier did">
+      <h3>What Polier did</h3>
+      <ol>
+        {shown.map((e) => (
+          <li key={e.id} className={e.move === "you" ? "is-yours" : undefined}>
+            <time dateTime={e.at} title={new Date(e.at).toLocaleString("de-DE")}>
+              {ago(e.at)}
+            </time>
+            <span>
+              {!projectId && e.project && <b lang="de">{e.project}</b>} {e.text}
+            </span>
+            {e.move && <em>{MOVE[e.move]}</em>}
+          </li>
+        ))}
+      </ol>
+      {list.length > 6 && (
+        <button className="text-link" onClick={() => setAll(!all)}>
+          {all ? "Show the newest only" : `Show all ${list.length}`}
+        </button>
+      )}
+    </section>
+  );
+}
+
 export function RunsDialog({
   runs,
   project,
@@ -638,6 +693,7 @@ export function RunsDialog({
         </button>
       </header>
       <div className="runs-body">
+        <Happened projectId={project?.id ?? null} at={runs.map((r) => `${r.id}${r.status}${r.finished_steps}`).join()} />
         <SpendAudit projectId={project?.id ?? null} at={runs.map((r) => `${r.id}${r.status}${r.finished_steps}`).join()} />
         {project && runs.length === 0 && (
           <p className="runs-empty">

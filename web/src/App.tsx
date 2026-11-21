@@ -17,7 +17,7 @@ import { WhatIfView } from "./WhatIf";
 import { BidView } from "./Bid";
 import { InquiriesView } from "./Inquiries";
 import { QuestionsView } from "./Questions";
-import { PartnersPage } from "./Partners";
+
 import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type PartnersPlace, type Route } from "./router";
 import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
@@ -33,6 +33,10 @@ const VIEWS: [View, string][] = [
   ["bid", "Bid"], // the estimator's unit prices on the LV, and the file that goes back (X84)
 ];
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
+// The partners page is its own piece of the build: fetched when it is opened, or in the background once
+// the page the app opened on stands (see `warmed` below), never before it.
+const loadPartners = () => import("./Partners");
+const PartnersPage = lazy(() => loadPartners().then((m) => ({ default: m.PartnersPage })));
 const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
 // A link straight into a project or a file: the page opens behind the sheet, without the opening.
@@ -1129,6 +1133,7 @@ export default function App() {
       )}
 
       {partners ? (
+        <Suspense fallback={null}>
         <PartnersPage
           place={partners}
           onPlace={setPartners}

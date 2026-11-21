@@ -74,6 +74,7 @@ uv run pytest -q                       # parsers, checks and API against dataset
 uv run python scripts/eval_pdf_parser.py -v   # PDF parser score against the GAEB twins; run after touching pdf.py
 uv run python scripts/eval_prices.py -v       # back-test of the price suggestions; run after touching prices.py
 uv run python scripts/eval_intake.py -v       # intake (project name, step per file) against the hand mapping; run after touching intake.py or a parser
+uv run python scripts/eval_planted.py --llm -v  # planted faults found by the checks (asks Claude: costs money); eval_findings.py is the hindsight test
 python3 scripts/inspect_dataset.py     # dataset inventory, priced totals (stdlib only)
 ```
 

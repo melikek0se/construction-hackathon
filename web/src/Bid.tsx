@@ -86,6 +86,10 @@ export function BidView({
           <a className="text-link" href={`/api/analyses/${analysisId}/bid.csv`} download>
             Download as sheet (CSV)
           </a>
+          {/* for the site, once the job is won: where a change order can arise and what the client was asked */}
+          <a className="text-link" href={`/api/analyses/${analysisId}/handover.html`} target="_blank" rel="noopener" title="What the estimating found and the site needs to know: change-order points, the client's answers, prices on assumptions">
+            Hand-over sheet for the site
+          </a>
         </div>
       </div>
 

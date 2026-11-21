@@ -383,3 +383,92 @@ def render_html(report: dict) -> str:
                    + (f'. Related items: {e(", ".join(f["related_oz"][:12]))}' if f["related_oz"] else '') + '</p></div></div>')
     out.append('</div></body></html>')
     return "".join(out)
+
+
+# ---------------------------------------------------------------- the hand-over to the site
+
+def render_handover(boq: BoQ, findings: list[Finding], questions: list[dict], amendments: list[dict],
+                    assumed: list[dict], project: str = "") -> str:
+    """What the estimator knows about this LV and the site manager does not, on one page: written when the
+    job is won, read before the work starts. Per mechanism of VOB/B §2 the items where a change order can
+    arise and what has to be done on site for the claim to stand; what was asked of the client and how it
+    was answered; what the client left open; the prices that rest on an assumption.
+
+    `questions`: the bidder questions as they stand (mail.standing). `amendments`: what the client's
+    answers changed, as decided (boq.amendments). `assumed`: items priced on an assumption, each with
+    item_oz, label, why. Nothing here is new analysis: it is the findings, ordered for the site."""
+    e = html.escape
+    by_oz = {i.oz: i for i in boq.items}
+    label = lambda oz: e((by_oz[oz].label if oz in by_oz else "")[:80])  # noqa: E731
+    todo = {"abs6": "Announce the claim in writing BEFORE the work is done (§2 Abs. 6 Nr. 1). Work done first is work given away.",
+            "abs5": "Get the client's decision in writing before building; note date and who decided. The price follows the decision.",
+            "abs3": "Measure what is really built. Beyond 10 % over or under the LV quantity, ask for a new unit price.",
+            "abs7": "No claim: the lump sum is fixed. Keep the effort small and note what was not foreseeable."}
+    out = [f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Hand-over – {e(boq.name or boq.file)}</title>'
+           f'<style>{_CSS}</style></head><body><button class="print" onclick="print()">Print or save as PDF</button>'
+           f'<div class="page"><header><h1>Hand-over to the site</h1><p><b lang="de">{e(project or boq.name or boq.file)}</b></p>'
+           f'<p>{e(boq.file)}, {len(boq.items)} items. What the estimating found in the tender and the site needs to know. '
+           f'Generated {datetime.date.today().isoformat()}.</p></header>']
+
+    groups = [(key, [f for f in findings if mechanism(f) == key]) for key in MECHANISMS]
+    claims = sum(len(fs) for key, fs in groups if key != "abs7")
+    out.append(f'<h2>Where a change order can arise</h2><p class="lede">{claims} point{"" if claims == 1 else "s"} in this LV can '
+               f'turn into a claim under VOB/B §2, if the site does the right thing at the right time.</p>')
+    for key, fs in groups:
+        if not fs:
+            continue
+        clause, name, rule = MECHANISMS[key]
+        out.append(f'<h3>{e(clause)} · {e(name)} ({len(fs)})</h3><p class="note">{e(rule)}</p><p><b>On site:</b> {e(todo[key])}</p>'
+                   '<table><tr><th>Item</th><th>What was found</th><th>In the LV</th><th class="r">Item value</th></tr>')
+        for f in sorted(fs, key=lambda f: -(f.money_at_stake or 0)):
+            out.append(f'<tr><td><span class="num">{e(f.item_oz or "LV")}</span> <span lang="de">{label(f.item_oz or "")}</span></td>'
+                       f'<td>{e(f.title or f.check_id)}<br><span class="note">{e(f.explanation[:260])}</span></td>'
+                       f'<td lang="de">{e(f.evidence[:200])}</td>'
+                       f'<td class="r">{_eur(float(f.money_at_stake)) if f.money_at_stake is not None else "–"}</td></tr>')
+        out.append('</table>')
+    if not any(fs for _, fs in groups):
+        out.append('<p>No finding points to a change-order mechanism.</p>')
+
+    asked = [q for q in questions if q["status"] != "new"]
+    out.append('<h2>What the client was asked, and what came back</h2>')
+    if asked:
+        out.append('<table><tr><th>Item</th><th>Question</th><th>Answer</th></tr>')
+        for q in asked:
+            a = q.get("answer") or {}
+            state = {"answered": "Answered", "partly": "Partly answered", "sent": "Asked, NOT answered", "drafted": "Written, never sent"}[q["status"]]
+            out.append(f'<tr><td><span class="num">{e(q.get("item_oz") or "LV")}</span></td><td lang="de">{e(q["question"][:400])}</td>'
+                       f'<td><b>{state}</b>' + (f'<br><span lang="de">„{e(a.get("quote", "")[:300])}“</span><br><span class="note">{e(a.get("meaning", ""))}</span>' if a else '')
+                       + '</td></tr>')
+        out.append('</table>')
+        silent = sum(q["status"] in ("sent", "partly") for q in asked)
+        if silent:
+            out.append(f'<p><b>{silent} question{"" if silent == 1 else "s"} the client left open.</b> The point was raised before the bid: '
+                       f'that is on record and counts when the claim is made. Keep the sent message with the site file.</p>')
+    else:
+        out.append('<p>No bidder question was sent for this LV.</p>')
+    never = [q for q in questions if q["status"] == "new"]
+    if never:
+        out.append(f'<p class="note">{len(never)} point{"" if len(never) == 1 else "s"} that would have needed the client were never asked '
+                   f'(items {e(", ".join(q.get("item_oz") or "LV" for q in never[:12]))}). A court may hold that against a later claim: '
+                   f'clarify them with the client before the work on these items starts.</p>')
+
+    done = [a for a in amendments if a["status"] == "accepted" and a["kind"] in ("quantity", "unit", "text", "allowance")]
+    if done:
+        out.append('<h2>What the client\'s answers changed</h2><table><tr><th>Item</th><th>Change</th><th>The client\'s words</th></tr>')
+        for a in done:
+            v = a["value"]
+            what = (f'Quantity: {v.get("number")}' if a["kind"] == "quantity" else f'Unit: {v.get("unit", "")}' if a["kind"] == "unit"
+                    else f'Risk allowance of {v.get("percent")} % in the unit price: the point stayed open' if a["kind"] == "allowance"
+                    else "Wording changed")
+            out.append(f'<tr><td><span class="num">{e(a["item_oz"] or "LV")}</span></td><td>{e(what)}</td><td lang="de">„{e((a.get("quote") or "")[:300])}“</td></tr>')
+        out.append('</table><p class="note">The bid was made on the LV as the client sent it. A quantity the client corrected in an answer '
+                   'is not in the contract LV unless the client re-issued it: check the contract version.</p>')
+
+    if assumed:
+        out.append('<h2>Prices that rest on an assumption</h2><p class="note">Buy these with care: the price in the bid was not confirmed by a binding quote.</p>'
+                   '<table><tr><th>Item</th><th>What the price rests on</th></tr>')
+        for row in assumed[:40]:
+            out.append(f'<tr><td><span class="num">{e(row["item_oz"])}</span> <span lang="de">{e(row["label"][:80])}</span></td><td>{e(row["why"])}</td></tr>')
+        out.append('</table>')
+    out.append('<p class="note">Every point above quotes the LV or the client. Nothing on this page was added after the bid.</p></div></body></html>')
+    return "".join(out)

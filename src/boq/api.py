@@ -23,7 +23,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import (amendments, bid, catalog, chat, db, inbox, mail, partners, partners_demo, pipeline, retrieve, risk,
+from boq import (amendments, bid, catalog, chat, db, events, inbox, mail, partners, partners_demo, pipeline, retrieve, risk,
                  runs, spend, supply, voice)
 from boq import dates as tender_dates
 from boq import intake as intake_rules
@@ -36,7 +36,7 @@ from boq.parsers import SUPPORTED, parse_file
 from boq.pdfmarks import locate
 from boq.prices import load_history, suggest_prices
 from boq.project import analyse_project, lv_name
-from boq.report import build_report, render_html, render_questions
+from boq.report import build_report, render_handover, render_html, render_questions
 from boq.whatif import Scenario, what_if
 
 load_env()
@@ -56,9 +56,13 @@ async def lifespan(_app: FastAPI):
         runs.resume_interrupted()  # runs a restart cut off go on where they stood
     # Polier looks into the web for partners now and then, where the estimator switched that on (boq.partners)
     looking = asyncio.create_task(partners.keep_looking()) if runs.AUTO else None
+    # ... and into the mailbox every few minutes, for answers, quotes and new tenders (sweep_inbox)
+    sweeping = asyncio.create_task(_keep_sweeping()) if runs.AUTO else None
     yield
     if looking:
         looking.cancel()
+    if sweeping:
+        sweeping.cancel()
 
 
 app = FastAPI(title="BoQ analysis", lifespan=lifespan)
@@ -1120,6 +1124,26 @@ def report_html(analysis_id: str):
     return render_html(_report(analysis_id))
 
 
+@app.get("/api/analyses/{analysis_id}/handover.html", response_class=HTMLResponse)
+def handover_html(analysis_id: str):
+    """The hand-over sheet for the site: where a change order can arise and what to do there, what the
+    client was asked and answered, what the answers changed, the prices that rest on an assumption."""
+    boq, rule_findings = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    findings = _with_stakes(analysis_id, boq, rule_findings + _llm_findings(analysis_id))
+    questions = mail.standing(_report(analysis_id)["questions"], mail.about(mail.BIDDER_QUESTIONS, project_id, boq.file))
+    soft = []
+    try:
+        planned = supply.find_plan(project_id, boq.file) is not None
+        got = risk.assess(_bid(analysis_id)["rows"], _supply_state(analysis_id)["prices"] if planned else {}, None)
+        soft = [{"item_oz": t["oz"], "label": t["label"], "why": f"{t['why']} (may be off by {t['band']:g} %)"}
+                for t in got["top"] if t["basis"] in ("history", "open_question", "quote_soft", "quote_other")]
+    except Exception:  # the sheet is about the findings; the bid's price sources are an extra
+        pass
+    name = ((catalog.find(project_id) if project_id else None) or {}).get("name", "")
+    return render_handover(boq, findings, questions, amendments.about(project_id, boq.file), soft, name)
+
+
 @app.get("/api/analyses/{analysis_id}/bieterfragen.txt", response_class=PlainTextResponse)
 def bidder_questions(analysis_id: str):
     return PlainTextResponse(render_questions(_report(analysis_id)), media_type="text/plain; charset=utf-8",
@@ -1290,6 +1314,12 @@ async def _take_reply(found: dict, reply: str, via: str) -> int:
         mail.set_sent(found["id"], True)
     amendments.propose(_mail(found["id"]))
     runs.nudge(found["project_id"])  # all answered: the run goes on to the prices
+    told = [a for a in read["answers"].values() if a["status"] in ("answered", "partly")]
+    changed = sum(1 for a in told if a.get("change"))
+    events.record(found["project_id"], "answer",
+                  f"The client's reply was read{' from the inbox' if via == 'imap' else ''}: {len(told)} of {len(found['items'])} questions answered"
+                  + (f", {changed} of them change{'s' if changed == 1 else ''} the LV (a quantity, a unit or the wording)" if changed else "")
+                  + (". What it changes on your side waits for your decision." if told else "."), "you" if told else "client")
     return read["dropped"]
 
 
@@ -1776,6 +1806,20 @@ async def _take_quote(found: dict, text: str, sheet: bytes | None, via: str = "p
         mail.set_sent(found["id"], True)
     if read["lines"]:
         supply.keep_quote(found, found["file"], read, text)
+    who = (supply.supplier((found["meta"] or {}).get("supplier_id") or "") or {}).get("name") or found["to"]
+    where = " from the inbox" if via == "imap" else ""
+    if read["lines"]:
+        other = sum(1 for line in read["lines"] if line["alternative"])
+        events.record(found["project_id"], "quote",
+                      f"{who} quoted{where}: {len(read['lines'])} of {len(found['items'])} items priced"
+                      + (f", {other} with another product than tendered" if other else "")
+                      + (f", and asks {len(read['asks'])} question{'' if len(read['asks']) == 1 else 's'} back" if read["asks"] else "")
+                      + ". The comparison is updated.", "you")
+    elif read["kind"] == "decline":
+        events.record(found["project_id"], "decline", f"{who} declines to quote{where}. {read['summary']}", "you")
+    else:
+        events.record(found["project_id"], "asks", f"{who} wrote back without prices{where}. {read['summary']}",
+                      "you" if read["asks"] else "supplier")
     return read
 
 
@@ -2137,6 +2181,8 @@ async def _take_message(message: dict, ours: set[str]) -> dict:
                                            "message_id": message["message_id"]}}
     kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
     project_id = catalog.save_project(title, stored, kind, number=identity["number"], plan=plan)
+    events.record(project_id, "tender", f"A tender was found in the mail: {said['summary']} "
+                  + {"yes": "It fits your own work.", "partly": "It fits your work in part.", "no": "It is not your trade."}[said["fit"]], "you")
     return {"taken": {"id": project_id, "name": title}, "subject": message["subject"], "sender": message["sender"],
             "why": said["summary"]}
 
@@ -2192,6 +2238,65 @@ async def sort_messages(files: list[UploadFile]):
             raise HTTPException(422, "Hand over e-mails as .eml files of at most 30 MB.")
         messages.append(inbox.from_eml(data))
     return await _sort_mail(messages)
+
+
+
+# ---------------------------------------------------------------- the mailbox watched, and what Polier did
+
+_sweeping = asyncio.Lock()
+
+
+async def sweep_inbox() -> dict:
+    """One look into the mailbox for everything the app waits for: answers of clients to bidder questions,
+    replies of suppliers to price inquiries (both for every project), and new tenders. What is found is
+    read and applied as if the estimator had pasted it; each thing is noted (boq.events). Nothing is sent
+    and nothing in the mailbox is changed. Raises MailUnavailable where no inbox is set."""
+    if mail.inbox() is None:
+        raise mail.MailUnavailable("No inbox is set. Put IMAP_HOST (and IMAP_USER, IMAP_PASSWORD) into .env and restart the server.")
+    async with _sweeping:  # the page and the server's own clock may ask at the same moment
+        out = {"answers": 0, "quotes": 0, "tenders": []}
+        for kind, take in ((mail.BIDDER_QUESTIONS, "answers"), (supply.PRICE_INQUIRY, "quotes")):
+            waiting = mail.unanswered(kind)
+            for found, text in (await asyncio.to_thread(mail.find_replies, waiting)) if waiting else []:
+                try:
+                    if kind == mail.BIDDER_QUESTIONS:
+                        await _take_reply(found, text[:mail.MAX_REPLY_CHARS], "imap")
+                    else:
+                        await _take_quote(found, text[:supply.MAX_REPLY_CHARS], None, "imap")
+                    out[take] += 1
+                except HTTPException as exc:
+                    if exc.status_code not in (422,):  # a reply that says nothing stays where it is
+                        raise
+        sorted_ = await _sort_mail(await asyncio.to_thread(inbox.recent, inbox.seen()))
+        out["tenders"] = sorted_["taken"]
+        return out
+
+
+async def _keep_sweeping(every_s: int = 180) -> None:
+    """The server's own clock: the mailbox is looked into every few minutes, also with no page open."""
+    while True:
+        await asyncio.sleep(every_s)
+        try:
+            if mail.inbox() is not None:
+                await sweep_inbox()
+        except Exception:  # a mailbox that does not answer now is asked again next time
+            pass
+
+
+@app.post("/api/inbox/sweep")
+async def sweep():
+    """Look into the mailbox now: `answers` and `quotes` read, `tenders` put into the intake."""
+    try:
+        return await sweep_inbox()
+    except mail.MailUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@app.get("/api/events")
+def list_events(project: str | None = None, after: int = 0, limit: int = 40):
+    """What Polier did, newest first: of one project, or of all. `after`: only what is newer than this id."""
+    names = {p["id"]: p["name"] for p in catalog.all_projects()}
+    return [{**e, "project": names.get(e["project_id"] or "", "")} for e in events.latest(project, min(limit, 200), after)]
 
 
 

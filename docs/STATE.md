@@ -41,6 +41,29 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   says so); the example history (six made-up firms, "Your firm" → Examples) shares the price book with real
   quotes, marked "example"; the dev database has it in; a firm's widths under 1000px were not looked at.
 
+- Planted-fault test of the checks (2026-11-22, `scripts/eval_planted.py`): 30 faults of five kinds planted
+  into three tender LVs (projects D, B, A; fixed seed), checks run on the changed files.
+  Rules only: 11 of 30 (size 5/6, reference 6/6; unit, magnitude, "supplied by the client" 0/18), no new
+  finding on the 427 unchanged items. Rules + AI review (one run, 2026-11-22): **29 of 30**, all with a
+  finding of the fitting category; the AI found 17 of the 18 faults that need reading (missed: one pipe
+  item in m2) and the one size fault the rule missed. Also 22 of 427 unchanged items got a finding they
+  did not have before: the changed file is read anew by the model, so this is partly the model's own
+  variation and partly a planted quantity making its neighbours look wrong; not read one by one.
+  Limits: the faults are ours and blunt (×100, m2 for a pipe); four of the six "supplied" hits rest on one
+  finding per LV that names the second item as related; one run, not repeated; about 2 USD of API.
+  Run: `uv run python scripts/eval_planted.py --llm -v`.
+
+- Mailbox watched, record of what Polier did, hand-over sheet, hindsight test (2026-11-22, D-048):
+  `sweep_inbox` + `/api/inbox/sweep` + the task in `lifespan`; `src/boq/events.py`, `/api/events`, "What
+  Polier did" in the Pipeline dialog (`Runs.tsx`); `render_handover` and `/api/analyses/{id}/handover.html`,
+  linked from the Bid view; `scripts/eval_findings.py`.
+  Checked: `tests/test_events.py` (a sweep reads a supplier's reply from a stand-in inbox once and notes it;
+  the hand-over page renders), the hand-over page on project D through the dev API (4 points under §2
+  Abs. 5 with item values). Not checked: a sweep against a real mailbox (no IMAP in `.env`), the "What
+  Polier did" list and the hand-over link in a browser (the web build is broken at the moment by the
+  partners page another session is adding to `App.tsx`).
+  Hindsight test result: weak, see D-048; `uv run python scripts/eval_findings.py [--llm] [-v]`.
+
 - Risk report by the money (2026-11-22): "Items by the money at stake" ranks by the worst finding, then
   the item's value (from the file, else what the findings were given, with where the price is from); a
   file without prices says what the items with findings are worth by the prices at hand. Checked on the
