@@ -377,6 +377,10 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   as thin bars. Five options were compared first on a throwaway page (not in the repo). Seen in headless
   Chrome at 1440 and 1100 wide with a made-up catalogue of seven tenders and with the database's one
   project (pointer to its 2024 dates, "Dates" opened). Not checked: a person clicking through, under 900px.
+  Then (same day): the schedule opens at this week only while a running tender has a date on the axis;
+  else at the dates of the tender nearest to today (the database's project: March 2024), until the user moves
+  it. The year stands above the weeks, where the axis begins and where a year begins. The "Dates" list under
+  a row shows label and day only; the source (file, page, words) is on hover.
 
 ## In progress
 

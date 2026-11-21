@@ -186,6 +186,17 @@
   background-color: var(--hover);
 }
 
+/* the year, above the weeks: where the axis begins and where a year begins on it */
+.axis-year {
+  position: absolute;
+  top: 3px;
+  padding-left: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
 .today-tag {
   position: absolute;
   top: 0;
@@ -606,6 +617,11 @@
 .gmark.due span.below,
 .gmark.sent span.below {
   left: 4px;
+}
+
+/* clear of the break when the work starts right after it */
+.gmark.w0 span.below {
+  left: 3px;
 }
 
 .gmark.due.flip span.below,
@@ -1879,7 +1895,7 @@
 
 /* ------------------------------------------------------------------ dates read from the files */
 
-/* under a schedule row: every date the tender has, each with where it was read */
+/* under a schedule row: every date the tender has (where it was read: on hover) */
 .found-dates {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -1896,7 +1912,6 @@
   align-items: baseline;
   min-width: 0;
   font-size: 13px;
-  cursor: help;
 }
 
 .found-dates dt {
@@ -1911,15 +1926,6 @@
   margin: 0;
   font-weight: 600;
   white-space: nowrap;
-}
-
-.found-dates dd.src {
-  grid-column: 1 / -1;
-  overflow: hidden;
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--dim);
-  text-overflow: ellipsis;
 }
 
 .found-dates > .other dd,

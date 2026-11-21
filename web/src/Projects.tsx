@@ -116,8 +116,9 @@ function planOf(dates: FoundDate[]): Pick<Plan, TenderDate> {
   };
 }
 
-/** A tender's dates under its row on the schedule: the ones it is planned by and what its files state,
- *  each with where it was read (the evidence, in full on hover). Read only. */
+/** A tender's dates under its row on the schedule: the ones it is planned by and what its files state.
+ *  Only the date is written; where it was read is on hover. A day the files state but the project is not
+ *  planned by is set quieter. Read only. */
 function FoundDates({ dates, plan }: { dates: FoundDate[]; plan: Plan }) {
   // a day of the project that no file states: entered by hand
   const byHand = PLANNED.filter((f) => plan[f.kind] && !dates.some((d) => d.kind === f.kind && d.date === plan[f.kind]));
@@ -135,9 +136,6 @@ function FoundDates({ dates, plan }: { dates: FoundDate[]; plan: Plan }) {
           <div key={kind + day} className={other ? "other" : undefined} title={found ? `Read from ${readFrom(found)}` : "Entered by hand"}>
             <dt>{DATE_LABEL[kind]}</dt>
             <dd className="num">{found ? dayText(found) : dmy(day)}</dd>
-            <dd className="src" lang={found ? "de" : undefined}>
-              {found ? `${other ? "not used: " : ""}${found.sources[0].file}, ${found.sources[0].where}${found.sources.length > 1 ? ` +${found.sources.length - 1}` : ""}` : "entered by hand"}
-            </dd>
           </div>
         );
       })}
@@ -245,10 +243,9 @@ function axisPos(start: Date, d: Date): number {
  *  (named every third month, so the names have room). */
 function ticks(start: Date): { day: Date; label: string; sub?: string; strong?: boolean }[] {
   const out: { day: Date; label: string; sub?: string; strong?: boolean }[] = [];
-  const thisYear = new Date().getFullYear();
   for (let w = 0; w < NEAR / 7; w++) {
     const d = addDays(start, w * 7);
-    out.push({ day: d, label: `KW ${isoWeek(d)}`, sub: w === 0 && d.getFullYear() !== thisYear ? dmY(d) : dm(d) });
+    out.push({ day: d, label: `KW ${isoWeek(d)}`, sub: dm(d) });
   }
   const end = addDays(start, NEAR);
   let named = false;
@@ -275,6 +272,38 @@ function laneDays(p: CatalogProject, plan: Plan): Date[] {
   const days = keys.map((k) => parseDay(plan[k] as string | undefined)).filter((d): d is Date => d !== null);
   if (days.length) return days;
   return (["opening", "exec_start", "exec_end"] as const).map((k) => parseDay(plan[k])).filter((d): d is Date => d !== null);
+}
+
+/** The years on the axis: the one it begins in, and each one that begins on it. */
+function years(start: Date): { year: number; at: number }[] {
+  const out = [{ year: start.getFullYear(), at: 0 }];
+  for (let y = start.getFullYear() + 1; ; y++) {
+    const at = axisPos(start, new Date(y, 0, 1));
+    if (at > 96) break;
+    if (at - out[out.length - 1].at < 5) out.pop(); // the old year has only days left: no room for its label
+    out.push({ year: y, at });
+  }
+  return out;
+}
+
+const PLAN_DAYS = ["questions_due", "due", "opening", "sent", "binding_until", "exec_start", "exec_end"] as const;
+
+/** Where the schedule opens: at this week while a running tender has a date on the axis then; else at the
+ *  dates of the tender nearest to today, so it never opens empty while there are dates to show. */
+function openingStart(projects: CatalogProject[], summaries: Record<string, ProjectSummary | "failed">): Date {
+  const home = homeStart(), today = startOfDay(new Date());
+  const sets = projects
+    .filter((p) => stageOf(p) !== "award")
+    .map((p) => {
+      const plan = datesOf(p, summaries[p.id]);
+      return PLAN_DAYS.map((k) => parseDay(plan[k])).filter((d): d is Date => d !== null);
+    })
+    .filter((days) => days.length > 0);
+  const onAxis = (d: Date) => axisPos(home, d) >= 0 && axisPos(home, d) <= 100;
+  if (sets.length === 0 || sets.some((days) => days.some(onAxis))) return home;
+  const away = (days: Date[]) => Math.min(...days.map((d) => Math.abs(daysBetween(today, d))));
+  const nearest = sets.sort((a, b) => away(a) - away(b))[0];
+  return monday(addDays(new Date(Math.min(...nearest.map((d) => d.getTime()))), -7));
 }
 
 /** Tenders on the schedule: everything not yet awarded. */
@@ -351,7 +380,16 @@ function Schedule({
   onOpen: (p: CatalogProject) => void;
 }) {
   const today = startOfDay(new Date());
-  const [start, setStart] = useState(homeStart);
+  const [start, setStart] = useState(() => openingStart(projects, summaries));
+  // once the user has moved the schedule, it stays where they put it
+  const moved = useRef(false);
+  const move = (to: Date) => ((moved.current = true), setStart(to));
+  // dates read from the files arrive after the first drawing: until the user moves it, the schedule follows them
+  useEffect(() => {
+    if (moved.current) return;
+    const to = openingStart(projects, summaries);
+    setStart((was) => (was.getTime() === to.getTime() ? was : to));
+  }, [projects, summaries]);
   const lines = ticks(start);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const pos = (d: Date) => axisPos(start, d);
@@ -365,7 +403,7 @@ function Schedule({
   const closed = projects.filter((p) => stageOf(p) === "award" && p.id !== focus?.id).length;
 
   /** Moves the schedule so a day stands a week in from its left edge, where days are drawn one by one. */
-  const goTo = (day: Date) => setStart(monday(addDays(day, -7)));
+  const goTo = (day: Date) => move(monday(addDays(day, -7)));
   /** Moves the schedule to a tender's dates: a little before the first of them. */
   const goToProject = (p: CatalogProject) => {
     const days = laneDays(p, planned.get(p.id)!);
@@ -445,13 +483,13 @@ function Schedule({
       <div className="sched-head">
         <div className="sched-title">
           <div className="sched-nav" role="group" aria-label="Move the schedule">
-            <button className="btn-ghost small" aria-label="4 weeks back" title="4 weeks back" onClick={() => setStart(addDays(start, -STEP))}>
+            <button className="btn-ghost small" aria-label="4 weeks back" title="4 weeks back" onClick={() => move(addDays(start, -STEP))}>
               ←
             </button>
-            <button className="btn-ghost small" disabled={atHome} onClick={() => setStart(homeStart())} title="Back to this week">
+            <button className="btn-ghost small" disabled={atHome} onClick={() => move(homeStart())} title="Back to this week">
               Today
             </button>
-            <button className="btn-ghost small" aria-label="4 weeks ahead" title="4 weeks ahead" onClick={() => setStart(addDays(start, STEP))}>
+            <button className="btn-ghost small" aria-label="4 weeks ahead" title="4 weeks ahead" onClick={() => move(addDays(start, STEP))}>
               →
             </button>
             <span className="sched-scale" title="The scale changes at the hatched strip: eight weeks by the day to its left, thirteen months by the month to its right">
@@ -460,6 +498,11 @@ function Schedule({
           </div>
         </div>
         <div className="weeks" aria-hidden>
+          {years(start).map((y) => (
+            <b key={y.year} className="axis-year num" style={{ left: `${y.at}%` }}>
+              {y.year}
+            </b>
+          ))}
           {lines.map((t) => (
             <span key={t.day.getTime()} className={t.strong ? "strong" : undefined} style={{ left: `${pos(t.day)}%` }}>
               {t.label}

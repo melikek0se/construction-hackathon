@@ -436,4 +436,8 @@ A date without a label is left out. No LLM: the result has to be the same every 
   equal-spaced stations per tender (a candidate for the "Dates" detail under a row). The line of all
   tenders staying visible while the schedule is closed: left out, the database's project has no date ahead
   and the line would be empty.
+- **Added the same day, on the user's word:** the schedule opens where the tenders' dates are (this week
+  if one is on the axis then, else at the nearest tender's dates), never empty; the year is written above
+  the weeks; the "Dates" list under a row shows only label and day. This narrows D-031 for that list: the
+  source is still read and kept, and shown on hover, but no longer written under each date.
 
