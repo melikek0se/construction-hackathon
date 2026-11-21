@@ -291,6 +291,10 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   the full window width straight under the band, opens on every load without the tape wipe, and closes with
   the arrow by its title; two labels of a row less than eight days apart open to opposite sides. The board is
   headed "Projects" with the New project button. Checked in headless Chrome at 1920 wide.
+  Revised again (2026-11-21): the schedule is switched from a "Schedule" button at the top right of the band
+  (count of running tenders, ink while open), hidden while there is no project, opened again whenever a
+  project is added; it drops out of the band with a short slide. Cards no longer list the stop / question /
+  caution counts (the strip above already shows them). Type-checked and built; not looked at in a browser.
 
 - Name and mascot (D-030): the app is **Polier**; a 3D head in a hard hat (`web/src/Mascot.tsx`) living in the
   bottom-right corner of every page (follows the pointer, glances around at rest, leans in, hops on click,

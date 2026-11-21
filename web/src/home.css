@@ -1441,42 +1441,16 @@
   padding: 0 20px 8px;
 }
 
-.sched-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin: -4px 0 -4px -7px;
-  padding: 3px 7px;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 2px;
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  color: var(--ink);
-  cursor: pointer;
+/* opens downwards out of the band */
+.register > .sched {
+  animation: sched-in 220ms var(--ease);
 }
 
-.sched-toggle:hover {
-  border-color: var(--ink);
-  background: var(--yellow);
-}
-
-.sched-toggle svg {
-  transition: rotate 160ms var(--ease);
-}
-
-.sched.closed .sched-toggle svg {
-  rotate: -90deg;
-}
-
-/* closed: the head alone */
-.sched.closed .sched-head {
-  border-bottom: 0;
-}
-
-.sched.closed .weeks {
-  visibility: hidden;
+@keyframes sched-in {
+  from {
+    opacity: 0;
+    translate: 0 -10px;
+  }
 }
 
 /* the board under it, headed Projects with the New project button */

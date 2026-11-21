@@ -15,7 +15,7 @@ import {
   setFileStep,
   runLlmReview,
 } from "./api";
-import { HardHatIcon, Opening, ProjectsPage } from "./Projects";
+import { HardHatIcon, Opening, ProjectsPage, runningTenders } from "./Projects";
 import { Mascot } from "./Mascot";
 import { LoadingTapes } from "./Loading";
 import { ProjectView } from "./ProjectView";
@@ -43,6 +43,13 @@ const NONE: Selection = { oz: null, finding: null };
 
 export default function App() {
   const [catalog, setCatalog] = useState<CatalogProject[]>([]);
+  // The schedule under the band: open on every load, closed only for this visit, opened again when a project is added.
+  const [scheduleOpen, setScheduleOpen] = useState(true);
+  const projectCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (projectCount.current !== null && catalog.length > projectCount.current) setScheduleOpen(true);
+    projectCount.current = catalog.length;
+  }, [catalog.length]);
   const [summaries, setSummaries] = useState<Record<string, ProjectSummary | "failed">>({});
   // The project that is open, and which of its files when it is one LV in several versions.
   const [current, setCurrent] = useState<{ project: CatalogProject; file: number } | null>(null);
@@ -454,6 +461,26 @@ export default function App() {
           <HardHatIcon size={24} />
           Polier
         </button>
+        {!project && (!analysis || !stats) && catalog.length > 0 && (
+          <div className="actions">
+            <button
+              className="btn band-toggle"
+              aria-expanded={scheduleOpen}
+              aria-controls="schedule"
+              onClick={() => setScheduleOpen(!scheduleOpen)}
+              title={scheduleOpen ? "Close the schedule" : "Open the schedule"}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden>
+                <path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" strokeWidth="2" />
+              </svg>
+              Schedule
+              <span className="num">{runningTenders(catalog)}</span>
+              <svg className="chev" width="11" height="11" viewBox="0 0 12 12" aria-hidden>
+                <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            </button>
+          </div>
+        )}
         {project && !analysis && (
           <>
             <div className="doc">
@@ -571,6 +598,7 @@ export default function App() {
       ) : !analysis || !stats ? (
         <ProjectsPage
           projects={catalog}
+          scheduleOpen={scheduleOpen}
           summaries={summaries}
           busy={busy !== null}
           pending={pending}

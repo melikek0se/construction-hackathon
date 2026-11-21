@@ -217,6 +217,9 @@ function DayField({ label, value, disabled, onSet }: { label: string; value?: st
   );
 }
 
+/** Tenders on the schedule: everything not yet awarded. */
+export const runningTenders = (projects: CatalogProject[]) => projects.filter((p) => stageOf(p) !== "award").length;
+
 function Schedule({
   projects,
   busy,
@@ -237,7 +240,6 @@ function Schedule({
     .filter((p) => stageOf(p) !== "award")
     .sort((a, b) => (nextDate(a, today)?.days ?? 9999) - (nextDate(b, today)?.days ?? 9999));
   const closed = projects.length - running.length;
-  const [open, setOpen] = useState(true); // open on every load; closed only for this visit
 
   const bar = (kind: string, from: Date, to: Date) =>
     x(to) > x(from) && <i className={`gbar ${kind}`} style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%` }} />;
@@ -271,16 +273,11 @@ function Schedule({
     ) : null;
 
   return (
-    <section className={`sched${open ? "" : " closed"}`} aria-label="Schedule of the running tenders">
+    <section id="schedule" className="sched" aria-label="Schedule of the running tenders">
       <div className="sched-head">
         <h2>
-          <button className="sched-toggle" aria-expanded={open} onClick={() => setOpen(!open)} title={open ? "Close the schedule" : "Open the schedule"}>
-            <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden>
-              <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
-            </svg>
-            Schedule
-          </button>
-          <small>{running.length === 0 ? "no running tender" : `${running.length} running tender${running.length > 1 ? "s" : ""}, next date first`}</small>
+          Schedule
+          <small>{running.length === 0 ? "no running tender" : `${running.length} running, next date first`}</small>
         </h2>
         <div className="weeks" aria-hidden>
           {Array.from({ length: SPAN / 7 }, (_, w) => {
@@ -293,7 +290,6 @@ function Schedule({
           })}
         </div>
       </div>
-      {open && (
       <div className="sched-body">
         {running.map((p) => {
           const stage = stageOf(p);
@@ -366,8 +362,7 @@ function Schedule({
           </i>
         </div>
       </div>
-      )}
-      {open && closed > 0 && (
+      {closed > 0 && (
         <p className="sched-note">
           {closed} awarded tender{closed > 1 ? "s are" : " is"} not on the schedule.
         </p>
@@ -395,24 +390,10 @@ function openItems(p: CatalogProject, s: ProjectSummary, stage: Stage): { sign?:
     else out.push({ quiet: true, text: stage === "award" ? "Awarded. Same items as the tender." : "The bid is with the client." });
     return out;
   }
-  const questions = counted.reduce((sum, d) => sum + (d.questions ?? 0), 0);
-  if (s.counts.high > 0) out.push({ sign: "high", text: <>{n(s.counts.high, "stop")} cannot be priced as written</> });
-  if (questions > 0) out.push({ text: <>{n(questions, "item")} with a point to raise with the client</> });
-  if (s.counts.warn > 0)
-    out.push({
-      sign: "warn",
-      text: (
-        <>
-          {n(s.counts.warn, "caution")} push risk onto the bidder
-          {p.kind === "trades" && `, in ${counted.filter((d) => d.counts!.warn > 0).length} of ${counted.length} LVs`}
-        </>
-      ),
-    });
   // the same LV read from two formats should give the same findings; say so when it does not
   const twins = of("tender").filter((d) => d.items === counted[0]?.items);
   if (p.kind !== "trades" && twins.some((d) => SEVERITIES.some((sev) => d.counts![sev] !== twins[0].counts![sev])))
     out.push({ text: "The formats of the tender do not give the same findings" });
-  if (out.length === 0) out.push({ quiet: true, text: "Nothing open from the rule checks." });
   return out;
 }
 
@@ -470,6 +451,7 @@ function Card({
     );
   }
 
+  const open = ready ? openItems(p, s, stage) : [];
   return (
     <article
       className={`card${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}`}
@@ -497,9 +479,9 @@ function Card({
 
       {!ready && <p className="card-wait">{s === "failed" ? "The files could not be read." : "Reading the files"}</p>}
       {strip}
-      {ready && (
+      {ready && open.length > 0 && (
         <ul className="open-list">
-          {openItems(p, s, stage).map((o, i) => (
+          {open.map((o, i) => (
             <li key={i} className={o.quiet ? "quiet" : undefined}>
               {o.sign ? <Sign severity={o.sign} size={14} /> : <i className={o.quiet ? "ok" : "dot"} />}
               <span>{o.text}</span>
@@ -860,6 +842,7 @@ export function ProjectsPage({
   onDelete,
   onSetStep,
   onChange,
+  scheduleOpen,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
@@ -876,11 +859,12 @@ export function ProjectsPage({
   onDelete: (project: CatalogProject) => void;
   onSetStep: (project: CatalogProject, index: number, step: Step) => void;
   onChange: (project: CatalogProject, change: Change) => void;
+  scheduleOpen: boolean; // opened and closed from the band
 }) {
   return (
     <main className="register">
-      {/* the schedule runs the full width of the window, straight under the band */}
-      <Schedule projects={projects} busy={busy} onOpen={onOpen} onChange={onChange} />
+      {/* the schedule runs the full width of the window, straight under the band, which opens and closes it */}
+      {scheduleOpen && projects.length > 0 && <Schedule projects={projects} busy={busy} onOpen={onOpen} onChange={onChange} />}
 
       <div className="register-body">
       {pending && (

@@ -361,7 +361,8 @@ twice the height of the stripe on the tapes; nothing along the top. It carries n
 words running along it were tried and read as buttons, a stripe along both edges was tried and dropped. Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
 brand style; in the workspace the brand is the way back to the projects. Then the open project (15px, 600) over
 a file line (12.5px, yellow ink); a created project's name is an input that shows its frame only on hover and
-focus. Right: actions.
+focus. Right: actions. On the projects page the one action is the Schedule switch: outline with the count of running
+tenders on a yellow chip, ink while the schedule is open; absent while there is no project.
 
 ### Buttons
 - **Shape:** 2px radius, 30 to 32px high, 12px side padding, Barlow 700 12px capitals with 0.08em tracking.

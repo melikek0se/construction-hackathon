@@ -2138,6 +2138,43 @@ a.btn:hover {
   box-shadow: inset 0 0 0 1px var(--ink);
 }
 
+/* the schedule's switch, top right of the band on the projects page: outline when closed, ink while open */
+.band-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.band-toggle .num {
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.band-toggle .chev {
+  transition: rotate 160ms var(--ease);
+}
+
+.band-toggle[aria-expanded="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+
+.band-toggle[aria-expanded="true"] .chev {
+  rotate: 180deg;
+}
+
+.band-toggle[aria-expanded="false"]:hover:not(:disabled) {
+  background: var(--ink);
+  color: #fff;
+}
+
 select,
 input[type="search"] {
   height: 30px;
