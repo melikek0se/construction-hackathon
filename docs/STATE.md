@@ -142,7 +142,8 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   Walked through in Chrome by script at 1440x900: create a project from a tender and its print-out, open it,
   add a third file. Not seen: 1920 and phone widths of the dark page, drag-and-drop with a real mouse.
   The LV workspace (map, findings, item sheet, table, remarks, what-if) and the project view use the same
-  yellow-and-white language since 2026-11-21; `DESIGN.md` is out of date and describes the earlier look. Not built: deleting a project, adding files to an
+  yellow-and-white language since 2026-11-21; `DESIGN.md` was rewritten for it the same day. Loading shows
+  two barrier tapes pulled across the screen (`web/src/Loading.tsx`) instead of a banner. Not built: deleting a project, adding files to an
   existing one, a summary that includes the findings between trade LVs (the row counts per-LV rule findings).
 
 - Fixed while testing: `project.statements` hung for about three minutes on project E, whose text holds one

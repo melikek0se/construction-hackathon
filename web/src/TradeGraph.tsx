@@ -20,8 +20,8 @@ const YARD = D / 2 + 1.5 + 4.4; // first row of the trades laid out in front
 
 const STATE = {
   gap: { face: "#c4161c", text: "#ffffff", side: 0x8e0d12 },
-  linked: { face: "#fcfcf9", text: "#121413", side: 0xd9dcd3 },
-  loose: { face: "#dcded6", text: "#3b403a", side: 0xb4b9ac },
+  linked: { face: "#ffffff", text: "#121413", side: 0xe3e3dd },
+  loose: { face: "#f6f6f2", text: "#5f635c", side: 0xc4c4bc },
 };
 
 interface Placed {
@@ -244,7 +244,7 @@ export function TradeGraph(props: {
       const z0 = Math.min(...structure.map((p) => p.position.z)) - D / 2 - 1.5;
       const tape = hazard();
       tape.repeat.set((x1 - x0) / 4, 1);
-      const concrete = new THREE.MeshLambertMaterial({ color: 0x8f968a });
+      const concrete = new THREE.MeshLambertMaterial({ color: 0xc4c4bc });
       const stripe = new THREE.MeshBasicMaterial({ map: tape });
       const base = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.7, D / 2 + 1.5 - z0), [concrete, concrete, concrete, concrete, stripe, concrete]);
       base.position.set((x0 + x1) / 2, -0.35, (D / 2 + 1.5 + z0) / 2);
@@ -264,7 +264,7 @@ export function TradeGraph(props: {
       captions.push(first, later);
       const pile = placed.filter((p) => p.storey < 0);
       if (pile.length) {
-        const note = caption("NO STATED INTERFACE", null, "#3b403a");
+        const note = caption("NO STATED INTERFACE", null, "#5f635c");
         note.position.set(Math.min(...pile.map((p) => p.position.x)) - W / 2 - 0.6, pile[0].position.y, YARD);
         note.center.set(1, 0.5);
         captions.push(note);

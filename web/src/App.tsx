@@ -13,6 +13,7 @@ import {
   runLlmReview,
 } from "./api";
 import { CraneIcon, ProjectsPage } from "./Projects";
+import { LoadingTapes } from "./Loading";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, eur, qty } from "./format";
@@ -394,11 +395,7 @@ export default function App() {
         </nav>
       )}
 
-      {busy && (
-        <div className="notice busy" role="status">
-          Analysing {busy}
-        </div>
-      )}
+      {busy && <LoadingTapes what={busy} />}
       {error && (
         <div className="notice error" role="alert">
           <span>{error}</span>

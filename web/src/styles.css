@@ -88,7 +88,7 @@ button:disabled {
 }
 
 :focus-visible {
-  outline: 3px solid var(--blue);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -150,7 +150,7 @@ mark {
   height: 40px;
   padding: 0 18px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 2px;
   background: var(--ink);
   color: #fff;
   font-family: var(--display);
@@ -166,9 +166,6 @@ mark {
   background: #2d312e;
 }
 
-.btn:active:not(:disabled) {
-  transform: translateY(1px);
-}
 
 select,
 input[type="search"] {
@@ -176,7 +173,7 @@ input[type="search"] {
   padding: 0 12px;
   background: var(--plate);
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
   min-width: 0;
 }
 
@@ -202,7 +199,7 @@ input[type="search"]::placeholder {
   display: inline-block;
   padding: 0 7px;
   border: 1.5px solid var(--ink);
-  border-radius: 3px;
+  border-radius: 2px;
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -219,20 +216,21 @@ input[type="search"]::placeholder {
   flex-direction: column;
 }
 
+/* files dragged over the window: a quiet full-page target, the same on every page */
 .app.dragging::after {
-  content: "Drop the LV";
+  content: "Drop to read the files";
   position: fixed;
-  inset: 0;
+  inset: 12px;
   z-index: 20;
   display: grid;
   place-items: center;
-  font-family: var(--display);
-  font-size: 72px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: var(--yellow);
-  border: 22px solid;
-  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 22px, var(--yellow) 22px 44px) 22;
+  color: var(--ink);
+  background: rgb(255 247 207 / 0.94);
+  border: 2px dashed var(--ink);
   pointer-events: none;
 }
 
@@ -343,23 +341,7 @@ input[type="search"]::placeholder {
   color: var(--fg);
 }
 
-.home :focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
 
-.home.dragging::after {
-  content: "Drop to read the files";
-  inset: 12px;
-  font-family: var(--text);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--ink);
-  background: rgb(255 247 207 / 0.94);
-  border: 2px dashed var(--ink);
-  border-image: none;
-}
 
 .register {
   flex: 1;
@@ -1133,7 +1115,7 @@ button.brand {
   padding: 0 6px;
   background: none;
   border: 2px solid transparent;
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 20px;
   font-weight: 700;
 }
@@ -1160,7 +1142,7 @@ button.brand {
   padding: 0 12px;
   background: var(--plate);
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
   white-space: nowrap;
 }
 .versions button b {
@@ -1209,7 +1191,7 @@ button.brand {
   flex-wrap: wrap;
   gap: 4px 22px;
   font-family: var(--display);
-  font-size: 40px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
   text-transform: uppercase;
@@ -1245,7 +1227,7 @@ button.brand {
   flex: none;
   display: flex;
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
   overflow: hidden;
 }
 
@@ -1327,9 +1309,9 @@ button.brand {
   padding: 1px 8px 3px;
   background: var(--ink);
   color: #fff;
-  border-radius: 4px;
+  border-radius: 2px;
   font-family: var(--display);
-  font-size: 32px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1;
   text-align: center;
@@ -1475,7 +1457,7 @@ button.tick:hover,
   padding: 0 14px;
   background: var(--ink);
   color: #fff;
-  border-radius: 4px;
+  border-radius: 2px;
   white-space: nowrap;
   overflow: hidden;
   font-size: 18px;
@@ -1533,7 +1515,7 @@ button.tick:hover,
 
 .panel-head h2 {
   font-family: var(--display);
-  font-size: 32px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   line-height: 1;
@@ -1569,7 +1551,7 @@ button.tick:hover,
   padding: 0 10px;
   background: var(--plate);
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
   text-align: left;
 }
 
@@ -1614,7 +1596,7 @@ button.tick:hover,
   padding: 7px 12px;
   background: var(--yellow);
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
   text-align: left;
   min-width: 0;
 }
@@ -1671,7 +1653,7 @@ button.tick:hover,
   padding: 0 6px;
   background: var(--ink);
   color: #fff;
-  border-radius: 3px;
+  border-radius: 2px;
   font-family: var(--display);
   font-size: 16px;
   letter-spacing: 0.05em;
@@ -1755,7 +1737,7 @@ button.tick:hover,
   margin-left: -6px;
   padding: 4px 10px 4px 2px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 2px;
   background: none;
   font-family: var(--display);
   font-size: 22px;
@@ -1780,7 +1762,7 @@ button.tick:hover,
 
 .sheet-oz {
   font-family: var(--display);
-  font-size: 84px;
+  font-size: 30px;
   font-weight: 700;
   line-height: 0.95;
   font-variant-numeric: tabular-nums;
@@ -1823,7 +1805,7 @@ button.tick:hover,
   margin-top: 20px;
   background: var(--plate);
   border: 3px solid var(--ink);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .eq {
@@ -1836,7 +1818,7 @@ button.tick:hover,
 .eq > i {
   align-self: center;
   font-family: var(--display);
-  font-size: 34px;
+  font-size: 18px;
   font-weight: 700;
   font-style: normal;
 }
@@ -1849,7 +1831,7 @@ button.tick:hover,
   gap: 2px;
   padding: 8px 10px;
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .eq-term b {
@@ -1905,7 +1887,7 @@ button.tick:hover,
   padding: 6px 10px 8px;
   background: var(--plate);
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
   text-align: left;
 }
 
@@ -2027,7 +2009,7 @@ button.flow-plate:hover {
 .plate-card {
   margin-top: 20px;
   border: 3px solid var(--ink);
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -2060,7 +2042,7 @@ button.flow-plate:hover {
 
 .plate-card.sev-info header .sign {
   outline: 2px solid #fff;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .plate-card h3 {
@@ -2128,7 +2110,7 @@ button.flow-plate:hover {
 .oz-link {
   padding: 0 8px;
   border: 2px solid var(--ink);
-  border-radius: 3px;
+  border-radius: 2px;
   background: var(--plate);
   font-family: var(--display);
   font-size: 18px;
@@ -2154,7 +2136,7 @@ button.flow-plate:hover {
   margin-top: 8px;
   padding: 16px 18px;
   background: var(--ground);
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 18px;
 }
 
@@ -2382,7 +2364,7 @@ table.items {
 
 
   .sheet-oz {
-    font-size: 64px;
+    font-size: 26px;
   }
 
   .left-head {
@@ -2393,7 +2375,7 @@ table.items {
 
 
   .verdict h1 {
-    font-size: 32px;
+    font-size: 20px;
     gap: 6px 18px;
   }
 
@@ -2496,14 +2478,13 @@ a.btn:hover {
 
 .price-value .num {
   font-family: var(--display);
-  font-size: 40px;
+  font-size: 24px;
   line-height: 1;
 }
 
 .price-none {
-  font-family: var(--display);
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
   margin: 4px 0 2px;
 }
 
@@ -2546,7 +2527,7 @@ a.btn:hover {
   padding: 14px 16px;
   background: var(--plate);
   border: 2px solid var(--ink);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .whatif-row {
@@ -2566,7 +2547,7 @@ a.btn:hover {
   padding: 0 10px;
   background: var(--plate);
   border: 2px solid var(--ink);
-  border-radius: 4px;
+  border-radius: 2px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -2574,7 +2555,7 @@ a.btn:hover {
 .whatif-hit {
   padding: 2px 10px;
   background: var(--yellow);
-  border-radius: 3px;
+  border-radius: 2px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -2600,7 +2581,7 @@ a.btn:hover {
 
 .whatif-total .num {
   font-family: var(--display);
-  font-size: 44px;
+  font-size: 24px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -2683,7 +2664,7 @@ a.btn:hover {
   padding: 12px 16px;
   background: var(--plate);
   border: 2px solid var(--ink);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .whatif-optional legend {
@@ -2756,11 +2737,9 @@ a.btn:hover {
 }
 
 .lv-title {
-  font-family: var(--display);
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.025em;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
   margin: 4px 0 8px;
 }
 
@@ -3729,3 +3708,106 @@ button.flow-plate:hover {
     zoom: 1.4;
   }
 }
+
+/* ------------------------------------------------------------------ loading */
+
+/* Two barrier tapes pulled across the screen while files are being read. */
+.tapes {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.78);
+  animation: tapes-veil 200ms ease-out both;
+}
+
+.tape {
+  position: absolute;
+  left: -15%;
+  width: 130%;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--yellow);
+  color: var(--ink);
+  /* hazard stripes along both edges, plain yellow in the middle for the lettering */
+  border-block: 9px solid;
+  border-image: repeating-linear-gradient(-45deg, var(--ink) 0 9px, var(--yellow) 9px 18px) 9;
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.tape.from-left {
+  top: calc(50% - 74px);
+  rotate: -5deg;
+  animation: tape-from-left 520ms var(--ease) both;
+}
+
+.tape.from-right {
+  top: calc(50% + 26px);
+  rotate: 4deg;
+  animation: tape-from-right 520ms var(--ease) 90ms both;
+}
+
+.tape-run {
+  display: flex;
+  flex: none;
+  white-space: nowrap;
+  animation: tape-run 26s linear infinite;
+}
+
+.tape.from-right .tape-run {
+  animation-direction: reverse;
+}
+
+.tape-run span {
+  padding: 0 26px;
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tape-run span::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 52px;
+  background: var(--ink);
+  vertical-align: 2px;
+}
+
+@keyframes tapes-veil {
+  from {
+    background: rgb(255 255 255 / 0);
+  }
+}
+
+@keyframes tape-from-left {
+  from {
+    translate: -105% 0;
+  }
+}
+
+@keyframes tape-from-right {
+  from {
+    translate: 105% 0;
+  }
+}
+
+@keyframes tape-run {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tape,
+  .tape-run,
+  .tapes {
+    animation: none !important;
+  }
+}
+

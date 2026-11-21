@@ -1,406 +1,510 @@
 ---
 name: LV Check
-description: A German bill of quantities read as a construction site under signage; trouble is a numbered sign you can read from the back of the room.
+description: A German bill of quantities checked item by item; yellow and white, industrial, small and square, with the trouble standing up in place.
 colors:
   signal-yellow: "#ffc400"
   yellow-ink: "#3a2c00"
+  strip-yellow: "#f2b600"
   ink: "#121413"
   ink-2: "#3b403a"
-  ink-hover: "#2d312e"
+  tag-ink: "#3f433d"
+  mute: "#5f635c"
+  dim: "#8b8e87"
   stop-red: "#c4161c"
   note-blue: "#0a5aa8"
-  plate: "#fcfcf9"
-  ground: "#ecece6"
-  rule: "#cdd0c7"
-  concrete-mark: "#b4b9ac"
-  on-ink: "#ffffff"
-  on-ink-quiet: "#d9dcd4"
+  ground: "#ffffff"
+  tint: "#f6f6f2"
+  hover: "#fff7cf"
+  rule: "#e3e3dd"
+  line-2: "#c4c4bc"
+  strip-base: "#e9e9e4"
+  strip-base-hover: "#eadb96"
 typography:
-  display:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "clamp(3rem, 6.4vw, 5.5rem)"
-    fontWeight: 700
-    lineHeight: 0.92
-    letterSpacing: "0.01em"
-  item-number:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "84px"
-    fontWeight: 700
-    lineHeight: 0.95
-    letterSpacing: "0.01em"
-    fontFeature: "tnum"
-  headline:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "40px"
-    fontWeight: 700
-    lineHeight: 1
-    letterSpacing: "0.025em"
-  title:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "32px"
-    fontWeight: 700
-    lineHeight: 1
-    letterSpacing: "0.025em"
-  plate-title:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "28px"
-    fontWeight: 700
-    lineHeight: 1.05
-    letterSpacing: "0.025em"
-  mark-number:
+  brand:
     fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
     fontSize: "24px"
     fontWeight: 700
-    lineHeight: "36px"
-    letterSpacing: "0.01em"
+    lineHeight: 1
+    letterSpacing: "0.025em"
+  headline:
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "22px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "0.04em"
+  item-number:
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "0.02em"
     fontFeature: "tnum"
-  button:
+  figure:
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "24px"
+    fontWeight: 600
+    lineHeight: 1
+    fontFeature: "tnum"
+  index:
     fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
     fontSize: "18px"
     fontWeight: 600
-    letterSpacing: "0.025em"
-  body:
+    lineHeight: 1
+    fontFeature: "tnum"
+  title:
     fontFamily: "Barlow, system-ui, sans-serif"
-    fontSize: "17px"
-    fontWeight: 500
-    lineHeight: 1.5
-  body-strong:
-    fontFamily: "Barlow, system-ui, sans-serif"
-    fontSize: "19px"
+    fontSize: "15px"
     fontWeight: 600
     lineHeight: 1.25
+  body:
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 400
+    lineHeight: 1.45
+  body-small:
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "12.5px"
+    fontWeight: 400
+    lineHeight: 1.45
   label:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "20px"
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "11px"
     fontWeight: 600
-    letterSpacing: "0.04em"
+    letterSpacing: "0.1em"
+  button:
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 700
+    letterSpacing: "0.08em"
+  tag:
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "10.5px"
+    fontWeight: 600
+    lineHeight: 1.6
+    letterSpacing: "0.08em"
 rounded:
-  mark: "2px"
-  tag: "3px"
-  control: "4px"
-  plate: "8px"
+  none: "0"
+  control: "2px"
 spacing:
-  strip: "3px"
-  xs: "8px"
-  sm: "12px"
-  gutter-mobile: "16px"
-  panel: "22px"
-  gutter: "24px"
-  column: "48px"
+  mark-gap: "2px"
+  chip-gap: "4px"
+  card: "12px"
+  gutter-mobile: "14px"
+  panel: "16px"
+  gutter: "20px"
+  page: "28px"
 components:
-  button-primary:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
-    typography: "{typography.button}"
-    rounded: "{rounded.control}"
-    padding: "0 18px"
-    height: "40px"
-  button-primary-hover:
-    backgroundColor: "{colors.ink-hover}"
-  input:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body}"
-    rounded: "{rounded.control}"
-    padding: "0 12px"
-    height: "40px"
-  view-tab:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.ink}"
-    padding: "0 14px"
-    height: "38px"
-  view-tab-hover:
-    backgroundColor: "{colors.signal-yellow}"
-  view-tab-selected:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
   band:
     backgroundColor: "{colors.signal-yellow}"
     textColor: "{colors.ink}"
-    padding: "12px 24px 10px"
-  section-number:
+    height: "54px"
+    padding: "6px 20px"
+  button-primary:
+    backgroundColor: "{colors.signal-yellow}"
+    textColor: "{colors.ink}"
+    typography: "{typography.button}"
+    rounded: "{rounded.control}"
+    height: "32px"
+    padding: "0 12px"
+  button-primary-hover:
     backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
+    textColor: "{colors.signal-yellow}"
+  button-ink:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ground}"
+    typography: "{typography.button}"
     rounded: "{rounded.control}"
-    padding: "1px 8px 3px"
-  section-number-active:
-    backgroundColor: "{colors.signal-yellow}"
+    height: "30px"
+    padding: "0 12px"
+  button-outline:
+    backgroundColor: "{colors.ground}"
     textColor: "{colors.ink}"
-  mark-tick:
-    backgroundColor: "{colors.concrete-mark}"
-    rounded: "{rounded.mark}"
-    width: "8px"
-    height: "36px"
-  mark-block-stop:
-    backgroundColor: "{colors.stop-red}"
-    textColor: "{colors.on-ink}"
-    typography: "{typography.mark-number}"
-    rounded: "{rounded.mark}"
-    padding: "0 9px"
-    height: "36px"
-  mark-block-caution:
-    backgroundColor: "{colors.signal-yellow}"
-    textColor: "{colors.ink}"
-    typography: "{typography.mark-number}"
-    rounded: "{rounded.mark}"
-    padding: "0 9px"
-    height: "36px"
-  mark-block-note:
-    backgroundColor: "{colors.note-blue}"
-    rounded: "{rounded.mark}"
-    width: "22px"
-    height: "36px"
-  sign-plate:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.plate}"
-  sign-plate-header-stop:
-    backgroundColor: "{colors.stop-red}"
-    textColor: "{colors.on-ink}"
-    typography: "{typography.plate-title}"
-    padding: "10px 14px"
-  sign-plate-header-caution:
-    backgroundColor: "{colors.signal-yellow}"
-    textColor: "{colors.ink}"
-    typography: "{typography.plate-title}"
-    padding: "10px 14px"
-  sign-plate-header-note:
-    backgroundColor: "{colors.note-blue}"
-    textColor: "{colors.on-ink}"
-    typography: "{typography.plate-title}"
-    padding: "10px 14px"
-  severity-toggle:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.ink}"
+    typography: "{typography.button}"
     rounded: "{rounded.control}"
-    padding: "0 10px"
-    height: "48px"
-  section-chip:
-    backgroundColor: "{colors.signal-yellow}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    padding: "7px 12px"
-  tag:
+    height: "30px"
+    padding: "0 12px"
+  button-outline-hover:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ground}"
+  button-ghost:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
-    rounded: "{rounded.tag}"
-    padding: "0 7px"
-  readout:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
+    typography: "{typography.button}"
     rounded: "{rounded.control}"
-    padding: "0 14px"
-    height: "50px"
-  finding-row-hover:
+    height: "32px"
+    padding: "0 12px"
+  button-ghost-hover:
     backgroundColor: "{colors.signal-yellow}"
-  table-head:
+  input:
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    height: "30px"
+    padding: "0 9px"
+  file-chip:
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    height: "24px"
+    padding: "0 8px"
+  file-chip-selected:
     backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
-    typography: "{typography.label}"
-    padding: "9px 12px"
+    textColor: "{colors.ground}"
+  view-switch-selected:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ground}"
+    height: "28px"
+    padding: "0 11px"
+  tag:
+    backgroundColor: "transparent"
+    textColor: "{colors.tag-ink}"
+    typography: "{typography.tag}"
+    rounded: "{rounded.none}"
+    padding: "0 5px"
+  index-plate:
+    backgroundColor: "{colors.signal-yellow}"
+    textColor: "{colors.ink}"
+    typography: "{typography.index}"
+    rounded: "{rounded.none}"
+    size: "30px"
+  index-plate-hover:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.signal-yellow}"
+  finding-card:
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "12px"
+  quoted-lv-text:
+    backgroundColor: "{colors.tint}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "10px 12px"
+  readout:
+    backgroundColor: "{colors.tint}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    height: "32px"
+    padding: "0 10px"
 ---
 
 # Design System: LV Check
 
+Recorded from the build on 2026-11-21 (`web/src/styles.css`, last matching rule; the React components in
+`web/src/`). It replaces the earlier "site signage" document; the direction is D-020 in `docs/DECISIONS.md`.
+
 ## Overview
 
-**Creative North Star: "The Site Signboard"**
+**Creative North Star: "The Site Register"**
 
-The interface is built from the materials of a German construction site's safety signage: a signal-yellow band closed by a yellow-and-black hazard stripe, black condensed capitals, white sign plates held by a black keyline, and concrete greys underneath. The bill of quantities (Leistungsverzeichnis, LV) is treated as a site that is still under construction, and every problem in it is posted the way a site posts a hazard: as a sign with a fixed shape, a fixed colour and a number large enough to read from across the yard.
+The team's brief, binding: keep the yellow tone and the "under construction" image; yellow and white;
+industrial but modern; nothing round, nothing soft, nothing huge. The build answers with a white sheet under
+one yellow band. The band, 54px high with a black-and-yellow hazard stripe along its lower edge and a
+tower-crane mark as the logo, is the one piece of site on every page. Everything below it is a register: hairline
+rules, square corners, 12 to 15px text, small tracked capitals for labels, tabular figures.
 
-Density is that of a working tool, not a brochure. The loaded screen is a fixed two-pane workspace with no page scroll: an LV map on the left (one row per section, one mark per item, in file order), and on the right a findings list that is replaced by an item sheet when something is selected. Type is large and heavy on purpose; the second audience is a jury reading a projector from a distance, so the base text is 17px at weight 500, most reading text is 18 to 25px, and the whole interface zooms on wide screens.
+The product principle "where before what" is carried by one device used at two scales. An LV is drawn as a
+strip of its items in LV order; an item without a finding is a pale grey mark, an item with a finding stands up
+in its severity colour. On the projects page the strip is 22px high and anonymous (the fingerprint); in the
+workspace it becomes the LV map, where flagged items carry their item number. Severity is always shape plus
+colour: Stop is a red circle, Caution a yellow triangle, Note a blue square.
 
-The system is flat and opaque. Nothing floats, blurs or glows; hierarchy comes from keyline weight, solid colour fields and the size of condensed numerals. German LV text is shown exactly as issued and never translated in place; interface text is English.
+Rejected by the team and not to return: all-yellow pages with heavy black keylines (tiring), the same language
+made softer with rounded cards and a large headline, and a dark version.
 
 **Key Characteristics:**
-- Signal yellow is a surface, not a highlight: the band, the landing page, hover and selection all use the same yellow.
-- Severity is three signs, Stop / Caution / Note, carried by shape and colour together: red circle, yellow triangle, blue square.
-- Item numbers (Ordnungszahlen) are the largest and heaviest thing in every view, always in tabular condensed numerals.
-- White plates with a black keyline hold content; the grey ground holds the map.
-- Flat, opaque, hard-edged. The only gradient is the hard-stop hazard stripe.
-- Built to be read from the back of a room: nothing below 14px, body at 17px and weight 500, captions in 20px condensed capitals, 1.2x and 1.5x zoom on large displays.
+- White ground, one yellow band; yellow below the band only for the primary action, index plates, a caution mark and hover.
+- Hairlines (1px) do the dividing; cards are an outline, never a fill and a shadow.
+- Square: containers and marks have no radius, controls have 2px.
+- Small type: body 14px, labels 11px capitals, the largest text on any page is the 30px item number.
+- The LV as a strip of items with trouble standing up in place, on the projects page and in the workspace.
+- Three severity signs, shape and colour together, unchanged across every view.
 
 ## Colors
 
-A signage palette: one signal yellow, one black, three severity colours that each belong to exactly one sign shape, and concrete neutrals. Every colour is a solid field; none is used as a tint or at reduced opacity.
+Yellow and white with near-black ink; red and blue appear only as severity.
 
 ### Primary
-- **Signal Yellow** (#ffc400): the band at the top of every screen, the whole landing surface, the fill of a Caution sign and a Caution block, and the single hover and selection colour for rows, tabs, chips and item-number links in the workspace. Also the text-selection and evidence-highlight colour.
-- **Site Black** (#121413): all primary text, every keyline, primary buttons, the section-number tiles, the sticky table head, the readout bar and the busy and status strip. On the landing, where the page behind the plates is already yellow, a hovered dataset row inverts to Site Black with white text instead.
+- **Signal Yellow** (`signal-yellow`): the band; the one primary action of a view (New project, Run AI review);
+  index plates (project letter, section number); Caution blocks in the LV map and the Caution triangle;
+  `mark` highlight on quoted text; text selection; the intake panel's header.
+- **Yellow Ink** (`yellow-ink`): secondary text on yellow (the file line in the band, the intake header).
+- **Strip Yellow** (`strip-yellow`): the Caution mark in the fingerprint strip. Slightly deeper than the band
+  yellow because a 3px line on white has no black keyline to hold it.
 
 ### Secondary
-- **Stop Red** (#c4161c): the Stop sign (circle with a white bar), Stop blocks on the map, the header of a Stop plate, error notices, and the "not equal" and dimension line in an item drawing. Used for nothing else.
-
-### Tertiary
-- **Note Blue** (#0a5aa8): the Note sign (rounded square with an "i"), Note blocks on the map, the header of a Note plate. It is also the keyboard focus ring, the one colour that never appears as a fill behind a focused control.
+- **Stop Red** (`stop-red`): Stop sign, Stop blocks and strip marks, error notices, a broken term or a missing
+  item in a finding picture, an unfavourable difference in what-if.
+- **Note Blue** (`note-blue`): Note sign, Note blocks and strip marks.
 
 ### Neutral
-- **Plate White** (#fcfcf9): sign plates, the right-hand panel, inputs, tabs at rest, the item table body.
-- **Concrete Ground** (#ecece6): the page background behind the map, table group rows, the inset block that holds the original LV text, the inside of a drawn pipe.
-- **Concrete Mark** (#b4b9ac): the tick that stands for an item without a finding on the map. Light enough that a row of ticks reads as texture and the coloured blocks read as the signal.
-- **Soft Rule** (#cdd0c7): lines between rows of a list or table and between sections of the map, where a black keyline would be too loud.
-- **Secondary Ink** (#3b403a): secondary text on plate and ground: reasons, counts, breadcrumbs, captions, anonymisation tokens.
-- **Yellow Ink** (#3a2c00): secondary text when it sits on Signal Yellow (the band's file line, the landing lede, a hovered row's reason line).
-- **Hover Ink** (#2d312e): the primary button's hover fill.
-- **On Ink** (#ffffff) and **On Ink Quiet** (#d9dcd4): text on Site Black, Stop Red and Note Blue; the quiet step is for hints and anonymised tokens inside the readout bar.
+- **Ink** (`ink`): text, the selected state of chips and switches, the top rule of a table, the secondary dark button.
+- **Ink 2** (`ink-2`), **Tag Ink** (`tag-ink`): quieter running text; text of outlined tags.
+- **Mute** (`mute`): secondary text (sub-lines, reasons, captions under pictures).
+- **Dim** (`dim`): labels in capitals, "no file", check ids, sources.
+- **Ground** (`ground`): page, panels, cards, table heads. There is one white.
+- **Tint** (`tint`): quoted LV text, the readout bar, the AI-review bar.
+- **Hover** (`hover`): pale yellow under a hovered row, the selected table row, the changed cell in what-if.
+- **Rule** (`rule`): hairlines between rows and inside cards; unflagged item marks in the LV map.
+- **Line 2** (`line-2`): outlines of controls, chips, tags and cards.
+- **Strip Base** (`strip-base`, `strip-base-hover`): the resting bar of a fingerprint strip, and its tone when the row is hovered.
 
 ### Named Rules
-**The One Sign, One Colour Rule.** Red means Stop, yellow triangle means Caution, blue means Note. Red and blue never decorate; if a new surface needs an accent, it is Signal Yellow or Site Black.
+**The One Band Rule.** A full-width yellow surface exists once per page: the band. Below it yellow is a small
+plate, a button or a mark, never a section background.
 
-**The Shape Carries It Too Rule.** Severity is never colour alone. Wherever a severity colour appears at small size, its sign shape (circle, triangle, square) appears with it, and the label Stop, Caution or Note is available in text.
+**The Severity Only Rule.** Red and blue mean Stop and Note (red also: an error or a loss). They are never used
+for decoration, links or branding.
 
-**The Keyline on Yellow Rule.** Yellow has no edge against the grey ground or the white plate, so a yellow object placed on either always gets a black keyline: the Caution triangle is stroked (1.7 on a 24 unit grid), the Caution block carries a 2px inset keyline, the section chip a 2px border.
-
-**The White Ring Rule.** A sign placed on a header of its own colour is outlined in white (2px), with the outline following the sign's shape.
-
-**The Yellow Ink Rule.** Grey text is not allowed on yellow. Secondary text that lands on Signal Yellow, including on hover, switches to Yellow Ink.
+**The Hover Is Yellow Rule.** Hover lightens to pale yellow on rows, and inverts yellow plates and the primary
+button to ink with yellow text. Selection is ink with white text.
 
 ## Typography
 
-**Display Font:** Barlow Condensed (with Arial Narrow, sans-serif), weights 600 and 700, self-hosted
-**Body Font:** Barlow (with system-ui, sans-serif), weight 500 as the base, 600 and 700 for emphasis, self-hosted
+**Display Font:** Barlow Condensed 600/700 (with Arial Narrow, sans-serif), self-hosted via @fontsource
+**Body Font:** Barlow 400/500/600/700 (with system-ui, sans-serif), self-hosted via @fontsource
 
-**Character:** Barlow Condensed in bold capitals stands in for the DIN lettering of German road and site signs; Barlow, its text-width sibling, keeps long German compound nouns readable at 17 to 25px. One family, two widths, no third voice. The condensed width has two jobs: large sign lettering at 700, and one caption voice at 600.
+**Character:** One family in two widths. Barlow carries everything that is read; the condensed cut is kept for
+a handful of numerals and headings where a figure has to be picked out of a row.
 
 ### Hierarchy
-- **Display** (700, clamp(3rem, 6.4vw, 5.5rem), line-height 0.92, 0.01em tracking, uppercase, max 12ch, balanced): the landing statement only.
-- **Item number** (700, 84px, line-height 0.95, 0.01em tracking, tabular numerals; 64px below 900px): the Ordnungszahl at the top of the item sheet. The same voice steps down wherever an item or section number appears: 32px on a section tile, 28px in a findings row, 26px in the readout, 24px on a map block and in the verdict's section reference, 22px in the table, 18px on an item-number link.
-- **Headline** (700, 40px, line-height 1, 0.025em tracking, uppercase; 32px below 900px): the verdict line, counts of Stops, Cautions and Notes with their signs at 36px. The upload plate's call uses the same size.
-- **Title** (700, 32px, line-height 1, 0.025em tracking, uppercase): panel headings. The same voice sets the product name in the band (30px), the three sign names on the landing (34px) and plate headings (28px, line-height 1.05).
-- **Button** (600, 18px, 0.025em tracking, uppercase): the primary button. The back control uses the same voice at 22px, weight 700.
-- **Body** (500, 17px, line-height 1.5): explanations, captions, list reasons, the band's file line. Reading text inside plates and the table steps up to 18px (plate fields at line-height 1.45, table cells, the facts line, the readout). Long text is capped: 46ch for the lede and the verdict's sub-line, 60ch for drawing captions and empty states, 65ch for plate text, 68ch for LV text at line-height 1.6.
-- **Body strong** (600 to 700, 19 to 25px, line-height 1.2 to 1.3): German item and section titles and the quoted evidence. Findings row title 19px, 600, up to two lines; table group row 19px, 700; the loaded LV's name in the band 20px, 700; evidence 21px, 600; section row title 22px, 700; sheet title 25px, 600, balanced; the landing lede 22px, 500, in Yellow Ink.
-- **Label** (Barlow Condensed 600, 20px, 0.04em tracking, uppercase): the one caption voice. Field headings inside a plate ("Why it matters", "What to do"), table column heads, the findings tally, the map key, item counts and "no rule finding" on a section row, the format and phase of a dataset file, the heading over the dataset list, "LV text, as issued". Chart labels inside a drawing use it at 15 SVG units. Two smaller condensed labels exist for identifiers: the kind tag (14px, 600, 0.05em, uppercase) and the check id on a plate header (16px, 600, 0.05em).
-- **Small print** (Barlow 500, 14 to 15px): the file and line an item came from (15px), a remark's path (14px), the "Show all sections" link on the section chip (14px, 600). 14px is the floor.
+- **Brand** (Barlow Condensed 700, 24px, 0.025em, uppercase): "LV CHECK" in the band, beside the crane mark.
+- **Headline** (Barlow Condensed 600, 22 to 24px, line-height 1, uppercase): the verdict counts of an LV
+  ("2 STOPS 10 CAUTIONS 8 NOTES", 22px, 0.04em) and the page title of the projects page (24px, 0.08em).
+- **Item number** (Barlow Condensed 600, 30px, 0.02em, tabular): the Ordnungszahl at the top of the item sheet.
+  The largest text in the product.
+- **Figure** (Barlow Condensed 600, 24px, tabular): a price from past bids, the totals in what-if, the
+  dimension inside a finding picture (20px).
+- **Index** (Barlow Condensed 600, 17 to 18px): the letter or number on a yellow index plate.
+- **Title** (Barlow 600, 14.5 to 16px, line-height 1.25 to 1.3): project name, section title in the map,
+  item title in the sheet, title of a finding.
+- **Body** (Barlow 400, 14px, line-height 1.45): base text. 13.5px inside cards, tables and quoted LV text.
+- **Body small** (Barlow 400, 12 to 13px): sub-lines, reasons, captions, chips, sources (11.5px).
+- **Label** (Barlow 600, 11px, 0.1em, uppercase, `dim`): column heads, card field names ("Why it matters"),
+  map key, counts in a panel head. One voice for every label.
+- **Button** (Barlow 700, 12px, 0.08em, uppercase): buttons, the back link, panel heads and card heads
+  (0.1em), step names on the projects page (11px).
+- **Tag** (Barlow 600, 10.5px, 0.08em, uppercase): outlined tags and the format word in a version button.
 
 ### Named Rules
-**The Capitals Are Condensed Rule.** Uppercase belongs to Barlow Condensed only. Barlow text is always sentence case, including tabs, toggles and table group rows. A label that needs capitals is set in the condensed caption voice (600, 20px, 0.04em), never in capitalised Barlow.
+**The Nothing Huge Rule.** 30px is the ceiling, and only the item number reaches it. A page title is 24px.
 
-**The Tracked Capitals Rule.** Condensed capitals are never set tight: 0.025em on display-weight words, 0.04em on captions, 0.05em on the small identifier labels. Condensed numerals and the landing statement, which are large enough to hold their own spacing, take 0.01em.
+**The Condensed For Figures Rule.** Barlow Condensed appears only on the brand, the two headlines, index
+plates, the item number and money or dimension figures. Buttons, labels, tags, table cells and item numbers in
+lists and blocks are Barlow.
 
-**The Numbers Are Signs Rule.** An item or section number is always Barlow Condensed 700 with tabular numerals, and is never smaller than the text it identifies. Quantities and money in running text stay in Barlow, also tabular.
+**The Tabular Rule.** Every item number, count, quantity and amount is set with tabular figures.
 
-**The German Stays German Rule.** LV text keeps its original wording, carries `lang="de"`, and is never uppercased or truncated in the item sheet (it wraps; list rows clamp to two lines, single-line contexts such as the map row and the readout may ellipsise). Anonymisation tokens such as `[FIRMA_044]` are dimmed to Secondary Ink with a dotted underline, never styled as errors.
+**The German Stays German Rule.** LV text is shown as written and marked `lang="de"`; anonymisation tokens are
+shown in quieter ink with a dotted underline, never styled as errors.
 
 ## Layout
 
-The loaded screen is a full-height application frame: the band on top (minimum 72px plus a 12px hazard stripe), then a two-column workspace that fills the rest of the viewport. The left column is fluid; the right column is `clamp(380px, 34vw, 580px)` and is divided from the left by a 3px black keyline. Each pane scrolls on its own; the page itself does not scroll. Outer gutters are 24px on the left pane and 22px inside the right panel.
+Every page is a column: band, an optional bar, then the content filling the height.
 
-The left pane stacks a verdict line with the view switch (LV map, Item table, Remarks), the active view, and, under the map, a fixed 50px black readout bar that names whatever mark is under the pointer. The LV map is a strip map: one ruled row per section (12px above, 14px below, a 2px Soft Rule line between sections) with a black number tile, the section title and its sign counts, then a wrapping strip of marks indented 56px to align under the title. Marks are 36px tall with 3px gaps; the first mark of each sub-section (a change in the second part of the item number) is set off by a further 9px, so the strip reads in groups without any extra labels. The map never re-flows when a filter or selection changes; marks only change state.
-
-The landing state is a 1180px container on a full yellow surface, built as two rows of two columns with a 48px gap. First row, aligned to the bottom edge: the statement and lede on the left (1.25 parts), a plate explaining the three signs on the right (1 part, at least 300px). Second row, 44px below, two equal columns of equal height: the upload plate, and the dataset list under its caption.
-
-Spacing is tight and regular, not airy: 3px between marks, 8 to 14px between controls and inside rows, 20px between blocks in the item sheet, 22 to 24px as pane gutters, 48px between landing columns.
-
-**Responsive behaviour.** Below 900px the frame becomes an ordinary scrolling page: the workspace stacks (map first, panel below with a 3px top keyline instead of a left one), gutters drop to 16px, the band wraps with the file line on its own row, the landing's two-column rows collapse to one column with a 28px gap, the strip loses its indent, section row titles drop to 18px and their item counts are hidden, and the readout wraps. From 1700px the whole body zooms 1.2x and from 2300px 1.5x, so type, signs and marks grow together for projector use; nothing is re-laid-out for large screens.
-
-### Named Rules
-**The Where Before What Rule.** The map of the whole LV is the first thing a loaded file shows and is the way to navigate. Lists and tables are secondary views of the same items.
-
-**The Whole Room Zoom Rule.** Large displays scale the entire interface (1.2x from 1700px, 1.5x from 2300px). Do not add wide-screen layouts that spread content out; make it bigger.
+- **Projects page.** Content is centred with a maximum width of 1320px and at least 28px at the sides (26px
+  above). A head line (title and totals left, drop hint and the primary button right), then the register: one
+  row per project on a four-column grid of index plate (30px), project (190 to 250px), steps (the rest) and net
+  total (132px), 20px between columns, 14px above and below, hairline between rows. Inside a row the three
+  steps Tender, Bid, Award each take one line of at least 28px on their own grid: step name, file chips,
+  fingerprint strip, counts, item count.
+- **Workspace.** Under the band a bar with the versions of the LV, then two panes: the left pane takes the
+  remaining width, the right pane is `clamp(360px, 32vw, 520px)` with a hairline on its left. Left: the verdict
+  and the view switch (LV map, Item table, Remarks, What-if), the view, and the readout bar at the bottom of
+  the map. Right: the findings list, replaced by the item sheet when an item is open. Gutter 20px on the left
+  pane, 16px in the right pane, 12px inside a card.
+- **Project view.** Same two panes: the trade diagram left, findings between the LVs right.
+- **Rhythm.** Dense and even: rows are separated by a hairline and 6 to 14px of padding, marks in a strip are
+  2px apart, chips 4px apart. A new sub-section in the LV map starts after a 7px gap.
+- **Narrow (up to 900px).** Gutters drop to 14px; the register row becomes index plate plus one stacked
+  column, column heads are hidden, the strip takes the full width under its chips; the workspace panes stack
+  and scroll as one page; band actions wrap.
+- **901 to 1280px.** The register columns tighten (project 150 to 200px, chips column 150px) so the strip keeps
+  a readable width.
+- **Large displays.** The whole interface is scaled, not re-laid-out: `body { zoom: 1.15 }` from 1700px wide
+  and `zoom: 1.4` from 2300px. This is how the UI stays readable on a projector without large type.
 
 ## Elevation & Depth
 
-Flat. There are no resting shadows, no blur, no translucency and no overlapping layers apart from the full-screen drop target. Depth is conveyed by three things only: surface colour (grey ground, white plate, black bar), keyline weight, and position in the frame.
-
-Keylines come in three weights, all Site Black unless noted: 3px for plates, pane dividers, plate headers and the rows of the landing's sign plate; 2px for controls, and in Soft Rule colour for the lines between map sections; 1.5px for internal dividers (Soft Rule colour between list and table rows, black inside a plate).
-
-State is shown with rings and fills, not lift. Selection on the map is a 4px black outline offset 2px; a related item is a 3px dashed black outline; an active section tile turns yellow with a 3px black ring; keyboard focus is a 3px Note Blue outline offset 2px (4px on map marks, inset on full-width rows). Pressed and hovered marks move by a few pixels (a block rises 3px, the primary button sinks 1px) over 150ms on `cubic-bezier(0.16, 1, 0.3, 1)`; all motion is removed under `prefers-reduced-motion`.
+Flat. There are no shadows and no layers; depth is not a device here. `box-shadow` appears only as a drawn
+line: a 1px inset ink outline on the white buttons in the band, a 1px ink rule under a table head, and a 2px
+ink ring around a hovered block in the LV map. The one perspective drawing is the trade diagram.
 
 ### Named Rules
-**The Keyline, Not Shadow Rule.** A surface is separated from its neighbour by a black line or a change of solid colour. If a new element seems to need a shadow, give it a keyline.
-
-**The Stripe Means State Rule.** The yellow-black diagonal stripe appears only where the site itself is in a transitional state: under the band (the LV is under review), under the busy strip (analysis running, 6px), and around the full-screen drop target (22px). It is always hard-stopped at -45 degrees, and never a decorative divider between content blocks.
+**The Line Not Lift Rule.** State is shown by a line or a fill changing colour (120ms), never by a shadow, a
+blur or a movement.
 
 ## Shapes
 
-Hard-edged and rectilinear with barely softened corners, like pressed metal signs. Radii step with the size of the object: 2px for map marks, 3px for tags and item-number links, 4px for controls, tiles and bars, 8px for plates. Nothing is pill-shaped and nothing is fully round except the Stop sign itself.
+Square. Containers and marks have no radius: cards, tags, index plates, strip marks, map blocks, quoted text,
+the readout, the intake panel. Controls have 2px: buttons, inputs, selects, file chips, version buttons, the
+view switch, severity toggles, item links.
 
-The three sign shapes are the system's only pictorial vocabulary: a red disc with a white horizontal bar, a yellow triangle with a black stroke and a black exclamation mark, a blue rounded square with a white "i". They are drawn as inline SVG on a 24 unit grid and used from 18px (section counts) through 20 to 26px (table, map key, readout, toggles, list rows) to 30px (plate headers), 36px (verdict line) and 56px (the landing's sign plate).
+Lines come in three weights: 1px `rule` between rows and inside cards; 1px `line-2` around controls and cards;
+ink for emphasis (1px under a table head and on a hovered or selected control, 2px on top of the register
+table and around the intake panel).
 
-Item drawings inside the sheet follow the same language: thick black outlines, ground-grey fills, a red dimension line, labels in the two type voices, all inside an ordinary plate.
+The hazard stripe is the only pattern: black and yellow at 45 degrees, 8px per band, 6px high, drawn as the
+lower border of the band. It also runs under a notice while a file is being read and along the ground edge in
+the trade diagram.
+
+**The Round Belongs To The Signs Rule.** The circle and the rounded square exist as severity signs, and a
+circle may be drawn where the subject itself is round (a pipe bore in a finding picture). No interface
+container, button or badge is round or pill-shaped.
 
 ## Components
 
+### Band
+The site, once per page. Signal yellow, at least 54px high, 6px by 20px padding, hazard stripe as its lower
+border. Left: the crane mark (a 24px line drawing in ink, 1.8px square-ended strokes) and "LV CHECK" in the
+brand style; in the workspace the brand is the way back to the projects. Then the open project (15px, 600) over
+a file line (12.5px, yellow ink); a created project's name is an input that shows its frame only on hover and
+focus. Right: actions.
+
 ### Buttons
-- **Shape:** slightly softened rectangle (4px), 40px tall.
-- **Primary:** Site Black fill, white Barlow Condensed capitals (18px, 600, 0.025em), 18px side padding, no border.
-- **Hover / Focus:** hover lightens to Hover Ink; active sinks 1px; focus shows the 3px Note Blue outline. Disabled is 50% opacity with a default cursor.
-- **Text link:** a borderless button in Barlow 600 with a 2px underline, offset 3px; the underline turns Note Blue on hover. Used for "Show in item table" and "Dismiss".
-- **Back:** chevron plus Barlow Condensed capitals (22px, 700, 0.025em), no fill at rest, yellow fill on hover.
+- **Shape:** 2px radius, 30 to 32px high, 12px side padding, Barlow 700 12px capitals with 0.08em tracking.
+- **Primary** (New project, Run AI review): yellow with ink text; hover inverts to ink with yellow text. One per view.
+- **Ink** (All projects in the band): ink with white text.
+- **Outline in the band** (Risk report, Bidder questions): white with a 1px inset ink line; hover ink with white text.
+- **Ghost** (Cancel, Add files): transparent with a `line-2` outline; hover yellow with an ink outline. "Add files" is the small size, 26px high, 10.5px.
+- **Back link** in the item sheet: a chevron and capitals, no outline; hover pale yellow.
+- **Text link:** 600, 1px underline with 3px offset.
+- **Focus:** 2px ink outline, 2px offset, everywhere.
+- Colour transitions are 120ms with `cubic-bezier(0.16, 1, 0.3, 1)`; `prefers-reduced-motion` removes all transitions.
+- The only larger motion is the loading tapes (520ms pull-in, then a steady run along the tape).
 
-### Chips
-- **Tag:** outline only (1.5px black, 3px radius), Barlow Condensed capitals (14px, 600, 0.05em), for an item's kind. Not interactive.
-- **Item-number link:** 2px black border, 3px radius, plate fill, Barlow Condensed 700 at 18px; yellow fill on hover. Jumps to that item.
-- **Section chip:** yellow fill, 2px black border, 4px radius; shows the active section filter with an underlined "Show all sections" (14px, 600) to clear it.
-- **Severity toggle:** 48px plate-white control with a 2px black border holding a 24px sign, the label (Barlow 18px, 600) and the count (Barlow Condensed 20px, 700). Switched off, it turns to a dashed Secondary Ink border, grey text with a line through the label, and a greyed sign at 45% opacity. Three toggles sit in an equal three-column row.
+### Chips, tags and toggles
+- **File chip** (projects page) and **version button** (workspace bar): 24px high, white with a `line-2`
+  outline, 12px; the format word in bold, a qualifier ("package", "as submitted") in lighter small text. Hover:
+  ink outline. Selected: ink with white text. One file per step is selected and the strip shows that file.
+- **Tag:** outline only (`line-2`), no radius, 10.5px capitals, `tag-ink`. Used for trade and format words.
+- **Source chip** ("00 Roh und Erdauarbeiten, 3 cautions"): 22px high, outlined, 600; hover yellow with an ink outline.
+- **Severity toggle** (findings filter): 28px high, outlined, sign, name and count; switched off it keeps only a `rule` outline.
+- **Section chip** (active section filter): pale yellow with an ink outline.
+- **Item link** inside a finding: outlined item number, 12px 700; hover pale yellow with an ink outline.
 
-### Cards / Containers
-- **Sign plate:** plate-white fill, 3px black keyline, 8px radius, no shadow. Used for the upload target, the dataset list, the landing's sign plate, the item drawing and each finding.
-- **Finding plate:** a sign plate with a coloured header (Stop Red, Signal Yellow or Note Blue) closed by a 3px black line; the header holds a 30px sign, the category in Barlow Condensed capitals (28px) and the check id (Barlow Condensed 16px, 600, 0.05em). Below it: the quoted evidence (21px, 600, 16px padding) closed by a 1.5px black line, then fields headed in the caption voice with 18px answers, in order: why it matters, what to do (600), money at stake (or "Not quantified"), related items.
-- **Sign plate (landing):** one plate, three rows divided by 3px black lines, each 16px by 20px: a 56px sign in a fixed column, the sign's name in Barlow Condensed capitals (34px), and one sentence in Secondary Ink saying what that sign asks the estimator to do. It teaches the vocabulary before a file is loaded.
-- **Upload plate:** a sign plate that is one button, at least 220px tall, 44px by 28px padding, holding the call in Barlow Condensed capitals (40px) and the accepted formats in Secondary Ink (18px). It rises 3px on hover.
-- **Dataset list:** a sign plate of full-width rows (12px by 18px) divided by 1.5px black lines: file name in Barlow 600 on the left, format and phase in the caption voice on the right. A hovered row inverts to Site Black with white text.
-- **Internal padding:** 14 to 18px in workspace plates; 16 to 20px in the landing's sign plate.
-- **LV text block:** the original German text on Concrete Ground, 4px radius, 16px by 18px padding, 18px at line-height 1.6, line breaks preserved; quoted evidence fragments are highlighted in Signal Yellow.
+### Inputs
+White, `line-2` outline, 2px radius, 30px high (32px in the intake panel), 13 to 14px text. Focus: the outline
+turns ink; in the intake panel a 2px yellow outline is added. A field label is the label style above the field.
 
-### Inputs / Fields
-- **Style:** search fields and selects are 40px tall, plate-white, 2px black border, 4px radius, 12px side padding; placeholder in Secondary Ink.
-- **Focus:** the global 3px Note Blue outline, offset 2px.
-- **Checkbox:** native, 20px, accent colour Site Black.
+### View switch
+Four segments in one `line-2` outline with hairlines between them, 28px high, 12px 600. Selected: ink with
+white text. Hover on the others: pale yellow.
 
-### Navigation
-- **Band:** yellow, at least 72px tall, 24px side padding, closed by a 12px hazard stripe. Holds the product name in Barlow Condensed capitals (30px), the loaded LV's name (20px, 700) over its file, phase and price status (17px, 500, Yellow Ink), then a dataset select and the primary button. Before a file is loaded it holds the product name alone.
-- **View switch:** a segmented control in one 2px black frame (4px radius), segments 38px tall divided by 2px black lines, Barlow 600 sentence case at the base size. Selected is black with white text; hover on an unselected segment is yellow.
-- **Notice strip:** a full-width black bar under the band (10px by 24px, 500 weight, white). Busy adds a 6px hazard stripe below; error turns the bar Stop Red.
+### Severity signs
+One component (`Sign`), drawn on a 24-unit grid and used at 14 to 18px: Stop is a red disc with a white bar,
+Caution a yellow triangle with an ink outline and exclamation mark, Note a blue square with a white "i". A
+count always stands to the right of its sign; a zero count is shown faded (38%), not removed.
 
-### LV Map (signature)
-One ruled row per section, separated from the next by a 2px Soft Rule line. The row head is a button: a black number tile (Barlow Condensed 32px, 4px radius, at least 44px wide), the German section title (22px, 700, single line), then sign counts (18px signs with 20px, 700 tabular figures) and the item count in the caption voice, Secondary Ink; a section with nothing says "no rule finding" in the same voice. Hovering or activating the row turns the tile yellow with a 3px black ring and filters the findings list to that section.
+### Register row and fingerprint strip (signature)
+A project is one row: a 30px yellow index plate with the project letter, name (15px, 600) over a sub-line and
+the project's sign counts, then the three steps. A step without a file reads "no file" in `dim`. The strip is
+22px high and as wide as its column: a `strip-base` bar with one vertical line per flagged item at the item's
+place in the LV (red and yellow 3px, blue 2px). Net total right-aligned with its source underneath ("award",
+"offer"), or "no prices". Hover: the row turns pale yellow, the plate inverts, the strip base warms. A step
+whose formats disagree says so in red under the strip. The table has a 2px ink rule on top and a legend line
+with the three signs beneath.
 
-Below the head, a wrapping strip holds one mark per item in file order. An item with no finding is a tick: 8px by 36px, Concrete Mark, turning black on hover. An item with a finding is a block of the same height in its worst severity's colour: Stop and Caution blocks carry the item number (Barlow Condensed 24px), Note blocks are a plain 22px blue block with no number. Severity therefore reads on one fixed height as an increase in width and loudness: tick, blue block, numbered yellow block, numbered red block. Where the sub-section changes, the next mark starts after a wider gap (9px on top of the 3px), which is the strip's only grouping device. A key in the caption voice, with the three signs at 22px and a short tick, sits above the first row. Hiding a severity turns its blocks back into ticks without moving anything.
+### Intake panel
+Files that were dropped and read but not yet kept. The one heavy frame in the product: a 2px ink border, a
+yellow header with a 2px ink rule under it, one 36px line per file (name, format tag, what it is, which LV),
+and a footer with the project-name field or destination select, the primary button and Cancel. While files are
+dragged over the page a pale-yellow veil with a 2px dashed ink border says "Drop to read the files"; a row that
+accepts files shows the same dashed line.
 
-### Readout Bar
-A 50px black bar (4px radius, 18px text) pinned under the map. At rest it holds one line of instruction in On Ink Quiet; on hover or focus of a mark it shows that item's sign (22px), number (Barlow Condensed 26px), German short text and, right-aligned in Signal Yellow, its quantity and unit. It replaces tooltips.
+### LV map (signature)
+One row per section, hairline between rows: a yellow index plate with the section number, the title (14.5px,
+600), on the right the section's sign counts, risk points and item count as labels. Under it the strip, 22px
+high, indented 36px: an unflagged item is a 5px `rule`-coloured tick, a flagged item is a block in its severity
+colour carrying its item number (12px 700; red and blue with white text, yellow with ink text; a Note block is
+a bare square). Hover: tick turns ink, block gets a 2px ink ring. Selected: 2px ink outline at 2px offset;
+items related to the open finding get a dashed outline. The key above the map uses the label style. The
+readout below (32px, tint, hairline outline) names the item under the pointer.
 
-### Findings List
-The panel head carries the title (32px) and, in the caption voice, the tally of findings and items. Below the filters, one row per item, not per finding: a 26px sign for the worst severity, the item number (Barlow Condensed 28px) in a fixed 92px column, then the German short text (19px, 600, wrapping to at most two lines) over the finding categories (17px, Secondary Ink). Rows are full-width buttons, 13px by 22px, divided by 1.5px Soft Rule lines; hover fills the row yellow and switches the secondary line to Yellow Ink.
+### Findings list
+Rows on a 16px sign, 62px item number, text grid; item number 13.5px 700, title 13.5px 600, the category
+underneath in 12px `mute`; hairline between rows, pale yellow on hover. Above it the severity toggles, a search
+field and category select, and the AI-review bar (tint) with the primary button.
 
-### Item Sheet
-Replaces the findings list on selection. In order: breadcrumb of section titles (17px, Secondary Ink), the item number at 84px, the German short text (25px, 600) with evidence fragments highlighted, a facts line (18px; quantity in bold at 22px with unit, kind tag, prices if the file has them), the item drawing if one applies, one finding plate per finding, references to other items, then, 36px lower under a caption-voice heading, the full LV text "as issued" and the file and line it came from (15px).
+### Item sheet and finding card
+Breadcrumb (12px, `mute`), the item number in the item-number style, the title (16px, 600; the contradicted
+words marked yellow), quantity and unit. Then one card per finding: a 1px `line-2` outline, no radius, white.
+Its head is the sign, the kind of finding in capitals (12px 700, 0.1em) and the check id right-aligned in
+`dim`; the head is white for every severity, the sign alone carries the colour. Body: the finding title
+(14.5px, 600), the quoted evidence (13.5px, 500), a picture where one exists, then label and text pairs for why
+it matters, what to do and money at stake. Below the cards: "Price from past bids" with the figure or
+"No reliable price.", its sources, and the full LV text on tint.
 
-### Item Drawing
-A sign plate holding one SVG (max 440px wide, centred) and a caption (17px, Secondary Ink, max 60ch). Two exist: a to-scale comparison of two pipe diameters named for the same item (ground-grey discs with heavy black outlines, a red diameter line, the sizes in Barlow Condensed 24, a red "not equal" at 40 between them, "Short text" and "Long text" beneath in the caption voice), and a rank chart of the item's total among all priced items (grey bars, the item's own bar black on a yellow column with a black outline). A drawing appears only when the data supports it and its caption states the source.
+### Pictures inside a finding
+Plain line drawings in ink on white, ruled off like the evidence above them, at most 340px wide, with a
+caption in 12.5px `mute` and labels in the label style. The forms in use: two sizes drawn to scale with a red
+"not equal" between them; an equation of outlined terms with the wrong term outlined red; a sequence of
+outlined plates joined by arrows, a missing one dashed red; horizontal bars 14px high on `rule` grey; a price
+range with the past bids as dots. Red marks the one thing that is wrong, nothing else is coloured.
 
-### Item Table
-Plate-white table with a sticky black head in the caption voice (white). Cells are 10px by 12px, 18px text, top-aligned, divided by 1.5px Soft Rule lines; numbers are right-aligned and tabular; the item number column is Barlow Condensed 22px. Each section opens with a ground-grey group row (Barlow 19px, 700, sentence case) closed by a 3px black line. A leading narrow column shows the row's worst sign at 20px. Hover and the selected row are yellow.
+### Tables (item table, what-if)
+Head cells in the label style on white with a 1px ink rule beneath; rows 6px by 10px, 13.5px, hairline
+between; item number 700; numbers right-aligned and tabular. A section head row is 12.5px 700 with a `line-2`
+rule. Hover and the selected row are pale yellow. In what-if only the difference cell of a changed row is pale
+yellow; totals are in the figure style with labels above, the difference in red when the bid gets dearer, and
+two 14px bars compare before and after.
 
-### Remarks
-A single column capped at 78ch of collapsible entries divided by 1.5px black lines. Each summary stacks the remark's path (14px, Secondary Ink) over its first line (18px, 600, single line); opening it replaces the first line with the full German text at line-height 1.6.
+### Notice
+A bar under the band: red with white text, 13px 500, for an error and for the service not answering. It is not
+used for loading.
+
+### Loading tapes (signature)
+While files are being read the page is veiled in white (78 %) and two barrier tapes are pulled across it, one
+from each side, crossing a little off level (-5 and 4 degrees). A tape is 46px high: signal yellow, the hazard
+stripe 9px along both edges, a 1px ink line outside. Along it runs what is being read, in Barlow Condensed
+17px 600 capitals at 0.14em, the two tapes running in opposite directions. The tapes block the page until the
+work is done and vanish without an exit. This is the one place where the stripe moves and where an animation
+is more than a colour change; `prefers-reduced-motion` leaves the tapes in place, still.
+
+### Trade diagram (project view)
+The one three-dimensional drawing (D-018): each trade LV is a lettered slab, standing one storey above the last
+trade it builds on, so the order of work reads from the ground up ("Built first" to "Built later"). Trades with
+no stated interface lie on a concrete ground slab in front, edged with the hazard stripe. A trade that expects
+work no LV contains is red; a picked trade gets a yellow top. Dependencies are a faint grey web until a trade
+is pointed at or picked, then only its arrows remain, solid and named on a yellow label. White background,
+lettering in Barlow Condensed, the view turns about 57 degrees to either side. A tint readout below explains
+how to read it.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** put a problem's item number on the screen bigger and heavier than anything describing it; Barlow Condensed 700, tabular.
-- **Do** pair every severity colour with its sign shape and one of the three words Stop, Caution, Note.
-- **Do** give any yellow object on grey or white a black keyline (2px inset on blocks, 2px border on chips).
-- **Do** use Signal Yellow as the one hover and selection fill in the workspace, and switch grey secondary text to Yellow Ink (#3a2c00) when it lands on yellow.
-- **Do** separate surfaces with keylines in the three established weights: 3px plates and panes, 2px controls and map sections, 1.5px internal dividers.
-- **Do** set every caption, field heading and table head in the one caption voice: Barlow Condensed 600, 20px, 0.04em, uppercase.
-- **Do** keep German LV text verbatim, marked `lang="de"`, with anonymisation tokens dimmed and dotted-underlined.
-- **Do** say "Not quantified", "no rule finding" or "no prices in this file" in plain words where a number does not exist.
-- **Do** keep reading text at 17px and weight 500 or more and small print at 14px or more, and let the 1.2x and 1.5x body zoom handle large displays.
-- **Do** show focus with the 3px Note Blue outline on every interactive element, inset on full-width rows.
+- **Do** start every page with the band: yellow, 54px, hazard stripe below, crane mark and "LV CHECK" at the left.
+- **Do** keep the ground white and divide with 1px lines (`rule` between rows, `line-2` around controls and cards).
+- **Do** keep text between 12 and 15px, labels at 11px 600 capitals with 0.1em tracking, and figures tabular.
+- **Do** show severity as sign plus colour: red circle, yellow triangle, blue square, with the count beside it.
+- **Do** show an LV as a strip of its items in order, flagged items standing up in their severity colour, wherever an LV is summarised.
+- **Do** give a view one yellow primary button; every other action is ink, outline, ghost or a text link.
+- **Do** use pale yellow for hover and ink with white text for selection.
+- **Do** scale for large screens with body zoom (1.15 from 1700px, 1.4 from 2300px) instead of larger type.
+- **Do** say "no file", "no prices", "No reliable price." and "Not quantified" in plain words where there is nothing to show.
 
 ### Don't:
-- **Don't** use Stop Red or Note Blue for anything except their severity (and, for blue, the focus ring). No red buttons, no blue links at rest.
-- **Don't** invent a fourth severity colour or shape; a new state is expressed with ink, yellow, or a dashed keyline.
-- **Don't** use soft gradients, blur, translucency or resting shadows. The only gradient in the system is the hard-stop hazard stripe.
-- **Don't** use the hazard stripe as a decorative divider between content blocks; it marks the band, a busy state and the drop target.
-- **Don't** set Barlow (the text face) in capitals, or set long German text in Barlow Condensed capitals.
-- **Don't** set condensed capitals without tracking, or add a second caption style beside the 20px one.
-- **Don't** put Secondary Ink grey text on yellow.
-- **Don't** translate, uppercase or restyle LV text, and don't flag anonymisation tokens as errors.
-- **Don't** summarise the LV as stat tiles over a table; location on the map comes first.
-- **Don't** add a 3D or perspective view of the LV; one was built and rejected by the team as hard to read.
-- **Don't** show a money figure, a rank or a drawing without its source in the caption; leave it out when the file has no data for it.
-- **Don't** make marks on the map re-order or re-flow in response to filters; they change state in place.
+- **Don't** fill a page or a section with yellow, or frame sections with heavy black keylines; the team found both tiring.
+- **Don't** round anything beyond 2px, and don't use pills, soft cards, shadows, gradients or blur: nothing round, nothing soft.
+- **Don't** set anything larger than 30px: nothing huge.
+- **Don't** colour the head of a finding card by severity; the head is white and the sign carries it.
+- **Don't** use red or blue for anything but severity, errors and a loss.
+- **Don't** use Barlow Condensed for buttons, labels, tags or table text.
+- **Don't** add a dark version, a 3D picture of a single LV or an illustration; the trade diagram is the only 3D drawing.
+- **Don't** translate or restyle German LV text, and don't mark anonymisation tokens as errors.
+- **Don't** show an amount without its source, or imply money on a finding that has none.
+
+## Not canonised / to clean up
+
+- `web/src/styles.css` still opens with the signage-era rules (its first comment names the old world): 18 to
+  40px condensed capitals for labels and buttons, 2 to 3px ink keylines, 40px controls, the ink readout,
+  coloured card heads. The closing block overrides them property by property. They are debt, not system, and
+  should be deleted rather than restated.
+- `--plate`, `--ink-2` on headings and the hard-coded `#cdd0c7` and `#3b403a` in the price-source list are older
+  values still referenced in places.
+
+Cleaned up on 2026-11-21, so no longer in the build: radii above 2px (all 3 and 4px became 2px, all 8px became
+0); "No reliable price." at 28px; the condensed 40px LV title of the project view; the 72px "Drop the LV"
+overlay (one small dashed veil on every page now); the 1px nudge on a pressed button; the second focus ring
+(one ring everywhere: 2px ink, 2px offset); the trade diagram's off-palette greys (slab faces are white and
+`#f6f6f2`, sides `#e3e3dd` and `#c4c4bc`, the ground slab `#c4c4bc`).

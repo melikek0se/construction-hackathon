@@ -180,8 +180,8 @@ one primary action, the project numbers and the hover. On the projects page ever
 by item as one strip, flagged items standing up in their severity colour, so where the trouble sits is visible
 before a project is opened (`Fingerprint` in `web/src/Projects.tsx`; the data is `marks` in the summary).
 The LV workspace, its item sheet, table, remarks, what-if and the project view follow the same language
-since 2026-11-21 (the closing block of `web/src/styles.css` restates the earlier rules). `DESIGN.md` still
-describes the earlier signage look and has to be rewritten. The other three mock-ups were not kept in the
+since 2026-11-21 (the closing block of `web/src/styles.css` restates the earlier rules). `DESIGN.md` was
+rewritten from the build the same day. The other three mock-ups were not kept in the
 repository.
 
 ## D-021 — Files first, project always: intake, then keep as a project or add to one
