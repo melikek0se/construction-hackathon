@@ -221,38 +221,42 @@ export function Opening({ phase }: { phase: "loading" | "opening" }) {
 
 /* ------------------------------------------------------------------ schedule */
 
-/* How much of the calendar the schedule shows. A quarter of it lies before today; the arrows move it by a
-   quarter. Eight weeks are read by calendar week, the longer spans by month. */
-const ZOOMS = [
-  { key: "8w", label: "8 wk", title: "8 weeks", days: 56 },
-  { key: "6m", label: "6 mo", title: "6 months", days: 182 },
-  { key: "1y", label: "1 yr", title: "1 year", days: 364 },
-] as const;
-type Zoom = (typeof ZOOMS)[number];
-const TIER = 28; // px: one line of date labels on a row
+/* The schedule's axis has two scales, because a tender runs over weeks and the work over months: eight weeks
+   drawn by the day, a marked break, then thirteen months drawn by the month. The week before today is on it;
+   the arrows move it by four weeks. */
+const NEAR = 56; // days drawn day by day
+const FAR = 396; // the days after them, drawn by the month
+const NEAR_END = 66; // % of the lane where the days end
+const FAR_START = 70; // % of the lane where the months begin; the break lies between the two
+const STEP = 28; // days the arrows move the schedule by
 
-const monday = (d: Date) => {
-  const m = startOfDay(d);
-  m.setDate(m.getDate() - ((m.getDay() + 6) % 7));
-  return m;
-};
-const homeStart = (span: number) => monday(new Date(startOfDay(new Date()).getTime() - Math.round(span / 4) * DAY));
-const stepOfZoom = (span: number) => Math.round(span / 4 / 7) * 7; // a quarter of the span, in whole weeks
+const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const monday = (d: Date) => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
+const homeStart = () => monday(addDays(new Date(), -7));
+const dmY = (d: Date) => `${dm(d)}${d.getFullYear()}`; // `dm` ends with the dot
 
-/** The lines across the schedule and their labels: a Monday per week on eight weeks, else the first of each month. */
-function ticks(start: Date, span: number): { day: Date; label: string; strong?: boolean }[] {
-  const out: { day: Date; label: string; strong?: boolean }[] = [];
-  if (span <= 70) {
-    for (let w = 0; w * 7 < span; w++) {
-      const d = new Date(start.getTime() + w * 7 * DAY);
-      out.push({ day: d, label: `KW ${isoWeek(d)} · ${dm(d)}` });
-    }
-    return out;
+/** Where a day stands on the axis, in % of the lane; below 0 and above 100 it is off it. */
+function axisPos(start: Date, d: Date): number {
+  const n = daysBetween(start, d);
+  return n < NEAR ? (n / NEAR) * NEAR_END : FAR_START + ((n - NEAR) / FAR) * (100 - FAR_START);
+}
+
+/** The lines across the schedule: a Monday per week on the days, the first of each month after the break
+ *  (named every third month, so the names have room). */
+function ticks(start: Date): { day: Date; label: string; sub?: string; strong?: boolean }[] {
+  const out: { day: Date; label: string; sub?: string; strong?: boolean }[] = [];
+  const thisYear = new Date().getFullYear();
+  for (let w = 0; w < NEAR / 7; w++) {
+    const d = addDays(start, w * 7);
+    out.push({ day: d, label: `KW ${isoWeek(d)}`, sub: w === 0 && d.getFullYear() !== thisYear ? dmY(d) : dm(d) });
   }
-  const d = new Date(start.getFullYear(), start.getMonth() + (start.getDate() > 1 ? 1 : 0), 1);
-  for (; daysBetween(start, d) < span; d.setMonth(d.getMonth() + 1)) {
+  const end = addDays(start, NEAR);
+  let named = false;
+  for (let d = new Date(end.getFullYear(), end.getMonth() + 1, 1); daysBetween(end, d) < FAR; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) {
+    const show = d.getMonth() % 3 === 0 && axisPos(start, d) < 93;
     const month = d.toLocaleDateString("en-GB", { month: "short" });
-    out.push({ day: new Date(d), label: d.getMonth() === 0 || out.length === 0 ? `${month} ${d.getFullYear()}` : month, strong: d.getMonth() === 0 });
+    out.push({ day: d, label: show ? (named && d.getMonth() !== 0 ? month : `${month} ${d.getFullYear()}`) : "", strong: d.getMonth() === 0 });
+    named ||= show;
   }
   return out;
 }
@@ -347,13 +351,12 @@ function Schedule({
   onOpen: (p: CatalogProject) => void;
 }) {
   const today = startOfDay(new Date());
-  const [zoom, setZoom] = useState<Zoom>(ZOOMS[1]);
-  const SPAN = zoom.days;
-  const [start, setStart] = useState(() => homeStart(ZOOMS[1].days));
-  const lines = ticks(start, SPAN);
+  const [start, setStart] = useState(homeStart);
+  const lines = ticks(start);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
-  const pos = (d: Date) => (daysBetween(start, d) / SPAN) * 100;
+  const pos = (d: Date) => axisPos(start, d);
   const x = (d: Date) => Math.max(0, Math.min(100, pos(d)));
+  const seen = (d: Date) => pos(d) >= 0 && pos(d) <= 100;
   const planned = new Map(projects.map((p) => [p.id, datesOf(p, summaries[p.id])]));
   // an awarded tender is shown only while its dates were asked for
   const running = projects
@@ -361,8 +364,8 @@ function Schedule({
     .sort((a, b) => (nextDate(a, planned.get(a.id)!, today)?.days ?? 9999) - (nextDate(b, planned.get(b.id)!, today)?.days ?? 9999));
   const closed = projects.filter((p) => stageOf(p) === "award" && p.id !== focus?.id).length;
 
-  /** Moves the schedule so a day stands an eighth of it in from its left edge. */
-  const goTo = (day: Date) => setStart(monday(new Date(day.getTime() - Math.max(7, Math.round(SPAN / 8)) * DAY)));
+  /** Moves the schedule so a day stands a week in from its left edge, where days are drawn one by one. */
+  const goTo = (day: Date) => setStart(monday(addDays(day, -7)));
   /** Moves the schedule to a tender's dates: a little before the first of them. */
   const goToProject = (p: CatalogProject) => {
     const days = laneDays(p, planned.get(p.id)!);
@@ -380,97 +383,79 @@ function Schedule({
   }, [focus]);
 
   const bar = (kind: string, from: Date, to: Date) =>
-    x(to) > x(from) && <i className={`gbar ${kind}`} style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%` }} />;
-  type Mark = { day: Date; label: string; flag?: boolean };
-  /** A row's dates on the axis. A label takes about eight days of width; one that would run into another
-   *  goes a line lower. Near the right edge a label opens to the left of its line. */
-  const marks = (list: Mark[]) => {
-    const seen = list.filter((m) => pos(m.day) >= 0 && pos(m.day) <= 100).sort((a, b) => a.day.getTime() - b.day.getTime());
-    const tiers: [number, number][][] = [];
-    const placed = seen.map((m) => {
-      const d = daysBetween(start, m.day);
-      const left = pos(m.day) > 80;
-      const w = SPAN / 7; // a label's width in days: about a seventh of the schedule
-      const span: [number, number] = left ? [d - w, d] : [d, d + w];
-      let tier = tiers.findIndex((t) => t.every(([a, b]) => span[1] <= a || span[0] >= b));
-      if (tier < 0) tier = tiers.push([]) - 1;
-      tiers[tier].push(span);
-      return { ...m, left, tier };
-    });
-    const nodes = placed.map(({ day, label, flag, left, tier }) => {
-      const n = daysBetween(today, day);
-      return (
-        <i
-          key={label}
-          className={`gmark${flag ? " flag" : ""}${n >= 0 && n <= 3 ? " soon" : ""}${left ? " left" : ""}`}
-          style={{ left: `${pos(day)}%`, height: 34 + tier * TIER, ["--tier" as string]: tier }}
-        >
-          <span>
-            {label}
-            <small>
-              {wd(day)} · {inDays(n)}
-            </small>
-          </span>
-        </i>
-      );
-    });
-    return { nodes, tiers: Math.max(1, tiers.length) };
-  };
-  /** The dates outside the eight weeks shown: at each edge a pointer to the nearest one, that moves the schedule there. */
+    x(to) > x(from) && <i className={`gbar ${kind}${pos(to) > 100 ? " cut" : ""}`} style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%` }} />;
+  /* What a date is, is told by its mark (legend under the rows), so its label is one line: the day. */
+  type Kind = "q" | "due" | "open" | "sent" | "bind" | "w0" | "w1";
+  type Mark = { kind: Kind; day: Date; label: string };
+  /** The lines, the past and the break of the axis: the ground of every lane. */
+  const ground = (
+    <>
+      {seen(today) && <i className="past" style={{ width: `${x(today)}%` }} />}
+      {lines.map((t) => (
+        <i key={t.day.getTime()} className={`gline${t.strong ? " strong" : ""}`} style={{ left: `${pos(t.day)}%` }} />
+      ))}
+      <i className="axis-break" style={{ left: `${NEAR_END}%`, width: `${FAR_START - NEAR_END}%` }} />
+    </>
+  );
+  /** The dates off the axis: at each edge a pointer to the nearest one, that moves the schedule there. */
   const offs = (list: Mark[]) => {
     const before = list.filter((m) => pos(m.day) < 0).sort((a, b) => b.day.getTime() - a.day.getTime());
     const after = list.filter((m) => pos(m.day) > 100).sort((a, b) => a.day.getTime() - b.day.getTime());
     const one = (m: Mark | undefined, side: "before" | "after", more: number) =>
       m && (
-        <button
-          key={side}
-          className={`goff ${side}`}
-          title={`Go to ${dm(m.day)}.${m.day.getFullYear()}`}
-          onClick={(e) => (e.stopPropagation(), goTo(m.day))}
-        >
+        <button key={side} className={`goff ${side}`} title={`Go to ${dmY(m.day)}`} onClick={(e) => (e.stopPropagation(), goTo(m.day))}>
           {side === "before" && "← "}
           {m.label.toLowerCase()} {dm(m.day)}
-          {m.day.getFullYear() !== today.getFullYear() ? `.${m.day.getFullYear()}` : ""}
+          {m.day.getFullYear() !== today.getFullYear() ? m.day.getFullYear() : ""}
           {more > 0 && ` +${more}`}
           {side === "after" && " →"}
         </button>
       );
     return [one(before[0], "before", before.length - 1), one(after[0], "after", after.length - 1)];
   };
-  const atHome = start.getTime() === homeStart(SPAN).getTime();
-  const step = stepOfZoom(SPAN);
-  const stepText = step % 28 === 0 && step >= 28 ? `${step / 28} month${step > 28 ? "s" : ""}` : `${step / 7} weeks`;
+
+  /* The line of all tenders: every question deadline and submission as the tender's plate (days that fall
+     together stand on top of each other), and after the break the work of each as a thin bar, so sites that
+     would run at the same time show. */
+  const railTiers: number[] = [];
+  const rail = running
+    .flatMap((p) => {
+      const plan = planned.get(p.id)!;
+      return ([["q", parseDay(plan.questions_due)], ["due", parseDay(plan.due)]] as const).flatMap(([kind, day]) =>
+        day && seen(day) ? [{ p, kind, day, at: pos(day), days: daysBetween(today, day) }] : [],
+      );
+    })
+    .sort((a, b) => a.at - b.at || (a.kind === "due" ? -1 : 1))
+    .map((m) => {
+      let tier = railTiers.findIndex((last) => m.at - last >= 2.4);
+      if (tier < 0) tier = railTiers.push(m.at) - 1;
+      else railTiers[tier] = m.at;
+      return { ...m, tier };
+    });
+  const sameDay = new Map<number, typeof rail>();
+  for (const m of rail) if (m.kind === "due" && m.days >= 0) sameDay.set(m.day.getTime(), [...(sameDay.get(m.day.getTime()) ?? []), m]);
+  const works = running.flatMap((p) => {
+    const from = parseDay(planned.get(p.id)!.exec_start), to = parseDay(planned.get(p.id)!.exec_end);
+    return from && to && x(to) > x(from) ? [{ p, from, to }] : [];
+  });
+  const atHome = start.getTime() === homeStart().getTime();
 
   return (
     <section id="schedule" className="sched" aria-label="Schedule of the running tenders">
       <div className="sched-head">
         <div className="sched-title">
           <div className="sched-nav" role="group" aria-label="Move the schedule">
-            <button className="btn-ghost small" aria-label={`${stepText} back`} title={`${stepText} back`} onClick={() => setStart(new Date(start.getTime() - step * DAY))}>
+            <button className="btn-ghost small" aria-label="4 weeks back" title="4 weeks back" onClick={() => setStart(addDays(start, -STEP))}>
               ←
             </button>
-            <button className="btn-ghost small" disabled={atHome} onClick={() => setStart(homeStart(SPAN))} title="Back to this week">
+            <button className="btn-ghost small" disabled={atHome} onClick={() => setStart(homeStart())} title="Back to this week">
               Today
             </button>
-            <button className="btn-ghost small" aria-label={`${stepText} ahead`} title={`${stepText} ahead`} onClick={() => setStart(new Date(start.getTime() + step * DAY))}>
+            <button className="btn-ghost small" aria-label="4 weeks ahead" title="4 weeks ahead" onClick={() => setStart(addDays(start, STEP))}>
               →
             </button>
-            <span className="sched-zoom" role="group" aria-label="How much the schedule shows">
-              {ZOOMS.map((z) => (
-                <button
-                  key={z.key}
-                  aria-pressed={z.key === zoom.key}
-                title={`Show ${z.title}`}
-                  onClick={() => {
-                    // keep the middle of what is shown where it is
-                    const mid = start.getTime() + (SPAN / 2) * DAY;
-                    setZoom(z);
-                    setStart(z.key === zoom.key ? start : monday(new Date(mid - (z.days / 2) * DAY)));
-                  }}
-                >
-                  {z.label}
-                </button>
-              ))}
+            <span className="sched-scale" title="The scale changes at the hatched strip: eight weeks by the day to its left, thirteen months by the month to its right">
+              8 weeks <i aria-hidden /> 13 months
             </span>
           </div>
         </div>
@@ -478,11 +463,46 @@ function Schedule({
           {lines.map((t) => (
             <span key={t.day.getTime()} className={t.strong ? "strong" : undefined} style={{ left: `${pos(t.day)}%` }}>
               {t.label}
+              {t.sub && <small>{t.sub}</small>}
             </span>
           ))}
+          <i className="axis-break" style={{ left: `${NEAR_END}%`, width: `${FAR_START - NEAR_END}%` }} />
+          {seen(today) && (
+            <b className="today-tag" style={{ left: `${x(today)}%` }}>
+              Today · {wd(today)}
+            </b>
+          )}
         </div>
       </div>
       <div className="sched-body">
+        {running.length > 0 && (
+          <div className="sched-rail">
+            <div className="rail-label">All tenders</div>
+            <div className="rail-lane" style={{ height: Math.max(12 + Math.max(1, railTiers.length) * 22, 14 + works.length * 8) }}>
+              {ground}
+              {works.map(({ p, from, to }, i) => (
+                <i key={p.id} className="rail-work" style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%`, top: 7 + i * 8 }} title={`${p.name}: work ${dmY(from)} – ${dmY(to)}`} />
+              ))}
+              {rail.map((m) => (
+                <i
+                  key={m.p.id + m.kind}
+                  className={`rail-plate${m.kind === "q" ? " q" : ""}${m.days < 0 ? " gone" : ""}`}
+                  style={{ left: `${m.at}%`, top: 6 + m.tier * 22 }}
+                  title={`${m.p.name}: ${m.kind === "q" ? "questions close" : "submission"} ${wd(m.day)}`}
+                >
+                  {plateOf(m.p)}
+                </i>
+              ))}
+              {[...sameDay.values()]
+                .filter((l) => l.length > 1)
+                .map((l) => (
+                  <span key={l[0].day.getTime()} className="rail-clash" style={{ left: `calc(${l[0].at}% + 25px)` }}>
+                    {l.length} submissions {wd(l[0].day)}
+                  </span>
+                ))}
+            </div>
+          </div>
+        )}
         {running.map((p) => {
           const stage = stageOf(p);
           const plan = planned.get(p.id)!;
@@ -497,15 +517,45 @@ function Schedule({
           const days = laneDays(p, plan);
           // every date the tender has, in the order it runs; the opening only where it is not the deadline's day
           const all: Mark[] = [
-            q && { day: q, label: "Questions close" },
-            due && { day: due, label: "Submission", flag: !late },
-            opening && (!due || daysBetween(due, opening) !== 0) && { day: opening, label: "Bid opening" },
-            sent && { day: sent, label: "Bid sent", flag: true },
-            bind && { day: bind, label: "Binding until" },
-            workFrom && { day: workFrom, label: "Work starts" },
-            workTo && { day: workTo, label: "Work done by" },
+            q && { kind: "q", day: q, label: "Questions close" },
+            due && { kind: "due", day: due, label: "Submission" },
+            opening && (!due || daysBetween(due, opening) !== 0) && { kind: "open", day: opening, label: "Bid opening" },
+            sent && { kind: "sent", day: sent, label: "Bid sent" },
+            bind && { kind: "bind", day: bind, label: "Binding until" },
+            workFrom && { kind: "w0", day: workFrom, label: "Work starts" },
+            workTo && { kind: "w1", day: workTo, label: "Work done by" },
           ].filter((m): m is Mark => !!m);
-          const drawn = marks(all);
+          /* A date on the lane. Labels do not meet: the question deadline, the opening and the end of the
+             binding period are written above the bar, submission and the work below it. */
+          const mark = (m: Mark) => {
+            const at = pos(m.day);
+            if (at < 0 || at > 100) return null;
+            const n = daysBetween(today, m.day);
+            let text = "", below = false, flip = at > 90;
+            if (m.kind === "q" || m.kind === "open") text = wd(m.day);
+            else if (m.kind === "due") (text = late && sent ? "" : wd(m.day)), (below = true);
+            else if (m.kind === "sent") (text = `sent ${dm(m.day)}`), (below = true), (flip = true);
+            // right after the break the label opens to the right, or the break would cover it
+            else if (m.kind === "bind") (text = dm(m.day)), (flip = !(at > FAR_START && at < FAR_START + 8));
+            else if (m.kind === "w0") {
+              if (workTo && pos(workTo) > 100) return null; // the pointer at the edge says it
+              (text = `Work ${dm(m.day)}${workTo ? ` – ${dmY(workTo)}` : ""}`), (below = true), (flip = at > 78);
+            } else {
+              if (!workFrom || pos(workFrom) >= 0) return null; // written at the start of the bar
+              (text = `Work until ${dmY(m.day)}`), (below = true), (flip = true);
+            }
+            const isNext = next?.day.getTime() === m.day.getTime() && (m.kind === "q" || m.kind === "due" || m.kind === "bind");
+            return (
+              <i
+                key={m.kind}
+                className={`gmark ${m.kind}${isNext ? " next" : ""}${n >= 0 && n <= 3 ? " soon" : ""}${n < 0 ? " gone" : ""}${flip ? " flip" : ""}`}
+                style={{ left: `${at}%` }}
+                title={`${m.label}: ${wd(m.day)}${m.day.getFullYear()}, ${inDays(n)}`}
+              >
+                {text && <span className={below ? "below" : "above"}>{text}</span>}
+              </i>
+            );
+          };
           const waitFrom = sent ?? due;
           return (
             <div
@@ -521,13 +571,20 @@ function Schedule({
                 <span className="plate">{plateOf(p)}</span>
                 <div>
                   <b lang="de">{p.name}</b>
-                  <small className="sched-next">
-                    {next ? `${next.what[0].toUpperCase()}${next.what.slice(1)} ${inDays(next.days)}` : stage === "award" ? "Awarded" : days.length ? "No date ahead" : "No date in its files"}
-                  </small>
+                  <small className="sched-next">{STAGE_LABEL[stage]}</small>
                 </div>
+                {/* the days left to the next hard date: the first thing read on a row */}
+                <span className={`sched-count${next ? (next.days <= 3 ? " soon" : "") : " none"}`} title={next ? `${next.what[0].toUpperCase()}${next.what.slice(1)} ${wd(next.day)}, ${inDays(next.days)}` : undefined}>
+                  <b className="num">{next ? next.days : "–"}</b>
+                  <span>
+                    {next ? (next.days === 1 ? "day to" : "days to") : stage === "award" ? "tender" : "no date"}
+                    <em>{next ? next.what.split(" ")[0] : stage === "award" ? "awarded" : days.length ? "ahead" : "in its files"}</em>
+                  </span>
+                </span>
                 <button
                   className="sched-go"
                   aria-expanded={shown}
+                  aria-label={`Dates of ${p.name}`}
                   title={shown ? "Hide its dates" : "Go to its dates and list them with where they were read"}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -535,29 +592,26 @@ function Schedule({
                     onFocus(p.id);
                   }}
                 >
-                  Dates
                   <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden>
                     <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="2" />
                   </svg>
                 </button>
               </div>
-              <div className="lane" style={{ minHeight: 78 + (drawn.tiers - 1) * TIER }}>
-                {lines.map((t) => (
-                  <i key={t.day.getTime()} className={`tick${t.strong ? " strong" : ""}`} style={{ left: `${pos(t.day)}%` }} />
-                ))}
-                {/* weekends are told apart only where a day is wide enough to see */}
-                {SPAN <= 70 &&
-                  Array.from({ length: SPAN / 7 }, (_, w) => (
-                    <i key={w} className="wkend" style={{ left: `${((w * 7 + 5) / SPAN) * 100}%`, width: `${(2 / SPAN) * 100}%` }} />
-                  ))}
-                {all.length === 0 && <span className="lane-none">Its files state no date.</span>}
-                {/* time gone until today (or until the bid went out), what is left until submission, waiting
-                    for the client through the binding period, and the work itself */}
-                {all.length > 0 && bar("past", received, late && sent ? sent : today)}
-                {!late && due && bar("todo", today, due)}
+              <div className="lane">
+                {ground}
+                {all.length === 0 && (
+                  <span className="lane-none" style={{ left: `calc(${seen(today) ? x(today) : 0}% + 14px)` }}>
+                    Its files state no date.
+                  </span>
+                )}
+                {/* a thin grey line is time gone (until today, or until the bid went out), the ink bar what is
+                    left until submission, the dashed line waiting for the client through the binding period,
+                    the yellow bar the work itself */}
+                {all.length > 0 && bar("gone", received, late && sent ? sent : today)}
+                {!late && due && bar("left", today, due)}
                 {waitFrom && bind && bar("wait", waitFrom, bind)}
                 {workFrom && workTo && bar("work", workFrom, workTo)}
-                {drawn.nodes}
+                {all.map(mark)}
                 {offs(all)}
               </div>
               {shown && (
@@ -569,14 +623,23 @@ function Schedule({
           );
         })}
         {running.length === 0 && <p className="sched-empty">Nothing is running. A tender appears here as soon as its files are dropped, and stays until it is awarded.</p>}
-        {pos(today) >= 0 && pos(today) <= 100 && (
+        {seen(today) && (
           <div className="today-wrap" aria-hidden>
-            <i className="today" style={{ left: `${x(today)}%` }}>
-              <b>Today</b>
-            </i>
+            <i className="today" style={{ left: `${x(today)}%` }} />
           </div>
         )}
       </div>
+      {running.length > 0 && (
+        <p className="sched-legend" aria-hidden>
+          <span><i className="lg left" />time left until submission</span>
+          <span><i className="lg gone" />time gone</span>
+          <span><i className="lg q" />questions close</span>
+          <span><i className="lg due" />submission</span>
+          <span><i className="lg sent" />bid sent</span>
+          <span><i className="lg bind" />binding period</span>
+          <span><i className="lg work" />work</span>
+        </p>
+      )}
       {closed > 0 && (
         <p className="sched-note">
           {closed} awarded tender{closed > 1 ? "s are" : " is"} not on the schedule. Their dates open from their cards.

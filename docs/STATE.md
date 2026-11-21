@@ -369,6 +369,14 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   The schedule shows 8 weeks, 6 months (the default) or 1 year, switched beside the arrows on one line; a quarter of the
   span lies before today and the arrows move a quarter. 8 weeks is read by calendar week with weekends
   shaded, the longer spans by month (January lines darker). Not seen in a browser.
+  Rebuilt (2026-11-21, D-032): the axis has two scales instead of the three zooms: eight weeks by the day,
+  a hatched break, thirteen months by the month; the arrows move it by four weeks. Rows are 68px and do not
+  grow: the days left to the next date as a large figure beside the name, time left as the ink bar, time
+  gone as a thin grey line, one-line date labels (the mark says what the date is, legend under the rows).
+  Above the rows one line of all tenders: deadlines as plates (same day: stacked, "2 submissions"), work
+  as thin bars. Five options were compared first on a throwaway page (not in the repo). Seen in headless
+  Chrome at 1440 and 1100 wide with a made-up catalogue of seven tenders and with the database's one
+  project (pointer to its 2024 dates, "Dates" opened). Not checked: a person clicking through, under 900px.
 
 ## In progress
 

@@ -416,3 +416,24 @@ A date without a label is left out. No LLM: the result has to be the same every 
   binding, work start, work end), pre-filled from the files; "tender sent" is a past fact and only shown.
 - Files that are no LV (cover letter) are read for dates and still left out as LVs.
 
+## D-032 — The schedule's axis has two scales; rows show the days left, not the days gone
+
+- **Why:** a tender runs over weeks, the work over months. On one linear axis (8 weeks / 6 months / 1 year)
+  either the work was off the edge or the tender's dates stuck together and their two-line labels stacked,
+  so rows grew. The heaviest mark on a row was the time already gone.
+- **Axis:** eight weeks by the day (the week before today included) on 66 % of the lane, a hatched break,
+  then thirteen months by the month (`NEAR`, `FAR`, `axisPos` in `Projects.tsx`). The zoom switch is gone;
+  the arrows move by four weeks; a pointer at the edge or a card's "Dates" still moves the axis to a date.
+  Bar lengths left and right of the break cannot be compared, which is why the break is drawn.
+- **Row:** fixed 68px. Days left to the next hard date as a 30px figure (on yellow within three days), ink
+  bar = time left until submission, thin grey line = time gone, dashed = binding period, yellow = work.
+  A date's label is one line (the day); what it is, is told by the mark: diamond = questions close, flag =
+  submission, outlined flag = bid sent. A legend under the rows says so.
+- **Line of all tenders** above the rows: each question deadline (outlined plate) and submission (yellow
+  plate) with the tender's letter, stacked when they fall together, "n submissions" when on one day; after
+  the break each tender's work as a thin bar, so sites running at the same time show.
+- **Considered and not built:** the same Gantt only tightened, a table by calendar week, an agenda by date,
+  equal-spaced stations per tender (a candidate for the "Dates" detail under a row). The line of all
+  tenders staying visible while the schedule is closed: left out, the database's project has no date ahead
+  and the line would be empty.
+

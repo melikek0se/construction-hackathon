@@ -415,11 +415,16 @@ Caution a yellow triangle with an ink outline and exclamation mark, Note a blue 
 count always stands to the right of its sign; a zero count is shown faded (38%), not removed.
 
 ### Schedule row
-Index plate, the tender's name (15px, 600) and two date fields that show a frame only when empty, hovered or
-focused. On the lane: time gone is a 14px ink bar, time left until submission a hatched frame, waiting for the
-client a 2px dashed line. A date is a 2px ink tick with its name and day beneath; submission and "bid sent"
-carry a small ink flag, a date within three days a yellow flag with an ink outline. A tender without dates
-says so on its lane. Hover: pale yellow.
+The axis has two scales: eight weeks by the day, a hatched break (`line-2` hatching between two hairlines),
+thirteen months by the month. A row is 68px: index plate, the tender's name (15px, 600) with its stage
+beneath, the days left to the next date as a 30px figure (on a yellow plate within three days) and a square
+button that lists its dates. On the lane: time left until submission is a 12px ink bar, time gone a 3px
+`line-2` line, waiting for the client a 2px dashed line closed by a bracket, the work a 14px yellow bar with
+an ink outline. A date's label is one line, the day (the next one in ink, 700); the mark says what it is:
+a diamond on the bar for the question deadline, an ink flag for submission, an outlined flag for "bid sent".
+Marks within three days are yellow with an ink outline. The days before today lie on `tint`. Above the rows,
+the line of all tenders: 20px plates with the tender's letter (yellow = submission, outlined = questions),
+stacked when they fall together, and 4px yellow bars for the work. Hover: pale yellow.
 
 ### Board card and fingerprint strip (signature)
 A 1px `line-2` outline, white, 12px padding: index plate and name; the LV as a strip 22px high (a `strip-base`
