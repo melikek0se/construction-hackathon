@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { eur, qty, quotedFragments } from "./format";
-import type { Finding, Item } from "./types";
+import type { Finding, Item, PriceSuggestion } from "./types";
 
 /* Pictures of a finding: what the problem looks like on this item. Every number in them comes from the
    LV itself; a finding type without anything to draw gets no picture. */
@@ -328,6 +328,46 @@ export function FindingVisual(ctx: Ctx) {
   // A companion finding whose only trigger is the item itself has no pair to draw: show the passage instead.
   if (id.startsWith("C-")) return Companion(ctx) ?? TextMap(ctx);
   return <TextMap {...ctx} />;
+}
+
+/* -------------------------------------------------- price and its sources */
+
+/** The suggested unit price on one axis with its band and every past-bid price it was taken from. */
+export function PriceRange({ price }: { price: PriceSuggestion }) {
+  if (price.unit_price === null || price.low === null || price.high === null) return null;
+  const values = [price.low, price.high, ...price.matches.map((m) => m.unit_price)];
+  const [lo, hi] = [Math.min(...values), Math.max(...values)];
+  const pad = (hi - lo || hi || 1) * 0.12;
+  const x = (v: number) => 12 + ((v - (lo - pad)) / (hi - lo + 2 * pad)) * 336;
+  return (
+    <svg
+      className="price-range"
+      viewBox="0 0 360 86"
+      role="img"
+      aria-label={`Suggested ${eur(price.unit_price)}, band ${eur(price.low)} to ${eur(price.high)}, ${price.matches.length} past prices`}
+    >
+      <rect x={x(price.low)} y="30" width={x(price.high) - x(price.low)} height="22" fill="#b4b9ac" />
+      <line x1="0" x2="360" y1="52" y2="52" stroke="var(--ink)" strokeWidth="2" />
+      {price.matches.map((m, i) => (
+        <g key={i}>
+          <circle cx={x(m.unit_price)} cy="41" r="7" fill="var(--plate)" stroke="var(--ink)" strokeWidth="2.5" />
+          <text x={x(m.unit_price)} y="45" textAnchor="middle" className="price-dot">
+            {m.project}
+          </text>
+        </g>
+      ))}
+      <rect x={x(price.unit_price) - 2} y="14" width="4" height="44" fill="var(--ink)" />
+      <text x={x(price.unit_price)} y="11" textAnchor="middle" className="viz-label">
+        suggested
+      </text>
+      <text x={x(price.low)} y="72" textAnchor="middle" className="viz-label">
+        {eur(price.low)}
+      </text>
+      <text x={x(price.high)} y="72" textAnchor="middle" className="viz-label">
+        {eur(price.high)}
+      </text>
+    </svg>
+  );
 }
 
 /* ------------------------------------------------ value among all items */

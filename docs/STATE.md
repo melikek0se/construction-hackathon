@@ -50,6 +50,10 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   PDF sample). "Run AI review" was run once from this UI against the live API (project D, 50 items: 55 s, 11 findings
   added, no error). Pictures seen on real findings for every type except `R-ARITHMETIC`, `R-QTY-MISSING`,
   `R-REF-BROKEN` and the supplied-vs-installed check, which do not occur in the dataset files tried.
+  After merging the report / prices / what-if work (2026-11-21): section risk points in the UI now use the
+  report's 5 / 2 / 1 (shown per map row and in the headline), the price block draws the suggestion, its band and
+  each past price on one axis, what-if shows before / after as two bars and marks only the difference cell,
+  and the report buttons are secondary to Upload in the band.
   Not checked: a person clicking through.
 
 - PDF parser (`src/boq/parsers/pdf.py`, PyMuPDF text layer, no LLM): works on positioned lines, finds the OZ

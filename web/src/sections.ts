@@ -39,6 +39,7 @@ export function buildSections(items: Item[], findings: Finding[]): Section[] {
   return [...byKey.values()];
 }
 
+/** Risk points, as in the risk report (`src/boq/report.py`): 5 per Stop, 2 per Caution, 1 per Note. */
 export function weight(c: Record<Severity, number>): number {
-  return c.high * 100 + c.warn * 3 + c.info; // one stop outweighs any number of cautions
+  return c.high * 5 + c.warn * 2 + c.info;
 }

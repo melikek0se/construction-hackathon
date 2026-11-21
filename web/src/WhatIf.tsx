@@ -122,6 +122,17 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
               </b>
             </span>
           </p>
+          <div className="bars whatif-bars" aria-hidden>
+            {[
+              ["In the file", result.before],
+              ["With changes", result.after],
+            ].map(([label, value], i) => (
+              <div key={label} className={`bar-row${i === 1 ? " strong" : ""}`}>
+                <span>{label}</span>
+                <i style={{ width: `${(Number(value) / Math.max(result.before, result.after, 1)) * 100}%` }} />
+              </div>
+            ))}
+          </div>
           <p className="quiet">
             The file gives one unit price per item and no split into labour and material, so a change applies to
             the whole unit price of every matching item.

@@ -63,6 +63,11 @@ export function LvMap({
                   </span>
                 ))}
                 {weight(sec.counts) === 0 && <span className="none">no rule finding</span>}
+                {weight(sec.counts) > 0 && (
+                  <span className="row-size" title="Risk points: 5 per Stop, 2 per Caution, 1 per Note">
+                    {weight(sec.counts)} pts
+                  </span>
+                )}
                 <span className="row-size">{sec.items.length} items</span>
               </span>
             </button>

@@ -401,12 +401,10 @@ export default function App() {
                     on {findingsByOz.size} of {analysis.boq.items.length} items
                     {stats.heaviest && (
                       <>
-                        . Heaviest section: <b>{stats.heaviest.key}</b>{" "}
-                        <span lang="de">
-                          <LvText text={stats.heaviest.title} />
-                        </span>
+                        . Most risk points: section <b>{stats.heaviest.key}</b> ({weight(stats.heaviest.counts)})
                       </>
                     )}
+                    {prices && `. Past bids price ${prices.with_price} of ${prices.items} items.`}
                   </p>
                 )}
               </div>

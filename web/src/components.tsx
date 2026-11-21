@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LvText, eur, qty, quotedFragments } from "./format";
-import { FindingVisual, ValueRank } from "./ItemVisual";
+import { FindingVisual, PriceRange, ValueRank } from "./ItemVisual";
 import { sectionOf, worst, type Section } from "./sections";
 import {
   ACTION_LABEL,
@@ -448,7 +448,11 @@ function PriceBlock({ price }: { price: PriceSuggestion }) {
       ) : (
         <p className="price-none">No reliable price.</p>
       )}
-      <p className="quiet">{price.reason}</p>
+      <PriceRange price={price} />
+      <p className="quiet">
+        {price.reason}
+        {price.matches.length > 0 && " Each circle is one past price, lettered by project; the grey band is the range."}
+      </p>
       {price.matches.length > 0 && (
         <ul className="price-sources">
           {price.matches.map((m, i) => (
