@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, CatalogProject, Finding, Intake, PdfMarks, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
+import type { Adjustment, Analysis, ChatAnswer, CatalogProject, Finding, Intake, PdfMarks, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -106,4 +106,15 @@ export async function runWhatIf(id: string, scenario: { adjustments: Adjustment[
 /** The LLM checks of an analysed LV. Seconds when cached, a few minutes otherwise. */
 export async function runLlmReview(id: string): Promise<{ findings: Finding[] }> {
   return read(await fetch(`/api/analyses/${id}/llm`, { method: "POST" }));
+}
+
+/** A question about the project of this analysis, answered from its documents only. */
+export async function askProject(id: string, question: string, history: { role: string; content: string }[]): Promise<ChatAnswer> {
+  return read(
+    await fetch(`/api/analyses/${id}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, history }),
+    }),
+  );
 }

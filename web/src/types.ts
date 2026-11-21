@@ -275,3 +275,27 @@ export const KIND_LABEL: Record<ItemKind, string> = {
 };
 
 export const PHASE_LABEL: Record<string, string> = { "83": "Tender", "84": "Bid", "86": "Award" };
+
+/** A passage an answer rests on: confirmed by the server to stand word for word in that item. */
+export interface ChatCitation {
+  file: string;
+  oz: string; // "" = from the preliminary remarks
+  quote: string;
+  index: number | null; // which file of the project (catalog order); null outside a project
+  here: boolean; // the file that is open
+}
+
+export interface ChatAnswer {
+  answer: string;
+  found: boolean; // false = the documents do not say
+  grounded: boolean; // false = found, but no passage could be confirmed
+  citations: ChatCitation[];
+  dropped: number; // passages the model named that are not in the documents
+  documents: string[]; // the files that were read
+}
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+  answer?: ChatAnswer;
+}

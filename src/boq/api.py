@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel
 
-from boq import catalog
+from boq import catalog, chat
 from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
@@ -48,7 +48,8 @@ _DRAWN: dict[str, tuple[Path, dict[str, tuple[int, float]]]] = {}
 # an LV shown on another file's pages (a GAEB file on the client's print-out of the same LV): that file's
 # name and where the print-out has each item
 _PRINT_OUT: dict[str, tuple[str, dict[str, tuple[int, float]]]] = {}
-_PARSED_PDFS: dict[tuple[str, float], BoQ] = {}  # project PDFs read to find a print-out, by path and mtime
+_PARSED: dict[tuple[str, float], BoQ] = {}  # project files read for a print-out or the chat, by path and mtime
+_PROJECT_OF: dict[str, str] = {}  # the catalog project an analysis was opened from
 _MARKS: dict[str, tuple[tuple[str, ...], dict]] = {}  # marks of an analysis, for the findings they were made for
 _KEEP = 120  # a project of thirty trade LVs must stay openable LV by LV
 
@@ -81,6 +82,7 @@ def _store(boq: BoQ, source: Path | None = None) -> tuple[str, list[Finding]]:
         _SOURCES.pop(dropped, None)
         _MARKS.pop(dropped, None)
         _PRINT_OUT.pop(dropped, None)
+        _PROJECT_OF.pop(dropped, None)
         if dropped in _DRAWN:
             _DRAWN.pop(dropped)[0].unlink(missing_ok=True)
     return analysis_id, findings
@@ -104,6 +106,19 @@ def _analyze(path: Path, name: str, keep: bool = False) -> dict:
     return _dump(analysis_id, boq, findings)
 
 
+def _parsed(path: Path, name: str | None = None) -> BoQ | None:
+    """A project file read once per version of the file; None if it cannot be read."""
+    key = (str(path), path.stat().st_mtime)
+    if key not in _PARSED:
+        try:
+            boq = parse_file(str(path))
+        except Exception:
+            return None
+        boq.file = name or path.name
+        _PARSED[key] = boq
+    return _PARSED[key]
+
+
 def _print_out(boq: BoQ, others: list[dict]) -> tuple[Path, str, dict[str, tuple[int, float]]] | None:
     """The client's print-out of this LV among the other files of its project: a PDF that has at least
     70 % of the LV's items (number, unit and quantity; an excerpt does not count). Of several, one that
@@ -115,13 +130,9 @@ def _print_out(boq: BoQ, others: list[dict]) -> tuple[Path, str, dict[str, tuple
         path = Path(f["path"])
         if path.suffix.lower() != ".pdf" or not path.is_file():
             continue
-        key = (str(path), path.stat().st_mtime)
-        if key not in _PARSED_PDFS:
-            try:
-                _PARSED_PDFS[key] = parse_file(str(path))
-            except Exception:  # an unreadable PDF is simply no print-out
-                continue
-        pdf = _PARSED_PDFS[key]
+        pdf = _parsed(path, f["name"])
+        if pdf is None:  # an unreadable PDF is simply no print-out
+            continue
         share = _shared(boq, pdf) / len(boq.items)
         if share < 0.7:
             continue
@@ -141,7 +152,8 @@ def _parse_kept(files: list[tuple[Path, str]]) -> tuple[list[BoQ], dict[int, Pat
     return boqs, {id(boq): Path(path) for boq, (path, _) in zip(boqs, files)}
 
 
-def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None) -> dict:
+def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None,
+             project_id: str | None = None) -> dict:
     """Analyse each LV on its own, then what the LVs expect from each other."""
     lvs, rows = {}, []
     for boq in boqs:
@@ -149,6 +161,8 @@ def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None)
         while label in lvs:  # two files of the same name
             label += " (2)"
         analysis_id, findings = _store(boq, (sources or {}).get(id(boq)))
+        if project_id:
+            _PROJECT_OF[analysis_id] = project_id
         lvs[label] = boq
         rows.append({"name": label, "file": boq.file, "analysis_id": analysis_id, "items": len(boq.items),
                      "counts": {s: sum(f.severity == s for f in findings) for s in ("high", "warn", "info")}})
@@ -304,7 +318,7 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     if kind == "trades":
         # where the uploads are now; by position, not by name: trade LVs often share a file name
         sources = {id(b): Path(f["path"]) for b, f in zip(boqs, _catalog(project_id)["files"])}
-        return {"id": project_id, "kind": kind, **_project(title, _one_per_lv(boqs), sources)}
+        return {"id": project_id, "kind": kind, **_project(title, _one_per_lv(boqs), sources, project_id)}
     return {"id": project_id, "kind": kind, "name": title}
 
 
@@ -375,6 +389,7 @@ def open_project_file(project_id: str, index: int):
     analysis_id, findings = _store(boq, shown[0] if shown else files[index]["path"])
     if shown:
         _PRINT_OUT[analysis_id] = shown[1:]
+    _PROJECT_OF[analysis_id] = project_id
     return _dump(analysis_id, boq, findings)
 
 
@@ -385,7 +400,7 @@ def open_project(project_id: str):
     if project["kind"] != "trades":
         raise HTTPException(409, f"{project['name']} is one LV in several versions; open one of its files.")
     boqs, sources = _parse_kept([(f["path"], f["name"]) for f in project["files"]])
-    return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources)}
+    return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources, project_id)}
 
 
 class Rename(BaseModel):
@@ -436,6 +451,50 @@ def analyze_sample(path: str):
     if sample is None:
         raise HTTPException(404, f"No sample file {path}.")
     return _analyze(sample, sample.name, keep=True)
+
+
+class Question(BaseModel):
+    question: str
+    history: list[dict] = []  # earlier turns of this conversation: {"role": "user" | "assistant", "content": …}
+
+
+def _chat_documents(analysis_id: str, boq: BoQ) -> tuple[list[BoQ], list[dict]]:
+    """What the chat may read: the open LV, and from its project one file per other LV text. Of several
+    versions of one LV the tender is read (a GAEB file before its print-out); the open file is always
+    read as it is, also when it is a bid without texts. Returns the documents and the project's files."""
+    project = catalog.find(DATASET, _PROJECT_OF.get(analysis_id, ""))
+    if project is None:
+        return [boq], []
+    files = project["files"]
+    others = [b for f in files if (b := _parsed(Path(f["path"]), f["name"])) is not None and b.items]
+    whole = project["kind"] == "trades"  # there an LV that repeats part of another is still its own LV
+    best: dict[int, BoQ] = {}
+    for other, group in zip(others, _same_lv(others, whole)):
+        rank = (other.phase == "83", other.format != "pdf")
+        if group not in best or rank > (best[group].phase == "83", best[group].format != "pdf"):
+            best[group] = other
+    return [boq] + [b for b in best.values() if b.file != boq.file], files
+
+
+@app.post("/api/analyses/{analysis_id}/chat")
+async def ask_project(analysis_id: str, body: Question):
+    """A question about the project, answered only from its documents, with the passages it rests on."""
+    boq, _ = _analysis(analysis_id)
+    question = body.question.strip()
+    if not question:
+        raise HTTPException(422, "Ask a question.")
+    documents, files = _chat_documents(analysis_id, boq)
+    try:
+        out = await chat.answer(question[:2000], body.history, documents)
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:  # API or network failure: say so instead of a bare 500
+        raise HTTPException(502, f"The question could not be answered: {exc}") from exc
+    index = {f["name"]: n for n, f in reversed(list(enumerate(files)))}
+    for c in out["citations"]:
+        c["index"] = index.get(c["file"])  # which file of the project, to open it from the answer
+        c["here"] = c["file"] == boq.file
+    return {**out, "documents": [d.file for d in documents]}
 
 
 def _pages(analysis_id: str) -> tuple[Path, dict[str, tuple[int, float]] | None]:

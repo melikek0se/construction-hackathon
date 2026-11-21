@@ -2,7 +2,7 @@
 
 **Update this file whenever something is finished, started or dropped.** Keep it short; history lives in git.
 
-Last updated: 2026-11-21 (hackathon day 2, PDF view)
+Last updated: 2026-11-21 (hackathon day 2, PDF view and chat)
 
 ## Now
 
@@ -206,6 +206,23 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   own viewer, `watchTextLayer` in `PdfView.tsx`); notes and tool row cannot be selected. Checked by script
   (wheel events, a programmatic selection); a real drag with the mouse is for Utku to confirm.
 
+- Ask the project (D-025; `src/boq/chat.py`, `POST /api/analyses/{id}/chat`, `web/src/Chat.tsx`): the right
+  pane has two tabs, Findings and Ask the project. A question is answered from the open LV and the other LVs
+  of its project only; each answer lists its passages (item, file, German quote), a click opens the item on
+  the PDF pages, in another file if that is where it stands. Passages that are not word for word in the item
+  are dropped; "Not in the project documents" and "unconfirmed" are shown as such. Model and effort:
+  `BOQ_CHAT_MODEL` (default: the review model, `claude-opus-5-5`), `BOQ_CHAT_EFFORT` (default low).
+  Live, 2026-11-21: project D (one LV, 12k tokens) 7 s for the first question, 4.5 s for a follow-up read
+  from the prompt cache, a question about usual market prices answered "not in the documents"; project F
+  from LV 12 ("which LV supplies the roof drains?") 21 s, 27 documents read, five confirmed passages from
+  LV 12 and LV 14b, and it names the same open interface the cross-LV check reports. Seen in Chrome: the
+  answer, a click on a passage of LV 14b opens that LV on page 4 with the passage in view and the
+  conversation still there. Offline tests in `tests/test_chat.py`.
+  Not done: the cost of a question on project F was not read off (about 150k input tokens on the first
+  question, cached after); the cited passage is not highlighted on the page (the view scrolls to its item);
+  no chat on the project overview page; conversations are lost on reload; in one answer the model wrote a
+  plain word where the LV has an anonymisation token.
+
 ## In progress
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against
@@ -226,9 +243,8 @@ very low coverage, see below), and a what-if view varies the total of a priced L
 
 1. Decide team split, demo LV
 2. PDF view, next steps agreed with Utku: (a) the estimator's own notes on a line or a selected passage,
-   marking a finding valid / not valid, tagging a colleague who is notified to review; (b) a chat beside the
-   document that answers from all files of the project (asked for by Utku on 2026-11-21, not designed yet);
-   (c) retrieval (GraphRAG) for fact-checking findings
+   marking a finding valid / not valid, tagging a colleague who is notified to review; (b) retrieval
+   (GraphRAG) for fact-checking findings; (c) highlight a chat passage on the page
 3. Projects: trade vocabulary and interface wording beyond project F; quantity checks between trades
    (screed area against floor coverings); decide in-memory graph vs Neo4j
 4. Money at stake for findings on unpriced LVs (needs the price history)

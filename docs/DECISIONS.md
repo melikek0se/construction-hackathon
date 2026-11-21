@@ -247,3 +247,19 @@ a priced one for a priced file. The findings stay those of the opened file, mark
 view names both files. Known cost: items the print-out lacks (project A's award has 38 more than the tender
 package) have no place there, and their findings are listed above the pages.
 Revisit if: such items matter in the demo — then draw the pages for that file after all.
+
+## D-025 — Ask the project: a chat that answers from the project's documents only
+Status: decided · 2026-11-21 (Utku: "only from the project documents")
+
+Beside the LV the estimator can ask a question (`src/boq/chat.py`, `POST /api/analyses/{id}/chat`, right
+pane tab "Ask the project", `web/src/Chat.tsx`). The model reads the open LV and one file per other LV of the
+project (of several versions the tender, a GAEB file before its print-out) and answers with the passages it
+rests on: file, item number, quote. As for AI findings, a passage is kept only if it stands word for word in
+the item it names; an answer left without one is shown as unconfirmed, and "not in the project documents" is
+a valid answer. General knowledge (VOB, standards, usual prices) is excluded on purpose: it would be a
+statement without a source. A passage opens its item on the PDF pages, in this file or another file of the
+project; the conversation belongs to the project and stays open.
+No retrieval step and no graph: the largest project (F, 27 LVs, about 150k tokens) fits into one request and
+is prompt-cached, so a follow-up question reads the documents from the cache.
+Revisit if: a project no longer fits (then retrieval, possibly over the trade graph of `project.py`); general
+knowledge is wanted (then as a separate, labelled kind of answer); answers should be kept between sessions.

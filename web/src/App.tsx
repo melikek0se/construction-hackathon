@@ -18,10 +18,12 @@ import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, eur, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
+import { Chat } from "./Chat";
+import "./chat.css";
 import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Prices, type Project, type ProjectSummary, type Severity } from "./types";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf";
 const VIEWS: [View, string][] = [
@@ -56,6 +58,10 @@ export default function App() {
   const [selection, setSelection] = useState<Selection>(NONE);
   const [dragging, setDragging] = useState(false);
   const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
+  // The right pane: the findings (list or item sheet), or the questions about the project. A conversation
+  // belongs to the project, so it stays when another file of the project is opened from an answer.
+  const [side, setSide] = useState<"findings" | "ask">("findings");
+  const [chats, setChats] = useState<Record<string, ChatTurn[]>>({});
   const fileInput = useRef<HTMLInputElement>(null);
 
   const refreshCatalog = useCallback(async () => {
@@ -284,6 +290,24 @@ export default function App() {
   }, [analysis, selection]);
 
   const open = selection.oz !== null || selection.finding !== null;
+
+  const chatKey = current?.project.id ?? analysis?.id ?? "";
+
+  // A passage of an answer: show its item, in this file or in the file of the project it stands in.
+  function cite(c: ChatCitation) {
+    const show = () => {
+      setSelection({ oz: c.oz || null, finding: null });
+      setView(c.oz ? "pdf" : "remarks");
+    };
+    if (c.here || !analysis) return show();
+    const lv = project?.lvs.find((l) => l.file === c.file);
+    if (lv) void run(lv.name, () => loadAnalysis(lv.analysis_id)).then(show);
+    else if (current && current.project.kind !== "trades" && c.index !== null) {
+      const { project: p } = current;
+      setCurrent({ project: p, file: c.index });
+      void run(c.file, () => openCatalogFile(p.id, c.index!)).then(show);
+    }
+  }
 
   function showInTable(oz: string) {
     setSelection({ oz, finding: null });
@@ -536,6 +560,24 @@ export default function App() {
           </main>
 
           <aside className="right">
+            <div className="side-tabs" role="tablist" aria-label="Right pane">
+              <button role="tab" aria-selected={side === "findings"} onClick={() => setSide("findings")}>
+                Findings
+              </button>
+              <button role="tab" aria-selected={side === "ask"} onClick={() => setSide("ask")}>
+                Ask the project
+              </button>
+            </div>
+            {side === "ask" ? (
+              <Chat
+                analysisId={analysis.id}
+                openFile={analysis.boq.file}
+                turns={chats[chatKey] ?? []}
+                onTurns={(turns) => setChats((all) => ({ ...all, [chatKey]: turns }))}
+                onCite={cite}
+              />
+            ) : (
+              <>
             {open ? (
               <ItemSheet
                 analysis={analysis}
@@ -560,6 +602,8 @@ export default function App() {
                 ai={ai}
                 onReview={() => void review()}
               />
+            )}
+              </>
             )}
           </aside>
         </div>
