@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, CatalogProject, Finding, Intake, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
+import type { Adjustment, Analysis, CatalogProject, Finding, Intake, PdfMarks, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -75,6 +75,16 @@ export async function renameProject(id: string, name: string): Promise<CatalogPr
 /** An LV the server analysed earlier, e.g. one LV of a project. */
 export async function loadAnalysis(id: string): Promise<Analysis> {
   return read(await fetch(`/api/analyses/${id}`));
+}
+
+/** The PDF an LV was read from; only for analyses with `pdf: true`. */
+export function sourcePdfUrl(id: string): string {
+  return `/api/analyses/${id}/source.pdf`;
+}
+
+/** Where each finding stands on the PDF pages, in the order of the analysis's findings. */
+export async function loadMarks(id: string): Promise<PdfMarks> {
+  return read(await fetch(`/api/analyses/${id}/marks`));
 }
 
 /** Unit-price suggestions from past bids; null when the LV has prices already. */

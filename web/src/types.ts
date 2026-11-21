@@ -17,7 +17,7 @@ export interface Item {
   refs: string[];
   up: string | null;
   total: string | null;
-  source: { file: string; line: number | null; page: number | null; xml_id: string | null };
+  source: { file: string; line: number | null; page: number | null; y: number | null; xml_id: string | null };
 }
 
 export interface Remark {
@@ -52,6 +52,25 @@ export interface Analysis {
   id: string; // handle for the LLM review of this LV
   boq: BoQ;
   findings: Finding[];
+  pdf: boolean; // pages can be shown (PdfView): the PDF itself, or pages the server drew from the LV
+  pdf_generated: boolean; // the LV came without a PDF (GAEB, Excel): the pages are drawn by the app
+  pdf_file: string | null; // the pages are another file's: the client's print-out of this LV in the project
+}
+
+/** Where one finding stands on a PDF page; rectangles in PDF points from the top left of the page. */
+export interface PdfMark {
+  finding: number; // index into the server's findings list; PdfView re-points it at Analysis.findings by `key`
+  key: string; // check | item | evidence
+  oz: string | null;
+  page: number | null; // counted from 1
+  rects: [number, number, number, number][]; // x0, y0, x1, y1
+  located: "quote" | "item" | "none"; // the quoted evidence, the item's number line, or no place
+}
+
+export interface PdfMarks {
+  pages: { width: number; height: number }[];
+  marks: PdfMark[];
+  items: Record<string, [number, number]>; // where each item's number line stands: page, y
 }
 
 /** One similar item of a past bid that a price suggestion rests on. */

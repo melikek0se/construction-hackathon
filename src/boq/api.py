@@ -10,7 +10,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 from fastapi import FastAPI, Form, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel
@@ -19,8 +19,10 @@ from boq import catalog
 from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
+from boq.lvpages import render
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
+from boq.pdfmarks import locate
 from boq.prices import load_history, suggest_prices
 from boq.project import analyse_project, lv_name
 from boq.report import build_report, render_html, render_questions
@@ -32,6 +34,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DATASET = Path(os.environ.get("BOQ_DATASET_DIR", ROOT / "dataset"))
 WEB_DIST = ROOT / "web" / "dist"
 MAX_BYTES = 30 * 1024 * 1024
+PAGES = ROOT / "data" / "processed" / "pages"  # pages drawn for LVs that came without a PDF (git-ignored)
 
 app = FastAPI(title="BoQ analysis")
 
@@ -39,6 +42,14 @@ app = FastAPI(title="BoQ analysis")
 # a restart forgets them and the user uploads again.
 _ANALYSES: OrderedDict[str, tuple[BoQ, list[Finding]]] = OrderedDict()
 _LLM_FINDINGS: dict[str, list[Finding]] = {}  # AI findings of an analysis, once the review has run
+_SOURCES: dict[str, Path] = {}  # the PDF behind an analysis, for files that stay on disk (dataset, projects)
+# an LV without a PDF (GAEB, Excel): the pages the app drew for it and where each item stands on them
+_DRAWN: dict[str, tuple[Path, dict[str, tuple[int, float]]]] = {}
+# an LV shown on another file's pages (a GAEB file on the client's print-out of the same LV): that file's
+# name and where the print-out has each item
+_PRINT_OUT: dict[str, tuple[str, dict[str, tuple[int, float]]]] = {}
+_PARSED_PDFS: dict[tuple[str, float], BoQ] = {}  # project PDFs read to find a print-out, by path and mtime
+_MARKS: dict[str, tuple[tuple[str, ...], dict]] = {}  # marks of an analysis, for the findings they were made for
 _KEEP = 120  # a project of thirty trade LVs must stay openable LV by LV
 
 
@@ -57,34 +68,87 @@ def _parse(path: Path, name: str) -> BoQ:
     return boq
 
 
-def _store(boq: BoQ) -> tuple[str, list[Finding]]:
+def _store(boq: BoQ, source: Path | None = None) -> tuple[str, list[Finding]]:
+    """`source`: the file the LV was read from, if it stays on disk. A PDF is kept for the PDF view."""
     findings = run_checks(boq)
     analysis_id = uuid.uuid4().hex
     _ANALYSES[analysis_id] = (boq, findings)
+    if source is not None and Path(source).suffix.lower() == ".pdf":
+        _SOURCES[analysis_id] = Path(source)
     while len(_ANALYSES) > _KEEP:
-        _LLM_FINDINGS.pop(_ANALYSES.popitem(last=False)[0], None)
+        dropped = _ANALYSES.popitem(last=False)[0]
+        _LLM_FINDINGS.pop(dropped, None)
+        _SOURCES.pop(dropped, None)
+        _MARKS.pop(dropped, None)
+        _PRINT_OUT.pop(dropped, None)
+        if dropped in _DRAWN:
+            _DRAWN.pop(dropped)[0].unlink(missing_ok=True)
     return analysis_id, findings
 
 
 def _dump(analysis_id: str, boq: BoQ, findings: list[Finding]) -> dict:
     return {"id": analysis_id, "boq": boq.model_dump(mode="json"),
-            "findings": [f.model_dump(mode="json") for f in findings]}
+            "findings": [f.model_dump(mode="json") for f in findings],
+            # pages can be shown (GET …/source.pdf, …/marks): the PDF itself if it is kept, pages drawn by
+            # the app for a file that has none. A PDF from a temporary upload is gone, so it has neither.
+            "pdf": analysis_id in _SOURCES or boq.format != "pdf",
+            "pdf_generated": analysis_id not in _SOURCES and boq.format != "pdf",
+            # set when the pages are another file's: the client's print-out of this LV, found in the project
+            "pdf_file": _PRINT_OUT[analysis_id][0] if analysis_id in _PRINT_OUT else None}
 
 
-def _analyze(path: Path, name: str) -> dict:
+def _analyze(path: Path, name: str, keep: bool = False) -> dict:
+    """`keep`: the file stays on disk after this request (not a temporary upload)."""
     boq = _parse(path, name)
-    analysis_id, findings = _store(boq)
+    analysis_id, findings = _store(boq, path if keep else None)
     return _dump(analysis_id, boq, findings)
 
 
-def _project(name: str, boqs: list[BoQ]) -> dict:
+def _print_out(boq: BoQ, others: list[dict]) -> tuple[Path, str, dict[str, tuple[int, float]]] | None:
+    """The client's print-out of this LV among the other files of its project: a PDF that has at least
+    70 % of the LV's items (number, unit and quantity; an excerpt does not count). Of several, one that
+    carries prices if this file does (a bid on the submitted bid, not on the empty tender), then the one
+    sharing most. Returns its path, name and where it prints each item."""
+    best = None
+    priced = any(i.total is not None for i in boq.items)
+    for f in others:
+        path = Path(f["path"])
+        if path.suffix.lower() != ".pdf" or not path.is_file():
+            continue
+        key = (str(path), path.stat().st_mtime)
+        if key not in _PARSED_PDFS:
+            try:
+                _PARSED_PDFS[key] = parse_file(str(path))
+            except Exception:  # an unreadable PDF is simply no print-out
+                continue
+        pdf = _PARSED_PDFS[key]
+        share = _shared(boq, pdf) / len(boq.items)
+        if share < 0.7:
+            continue
+        rank = (any(i.total is not None for i in pdf.items) == priced, share)
+        if best is None or rank > best[0]:
+            positions = {}
+            for i in pdf.items:
+                if i.source.page and i.source.y is not None:
+                    positions.setdefault(i.oz, (i.source.page, i.source.y))
+            best = (rank, path, f["name"], positions)
+    return best[1:] if best else None
+
+
+def _parse_kept(files: list[tuple[Path, str]]) -> tuple[list[BoQ], dict[int, Path]]:
+    """Files that stay on disk, parsed; and which file each LV came from, by `id()` of its BoQ."""
+    boqs = [_parse(path, name) for path, name in files]
+    return boqs, {id(boq): Path(path) for boq, (path, _) in zip(boqs, files)}
+
+
+def _project(name: str, boqs: list[BoQ], sources: dict[int, Path] | None = None) -> dict:
     """Analyse each LV on its own, then what the LVs expect from each other."""
     lvs, rows = {}, []
     for boq in boqs:
         label = lv_name(boq)
         while label in lvs:  # two files of the same name
             label += " (2)"
-        analysis_id, findings = _store(boq)
+        analysis_id, findings = _store(boq, (sources or {}).get(id(boq)))
         lvs[label] = boq
         rows.append({"name": label, "file": boq.file, "analysis_id": analysis_id, "items": len(boq.items),
                      "counts": {s: sum(f.severity == s for f in findings) for s in ("high", "warn", "info")}})
@@ -238,7 +302,9 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
         project_id = catalog.save_project(title, stored, kind)
     _SUMMARIES.pop(project_id, None)
     if kind == "trades":
-        return {"id": project_id, "kind": kind, **_project(title, _one_per_lv(boqs))}
+        # where the uploads are now; by position, not by name: trade LVs often share a file name
+        sources = {id(b): Path(f["path"]) for b, f in zip(boqs, _catalog(project_id)["files"])}
+        return {"id": project_id, "kind": kind, **_project(title, _one_per_lv(boqs), sources)}
     return {"id": project_id, "kind": kind, "name": title}
 
 
@@ -304,7 +370,12 @@ def open_project_file(project_id: str, index: int):
     files = _catalog(project_id)["files"]
     if not 0 <= index < len(files):
         raise HTTPException(404, f"Project {project_id} has no file {index}.")
-    return _analyze(files[index]["path"], files[index]["name"])
+    boq = _parse(files[index]["path"], files[index]["name"])
+    shown = None if boq.format == "pdf" else _print_out(boq, files[:index] + files[index + 1:])
+    analysis_id, findings = _store(boq, shown[0] if shown else files[index]["path"])
+    if shown:
+        _PRINT_OUT[analysis_id] = shown[1:]
+    return _dump(analysis_id, boq, findings)
 
 
 @app.get("/api/catalog/{project_id}/project")
@@ -313,8 +384,8 @@ def open_project(project_id: str):
     project = _catalog(project_id)
     if project["kind"] != "trades":
         raise HTTPException(409, f"{project['name']} is one LV in several versions; open one of its files.")
-    boqs = [_parse(f["path"], f["name"]) for f in project["files"]]
-    return {"id": project_id, **_project(project["name"], _one_per_lv(boqs))}
+    boqs, sources = _parse_kept([(f["path"], f["name"]) for f in project["files"]])
+    return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources)}
 
 
 class Rename(BaseModel):
@@ -350,7 +421,8 @@ def open_sample_project(folder: str):
     files = _sample_projects().get(folder)
     if files is None:
         raise HTTPException(404, f"No project folder {folder} in the dataset.")
-    return _project(folder.split("_", 1)[-1].replace("_", " "), [_parse(p, p.name) for p in files])
+    boqs, sources = _parse_kept([(p, p.name) for p in files])
+    return _project(folder.split("_", 1)[-1].replace("_", " "), boqs, sources)
 
 
 @app.get("/api/samples")
@@ -363,7 +435,47 @@ def analyze_sample(path: str):
     sample = _samples().get(path)  # only files from the listing, never an arbitrary path
     if sample is None:
         raise HTTPException(404, f"No sample file {path}.")
-    return _analyze(sample, sample.name)
+    return _analyze(sample, sample.name, keep=True)
+
+
+def _pages(analysis_id: str) -> tuple[Path, dict[str, tuple[int, float]] | None]:
+    """The PDF to show for an analysis, and the item positions if the app drew it itself."""
+    boq, _ = _analysis(analysis_id)  # 404 for an analysis this server does not know
+    path = _SOURCES.get(analysis_id)
+    if path is not None and path.is_file():  # the LV's own PDF, or the client's print-out of it
+        return path, _PRINT_OUT[analysis_id][1] if analysis_id in _PRINT_OUT else None
+    if boq.format == "pdf":
+        raise HTTPException(404, "This LV was read from a PDF that was not kept in a project, "
+                                 "so there are no pages to show.")
+    if analysis_id not in _DRAWN or not _DRAWN[analysis_id][0].is_file():
+        data, positions = render(boq)
+        PAGES.mkdir(parents=True, exist_ok=True)
+        if not _DRAWN:  # the first pages of this server process: those of earlier runs belong to no analysis
+            for old in PAGES.glob("*.pdf"):
+                old.unlink(missing_ok=True)
+        path = PAGES / f"{analysis_id}.pdf"
+        path.write_bytes(data)
+        _DRAWN[analysis_id] = (path, positions)
+    return _DRAWN[analysis_id]
+
+
+@app.get("/api/analyses/{analysis_id}/source.pdf")
+def source_pdf(analysis_id: str):
+    """The pages of the LV for the PDF view: the PDF it was read from, or pages drawn from the LV."""
+    return FileResponse(_pages(analysis_id)[0], media_type="application/pdf")
+
+
+@app.get("/api/analyses/{analysis_id}/marks")
+def marks(analysis_id: str):
+    """Where each finding stands on the pages: one mark per finding, in the order of the findings
+    list the analysis returns (rule findings and the AI findings run so far)."""
+    path, positions = _pages(analysis_id)
+    boq, findings = _analysis(analysis_id)
+    findings = sort_findings(findings + _LLM_FINDINGS.get(analysis_id, []))
+    made_for = tuple(f"{f.check_id}|{f.item_oz}|{f.evidence}" for f in findings)
+    if _MARKS.get(analysis_id, (None,))[0] != made_for:  # a quote that is not on the page costs many searches
+        _MARKS[analysis_id] = (made_for, locate(path, boq, findings, positions))
+    return _MARKS[analysis_id][1]
 
 
 @app.post("/api/analyses/{analysis_id}/llm")

@@ -19,15 +19,17 @@ import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type 
 import { LvText, eur, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
 import { LvMap } from "./LvMap";
+import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
 import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Prices, type Project, type ProjectSummary, type Severity } from "./types";
 
-type View = "plan" | "table" | "remarks" | "whatif";
+type View = "plan" | "table" | "remarks" | "whatif" | "pdf";
 const VIEWS: [View, string][] = [
   ["plan", "LV map"],
   ["table", "Item table"],
   ["remarks", "Remarks"],
   ["whatif", "What-if"],
+  ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
 ];
 const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
@@ -133,14 +135,14 @@ export default function App() {
   }
 
   // ?project=A[&file=2] reopens a project after a reload; ?sample=<folder>/<file> a single dataset file.
-  // Both take &view=table|remarks|whatif and &item=5.1.4.
+  // Both take &view=table|remarks|whatif|pdf and &item=5.1.4.
   const linked = useRef(false);
   useEffect(() => {
     if (linked.current) return;
     const params = new URLSearchParams(location.search);
     const then = () => {
       const v = params.get("view");
-      if (v === "table" || v === "remarks" || v === "whatif") setView(v);
+      if (v === "table" || v === "remarks" || v === "whatif" || v === "pdf") setView(v);
       const oz = params.get("item");
       if (oz) setSelection({ oz, finding: null });
     };
@@ -464,7 +466,7 @@ export default function App() {
                 )}
               </div>
               <div className="views" role="tablist" aria-label="View">
-                {VIEWS.map(([id, label]) => (
+                {VIEWS.filter(([id]) => id !== "pdf" || analysis.pdf).map(([id, label]) => (
                   <button key={id} role="tab" aria-selected={view === id} onClick={() => setView(id)}>
                     {label}
                   </button>
@@ -520,6 +522,12 @@ export default function App() {
               />
             )}
             {view === "remarks" && <RemarksView analysis={analysis} />}
+            {view === "pdf" && analysis.pdf && (
+              <PdfView key={analysis.id} analysis={analysis} visible={severities} selection={selection} onSelect={setSelection} />
+            )}
+            {view === "pdf" && !analysis.pdf && (
+              <p className="pdf-status">This PDF was uploaded on its own and not kept, so there are no pages to show. Add it to a project to read it here.</p>
+            )}
             {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} />}
           </main>
 
