@@ -103,11 +103,17 @@ def _unhyphenate(text: str) -> str:
     return _HYPHEN_BREAK.sub(r"\1\2", text)
 
 
+def _prose(text: str) -> str:
+    """The text without lines no sentence could be: project E carries a 192,000-character line (an embedded
+    image), on which the 'bauseits' pattern backtracks for minutes."""
+    return "\n".join(line for line in text.split("\n") if len(line) <= 2000)
+
+
 def statements(name: str, boq: BoQ) -> list[Statement]:
     out = []
     for item in boq.items:
         seen = set()
-        long_text, text = _unhyphenate(item.long_text), _unhyphenate(item.text)
+        long_text, text = _unhyphenate(_prose(item.long_text)), _unhyphenate(_prose(item.text))
         for m in _FIELD.finditer(long_text):
             value = " ".join(m.group(3).split())
             kind = "prior" if m.group(1).lower() == "vorleistung" else "following"

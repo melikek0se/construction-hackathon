@@ -5,13 +5,17 @@
 import os
 import tempfile
 import uuid
+from datetime import datetime
 from collections import OrderedDict
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
+from pydantic import BaseModel
+
+from boq import catalog
 from boq.checks import run_checks, sort_findings
 from boq.checks.llm import LLMUnavailable, run_llm_checks
 from boq.env import load_env
@@ -42,7 +46,8 @@ def _parse(path: Path, name: str) -> BoQ:
     try:
         boq = parse_file(str(path))
     except Exception as exc:  # malformed upload: report it, do not crash the server
-        raise HTTPException(422, f"Could not read {name}: {exc}") from exc
+        # the parser names the temporary file; the user knows the file by the name they uploaded
+        raise HTTPException(422, f"Could not read {name}: {str(exc).replace(str(path), name)}") from exc
     boq.file = name
     if boq.name == path.stem:  # a PDF without a title is named after its file: use the uploaded name,
         boq.name = Path(name).stem  # not the temporary one, so repeated uploads hit the LLM cache
@@ -89,7 +94,9 @@ def _project(name: str, boqs: list[BoQ]) -> dict:
 def _samples() -> dict[str, Path]:
     if not DATASET.is_dir():
         return {}
-    files = (p for p in DATASET.rglob("*") if p.is_file() and p.suffix.lower() in SUPPORTED)
+    # dataset/en is the English reading copy (D-022), never app input: the checks key on German wording
+    files = (p for p in DATASET.rglob("*") if p.is_file() and p.suffix.lower() in SUPPORTED
+             and "en" not in p.relative_to(DATASET).parts[:1])
     return {p.relative_to(DATASET).as_posix(): p for p in sorted(files)}
 
 
@@ -116,22 +123,212 @@ def get_analysis(analysis_id: str):
     return _dump(analysis_id, boq, sort_findings(findings + _LLM_FINDINGS.get(analysis_id, [])))
 
 
-@app.post("/api/projects")
-async def create_project(files: list[UploadFile]):
-    """Several LVs of one building: each is analysed, then the interfaces between them."""
-    if len(files) < 2:
-        raise HTTPException(422, "A project needs at least two LV files.")
-    boqs = []
+ROLE = {"83": "tender", "84": "bid", "86": "award"}  # GAEB exchange phase -> what the file is in a tender
+
+
+async def _read_uploads(files: list[UploadFile]) -> list[tuple[str, bytes, BoQ]]:
+    """Every uploaded file parsed. Nothing is kept unless all of them can be read."""
+    out = []
     with tempfile.TemporaryDirectory() as tmp:
         for n, file in enumerate(files):
-            name = Path(file.filename or f"upload{n}").name
-            suffix = Path(name).suffix.lower()
+            filename = Path(file.filename or f"upload{n}").name
+            suffix = Path(filename).suffix.lower()
             if suffix not in SUPPORTED:
-                raise HTTPException(415, f"{name}: {suffix or 'this file type'} is not supported.")
+                raise HTTPException(415, f"{filename}: {suffix or 'this file type'} is not supported. "
+                                         f"Use GAEB, PDF or Excel: {', '.join(sorted(SUPPORTED))}.")
+            data = await file.read(MAX_BYTES + 1)
+            if len(data) > MAX_BYTES:
+                raise HTTPException(413, f"{filename} is larger than 30 MB.")
             path = Path(tmp) / f"upload{n}{suffix}"
-            path.write_bytes(await file.read(MAX_BYTES + 1))
-            boqs.append(_parse(path, name))
-    return _project(f"{len(boqs)} LVs", boqs)
+            path.write_bytes(data)
+            out.append((filename, data, _parse(path, filename)))
+    return out
+
+
+def _shared(a: BoQ, b: BoQ) -> int:
+    """Items of `a` that `b` has under the same number with the same unit and quantity. A field one file
+    lacks does not count against it: a GAEB 84 bid carries prices only, no units or quantities."""
+    other = {i.oz: i for i in b.items}
+    return sum(1 for i in a.items if (o := other.get(i.oz)) is not None
+               and (i.qty is None or o.qty is None or i.qty == o.qty)
+               and (not i.unit or not o.unit or i.unit == o.unit))
+
+
+def _same_lv(boqs: list[BoQ], whole: bool = False) -> list[int]:
+    """Which files are the same LV: files that share most items (number, unit and quantity) are versions
+    of one LV (tender, print-out, bid, award); others are other LVs (trades, lots).
+
+    Item numbers alone are not enough: the trade LVs of one building restart at 1.1.10 each (project F
+    has 8 of 27 that would pair up). Each file is compared with every file of a group, not with the
+    group's union, so pairs cannot chain. `whole` asks for most of BOTH files: an LV that repeats part
+    of another (F: 01 Fertigteiltreppen inside 00 Rohbau) is then a separate LV, which the comparison
+    between LVs must see; otherwise an excerpt (C: LV-Schachtbauwerk) belongs to its LV."""
+    groups: list[list[BoQ]] = []
+    index = []
+    for boq in boqs:
+        for g, members in enumerate(groups):
+            if any(_versions(boq, m, whole) for m in members):
+                members.append(boq)
+                index.append(g)
+                break
+        else:
+            groups.append([boq])
+            index.append(len(groups) - 1)
+    return index
+
+
+def _versions(a: BoQ, b: BoQ, whole: bool) -> bool:
+    n, m = len(a.items), len(b.items)
+    if not n or not m:
+        return False
+    shared = _shared(a, b) if n <= m else _shared(b, a)
+    return shared >= 0.7 * (max(n, m) if whole else min(n, m))
+
+
+def _one_per_lv(boqs: list[BoQ]) -> list[BoQ]:
+    """One file per LV for the comparison between LVs: the GAEB tender where there is one. A tender and
+    its own print-out are not two trades; an LV that repeats part of another is (see _same_lv)."""
+    def rank(boq: BoQ) -> tuple[bool, bool]:  # a tender before a bid, a GAEB file before its print-out
+        return boq.phase == "83", boq.format != "pdf"
+
+    picked: dict[int, BoQ] = {}
+    for boq, group in zip(boqs, _same_lv(boqs, whole=True)):
+        if group not in picked or rank(boq) > rank(picked[group]):
+            picked[group] = boq
+    return list(picked.values())
+
+
+@app.post("/api/intake")
+async def intake(files: list[UploadFile]):
+    """What a set of dropped files is, before anything is kept: each file's role, which files are the
+    same LV, and the project name the LV itself carries."""
+    uploads = await _read_uploads(files)
+    boqs = [boq for _, _, boq in uploads]
+    groups = _same_lv(boqs)
+    names = [b.name for b in boqs if b.name and b.name != Path(b.file).stem]
+    return {"name": max(set(names), key=names.count) if names else "",
+            "lvs": len(set(groups)),
+            "files": [{"name": name, "format": boq.format, "role": ROLE.get(boq.phase, "LV"), "title": lv_name(boq),
+                       "items": len(boq.items), "lv": g}
+                      for (name, _, boq), g in zip(uploads, groups)]}
+
+
+@app.post("/api/projects")
+async def create_project(files: list[UploadFile], name: str | None = Form(None), project: str | None = Form(None)):
+    """Keep files as a project (data/projects/<id>/), or add them to a project created earlier.
+
+    One LV in several versions and several trade LVs are both projects; which it is follows from the
+    item numbers of the files. Several LVs are also analysed against each other, as before.
+    """
+    uploads = await _read_uploads(files)
+    stored = [(filename, data, ROLE.get(boq.phase, "LV")) for filename, data, boq in uploads]
+    boqs = [boq for _, _, boq in uploads]
+    if project:
+        existing = _catalog(project)
+        if existing["source"] != "saved":
+            raise HTTPException(409, f"{existing['name']} is a dataset project; files cannot be added to it.")
+        boqs = [_parse(f["path"], f["name"]) for f in existing["files"]] + boqs
+        kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
+        catalog.add_files(project, stored, kind)
+        project_id, title = project, existing["name"]
+    else:
+        kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
+        named = [b.name for b in boqs if b.name and b.name != Path(b.file).stem]
+        title = (name or "").strip()[:80] or (named[0][:80] if named else f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}")
+        project_id = catalog.save_project(title, stored, kind)
+    _SUMMARIES.pop(project_id, None)
+    if kind == "trades":
+        return {"id": project_id, "kind": kind, **_project(title, _one_per_lv(boqs))}
+    return {"id": project_id, "kind": kind, "name": title}
+
+
+# ---------------------------------------------------------------- projects page
+
+_SUMMARIES: dict[str, dict] = {}  # per project: items and findings, worked out once per server process
+
+
+def _catalog(project_id: str) -> dict:
+    project = catalog.find(DATASET, project_id)
+    if project is None:
+        raise HTTPException(404, f"No project {project_id}.")
+    return project
+
+
+@app.get("/api/catalog")
+def list_catalog():
+    """Every project the app knows: created ones first, then the six of the dataset."""
+    return [catalog.public(p) for p in catalog.all_projects(DATASET)]
+
+
+@app.get("/api/catalog/{project_id}/summary")
+def catalog_summary(project_id: str):
+    """Items and rule findings of a project and of each of its documents, for the projects page.
+    Parses every file, so it is asked for per project and remembered."""
+    project = _catalog(project_id)
+    if project_id not in _SUMMARIES:
+        rank = {"info": 1, "warn": 2, "high": 3}
+        docs, net, net_from = [], None, None
+        for index, f in enumerate(project["files"]):
+            try:
+                boq = _parse(f["path"], f["name"])
+            except HTTPException as exc:  # one unreadable document must not hide the others
+                docs.append({"index": index, "name": f["name"], "role": f["role"], "format": f["format"],
+                             "title": "", "items": 0, "counts": None, "marks": "", "error": str(exc.detail)})
+                continue
+            counts, worst = {"high": 0, "warn": 0, "info": 0}, {}
+            for finding in run_checks(boq):
+                counts[finding.severity] += 1
+                if finding.item_oz:
+                    worst[finding.item_oz] = max(worst.get(finding.item_oz, 0), rank[finding.severity])
+            docs.append({"index": index, "name": f["name"], "role": f["role"], "format": f["format"],
+                         "title": lv_name(boq), "items": len(boq.items), "counts": counts,
+                         # the document's fingerprint: one digit per item in LV order, 0 none .. 3 stop
+                         "marks": "".join(str(worst.get(i.oz, 0)) for i in boq.items), "error": None})
+            totals = [i.total for i in boq.items if i.total is not None]
+            if totals and f["role"] in ("bid", "award", "offer") and f["format"].startswith("GAEB"):
+                net, net_from = float(sum(totals)), f["role"]  # a priced GAEB version gives the net total
+        # The project's own numbers: one LV in several versions counts once (the document it opens with),
+        # trade LVs all count.
+        counted = [d for d in docs if d["counts"]]
+        counted = counted if project["kind"] == "trades" else counted[:1]
+        _SUMMARIES[project_id] = {
+            "lvs": len(counted), "items": sum(d["items"] for d in counted),
+            "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
+            "net": net, "net_from": net_from, "docs": docs}
+    return _SUMMARIES[project_id]
+
+
+@app.get("/api/catalog/{project_id}/files/{index}")
+def open_project_file(project_id: str, index: int):
+    """One file of a project as an analysed LV."""
+    files = _catalog(project_id)["files"]
+    if not 0 <= index < len(files):
+        raise HTTPException(404, f"Project {project_id} has no file {index}.")
+    return _analyze(files[index]["path"], files[index]["name"])
+
+
+@app.get("/api/catalog/{project_id}/project")
+def open_project(project_id: str):
+    """A project of several trade LVs: each LV analysed, then what they expect from each other."""
+    project = _catalog(project_id)
+    if project["kind"] != "trades":
+        raise HTTPException(409, f"{project['name']} is one LV in several versions; open one of its files.")
+    boqs = [_parse(f["path"], f["name"]) for f in project["files"]]
+    return {"id": project_id, **_project(project["name"], _one_per_lv(boqs))}
+
+
+class Rename(BaseModel):
+    name: str
+
+
+@app.patch("/api/catalog/{project_id}")
+def rename_project(project_id: str, body: Rename):
+    name = body.name.strip()[:80]
+    if not name:
+        raise HTTPException(422, "A project needs a name.")
+    if not catalog.rename(project_id, name):
+        raise HTTPException(409, "Only projects created here can be renamed; dataset projects keep their names.")
+    return catalog.public(_catalog(project_id))
 
 
 def _sample_projects() -> dict[str, list[Path]]:

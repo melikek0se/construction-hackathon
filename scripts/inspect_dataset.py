@@ -70,7 +70,9 @@ def inspect_gaeb90(path):
 
 def main():
     d = sys.argv[1] if len(sys.argv) > 1 else "dataset"
-    paths = sorted(os.path.join(root, f) for root, _, files in os.walk(d) for f in files)
+    # skip dataset/en, the English reading copy of the same files
+    paths = sorted(os.path.join(root, f) for root, _, files in os.walk(d) for f in files
+                   if os.path.relpath(root, d).split(os.sep)[0] != "en")
     for path in paths:
         ext = path.rsplit(".", 1)[-1].lower()
         if ext == "x83":

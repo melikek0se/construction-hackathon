@@ -32,3 +32,6 @@ data/cache/
 # Design tooling: review screenshots and the hook cache are local
 .impeccable/review/
 .impeccable/hook.cache.json
+
+# Projects created in the app (uploaded files)
+data/projects/

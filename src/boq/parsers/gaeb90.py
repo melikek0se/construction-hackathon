@@ -13,11 +13,23 @@ from boq.units import normalise_unit
 _CENT = Decimal("0.011")
 
 
-def decode(raw: bytes) -> str:
-    """Encoding differs per exporting program: DOS cp850 or latin-1. Decide by umlaut bytes."""
+_DOS_SUPERSCRIPT = re.compile(rb"m[\xfc\xfd](?![A-Za-z\x80-\xff])")  # m³ / m² in cp850, as a unit
+
+
+def encoding_of(raw: bytes) -> str:
+    """Encoding differs per exporting program: DOS cp850 or latin-1. Decide by umlaut bytes.
+
+    0xFC is "ü" in latin-1 but "³" in cp850: after an "m" and before a non-letter it is the unit m³, which
+    counts for cp850 (a file without umlauts, such as a translated one, has nothing else to go by).
+    """
     dos = sum(raw.count(b) for b in (b"\x84", b"\x94", b"\x81", b"\xe1"))
     iso = sum(raw.count(b) for b in (b"\xe4", b"\xf6", b"\xfc", b"\xdf"))
-    return raw.decode("cp850" if dos >= iso else "latin-1", "replace")
+    units = len(_DOS_SUPERSCRIPT.findall(raw))
+    return "cp850" if dos + units >= iso - units else "latin-1"
+
+
+def decode(raw: bytes) -> str:
+    return raw.decode(encoding_of(raw), "replace")
 
 
 def _oz_widths(header: str) -> list[int]:

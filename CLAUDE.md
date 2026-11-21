@@ -18,6 +18,7 @@ Read when relevant:
 - `docs/04-field-insights.md` — a civil engineer's input and what it means for the design
 - `docs/05-voice-agent.md` — supplier-call voice agent (ElevenLabs): concept, API plan, legal
 - `docs/06-architecture.md` — proposed stack, data model, build order
+- `docs/07-user-flows.md` — projects, LVs and versions: researched flows, what is built, what is not
 
 ## Keeping state
 
@@ -74,7 +75,8 @@ Code: `src/boq/parsers` (GAEB XML, GAEB 90, PDF, Excel) → `boq.model` → `src
 `companions.py` + `companion_rules.py` for missing items, `llm.py` for the Claude API checks) → `src/boq/report.py` (risk report, bidder questions), `src/boq/prices.py` (price suggestions), `src/boq/whatif.py`,
 `src/boq/project.py` (several trade LVs: interfaces, dependency graph, cross-LV findings) → `src/boq/api.py` → `web/` (Vite + React, one screen:
 `web/src/App.tsx`, the LV map in `LvMap.tsx`, item pictures in `ItemVisual.tsx`; `web/src/types.ts` mirrors
-`boq.model`). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
+`boq.model`). The projects page lists `src/boq/catalog.py` (dataset projects mapped by hand, created ones in
+`data/projects/`). Design rules for the UI: `DESIGN.md`; product context: `PRODUCT.md`.
 
 ## Conventions
 

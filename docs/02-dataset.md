@@ -8,6 +8,11 @@ Everything is anonymised with placeholder tokens: `[FIRMA_044]`, `[PERSON_132]`,
 `[TELEFON_084]`, `[EMAIL_004]`, `[PROJEKT_004]`, `[NUMMER_001]`, `[URL_012]`, `[BILD_001]`.
 The anonymiser was over-eager: it also replaced things that are not personal data (see Gotchas).
 
+**English reading copy:** `dataset/en/` holds all 44 files once more in English (same subfolders, names and
+formats), translated 1:1 with every error, contradiction and anonymisation token of the source kept. It is for
+reading only and never app input (D-022); `dataset/en/README.md` says how it was made and what its limits are,
+`dataset/en/TRANSLATION_NOTES.md` lists the source defects the translators noticed, per file with item number or page.
+
 ## The six projects
 
 The 44 files are not 44 BoQs. They group into six projects, three of which come with **real priced bids**.

@@ -52,8 +52,7 @@ export function ProjectView({ project, onOpenLv }: { project: Project; onOpenLv:
         <TradeGraph nodes={project.nodes} edges={project.edges} selected={selected} onSelect={setSelected} />
         <p className="readout">
           <span className="hint">
-            Arrow: this trade first, then that one; the tag names the work. Red: expects work no LV contains. Drag
-            to turn, click a trade.
+            Bottom is built first. Red expects work no LV contains. Point at a trade to see what it builds on.
           </span>
         </p>
       </main>

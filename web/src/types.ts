@@ -162,6 +162,48 @@ export interface Project {
   statements: { total: number; resolved: number; internal: number; by_kind: Record<string, number> };
 }
 
+/** A project of the projects page: one LV in several versions, or the trade LVs of one building. */
+export interface CatalogProject {
+  id: string;
+  number: string;
+  name: string;
+  trade: string;
+  note: string;
+  kind: "versions" | "trades";
+  source: "dataset" | "saved";
+  created: string | null;
+  files: { name: string; role: string; format: string }[];
+}
+
+/** What a set of dropped files is, before anything is kept. */
+export interface Intake {
+  name: string; // the project name the LV itself carries, or ""
+  lvs: number; // how many different LVs the files are
+  files: { name: string; format: BoQ["format"]; role: string; title: string; items: number; lv: number }[];
+}
+
+export interface ProjectSummary {
+  lvs: number;
+  items: number;
+  counts: Record<Severity, number>;
+  net: number | null;
+  net_from: string | null;
+  docs: ProjectDoc[]; // every document of the project with its own numbers
+}
+
+/** One document of a project: a version of the LV, or one trade LV. */
+export interface ProjectDoc {
+  index: number; // position among the project's files, for opening it
+  name: string; // file name
+  role: string; // tender, bid, award, trade LV ...
+  format: string;
+  title: string; // the LV's own name
+  items: number;
+  counts: Record<Severity, number> | null; // null: the document could not be read
+  marks: string; // one digit per item in LV order: 0 none, 1 note, 2 caution, 3 stop
+  error: string | null;
+}
+
 export interface Sample {
   path: string; // relative to dataset/, e.g. "01_gaeb_xml/…X83"
   name: string;

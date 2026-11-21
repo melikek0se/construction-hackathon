@@ -1,4 +1,4 @@
-import type { Adjustment, Analysis, Finding, Prices, Project, Sample, WhatIfResult } from "./types";
+import type { Adjustment, Analysis, CatalogProject, Finding, Intake, Prices, Project, ProjectSummary, Sample, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -26,19 +26,50 @@ export async function analyzeFile(file: File): Promise<Analysis> {
   return read(await fetch("/api/analyze", { method: "POST", body: form }));
 }
 
-/** Dataset folders that hold the trade LVs of one building. */
-export async function listSampleProjects(): Promise<{ folder: string; files: number }[]> {
-  return read(await fetch("/api/projects/samples"));
+/** Every project the app knows: created ones first, then the dataset's. */
+export async function listCatalog(): Promise<CatalogProject[]> {
+  return read(await fetch("/api/catalog"));
 }
 
-export async function openSampleProject(folder: string): Promise<Project> {
-  return read(await fetch(`/api/projects/sample?folder=${encodeURIComponent(folder)}`));
+/** Items and findings of one project. The server parses its files for this, so it can take seconds. */
+export async function catalogSummary(id: string): Promise<ProjectSummary> {
+  return read(await fetch(`/api/catalog/${id}/summary`));
 }
 
-export async function createProject(files: File[]): Promise<Project> {
+/** One file of a project, analysed as an LV. */
+export async function openCatalogFile(id: string, index: number): Promise<Analysis> {
+  return read(await fetch(`/api/catalog/${id}/files/${index}`));
+}
+
+/** A project of several trade LVs. */
+export async function openCatalogProject(id: string): Promise<Project> {
+  return read(await fetch(`/api/catalog/${id}/project`));
+}
+
+/** What these files are: role, which of them are the same LV, the name the LV carries. Keeps nothing. */
+export async function intakeFiles(files: File[]): Promise<Intake> {
   const form = new FormData();
   for (const file of files) form.append("files", file);
+  return read(await fetch("/api/intake", { method: "POST", body: form }));
+}
+
+/** Keep files as a new project, or add them to a project created earlier. */
+export async function createProject(files: File[], name?: string, addTo?: string | null): Promise<{ id: string }> {
+  const form = new FormData();
+  for (const file of files) form.append("files", file);
+  if (name) form.append("name", name);
+  if (addTo) form.append("project", addTo);
   return read(await fetch("/api/projects", { method: "POST", body: form }));
+}
+
+export async function renameProject(id: string, name: string): Promise<CatalogProject> {
+  return read(
+    await fetch(`/api/catalog/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    }),
+  );
 }
 
 /** An LV the server analysed earlier, e.g. one LV of a project. */

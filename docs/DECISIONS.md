@@ -141,3 +141,70 @@ it would add persistence and Cypher, not findings. The diagram is a three.js sce
 Utku's request; this is a new view for projects and does not bring back the 3D LV map rejected in D-013.
 Revisit if: projects must persist across restarts or be queried across many buildings (then a graph database
 earns its keep), or the 3D diagram proves as hard to read as the 3D map did (then lay the same graph out flat).
+
+## D-018 — The cross-trade diagram is a structure going up, not a ball
+Status: decided · 2026-11-21
+
+Refines D-017 and is the one place D-013's "no 3D" does not apply: the team asked to keep and improve the
+three.js diagram. The first version spread the trades through a ball by force layout; position meant nothing
+and the lettering was too small to read. Now a trade stands one storey above the last trade it builds on, so
+the order of work reads from the ground up (`storeys()` in `TradeGraph.tsx`); trades without any stated
+interface lie on the ground in front. Slabs are lettered on their front, so the view turns only about 57° to
+either side. In the overview the arrows are a faint web without names; pointing at or picking a trade leaves
+only its arrows, solid and named after the linking work.
+Revisit if: a project has far more than about 30 trades or more than 4 per storey row — the stack gets deep.
+
+## D-019 — Projects page; dataset projects mapped by hand; created projects kept as folders, no database
+Status: decided · 2026-11-21
+
+The app opens on a list of projects instead of a list of files. A project is either one LV in several versions
+(tender, bid, award, print-out: dataset projects A–E) or the trade LVs of one building (F). Which dataset file
+belongs to which project is a fixed list in `src/boq/catalog.py`, taken from `02-dataset.md`: file names do not
+say it, and a wrong automatic grouping would be worse than none. Uploading several files creates a project
+that is kept in `data/projects/<id>/` (the files plus `meta.json`, git-ignored) and can be renamed. (A single
+file opened as an unsaved LV until D-021 replaced that.) There is still no database: analyses live in memory and are
+recomputed from the files, the LLM answers stay in `data/cache/llm/`.
+Revisit if: projects need findings, notes or prices stored with them, or several users — then SQLite (D-003).
+
+## D-020 — The UI: yellow and white, industrial, small and square; the projects page shows each LV as a strip
+Status: decided · 2026-11-21
+
+Team feedback in steps. The all-yellow pages with heavy black keylines tire the eyes. A first answer (light
+ground, rounded soft cards, a large drawn crane, big headline) was rejected as the same language made softer.
+Asked for: industrial but modern, nothing round, nothing soft, nothing huge. A dark version was "a bit
+better"; four mock-ups were then shown side by side (fingerprint, spec sheet, pipeline, drawing sheet) and the
+team chose the fingerprint layout in yellow and white.
+So: white ground, the yellow band with its hazard stripe (54 px, tower-crane mark as the logo), hairlines,
+square corners, 12–15 px text, small tracked capitals for labels, tabular figures. Yellow is the band, the
+one primary action, the project numbers and the hover. On the projects page every project shows its LV item
+by item as one strip, flagged items standing up in their severity colour, so where the trouble sits is visible
+before a project is opened (`Fingerprint` in `web/src/Projects.tsx`; the data is `marks` in the summary).
+The LV workspace, its item sheet, table, remarks, what-if and the project view follow the same language
+since 2026-11-21 (the closing block of `web/src/styles.css` restates the earlier rules). `DESIGN.md` still
+describes the earlier signage look and has to be rewritten. The other three mock-ups were not kept in the
+repository.
+
+## D-021 — Files first, project always: intake, then keep as a project or add to one
+Status: decided · 2026-11-21
+
+From the research in `07-user-flows.md`. No LV exists outside a project, not even a single uploaded file.
+Dropped files are read first (`POST /api/intake`): GAEB phase gives tender / bid / award, files sharing 70 % of
+their item numbers are versions of one LV, others are different LVs; the project name comes from the LV. The
+user confirms once: a new project, or an existing created project (also via "Add files" on its row or by
+dropping on the row). A project of several LVs is compared LV against LV with one file per LV, the GAEB
+tender where there is one. Dataset projects stay a fixed mapping and take no files.
+Revisit if: the destination should be suggested automatically, or versions need comparing (see "Not built"
+in `07-user-flows.md`).
+
+## D-022 — `dataset/en/` is an English reading copy of the dataset, never app input
+Status: decided · 2026-11-21
+
+Every file of `dataset/` exists a second time under `dataset/en/` (same subfolders, same names, same formats),
+translated 1:1 so that a non-German speaker can read what the originals say. Errors, contradictions, typos and
+anonymisation tokens of the source are kept on purpose (`dataset/en/TRANSLATION_NOTES.md` lists what was noticed).
+The copy is not input for the app: the rule checks, the companion rules, the unit and risk-wording lists and the
+LLM prompts key on German wording, so an English LV would give few or wrong findings. `GET /api/samples` and
+`scripts/inspect_dataset.py` skip `dataset/en`; the catalogue (`catalog.py`) lists files by name and never reaches it.
+The copy is produced by `scripts/translate/` (extract → translate by subagents → validate → rebuild → verify);
+intermediate files are in `data/processed/translation/`.
+Revisit if: the app should analyse English LVs — that needs English rule vocabulary, not this copy.

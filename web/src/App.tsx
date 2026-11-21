@@ -1,22 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  analyzeFile,
+  catalogSummary,
   createProject,
-  listSampleProjects,
-  listSamples,
+  intakeFiles,
+  listCatalog,
   loadAnalysis,
   loadPrices,
   loadSample,
-  openSampleProject,
+  openCatalogFile,
+  openCatalogProject,
+  renameProject,
   runLlmReview,
 } from "./api";
+import { CraneIcon, ProjectsPage } from "./Projects";
 import { ProjectView } from "./ProjectView";
 import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, eur, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
 import { LvMap } from "./LvMap";
 import { WhatIfView } from "./WhatIf";
-import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, sampleKind, type Analysis, type Finding, type Item, type Prices, type Project, type Sample, type Severity } from "./types";
+import { FORMAT_LABEL, PHASE_LABEL, SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Prices, type Project, type ProjectSummary, type Severity } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif";
 const VIEWS: [View, string][] = [
@@ -29,12 +32,17 @@ const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
 
 export default function App() {
-  const [samples, setSamples] = useState<Sample[]>([]);
+  const [catalog, setCatalog] = useState<CatalogProject[]>([]);
+  const [summaries, setSummaries] = useState<Record<string, ProjectSummary | "failed">>({});
+  // The project that is open, and which of its files when it is one LV in several versions.
+  const [current, setCurrent] = useState<{ project: CatalogProject; file: number } | null>(null);
+  // Files that were dropped or chosen and are waiting for a decision: what they are, and where they go.
+  const [pending, setPending] = useState<{ files: File[]; info: Intake | null; target: string | null } | null>(null);
+  const addTarget = useRef<string | null>(null);
   const [apiDown, setApiDown] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   // A project (several trade LVs) is shown when no single LV is open; an LV opened from it keeps it.
   const [project, setProject] = useState<Project | null>(null);
-  const [projectFolders, setProjectFolders] = useState<{ folder: string; files: number }[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<View>("plan");
@@ -47,10 +55,32 @@ export default function App() {
   const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
   const fileInput = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    listSamples().then(setSamples, () => setApiDown(true));
-    listSampleProjects().then(setProjectFolders, () => undefined);
+  const refreshCatalog = useCallback(async () => {
+    const list = await listCatalog();
+    setCatalog(list);
+    return list;
   }, []);
+
+  useEffect(() => {
+    refreshCatalog().catch(() => setApiDown(true));
+  }, [refreshCatalog]);
+
+  // Each project's numbers need its files parsed on the server: ask one after the other, so a building of
+  // 27 PDFs does not hold up the small ones.
+  // A project is asked once and its answer always kept: the list can be loaded again while answers are
+  // still on their way (it is, twice, in development), and dropping them would leave rows empty for good.
+  const asked = useRef(new Set<string>());
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  useEffect(() => {
+    for (const p of catalog) {
+      if (asked.current.has(p.id)) continue;
+      asked.current.add(p.id);
+      queue.current = queue.current.then(async () => {
+        const summary = await catalogSummary(p.id).catch(() => "failed" as const);
+        setSummaries((s) => ({ ...s, [p.id]: summary }));
+      });
+    }
+  }, [catalog]);
 
   const runProject = useCallback(async (label: string, job: () => Promise<Project>) => {
     setBusy(label);
@@ -82,23 +112,52 @@ export default function App() {
     }
   }, []);
 
-  // ?sample=<folder>/<file>[&view=table|remarks][&item=5.1.4] reopens the same LV after a reload.
+  const openProject = useCallback(
+    (p: CatalogProject, file = 0) => {
+      setCurrent({ project: p, file });
+      if (p.kind === "trades") void runProject(p.name, () => openCatalogProject(p.id));
+      else {
+        setProject(null);
+        void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file));
+      }
+    },
+    [run, runProject],
+  );
+
+  function closeAll() {
+    setPending(null);
+    setAnalysis(null);
+    setProject(null);
+    setCurrent(null);
+  }
+
+  // ?project=A[&file=2] reopens a project after a reload; ?sample=<folder>/<file> a single dataset file.
+  // Both take &view=table|remarks|whatif and &item=5.1.4.
+  const linked = useRef(false);
   useEffect(() => {
+    if (linked.current) return;
     const params = new URLSearchParams(location.search);
-    const folder = params.get("project"); // ?project=03_pdf_hochbau_projekt opens a dataset project
-    if (folder) {
-      void runProject(folder, () => openSampleProject(folder));
-      return;
-    }
-    const id = params.get("sample");
-    if (!id) return;
-    void run(id.split("/").pop() ?? id, () => loadSample(id)).then(() => {
+    const then = () => {
       const v = params.get("view");
       if (v === "table" || v === "remarks" || v === "whatif") setView(v);
       const oz = params.get("item");
       if (oz) setSelection({ oz, finding: null });
-    });
-  }, [run, runProject]);
+    };
+    const id = params.get("project");
+    const sample = params.get("sample");
+    if (id) {
+      const p = catalog.find((x) => x.id === id);
+      if (!p) return; // the catalogue has not arrived yet
+      linked.current = true;
+      const file = Number(params.get("file") ?? 0);
+      setCurrent({ project: p, file });
+      if (p.kind === "trades") void runProject(p.name, () => openCatalogProject(p.id));
+      else void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file)).then(then);
+    } else if (sample) {
+      linked.current = true;
+      void run(sample.split("/").pop() ?? sample, () => loadSample(sample)).then(then);
+    }
+  }, [catalog, run, runProject]);
 
   // The AI review adds findings to the same list; rule findings stay first within each severity.
   async function review() {
@@ -116,19 +175,54 @@ export default function App() {
     }
   }
 
-  // One file is an LV; several files are the trade LVs of one project.
-  const upload = useCallback(
-    (files: FileList | null | undefined) => {
-      const list = [...(files ?? [])];
-      if (list.length === 1) {
-        setProject(null);
-        void run(list[0].name, () => analyzeFile(list[0]));
-      } else if (list.length > 1) {
-        void runProject(`${list.length} LVs`, () => createProject(list));
-      }
-    },
-    [run, runProject],
-  );
+  // Files never open on their own: they are read first (what is each one, which are the same LV), then
+  // kept as a project or added to one. See docs/07-user-flows.md.
+  const upload = useCallback((files: FileList | File[] | null | undefined, target: string | null = null) => {
+    const list = [...(files ?? [])];
+    if (list.length === 0) return;
+    setAnalysis(null);
+    setProject(null);
+    setCurrent(null);
+    setError(null);
+    setPending({ files: list, info: null, target });
+    intakeFiles(list).then(
+      (info) => setPending((p) => (p && p.files === list ? { ...p, info } : p)),
+      (e) => {
+        setPending((p) => (p && p.files === list ? null : p));
+        setError(e instanceof Error ? e.message : String(e));
+      },
+    );
+  }, []);
+
+  async function confirmIntake(name: string, target: string | null) {
+    if (!pending) return;
+    setBusy(target ? "the added files" : name || "the new project");
+    setError(null);
+    try {
+      const { id } = await createProject(pending.files, name, target);
+      asked.current.delete(id); // its numbers have changed
+      setSummaries(({ [id]: _old, ...rest }) => rest);
+      const saved = (await refreshCatalog()).find((p) => p.id === id);
+      setPending(null);
+      setBusy(null);
+      if (saved) openProject(saved);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setBusy(null);
+    }
+  }
+
+  async function rename(name: string) {
+    if (!current || !name.trim() || name.trim() === current.project.name) return;
+    try {
+      const renamed = await renameProject(current.project.id, name.trim());
+      setCurrent({ ...current, project: renamed });
+      setProject((p) => (p ? { ...p, name: renamed.name } : p));
+      void refreshCatalog();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
 
   // Price suggestions arrive after the LV is on screen; the item sheet shows them when they are there.
   const [prices, setPrices] = useState<Prices | null>(null);
@@ -194,28 +288,9 @@ export default function App() {
     setTableKey((k) => k + 1); // remount so the table scrolls to the row
   }
 
-  const picker = samples.length > 0 && (
-    <select
-      value=""
-      disabled={busy !== null}
-      onChange={(e) => {
-        const s = samples.find((x) => x.path === e.target.value);
-        if (s) void run(s.name, () => loadSample(s.path));
-      }}
-      aria-label="Open an LV from the dataset"
-    >
-      <option value="">Open from dataset</option>
-      {samples.map((s) => (
-        <option key={s.path} value={s.path}>
-          {s.name} ({sampleKind(s.name)})
-        </option>
-      ))}
-    </select>
-  );
-
   return (
     <div
-      className={`app${dragging ? " dragging" : ""}`}
+      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}`}
       onDragOver={(e) => (e.preventDefault(), setDragging(true))}
       onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)}
       onDrop={(e) => {
@@ -231,59 +306,93 @@ export default function App() {
         multiple
         accept=".x83,.x84,.x86,.d83,.d84,.d86,.pdf,.xlsx,.xls"
         onChange={(e) => {
-          upload(e.target.files);
+          upload(e.target.files, addTarget.current);
+          addTarget.current = null;
           e.target.value = "";
         }}
       />
 
       <header className="band">
-        <span className="brand">LV Check</span>
+        <button className="brand" onClick={closeAll} title="All projects">
+          <CraneIcon size={26} />
+          LV Check
+        </button>
         {project && !analysis && (
           <>
             <div className="doc">
-              <strong>Project: {project.name}</strong>
-              <span>{project.lvs.length} trade LVs</span>
+              {current?.project.source === "saved" ? (
+                <input
+                  key={current.project.name}
+                  className="doc-name"
+                  defaultValue={current.project.name}
+                  aria-label="Project name"
+                  maxLength={80}
+                  onBlur={(e) => void rename(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+                />
+              ) : (
+                <strong lang="de">{project.name}</strong>
+              )}
+              <span>
+                {[current?.project.number, `${project.lvs.length} trade LVs`].filter(Boolean).join(" · ")}
+              </span>
             </div>
             <div className="actions">
-              <button className="btn" onClick={() => setProject(null)}>
-                Close project
+              <button className="btn" onClick={closeAll}>
+                All projects
               </button>
             </div>
           </>
         )}
         {analysis && stats && (
           <>
-          <div className="doc">
-            <strong>
-              <LvText text={analysis.boq.name || analysis.boq.file} />
-            </strong>
-            <span>
-              {analysis.boq.file} · {FORMAT_LABEL[analysis.boq.format]}
-              {PHASE_LABEL[analysis.boq.phase] ? ` · ${PHASE_LABEL[analysis.boq.phase]}` : ""} ·{" "}
-              {stats.priced ? `${eur(stats.net)} net` : "no prices in this file"}
-            </span>
-          </div>
-          <div className="actions">
-            {project && (
-              <button className="btn" onClick={() => setAnalysis(null)}>
-                Back to project
+            <div className="doc">
+              <strong lang="de">
+                <LvText text={current && !project ? current.project.name : analysis.boq.name || analysis.boq.file} />
+              </strong>
+              <span>
+                {analysis.boq.file} · {FORMAT_LABEL[analysis.boq.format]}
+                {PHASE_LABEL[analysis.boq.phase] ? ` · ${PHASE_LABEL[analysis.boq.phase]}` : ""} ·{" "}
+                {stats.priced ? `${eur(stats.net)} net` : "no prices in this file"}
+              </span>
+            </div>
+            <div className="actions">
+              {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
+              <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
+                Risk report
+              </a>
+              <a className="btn" href={`/api/analyses/${analysis.id}/bieterfragen.txt`} download>
+                Bidder questions
+              </a>
+              {project && (
+                <button className="btn" onClick={() => setAnalysis(null)}>
+                  Back to project
+                </button>
+              )}
+              <button className="btn" onClick={closeAll}>
+                All projects
               </button>
-            )}
-            {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
-            <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
-              Risk report
-            </a>
-            <a className="btn" href={`/api/analyses/${analysis.id}/bieterfragen.txt`} download>
-              Bidder questions
-            </a>
-            {picker}
-            <button className="btn" disabled={busy !== null} onClick={() => fileInput.current?.click()}>
-              Upload LV
-            </button>
-          </div>
+            </div>
           </>
         )}
       </header>
+
+      {analysis && current && !project && current.project.kind === "versions" && current.project.files.length > 1 && (
+        <nav className="versions" aria-label="Versions of this LV">
+          <span className="caption">This LV as</span>
+          {current.project.files.map((f, n) => (
+            <button
+              key={n}
+              aria-pressed={current.file === n}
+              disabled={busy !== null}
+              title={f.name}
+              onClick={() => current.file !== n && openProject(current.project, n)}
+            >
+              <b>{f.role}</b> {f.format}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {busy && (
         <div className="notice busy" role="status">
@@ -310,77 +419,26 @@ export default function App() {
       {project && !analysis ? (
         <ProjectView project={project} onOpenLv={(id) => void run("LV", () => loadAnalysis(id))} />
       ) : !analysis || !stats ? (
-        <main className="landing">
-          <div className="landing-inner">
-            <div className="hero">
-              <div>
-                <h1>See where an LV will hurt before you price it.</h1>
-                <p className="lede">
-                  Drop a Leistungsverzeichnis. It comes back as a map of every section and item, the problem items
-                  marked in place, each with its evidence and what to do about it.
-                </p>
-              </div>
-              <ul className="legend" aria-label="What the three signs mean">
-                <li>
-                  <Sign severity="high" size={56} />
-                  <b>Stop</b>
-                  <span>The LV contradicts itself or cannot be priced as written. Ask the client first.</span>
-                </li>
-                <li>
-                  <Sign severity="warn" size={56} />
-                  <b>Caution</b>
-                  <span>Scope or risk is pushed onto the bidder. Price it in or question it.</span>
-                </li>
-                <li>
-                  <Sign severity="info" size={56} />
-                  <b>Note</b>
-                  <span>Wording worth knowing about before you sign. Keep it for later claims.</span>
-                </li>
-              </ul>
-            </div>
-            <div className="pick">
-              <button className="drop" disabled={busy !== null} onClick={() => fileInput.current?.click()}>
-                <strong>Drop an LV, or choose one</strong>
-                <span>
-                  GAEB XML, GAEB 90, Excel or a PDF with a text layer. Several files at once open as one project.
-                </span>
-              </button>
-              {projectFolders.length > 0 && (
-                <div>
-                  <h2>Or open a whole project: several trade LVs and what they expect from each other</h2>
-                  <ul className="samples">
-                    {projectFolders.map((p) => (
-                      <li key={p.folder}>
-                        <button
-                          disabled={busy !== null}
-                          onClick={() => void runProject(`${p.files} LVs`, () => openSampleProject(p.folder))}
-                        >
-                          <span className="sample-name">{p.folder.replace(/^\d+_/, "").replace(/_/g, " ")}</span>
-                          <span className="sample-kind">{p.files} LVs</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {samples.length > 0 && (
-                <div>
-                  <h2>Or open one of the dataset LVs</h2>
-                  <ul className="samples">
-                    {samples.map((s) => (
-                      <li key={s.path}>
-                        <button disabled={busy !== null} onClick={() => void run(s.name, () => loadSample(s.path))}>
-                          <span className="sample-name">{s.name}</span>
-                          <span className="sample-kind">{sampleKind(s.name)}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        </main>
+        <ProjectsPage
+          projects={catalog}
+          summaries={summaries}
+          busy={busy !== null}
+          pending={pending}
+          onOpen={(p, file) => {
+            if (file === undefined || p.kind === "versions") return openProject(p, file ?? 0);
+            // one trade LV of a building, opened straight from the list
+            setCurrent({ project: p, file });
+            setProject(null);
+            void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file));
+          }}
+          onChooseFiles={(target) => {
+            addTarget.current = target;
+            fileInput.current?.click();
+          }}
+          onDropFiles={upload}
+          onConfirm={(name, target) => void confirmIntake(name, target)}
+          onCancel={() => setPending(null)}
+        />
       ) : (
         <div className="work">
           <main className="left">

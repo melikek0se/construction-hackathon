@@ -2,7 +2,7 @@
 
 **Update this file whenever something is finished, started or dropped.** Keep it short; history lives in git.
 
-Last updated: 2026-11-20 (evening, hackathon day 1)
+Last updated: 2026-11-21 (hackathon day 2)
 
 ## Now
 
@@ -109,10 +109,11 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   in-memory graph of trades. Findings between LVs: `P-BOTH-EXPECT-OTHERS` / `P-INTERFACE-GAP` (work expected
   from others that no LV contains), `P-SAME-SCOPE` (an LV repeated inside another), `P-DUPLICATE-SCOPE` (single
   items in two LVs). UI: several files dropped at once, or the dataset project from the landing page, open as a
-  project; three.js graph of trades laid out as a ball (force layout in 3D, turns slowly until touched; drag,
-  zoom, click), every arrow tagged with the work that links the two trades (in the overview only arrows with
-  three or more statements behind them, all arrows of a picked trade), panel with the cross-LV findings or the
-  clicked trade,
+  project; three.js diagram of the trades as a structure going up (D-018): a trade stands one storey above the last
+  trade it builds on, trades without a stated interface lie in front; lettered slabs, red for an open
+  interface; faint arrows in the overview, solid and named once a trade is pointed at or picked.
+  Seen in headless Chrome at 1440x900 with project F (overview and one picked trade, click opens the trade
+  sheet); dragging to turn and zooming were not exercised.
   "Open this LV" leads into the normal workspace and back. Deterministic, no LLM.
   On project F (27 LVs, 1,076 items): 177 interface statements, 39 dependencies, 21 findings — roof drains
   expected "bauseits" by both 12 Dachabdichtung and 14b Dachentwässerung (Stop); 01 Fertigteiltreppen (6 of 6
@@ -122,6 +123,42 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   built from a half sentence ("bauseitige Stahlum-"); it is now the edge 19 Stahltüren → 22 Schreinerarbeiten.
   Checked: graph renders and selects in Chrome at 1600x950 through a script. Not checked: an engineer's view
   of the dependencies; dragging by hand; a project of GAEB files.
+
+- Projects page (D-019; `src/boq/catalog.py`, `GET /api/catalog`, `/api/catalog/{id}/summary`,
+  `/files/{n}`, `/project`, `PATCH /api/catalog/{id}`; `web/src/Projects.tsx`): the app opens on the list of
+  projects, A–F from the dataset plus projects created by upload, each row with its versions or trade count,
+  items, Stop / Caution / Note counts and net total where a priced version exists. A versions project opens its
+  tender with a switcher for the other versions; a trades project opens the cross-trade view. Several uploaded
+  files are kept as a project and can be renamed in the band. Deep link `?project=A&file=2`.
+  Walked through in Chrome by script (list, open B, switch to the award, open F, create a project from three
+  PDFs, rename it); `tests/test_catalog.py` covers the API. Restyled on 2026-11-21 (D-020): yellow and white,
+  one row per project; inside it the three steps tender, bid, award in order, the files of a step side by
+  side as selectable format buttons, the selected file's items as a strip with its own counts (clicking the
+  strip opens that file), and a note when two formats of one step give different findings. A building with
+  many trade LVs uses the same three lines: its LVs are the files of the tender step, drawn as one strip LV
+  after LV, with the LVs that carry a stop or caution named underneath (each opens that LV). Compact yellow band with a crane mark. Flows per D-021 and
+  `07-user-flows.md`: dropped or chosen files go through an intake panel (role and LV grouping per file, name
+  from the LV), then become a project or join a created one ("Add files" on its row, or drop on the row).
+  Walked through in Chrome by script at 1440x900: create a project from a tender and its print-out, open it,
+  add a third file. Not seen: 1920 and phone widths of the dark page, drag-and-drop with a real mouse.
+  The LV workspace (map, findings, item sheet, table, remarks, what-if) and the project view use the same
+  yellow-and-white language since 2026-11-21; `DESIGN.md` is out of date and describes the earlier look. Not built: deleting a project, adding files to an
+  existing one, a summary that includes the findings between trade LVs (the row counts per-LV rule findings).
+
+- Fixed while testing: `project.statements` hung for about three minutes on project E, whose text holds one
+  192,356-character line (embedded image); lines over 2,000 characters are now skipped for that scan.
+
+- English reading copy of the dataset (`dataset/en/`, D-022, 2026-11-21): all 44 files translated 1:1 in their own
+  format, source errors, contradictions and anonymisation tokens kept; `GLOSSARY.md`, `README.md` (method, limits)
+  and `TRANSLATION_NOTES.md` (2,022 source defects noticed while translating, per file with OZ or page) next to
+  them. Made with `scripts/translate/` (`pipeline.py extract | batch | ingest | rebuild`, `verify.py`,
+  `build_notes.py`; 57 batches translated by subagents). Verified by script: the nine GAEB files parse to identical
+  items (OZ, quantity, unit, unit price, total), XML markup identical outside text nodes, every PDF page has the
+  same numbers and tokens as its source. Rendered pages were looked at for a sample only. A second pass compared every file pair for lost content
+  (`audit.py`, three build defects fixed) and had all 13,797 German–English pairs read by independent reviewers
+  (`review.py`, 157 corrections applied); see "Completeness check" in `dataset/en/README.md`. Not app input: the
+  sample list and `inspect_dataset.py` skip the folder. Side fix: GAEB 90 encoding detection now takes `m³` in
+  cp850 into account (`encoding_of` in `parsers/gaeb90.py`), which a file without umlauts needs.
 
 ## In progress
 
@@ -171,6 +208,13 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   text and the HTML report. Checked and correct: the bid PDF of B sums to 835,804.22 EUR, as its own last page
   says (the award D86 differs by two prices); price dates match the GAEB headers; section totals equal the net
   total on every priced file. Open: the back-test figures in the report's price note are written in, not computed.
+- Project and API review (2026-11-21), fixed in the uncommitted projects-page work (`api.py`, test in
+  `tests/test_catalog.py`): `_same_lv` grouped files by item numbers alone, and project F's trade LVs restart
+  at 1.1.10 — 8 of 27 LVs counted as "versions" of another and were dropped from the cross-LV analysis when F
+  was opened from the projects page, the roof-drain Stop with them (14b fell in with 14a / 14c). Files now
+  pair only on shared items with the same unit and quantity, member by member (no chaining), and the
+  cross-LV analysis keeps an LV that repeats part of another (01 inside 00). Upload errors no longer show the
+  server's temporary file path. Checked: catalog summaries, path handling, error codes, project analysis time.
 - Companion rules look at the whole LV, not per section: an item missing in section 5 is masked if section 3
   has one. They cover pipeline and civil work only.
 - Parser review (2026-11-21), fixed: GAEB 90 read the W / B flags of column 21 (repeat / reference description)
