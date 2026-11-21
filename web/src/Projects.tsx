@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Sign } from "./components";
+import { DateField, Select } from "./controls";
 import { eur } from "./format";
 import { FORMAT_LABEL, SEVERITIES, SEVERITY_LABEL, type CatalogProject, type Intake, type IntakeFile, type Plan, type ProjectDoc, type ProjectSummary, type Severity } from "./types";
 import "./home.css";
@@ -152,7 +153,7 @@ function DayField({ label, value, disabled, onSet }: { label: string; value?: st
   return (
     <label className={`day-field${value ? "" : " unset"}`}>
       <span>{label}</span>
-      <input type="date" value={value ?? ""} disabled={disabled} onClick={(e) => e.stopPropagation()} onChange={(e) => onSet(e.target.value || null)} />
+      <DateField label={label} value={value ?? ""} disabled={disabled} onChange={(v) => onSet(v || null)} />
     </label>
   );
 }
@@ -455,13 +456,13 @@ function Card({
                   <span>{doc?.title || f.name}</span>
                 </button>
                 {/* the step was read from the file (D-028); this is where a wrong one is put right */}
-                <select value={stepOf(f.role)} disabled={busy} aria-label={`Step of ${f.name}`} onChange={(e) => onSetStep(p, index, e.target.value as Step)}>
-                  {STEPS.map((step) => (
-                    <option key={step} value={step}>
-                      {STEP_LABEL[step]}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={stepOf(f.role)}
+                  options={STEPS.map((step) => ({ value: step, label: STEP_LABEL[step] }))}
+                  disabled={busy}
+                  aria-label={`Step of ${f.name}`}
+                  onChange={(step) => onSetStep(p, index, step)}
+                />
               </li>
             );
           })}
@@ -488,13 +489,13 @@ function Card({
       {(stage === "check" || stage === "questions" || stage === "pricing") && (
         <label className="stage-move" onClick={stop}>
           <span>Stage</span>
-          <select value={stage} disabled={busy} aria-label={`Stage of ${p.name}`} onChange={(e) => onChange(p, { stage: e.target.value as Plan["stage"] })}>
-            {(["check", "questions", "pricing"] as const).map((st) => (
-              <option key={st} value={st}>
-                {STAGE_LABEL[st]}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={stage}
+            options={(["check", "questions", "pricing"] as const).map((st) => ({ value: st, label: STAGE_LABEL[st] }))}
+            disabled={busy}
+            aria-label={`Stage of ${p.name}`}
+            onChange={(st) => onChange(p, { stage: st })}
+          />
         </label>
       )}
     </article>
@@ -689,14 +690,13 @@ function NewProjectDialog({
             <h3>{targetNow ? "Where the files go" : "The tender"}</h3>
             <label className="wide">
               <span>Goes into</span>
-              <select value={targetNow ?? ""} onChange={(e) => setTarget(e.target.value || null)} disabled={!info || busy}>
-                <option value="">A new project</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={targetNow ?? ""}
+                options={[{ value: "", label: "A new project" }, ...projects.map((p) => ({ value: p.id, label: p.name }))]}
+                aria-label="Goes into"
+                onChange={(id) => setTarget(id || null)}
+                disabled={!info || busy}
+              />
               <small>{info?.suggested && targetNow === info.suggested.id ? `suggested: ${info.suggested.reason}` : " "}</small>
             </label>
             {targetNow === null && (
@@ -721,12 +721,12 @@ function NewProjectDialog({
                 )}
                 <label>
                   <span>Submission deadline</span>
-                  <input type="date" value={due} onChange={(e) => setDue(e.target.value)} disabled={!info || busy} />
+                  <DateField label="Submission deadline" value={due} onChange={setDue} disabled={!info || busy} />
                   <small>Not in an LV file. It stands on the tender notice.</small>
                 </label>
                 <label>
                   <span>Questions until</span>
-                  <input type="date" value={questionsDue} max={due || undefined} onChange={(e) => setQuestionsDue(e.target.value)} disabled={!info || busy} />
+                  <DateField label="Questions until" value={questionsDue} max={due || undefined} onChange={setQuestionsDue} disabled={!info || busy} />
                   <small>Set by the client. Both can be entered later.</small>
                 </label>
               </>

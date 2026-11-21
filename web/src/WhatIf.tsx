@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { runWhatIf } from "./api";
+import { Select } from "./controls";
 import { LvText, eur } from "./format";
 import type { Section } from "./sections";
 import type { Adjustment, WhatIfResult } from "./types";
@@ -53,19 +54,23 @@ export function WhatIfView({ analysisId, sections }: { analysisId: string; secti
       <div className="whatif-form">
         {rows.map((r, i) => (
           <div className="whatif-row" key={i}>
-            <select aria-label="What changes" value={r.kind} onChange={(e) => update(i, { kind: e.target.value as Adjustment["kind"] })}>
-              <option value="price">Unit prices</option>
-              <option value="quantity">Quantities</option>
-            </select>
+            <Select
+              aria-label="What changes"
+              value={r.kind}
+              options={[
+                { value: "price", label: "Unit prices" },
+                { value: "quantity", label: "Quantities" },
+              ]}
+              onChange={(kind) => update(i, { kind })}
+            />
             <span>of</span>
-            <select aria-label="Section" value={r.section ?? ""} onChange={(e) => update(i, { section: e.target.value || null })}>
-              <option value="">all sections</option>
-              {sections.map((s) => (
-                <option key={s.key} value={s.key}>
-                  {s.key} {s.title.slice(0, 40)}
-                </option>
-              ))}
-            </select>
+            <Select
+              aria-label="Section"
+              className="section"
+              value={r.section ?? ""}
+              options={[{ value: "", label: "all sections" }, ...sections.map((s) => ({ value: s.key, label: `${s.key} ${s.title.slice(0, 40)}` }))]}
+              onChange={(key) => update(i, { section: key || null })}
+            />
             <input
               type="search"
               aria-label="Word in the item text"

@@ -1,0 +1,343 @@
+/* Our own select and date field (controls.tsx), and the few native inputs that are left, drawn to
+   DESIGN.md: white, a line-2 outline, 2px on the control, no radius and no shadow on the panel. */
+
+.sel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 30px;
+  min-width: 0;
+  padding: 0 8px 0 9px;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  font-family: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: left;
+  color: var(--ink);
+  transition: border-color 120ms var(--ease), background-color 120ms var(--ease);
+}
+
+.sel > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sel > svg {
+  flex: none;
+  stroke-linecap: square;
+}
+
+.sel:hover:not(:disabled),
+.sel[aria-expanded="true"] {
+  border-color: var(--ink);
+}
+
+.sel.date {
+  font-variant-numeric: tabular-nums;
+}
+
+.sel.date.unset > span {
+  color: var(--mute);
+}
+
+/* the panel of either control: in the top layer, placed by controls.tsx */
+.pop {
+  position: fixed;
+  inset: auto;
+  z-index: 200;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  font-family: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.3;
+  color: var(--ink);
+  cursor: default;
+  scrollbar-width: thin;
+}
+
+.pop-list {
+  max-width: min(440px, 92vw);
+}
+
+.opt {
+  min-height: 28px;
+  padding: 6px 10px 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.opt + .opt {
+  border-top: 1px solid var(--rule);
+}
+
+.opt[data-active] {
+  background: var(--hover);
+}
+
+.opt[aria-selected="true"] {
+  background: var(--ink);
+  border-top-color: var(--ink);
+  font-weight: 600;
+  color: #fff;
+}
+
+.opt[aria-selected="true"][data-active] {
+  color: var(--yellow);
+}
+
+/* calendar */
+.pop-cal {
+  width: 258px;
+  overflow: hidden;
+}
+
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.cal-head b {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cal-head button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--ink);
+}
+
+.cal-head button svg {
+  stroke-linecap: square;
+}
+
+.cal-head button:hover {
+  background: var(--yellow);
+  border-color: var(--ink);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: 32px repeat(7, 1fr);
+  gap: 1px;
+  padding: 6px 6px 7px 0;
+}
+
+.cal-dow,
+.cal-wk {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
+.cal-dow {
+  text-transform: uppercase;
+}
+
+.cal-wk {
+  margin-right: 5px;
+  border-right: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+span.cal-wk:first-child {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.cal-day {
+  position: relative;
+  height: 28px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid transparent;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.cal-day.we {
+  background: var(--tint);
+}
+
+.cal-day.out {
+  font-weight: 400;
+  color: var(--dim);
+}
+
+.cal-day:hover:not([aria-disabled]) {
+  background: var(--hover);
+  border-color: var(--ink);
+}
+
+/* today: the ink line of the schedule, laid under the number */
+.cal-day[aria-current]::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 2px;
+  height: 2px;
+  background: var(--ink);
+}
+
+.cal-day[aria-pressed="true"],
+.cal-day[aria-pressed="true"]:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  font-weight: 700;
+  color: #fff;
+}
+
+.cal-day[aria-pressed="true"]::after {
+  background: var(--yellow);
+}
+
+.cal-day[aria-disabled] {
+  background: none;
+  color: var(--line-2);
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.pop .cal-day:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+.pop .cal-day[aria-pressed="true"]:focus-visible {
+  outline-color: var(--yellow);
+}
+
+.cal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  background: var(--tint);
+  border-top: 1px solid var(--rule);
+}
+
+.cal-foot small {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mute);
+}
+
+.cal-foot button {
+  height: 22px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.cal-foot button:hover:not(:disabled) {
+  background: var(--yellow);
+}
+
+/* ------------------------------------------------------------------ native inputs that stay */
+
+input[type="checkbox"] {
+  appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  vertical-align: -2px;
+  cursor: pointer;
+  transition: border-color 120ms var(--ease), background-color 120ms var(--ease);
+}
+
+input[type="checkbox"]:hover {
+  border-color: var(--ink);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+/* a number is typed (or stepped with the arrow keys); no spinner */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* the clear cross of a search field: two ink strokes */
+input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  margin: 0 0 0 6px;
+  background:
+    linear-gradient(45deg, transparent 43%, var(--ink) 43% 57%, transparent 57%),
+    linear-gradient(-45deg, transparent 43%, var(--ink) 43% 57%, transparent 57%);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sel,
+  input[type="checkbox"] {
+    transition: none;
+  }
+}

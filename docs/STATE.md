@@ -303,6 +303,15 @@ very low coverage, see below), and a what-if view varies the total of a priced L
   (bid by heading, bid guessed, tender), add files from a card, a .docx alone. Not checked: real drag and
   drop with the mouse, a person clicking through.
 
+- Own form controls (2026-11-21): `web/src/controls.tsx` (`Select`, `DateField`) replace every native
+  `<select>` and `type="date"` (stage and step on a card, "Goes into" and both dates in the new-project
+  dialog, schedule dates, findings category, what-if); checkbox, number and search fields restyled in
+  `controls.css`. Panels use the Popover API (top layer, so no clipping and usable inside the modal dialog)
+  and correct for `body { zoom }`. Described in `DESIGN.md` ("Select and date field"). Checked in headless
+  Chrome by script: schedule calendar (open, arrow keys, PageDown, Esc returns focus), stage and step
+  selects, category select by keyboard, panel placement at 1800px (zoomed, flips above). Not checked: the
+  controls inside the new-project dialog with files loaded, what-if selects, Safari/Firefox, touch.
+
 ## In progress
 
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against

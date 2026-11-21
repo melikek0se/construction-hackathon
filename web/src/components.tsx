@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Select } from "./controls";
 import { LvText, eur, qty, quotedFragments } from "./format";
 import { FindingVisual, PriceRange, ValueRank } from "./ItemVisual";
 import { sectionOf, worst, type Section } from "./sections";
@@ -159,14 +160,12 @@ export function FindingsList({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <select value={category} onChange={(e) => setCategory(e.target.value as Category | "all")} aria-label="Category">
-            <option value="all">All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_LABEL[c]}
-              </option>
-            ))}
-          </select>
+          <Select<Category | "all">
+            value={category}
+            options={[{ value: "all", label: "All categories" }, ...categories.map((c) => ({ value: c, label: CATEGORY_LABEL[c] }))]}
+            onChange={setCategory}
+            aria-label="Category"
+          />
         </div>
         {section !== null && (
           <button className="section-chip" onClick={() => onSection(null)}>

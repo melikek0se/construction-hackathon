@@ -392,6 +392,18 @@ focus. Right: actions.
 White, `line-2` outline, 2px radius, 30px high (32px in the intake panel), 13 to 14px text. Focus: the outline
 turns ink; in the intake panel a 2px yellow outline is added. A field label is the label style above the field.
 
+### Select and date field
+Drawn by us (`web/src/controls.tsx`, `controls.css`), never by the browser: no native `<select>` and no
+`type="date"`. The field is an input-shaped button (same outline, radius and heights) with a square-ended
+chevron or a calendar sign at the right. Its panel opens under it (above when there is no room), white with a
+1px ink outline, no radius, no shadow. **Select:** rows 28px with hairlines between, pale yellow under the
+pointer or the arrow keys, the chosen entry ink with white text. **Date:** written "Fri 27.11.2026"; the
+calendar is one month, Monday first, with the calendar week (KW) in a ruled column, weekends on tint, today
+with a 2px ink line under the number, the chosen day ink with white text, days past a limit struck through;
+foot on tint with Today and Clear. Keyboard: arrows, Home/End, PageUp/PageDown for the month, typing to jump
+in a select, Esc closes. A checkbox is a 15px square that fills ink with a white tick; a number field has no
+spinner; the clear cross of a search field is two ink strokes.
+
 ### View switch
 Four segments in one `line-2` outline with hairlines between them, 28px high, 12px 600. Selected: ink with
 white text. Hover on the others: pale yellow.
