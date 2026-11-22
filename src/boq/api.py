@@ -5,11 +5,14 @@
 import asyncio
 import base64
 import http.client
+import hashlib
 import json
 import os
 import secrets
 import tempfile
 import uuid
+
+import fitz
 from collections import OrderedDict
 from contextlib import asynccontextmanager
 from datetime import date, datetime
@@ -27,7 +30,7 @@ from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
 from boq import (amendments, bid, catalog, chat, db, events, inbox, mail, partners, partners_demo, pipeline, retrieve, risk,
-                 runs, spend, supply, voice)
+                 runs, spend, supply, tender, voice)
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -626,7 +629,8 @@ def catalog_summary(project_id: str):
 @app.get("/api/catalog/{project_id}/files/{index}")
 def open_project_file(project_id: str, index: int):
     """One file of a project as an analysed LV."""
-    files = _catalog(project_id)["files"]
+    project = _catalog(project_id)
+    files = project["files"]
     if not 0 <= index < len(files):
         raise HTTPException(404, f"Project {project_id} has no file {index}.")
     doc = files[index]
@@ -639,6 +643,7 @@ def open_project_file(project_id: str, index: int):
     _set_project(analysis_id, project_id)
     reviewed = runs.llm_findings(project_id, doc["id"]) is not None
     _from_run(analysis_id, project_id, doc["id"])
+    _document_differences(analysis_id, project, index)
     return _dump(analysis_id, boq, sort_findings(findings + _llm_findings(analysis_id)), reviewed)
 
 
@@ -688,6 +693,85 @@ def open_project(project_id: str):
     sources = {id(b): _doc_path(f) for b, f in zip(boqs, project["files"]) if _is_pdf(f)}
     docs = {id(b): f["id"] for b, f in zip(boqs, project["files"])}
     return {"id": project_id, **_project(project["name"], _one_per_lv(boqs), sources, project_id, docs)}
+
+
+_TENDERS: dict[str, tuple[tuple, dict]] = {}  # project id -> (its files as they were, the tender view)
+
+
+@app.get("/api/catalog/{project_id}/tender")
+def open_tender(project_id: str):
+    """The tender step of a project as one thing (boq.tender): its LVs, each read from all the documents
+    the client sent of it, with where every item stands in each and where the documents differ. Parses
+    every file, so it is kept until the project's files or their steps change."""
+    project = _catalog(project_id)
+    view = _tender_of(project)
+    doc_ids = [f["id"] for f in project["files"]]
+    wanted = tender.asked(project_id)
+    # name, number and dates change without the files changing; so does what the estimator wants asked
+    return {**view, "name": project["name"], "number": project["number"], "plan": project["plan"],
+            "asked": [{"lv": lv["id"], "oz": i["oz"]} for lv in view["lvs"] for i in lv["items"]
+                      if i["diff"] and f"{doc_ids[lv['carrier']]}:{i['oz']}" in wanted]}
+
+
+class AskDifference(BaseModel):
+    lv: int
+    oz: str
+    ask: bool
+
+
+@app.put("/api/catalog/{project_id}/tender/ask")
+def ask_about_difference(project_id: str, body: AskDifference):
+    """Put a difference between two documents of an LV among the points for the client, or take it out
+    again. It then is a finding of the LV with its bidder question (boq.tender.difference_findings)."""
+    project = _catalog(project_id)
+    view = _tender_of(project)
+    lv = next((x for x in view["lvs"] if x["id"] == body.lv), None)
+    if lv is None or not any(i["oz"] == body.oz and i["diff"] for i in lv["items"]):
+        raise HTTPException(404, f"LV {body.lv} has no item {body.oz} that its documents state differently.")
+    tender.set_asked(project_id, project["files"][lv["carrier"]]["id"], body.oz, body.ask)
+    return open_tender(project_id)
+
+
+def _tender_of(project: dict) -> dict:
+    """The tender view of a project (boq.tender.view), kept until its files or their steps change."""
+    project_id = project["id"]
+    stamp = tuple((f["id"], f["role"]) for f in project["files"])
+    kept = _TENDERS.get(project_id)
+    if kept is None or kept[0] != stamp:
+        boqs, pages = [], []
+        for f in project["files"]:
+            data = catalog.file_bytes(f["id"])
+            try:
+                boqs.append(_parse_bytes(data, f["name"]))
+            except HTTPException:  # one unreadable document must not hide the others
+                boqs.append(None)
+            pages.append(fitz.open(stream=data, filetype="pdf").page_count if _is_pdf(f) else None)
+        view = tender.view(project, boqs, pages)
+        # a new issue of an LV has come: what was done on the earlier one goes on with it
+        for lv in view["lvs"]:
+            if lv["before"] is None:
+                continue
+            earlier, now = project["files"][lv["before"]]["name"], project["files"][lv["carrier"]]["name"]
+            if tender.follow(project_id, earlier, now):
+                changed = sum(1 for i in lv["items"] if i["change"])
+                events.record(project_id, "tender", f"A new issue of the LV came ({now}): {changed} items changed or new, "
+                              f"{len(lv['removed'])} dropped against {earlier}. Your questions, inquiries and prices "
+                              f"went over to it.", "you")
+        kept = _TENDERS[project_id] = (stamp, view)
+    return kept[1]
+
+
+def _document_differences(analysis_id: str, project: dict, index: int) -> None:
+    """Where the opened file carries an LV that came in a second document, what the two say differently
+    joins its findings (kept where the run's findings are kept, so the report and the questions see them)."""
+    view = _tender_of(project)
+    lv = next((x for x in view["lvs"] if x["carrier"] == index and len(x["documents"]) > 1), None)
+    if lv is None:
+        return
+    found = tender.difference_findings(lv, view["documents"], [f["id"] for f in project["files"]],
+                                       tender.asked(project["id"]))
+    if found:
+        _keep_llm_findings(analysis_id, _llm_findings(analysis_id) + found)
 
 
 # ---------------------------------------------------------------- the pipeline and its runs
@@ -2214,16 +2298,57 @@ async def partner_read(supplier_id: str):
         raise HTTPException(502, f"Reading the record failed: {exc}") from exc
 
 
-
-
 # ---------------------------------------------------------------- tenders found in the mailbox (boq.inbox)
+
+def _files_for_a_project(message: dict, read: list[tuple[str, bytes, BoQ]], dates: list[dict]) -> dict | None:
+    """The LVs attached to a message, added to the project of the tender they name (same project number,
+    else the same name; `intake.suggest`), each as what it is: a tender document, a bid, an award. None when
+    they name no project the app has. A file the project holds already is not kept again."""
+    home = intake_rules.suggest(intake_rules.identity([boq for _, _, boq in read]), catalog.all_projects())
+    project = catalog.find(home["id"]) if home else None
+    if project is None:
+        return None
+    result = {"subject": message["subject"], "sender": message["sender"]}
+    held = catalog.hashes(project["id"])
+    fresh = [(name, data, boq) for name, data, boq in read if hashlib.sha256(data).hexdigest() not in held]
+    if not fresh:
+        return {**result, "taken": None, "why": f"its files are in the project {project['name']} already"}
+    known = []
+    for f in project["files"]:
+        try:
+            known.append(_parse_doc(f))
+        except HTTPException:
+            pass
+    boqs = known + [boq for _, _, boq in fresh]
+    stored = [(name, data, intake_rules.classify(boq, boqs)["role"]) for name, data, boq in fresh]
+    catalog.add_files(project["id"], stored, "trades" if len(set(_same_lv(boqs))) > 1 else "versions")
+    steps = {intake_rules.step_of(role) for _, _, role in stored}
+    # The dates this message states: its text before its files, as for an invitation. A new document of the
+    # tender moves the tender's dates (a second issue often comes with a later deadline); a bid or an
+    # award only fills what the project lacks.
+    stated = {k: v for k, v in tender_dates.plan_of(tender_dates.merge(dates)).items() if v}
+    stated |= {k: v for k, v in tender_dates.plan_of(tender_dates.merge(
+        tender_dates.read(message["text"].encode(), "E-Mail.txt"))).items() if v}
+    had = project["plan"]
+    moved = {k: v for k, v in stated.items() if had.get(k) != v and ("tender" in steps or not had.get(k))}
+    if moved:
+        catalog.set_plan(project["id"], moved)
+    what = " and ".join(w for step, w in (("tender", "a new document of the tender"), ("bid", "the bid as it went out"),
+                                          ("award", "the award")) if step in steps)
+    said = f"{what[0].upper()}{what[1:]} came in the mail from {message['sender']} ({home['reason']}): " \
+           f"{', '.join(name for name, _, _ in stored)}."
+    if had.get("due") and moved.get("due"):
+        said += f" The submission deadline moved from {had['due']} to {moved['due']}."
+    events.record(project["id"], "tender", said, "you")
+    if project["plan"].get("stage") != "intake":  # a tender not taken on yet is read, not checked
+        runs.autostart(project["id"], "files added")
+    return {**result, "taken": {"id": project["id"], "name": project["name"]}, "why": said}
+
 
 async def _take_message(message: dict, ours: set[str]) -> dict:
     """One message of the mailbox: a project in the intake if it invites the firm to bid on an LV attached
     to it; else why it was passed over. Either way it is not looked at again."""
     passed = lambda why: {"taken": None, "subject": message["subject"], "sender": message["sender"], "why": why}  # noqa: E731
-    if any(m in message["answers"] for m in ours if m):
-        return passed("answers a message of ours: it belongs to that conversation")
     read, dates = [], []
     for name, data in message["files"]:
         suffix = Path(name).suffix.lower()
@@ -2234,6 +2359,12 @@ async def _take_message(message: dict, ours: set[str]) -> dict:
                 read.append((name, data, _parse_bytes(data, name)))
             except HTTPException:
                 pass
+    # An LV of a tender that is a project already: a new issue, our bid as it went out, the award. It joins
+    # that project whatever the mail says and whoever sent it; no model is asked (D-058).
+    if read and (added := _files_for_a_project(message, read, dates)):
+        return added
+    if any(m in message["answers"] for m in ours if m):
+        return passed("answers a message of ours: it belongs to that conversation")
     if not read:
         return passed("no attachment that is an LV")
     lvs = [{"name": name, "items": len(boq.items), "sample": [f"{i.oz} | {i.label[:90]}" for i in boq.items[:: max(1, len(boq.items) // 25)][:25]]}
@@ -2270,7 +2401,9 @@ async def _sort_mail(messages: list[dict]) -> dict:
         ours = {row.message_id for row in conn.execute(select(db.mails.c.message_id).where(db.mails.c.message_id.isnot(None)))}
     known = inbox.seen() | {(p["plan"].get("found") or {}).get("message_id") for p in catalog.all_projects()}
     results = []
-    for message in messages:
+    # oldest first: a tender has to be a project before its second issue, its bid and its award can join it
+    # (by the day; the mailbox hands the newest first and is turned round where it is read)
+    for message in sorted(messages, key=lambda m: m.get("received") or ""):
         if message["message_id"] and message["message_id"] in known:
             continue
         try:
@@ -2299,7 +2432,7 @@ async def scan_inbox():
     not looked at yet. An invitation to bid becomes a project in the intake; nothing in the mailbox is
     changed. `taken` are the projects made, `passed` the messages left, each with the reason."""
     try:
-        messages = inbox.recent(inbox.seen())
+        messages = inbox.recent(inbox.seen())[::-1]
     except mail.MailUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     return await _sort_mail(messages)

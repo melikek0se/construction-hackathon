@@ -309,12 +309,9 @@ Every page is a column: band, an optional bar, then the content filling the heig
   docked under the band, above the board, the full width, over a 2px ink rule: the line of all deadlines, or the
   lane of the tender whose card is pointed at; held open from the count on a card, it lists that tender's dates
   under the lane. It stays under the band while the board scrolls.
-- **Workspace.** Under the band a bar with the versions of the LV, then two panes: the left pane takes the
-  remaining width, the right pane is `clamp(360px, 32vw, 520px)` with a hairline on its left. Left: the verdict
-  and the view switch (LV map, Item table, Remarks, What-if), the view, and the readout bar at the bottom of
-  the map. Right: the findings list, replaced by the item sheet when an item is open. Gutter 20px on the left
-  pane, 16px in the right pane, 12px inside a card.
-- **Project view.** Same two panes: the trade diagram left, findings between the LVs right.
+- **Tender page.** What a project opens on: a rail of six steps under the band, then a left column, the
+  LVs in one of the step's views, and the item sheet when an item is open (see "Tender page" under
+  Components). The two-pane workspace and the project view of before are gone (D-057).
 - **Rhythm.** Dense and even: rows are separated by a hairline and 6 to 14px of padding, marks in a strip are
   2px apart, chips 4px apart. A new sub-section in the LV map starts after a 7px gap.
 - **Narrow (up to 900px).** Gutters drop to 14px; the register row becomes index plate plus one stacked
@@ -563,6 +560,49 @@ more CSS. The brand comes in from the left with them after the opening, where it
 yellow until then, and stays put otherwise.
 Easing for the shutter `cubic-bezier(0.7, 0, 0.25, 1)`, for what rises `--ease`. Polier stays in front of
 it.
+
+### Tender page (D-050)
+What a project opens on. Under the band a rail of the six steps of a tender, each a cell with its number,
+name in the display face and one line; the step that is open is ink with white text. Then three columns: the cover sheet (330px: client, dates with the next one on a
+yellow plate, what came, what the bid goes back as; sections under 2px ink rules), the LVs, and the item
+sheet when an item is open. The LVs have three views in one view switch: **Map** (a row per section, or
+per LV when there are several, with the strip), **Read** (the LV as white pages on `tint`, 720px wide,
+remarks first; notes stand in the margin level with their item) and **Items** (the table). On this page
+the strip's marks are ink only: a `rule` tick for a plain item, an outlined 22px block with a letter for
+what an item is (P lump sum, H hourly, B contingency, Z surcharge, W alternative), an ink block with "≠"
+where two documents differ. Severity colours stay with the checks. The documents open in a drawer from
+the right (640px, 2px ink line at its left, white veil).
+
+In the Check step (D-051) the cover sheet gives way to the findings list (340 to 420px) and the strips
+carry severity: a flagged item is a 22px block in its severity colour with its item number (red and blue
+with white text, yellow with ink; a Note is a bare blue square). Section and LV rows show sign counts. In
+Read, a finding is a margin note (sign and title) and its quoted passage is marked yellow in the text.
+
+In the Questions step (D-052) the views give way to the questions view (see "Questions view"); where the
+LV came in two documents, a column at its left (320 to 400px) lists the items they word differently:
+outlined item number, short text, what differs in 12px `mute`, and a small button, "Ask" outlined, "Asked"
+with an ink line once it is among the questions.
+
+In the Prices step (D-053) a mark says how firm the item's price is, in ink only, darker is firmer: a
+12px block solid ink (a quote for this tender), half ink (price book), `line-2` grey (past bids), dashed
+ink outline (asked, no answer yet), dashed grey outline (held for the client), the plain tick (no price).
+The left column lists these six with a count in the figure style and a 5px bar; a price in the margin of
+the Read view is set in the display face with its source under it.
+
+In the Bid step (D-054) the strip turns round: a priced item lies down as a 5px ink line, a suggested
+price taken as it stands is a half-ink 12px block, an item without a price a dashed 12px block. What is
+open stands up; a finished bid is a row of lines. The net total at the left is in the figure style with
+what it is counted from under it.
+
+In the Award step (D-055) an item as tendered is the plain tick and what the award changed stands up as
+a 22px block with a letter: ink with "Q" or "U" (another quantity, another unit) and "+" (only in the
+award, in a row of its own), dashed outline with "–" (not in the award), outlined with "€" (another unit
+price than the bid's). Without an award file the step is one column of text, 62ch, with the outcome as a
+four-way switch.
+
+Further views (D-056) sit in the same switch, at its end: "Pages" in Tender and Check (the PDF view),
+"Between LVs" in Check for a tender of several LVs (the trade diagram and its findings), "Inquiries" in
+Prices, "What-if" in Bid. In the Check step the pipeline strip stands under the rail.
 
 ### Trade diagram (project view)
 The one three-dimensional drawing (D-018): each trade LV is a lettered slab, standing one storey above the last

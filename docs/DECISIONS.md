@@ -39,7 +39,7 @@ gaps instead of receiving a confident-looking estimate. See `04-field-insights.m
 Status: proposed · 2026-11-20
 
 Differentiator, but not the judged core. Starts only after D-001 is met; about four hours for one person; email RFQ is
-built first as the fallback sharing the same data model; no real supplier is called. See `05-voice-agent.md`.
+built first as the fallback sharing the same data model; no real supplier is called. (Dropped, D-059.)
 
 ## D-007 — Repository docs in English, German domain terms kept and glossed
 Status: proposed · 2026-11-20
@@ -873,6 +873,30 @@ counters, every section of the same weight, the open work on the third tab.
 Revisit if: the directory grows past what one table holds on a screen (then search and paging), or freight
 is known per quote (then the comparison can be free to site).
 
+## D-050 — The page of a project shows the tender, not a file; the workspace of before lives under /archive
+Status: decided · 2026-11-22 (Atahan, after three clickable mock-ups: cover sheet + map as the page, the
+reader and the item table as its views)
+
+Research and measurement: `07-user-flows.md`, last section. A tender is one thing whatever it came in.
+- **One LV from all its documents** (`src/boq/tender.py`, `GET /api/catalog/{id}/tender`): per LV one
+  document carries the items (GAEB XML before GAEB 90 before Excel before PDF), every other document of
+  the LV says where each item stands in it and is compared with the carrier; remarks only another
+  document has are set in after the carrier's. Bid and award files are named and left out.
+- **A difference between documents is never decided by the app.** It is shown on the item (other
+  quantity, other unit, a text under 90 % alike) as a point for the client.
+- **The page** (`web/src/Tender.tsx`, `/projects/:id`): a rail of the six steps (Tender, Check, Questions,
+  Prices, Bid, Award), the cover sheet at the left (client, dates, what came, what the bid goes back as,
+  files of later steps), then the LVs as Map, Read or Items. Several LVs: the same views one level up.
+  Marks at this step are ink only: what an item is, where documents differ. Severity colours stay with
+  the checks.
+- **The steps after Tender are still the workspace of before.** It is kept as it was under
+  `/archive/projects/…` and `/archive/samples/…`; the rail and "Workspace" lead there, "Tender" in its band
+  leads back. Addresses without `/archive` that name a file are still read.
+- Format comes back where it matters: the cover sheet names what the bid goes back as (X84 on the X83
+  received; D84 is not written by the app; a PDF states nothing).
+Not built: versions of an LV in time (a re-issued tender), a bidder question drafted from a difference,
+the original PDF page opened from an item, the steps after Tender in the new language.
+
 ## D-052 — The demo has its own mail server: Stalwart, kept in Postgres, with webmail, also when deployed
 
 Decided 2026-11-22, on the user's word (asked for Mailpit for our firm, the client and the partners; then:
@@ -899,6 +923,182 @@ mail must outlive restarts and the whole thing must run in the deployed demo, no
 - Two mail servers must not share one database: the `app` service of compose uses `boq_mail_prod`.
 - Not done: accounts and mail for the demo (the mailboxes are empty but for the firm's).
 
+## D-051 — The Check step is a step of the tender page; its findings are those of the carrying document
+Status: decided · 2026-11-22 (Atahan: "on to the Check step")
+
+- `/projects/:id/check[/:view]`: the same page and the same three views as the Tender step (D-050); the
+  rail's second cell. The strips now carry what the checks found: an item with a finding stands up in
+  its severity colour with its number (a Note is a bare blue square), as on the LV map of before.
+- **Whose findings.** The checks run on files, the page shows a tender. The findings of an LV are those
+  of the document that carries it (the GAEB file where there is one). Findings that only the print-out's
+  text would give are not shown; the run's AI review of the carrier is.
+- **Nothing rebuilt that works.** The findings list (left, in place of the cover sheet) and the item
+  sheet (right) are the components of the workspace of before, fed by the same state in `App.tsx`: the
+  carrier is opened as an analysis, so the AI review, prices, asked questions, amendments and Polier's
+  chat work on it unchanged. `:where(.tn)` keeps the page's resets below their styles.
+- **Several LVs.** Before an LV is chosen the marks and counts come from the project's summary (the one
+  the board's cards use); the left column lists the LVs by what was found. An LV's own findings are read
+  when it is opened.
+Not in the step: the pipeline strip and its record, the findings between LVs and the trade diagram (both
+still under `/archive`), findings about a difference between documents.
+
+## D-052 — The Questions step is a step of the tender page; a difference between documents can be asked
+Status: decided · 2026-11-22 (Atahan: "on to the Questions step"); builds on D-035, D-040, D-050, D-051
+
+- `/projects/:id/questions`: the rail's third cell. The questions, the message, the client's answers and
+  what they change are `Questions.tsx` as before, fed by the analysis of the LV's carrying document; an
+  item number in it leads into the Check step on that item. Several LVs: questions are written per LV, so
+  one is chosen first.
+- **What the documents say differently reaches the client** (`tender.difference_findings`, D-QTY, D-UNIT,
+  D-TEXT): another quantity or unit in the second document is a fact about the client's papers and always
+  a finding (Stop) with its German question. Another wording may be the client's or our reading of a page
+  (the PDF reader joins lines; a print-out may leave out a short text), so it becomes a finding (Caution)
+  and a question only where the estimator says "Ask the client": on the item's sheet in the Tender step or
+  in the list at the left of the Questions step. Asked for: 24 unasked wordings would otherwise all be
+  ticked for the next message. Kept per project in `settings` (`tender_ask:<project>`).
+- The findings join the opened carrier where the run's findings are kept (`_document_differences` in
+  `api.py`), so the report, the questions and the mail see them without knowing where they came from.
+Known: the board's cards and the rail's Check count do not include them (the summary does not read the
+tender view); "Run AI review" by hand replaces them until the file is opened again, as with the version
+findings (D-039).
+
+## D-053 — The Prices step is a step of the tender page: where each item's price comes from, then the inquiries
+Status: decided · 2026-11-22 (Atahan: "on to the Prices step"); builds on D-044, D-049, D-050
+
+- `/projects/:id/prices[/:view]`: the rail's fourth cell, the same three views plus **Inquiries** (the
+  price inquiries of `Inquiries.tsx` as before, full width).
+- **What the strips say here is how firm an item's price is**, in D-049's order: a quote for this tender,
+  the price book (a partner's price from another tender), past bids, asked with no answer yet, held for a
+  bidder question, nothing. One source per item, the firmest. Ink only, darker is firmer: solid ink,
+  half ink, grey, dashed ink, dashed grey, the plain tick. Severity colours stay with the checks.
+- The source is worked out in the page (`pricedOf` in `Tender.tsx`) from two things the server already
+  gives: the inquiries' state per item (`GET /api/analyses/{id}/supply`, `prices`) and the suggestions
+  (`…/prices`: price book, past bids). No new endpoint.
+- A supplier's price is shown as "material", never as the unit price (domain rule): in the table's
+  "From" column, in the margin note of the Read view and in the summary's text.
+- The left column counts the items per source; the item sheet is the one of the Check step, with its
+  price block.
+Not in the step: the what-if; a sum of the LV (the bid has it); price sources before an LV is chosen in
+a tender of several LVs.
+
+## D-054 — The Bid step is a step of the tender page: what is still open stands up, the sheet is the one of before
+Status: decided · 2026-11-22 (Atahan: "on to the Bid step"); builds on D-041, D-050
+
+- `/projects/:id/bid[/items]`: the rail's fifth cell. Two views: **Map** and **Bid sheet** (`Bid.tsx` as
+  before, full width: unit prices typed in, suggestions, allowances, the price risk, X84 / CSV / hand-over).
+- **On the map a priced item lies down and an open one stands up**: a 5px ink line for an item with a
+  unit price (the estimator's own or the file's), a half-ink block for a suggested price taken as it
+  stands (to be checked against its sources), a dashed block for an item without a price. A bid is done
+  when nothing stands. Section rows say how many are open and what the section comes to.
+- The left column: the net total with what it is counted from, the three counts, what the bid goes back
+  as (the Tender step's sentence), the sheet, X84 and CSV. Figures are the server's (`GET
+  /api/analyses/{id}/bid`); nothing is summed in the page but a section's total from its rows.
+- With this every step of the rail but Award is a step of the page. The workspace of before stays under
+  `/archive` (what-if, PDF pages, the pipeline strip and its record, the trade diagram and the findings
+  between LVs live only there).
+
+## D-055 — The Award step: the award held against the tender and the bid; without an award, how the tender ended
+Status: decided · 2026-11-22 (Atahan: "on to the Award step"); builds on D-042, D-050
+
+- `/projects/:id/award[/items]`: the rail's sixth cell, so every step of a tender is a step of the page.
+- **An award file is compared, not shown as one more LV** (`tender._award`, in the answer of
+  `GET /api/catalog/{id}/tender` as `awards`): against the tender's carrying document by item number
+  (another quantity, another unit, items dropped, items added) and against the priced bid file of the
+  same LV, a GAEB file before a PDF (another unit price). Texts are not compared: an award is read for
+  what it commits to.
+- Map: an item as tendered is a tick, a changed one an ink block with its letter (Q, U, a dashed "–" for
+  dropped, "€" for a price other than the bid's), added items in a row of their own ("+"). Items: tendered,
+  awarded, bid price, award price, total. The left column gives the contract total and the bid's total,
+  each with the file it is from, and the counts. The hand-over sheet for the site is linked here.
+- **Without an award file** the step says so, offers to add it, and holds how the tender ended (won,
+  lost, no bid, cancelled): the same `plan.outcome` the board's Result column shows (D-042).
+On the dataset: B's award drops item 8.1.3 and adds two (10.1.1, TE.L0.9), same total as its bid
+(897,305.45); A's award adds 38 items to the tender's 159 and comes to 536,991.65, no bid file to hold
+it against.
+
+## D-056 — What lived only under /archive is on the tender page: pages, what-if, the pipeline strip, between the LVs
+Status: decided · 2026-11-22 (Atahan: "move what is left under archive too"); completes D-050
+
+- **Pages** (the client's PDF or the pages drawn for a GAEB file, findings marked on them): a fourth view
+  of the Tender and the Check step, `/projects/:id[/check]/pages`. In the Tender step the LV's carrying
+  document is opened for it, as the Check step does.
+- **What-if**: a third view of the Bid step, `/projects/:id/bid/whatif`.
+- **The pipeline strip** (six stations of the run, Run / Run again, Record): under the rail in the Check
+  step, where its findings are. Its waiting station leads into the Questions step; a station still
+  filters the findings list.
+- **Between the LVs** (trade diagram and the findings between LVs): a view of the Check step of a tender
+  with several LVs, `/projects/:id/check/between`. The LVs are analysed against each other when it is
+  opened (as the building's page did); a trade opened in the diagram leads into that LV on the map.
+- The views of a step are one list (`viewsOf` in `router.ts`); an address naming a view its step does
+  not have falls back to the map.
+- The components are the ones of before (`PdfView`, `WhatIfView`, `PipelineStrip`, `ProjectView`); only
+  where they stand changed. `/archive` stays for now: it still holds the page of a single dataset file
+  (`/archive/samples/…`) and is where "Workspace" leads.
+
+## D-057 — The workspace of before is gone; its addresses lead to the step that took its place
+Status: decided · 2026-11-22 (Atahan: "take out the archive and the Workspace button"); ends D-050's "/archive"
+
+- No `/archive`, no "Workspace" in the band. A project has one page, the tender page with its six steps.
+- **Old addresses are still read** (`BEFORE` in `router.ts`): `/projects/:id/files/:n[/:view]`, the same
+  under `/archive`, and `?project=A&file=2&view=table` open the tender page in the LV the file is a
+  document of, at the step that replaced the view (LV map → Check; item table → Check, items; remarks →
+  Tender, read; PDF → Check, pages; questions → Questions; price inquiries → Prices, inquiries; bid → Bid
+  sheet; what-if → Bid, what-if). An address of one trade LV by its analysis opens the tender.
+- **A single dataset file without a project (`/samples/…`) has no page any more**; its address leads to
+  the projects page. The six dataset projects are in the catalogue; `GET /api/samples` stays for the CLI
+  and the tests.
+- What led into the workspace leads into the page: a passage of Polier's answer opens Check, pages, with
+  the passage marked; "Open the inquiry" on the partners page opens Prices, inquiries; a new project
+  opens on its tender; "Risk report" stands in the band once an LV's findings are read.
+- Out of `App.tsx` (about 470 lines): the state `project`, `sample`, `view`, `page`, the loaders `run`,
+  `runProject`, `openProject`, the old bands, the versions bar, the two-pane workspace. `LvMap.tsx` is
+  deleted. `ItemsView` and `RemarksView` in `components.tsx` have no user left and are still there.
+
+## D-058 — A tender has issues: a re-issued LV replaces the one before, with the list of what changed
+Status: decided · 2026-11-22 (Atahan: "version support, definitely"); the gap named in `07-user-flows.md` since day 2
+
+A client sends the LV again while the tender is open (Bieterinformation, "Stand 2"); a bid on the old one
+is excluded (VK Bund VK 2-54/18). Until now a second file of the same LV counted as a second document of
+the same issue, and its changes showed as contradictions.
+- **Issues by arrival** (`tender._issues`): the tender documents of one LV in the order they came into the
+  project; a document starts a new issue when the issue so far already holds one of its format (a second
+  X83 after an X83). A document of another format joins the issue (the print-out of the X83); an excerpt
+  never starts one. No date is read from the files: the order of arrival is the one thing always known.
+- **The latest issue is the tender.** Items, the carrier, "where it stands" and the contradictions between
+  documents (D-052) are those of the latest issue only. The issue before is held against it: per item
+  `change` (new, another quantity or unit, reworded by the 0.90 rule, with the lines gone and the new
+  ones), and `removed` for what was dropped. A quantity one of two states leaves out counts as another
+  quantity (also between documents), unless a file leaves most of them out.
+- **The work follows** (`tender.follow`): bid prices, messages to the client with their answers and
+  amendments, inquiries and quotes are kept per project and file name; they are moved to the file that
+  carries the LV now, once, when its tender view is first read. Rows of a dropped item stay unseen.
+- **The page**: a change stands up on the strips like a difference ("Δ" changed, "+" new); the cover sheet
+  opens with "Issue 2 of 2" and what it changed and dropped; the item's sheet and the margin of the Read
+  view say what the item was before; the documents drawer marks the replaced files.
+- **The mailbox** (`_files_for_a_project` in `api.py`): an LV attached to a message that names a tender
+  the app has (same project number, else the same name) joins that project as what it is (a tender
+  document, a bid, an award), whoever sent it and whatever the text says, before any model is asked; a
+  file held already is not kept twice. Before, a second issue made a second intake project and a bid or
+  an award was passed over.
+- The sweep takes the mailbox oldest first, so a tender is a project before its second issue, its bid and
+  its award are looked at. Remarks of a second document are compared sentence by sentence (`_only_in`): a
+  clause added to a long block shows as that clause.
+Known limits: an issue that changes most of the LV is taken for another LV (the 70 % rule of `same_lv`);
+two issues are compared, not three; the bid's own mail lies in Sent, which the sweep does not read; the
+sweep looks back 14 days; findings and the run's AI review of the earlier issue's file do not follow (the
+run starts again on the new file).
+
+## D-059 — No phone calls: the voice agent and ElevenLabs are taken out
+
+2026-11-22, the user: "telefon olayını tamamen kaldır … telefon etme gibi bir şey olmasın". Removed:
+`src/boq/voice.py`, `web/src/Call.tsx`, `@elevenlabs/client`, the call endpoints (`…/supply/call`,
+`/api/mails/{id}/call-price`, `call-end`, `call-audio`, `call-record`), the `call` kind of the follow-up and
+of the event record, the "Call" and "Let Polier phone" buttons, the call count on threads and cards, the
+"do not phone" flag (`more.no_call`), `voice` in the API answers and `ELEVENLABS_*` in `.env.example`.
+Price inquiries go by e-mail only. A firm's phone number stays as contact data, shown as text, not as a
+link that dials. `docs/05-voice-agent.md` is deleted too.
+Supersedes the voice part of priority 3 in CLAUDE.md.
+
 ## D-060 — Polier's chat is a dark side panel ("night shift")
 
 2026-11-22. The conversation opens as a full-height side panel on the right (the page makes room), not as a
@@ -906,3 +1106,30 @@ floating window. It is the one dark surface of the app (ink ground, yellow accen
 site-radio header), so the AI part stands apart from the white, yellow-banded pages. Chosen by the user from
 four mockups in `playground/chat-panel/` (night shift, site diary, blueprint, Polier's stage). Styles in
 `web/src/chat.css` and the `.agent-*` rules of `styles.css`; described in DESIGN.md.
+
+## D-061 — The demo mailboxes hold a mock world, kept as data and put in at every start
+
+Decided 2026-11-22, on the user's word (fill everybody's mailbox with sensible data, tenders like the
+dataset's in different situations, kept as mock data so that every run fills the mail again).
+- **`mock/mail/`** is the world as data (TOML; format and story in its README): our firm (Kaya Tiefbau GmbH),
+  7 clients, 14 suppliers and subcontractors, 3 others; 460 messages, 161 with files, from 17 months back
+  to yesterday. Written in German, as the dataset is (the user, asked through the tender session).
+  - 7 current tenders (T1–T7) in every format the app reads, each LV with unmarked defects; T1 comes as
+    X83 + PDF print-out that contradict each other in places, then re-issued (Stand 2).
+  - 2 small jobs whose whole story is inside the last two weeks (R1, R2): tender, our bid, the award; R2's
+    award differs from the bid in four places.
+  - 7 past jobs (P1–P7) with questions and answers, bid file, Submission, award or rejection, and what
+    followed; and the history with each partner about those jobs (inquiry with sheet, reply in that firm's
+    way, reminders, orders, disputes), with prices that rise over the period.
+- **`boq.mockmail`** makes the files at fill time (GAEB XML 3.1/3.2, GAEB 90, xlsx, PDF; phase 83/84/86 with
+  unit prices; letters; price sheets) and puts each message into the sender's "Sent Items" and the
+  recipients' inboxes. **Every date is relative to the day of the fill**, so the tenders are open ones on
+  any day; a fill of an earlier day is taken out and put in again, mail that is not mock mail is never
+  touched, Message-IDs stay the same (the app does not take a tender twice).
+- **Run by**: `boq-mail --fill [--reset]`; the mail server does it at every start (`docker/mail.sh`,
+  `DEMO_MAIL_FILL=0` to leave it out), also in the deployed image. It also puts the 14 firms into the
+  directory and sets the firm's own details where none are set, so the history belongs to somebody.
+- **Consequence**: the app's sweep finds about ten invitations in the inbox after a fill and asks Claude
+  once for each (never again for the same message).
+- `boq-mail --check` and `tests/test_mockmail.py` build everything and read every LV back with the parsers.
+

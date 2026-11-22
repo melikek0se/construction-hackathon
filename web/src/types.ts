@@ -997,3 +997,93 @@ export interface BidRisk {
   top: { oz: string; label: string; value: number; basis: string; band: number; why: string; exposure: number }[];
   bands: Record<string, number>;
 }
+
+/** One item of a tender's LV, read from the document that carries it (src/boq/tender.py). */
+export interface TenderItem {
+  oz: string;
+  path: string[];
+  short: string;
+  long: string;
+  qty: string | null;
+  unit: string;
+  kind: ItemKind;
+  sources: { doc: number; page: number | null }[]; // where it stands in each document of the LV
+  // what another document of the LV says differently: its quantity or unit, or a text under 90 % alike
+  // with the lines that stand only there
+  diff: { doc: number; qty?: string | null; unit?: string; alike?: number; only?: string[] } | null;
+  // what the latest issue of the LV changed in this item against the issue before it (D-058); `was`, `now`:
+  // lines that stood only in the earlier wording, only in the new one
+  change: { kind: "new" | "quantity" | "unit" | "text"; was_qty?: string | null; was_unit?: string; alike?: number; was?: string[]; now?: string[] } | null;
+}
+
+export interface TenderLv {
+  id: number;
+  no: string | null; // "12" of LV_12_Dachabdichtung.pdf
+  label: string;
+  carrier: number; // the document the items are read from
+  documents: number[];
+  items: TenderItem[];
+  remarks: { text: string; doc: number }[]; // the carrier's, then the ones only another document has
+  back: { form: "X84" | "D84" | null; file: string | null; written: boolean }; // what the bid goes back as
+  issues: number[][]; // the documents of every issue the client sent, oldest first; the last is the tender
+  before: number | null; // the document of the issue before, which the changes are counted against
+  removed: { oz: string; path: string[]; short: string; long: string; qty: string | null; unit: string }[]; // items the latest issue dropped
+}
+
+export interface TenderDoc {
+  index: number; // the file's place in the project
+  name: string;
+  format: string;
+  role: string;
+  step: "tender" | "bid" | "award";
+  pages: number | null;
+  lv: number | null; // the LV it is a document of; null for a later step
+  carrier: boolean;
+  items: number;
+  remarks: number;
+  priced: number;
+  readable: boolean;
+  extra_remarks: number;
+  issue: number | null; // which issue of its LV it came with, from 1
+  current: boolean; // of the latest issue (false: replaced by a later one)
+  compare: {
+    both: number;
+    qty: number;
+    unit: number;
+    text: number;
+    only_carrier: number;
+    only_other: number;
+    only_carrier_items: string[];
+    only_other_items: string[];
+  } | null;
+}
+
+/** The tender step of a project as one thing: its LVs, each from all the documents the client sent. */
+export interface Tender {
+  id: string;
+  number: string;
+  name: string;
+  kind: "versions" | "trades";
+  client: string;
+  plan: Plan;
+  lvs: TenderLv[];
+  documents: TenderDoc[];
+  items: number;
+  asked: { lv: number; oz: string }[]; // text differences the estimator put among the bidder questions
+  awards: TenderAward[];
+}
+
+/** An award file held against the tender it answers and the bid that went out (boq.tender._award). */
+export interface TenderAward {
+  doc: number;
+  lv: number;
+  items: number;
+  priced: number;
+  net: number;
+  // items of the tender the award states differently or leaves out
+  changes: Record<string, { kind: "quantity" | "unit" | "dropped"; qty?: string | null; unit?: string | null }>;
+  // every item of the award: its figures, and the bid's unit price where a priced bid file is among the files
+  rows: Record<string, { qty: string | null; unit: string; up: number | null; total: number | null; bid_up: number | null; differs: boolean }>;
+  added: { oz: string; path: string[]; short: string; long: string }[]; // items the tender does not have
+  bid: { doc: number; net: number; differs: number } | null;
+}

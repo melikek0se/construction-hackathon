@@ -132,6 +132,12 @@ def add_files(project_id: str, uploads: list[tuple[str, bytes, str]], kind: str)
     return bool(done)
 
 
+def hashes(project_id: str) -> set[str]:
+    """The SHA-256 of every file a project holds: a file that comes a second time is not kept twice."""
+    with db.engine().connect() as conn:
+        return set(conn.execute(select(db.documents.c.sha256).where(db.documents.c.project_id == project_id)).scalars())
+
+
 def remove_file(project_id: str, doc_id: int) -> bool:
     with db.engine().begin() as conn:
         done = conn.execute(delete(db.documents).where(db.documents.c.id == doc_id,

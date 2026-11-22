@@ -1,4 +1,4 @@
-import type { PartnerProfile, PartnerSearch, PartnerRead, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
+import type { PartnerProfile, PartnerSearch, PartnerRead, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, Tender, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -465,6 +465,17 @@ export async function putExamples(on: boolean): Promise<void> {
   if (!response.ok) await read(response);
 }
 
+
 export async function fetchCallRecord(mailId: string): Promise<{ status: string; transcript: string; seconds: number | null }> {
   return read(await fetch(`/api/mails/${mailId}/call-record`, { method: "POST" }));
+}
+
+/** The tender step of a project: its LVs put together from all their documents. */
+export async function openTender(id: string): Promise<Tender> {
+  return read(await fetch(`/api/catalog/${id}/tender`));
+}
+
+/** Put a difference between two documents of an LV among the bidder questions, or take it out again. */
+export async function askDifference(id: string, lv: number, oz: string, ask: boolean): Promise<Tender> {
+  return read(await fetch(`/api/catalog/${id}/tender/ask`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lv, oz, ask }) }));
 }

@@ -158,3 +158,41 @@ Built from it: deadline and stage on the project (two of the "not built" points 
 read from the files where these state them (`src/boq/dates.py`, D-031). Still not built:
 client on the project, bidder-question status, addenda and version comparison, ZIP upload.
 
+
+## The tender page shows the tender, not a file (2026-11-22, decided as D-050; mock-ups in `playground/tender/`)
+
+Question from Atahan: the page of an LV today lists files ("This LV as: tender GAEB XML, tender package PDF,
+bid GAEB 90 ..."). Should the estimator see one tender whatever came, with the documents behind it?
+Researched by web search and measured on the dataset; the full write-up with sources is the "Research" tab
+of the mock-ups (`cd playground/tender && python3 -m http.server 5300 --bind 127.0.0.1`).
+
+**Measured (German originals, our parsers):** the tender twins of A (X83, D83, PDF package), B (X83, PDF) and
+D (X83, PDF) hold the same items with the same quantity and unit: 0 differences on 616 item pairs. Texts
+under 90 % alike (exact character comparison, tokens and line breaks ignored; `boq.tender`): A 0, B 24,
+D 17 (D: other short texts in the PDF; B: mostly longer texts in the print-out). A first count with
+Python's default junk heuristic gave 2 / 28 / 28 and was wrong. Beyond that, B's print-out carries a
+"STLB-Bau" catalogue line on 143 items that the X83 lacks: systematic, not flagged per item. The documents complete each other: B's PDF has 87 passages of
+remarks, its X83 54; a D84 carries prices only, no texts or quantities.
+
+**Sourced:**
+- Every estimating tool reads all GAEB generations into its own LV model; nobody works in the file (ORCA,
+  iTWO). Their screen: structure tree (project, LV, lot, title), item table, long text in a detail area,
+  item type as an icon, dates as cover data of the LV.
+- A lot is an LV is a file (VHF Bayern VI.6), or the top level inside one LV (ORCA, NEVARIS).
+- The format comes back in four places: the bid must return in exactly the demanded form (OLG Köln
+  11 U 118/20, OLG Düsseldorf Verg 54/21) and an X84 sits on the X83 received; the client's long-text LV
+  alone is binding (VHB 212 Nr. 3.3); a bid on an outdated version was excluded (VK Bund VK 2-54/18);
+  forms, description of works and plans are PDF only.
+- First steps of the estimator (IHK/ABST checklist): is the package complete, read everything, bid or not,
+  ask at once, plan the dates.
+- GAEB XML is the stated standard, but GAEB 90 is still called widespread (WEKA, Dangl); no current share.
+
+**Not found:** a general rule that the PDF outranks the GAEB file (each tender's conditions say); how often
+the two differ in practice.
+
+**Conclusion (ours):** one page per tender, merged from its documents (structure, quantities and units from
+GAEB; pages and the extra remarks from the PDF); the source of every item one click away; a difference
+between documents is a candidate bidder question, never decided by the app; the file the bid returns on is
+named; a re-issued LV is a version in time, a separate axis from format; steps (tender, bid, award) are
+where the tender stands, and a priced file is a price column over the same items, not a page of its own.
+Project, LV, section, item: one LV is the case with one level less.

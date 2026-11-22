@@ -1,38 +1,25 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import { flushSync } from "react-dom";
-import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, changeRun, startRun, listCatalog, loadAnalysis, loadPrices, loadSample, openCatalogFile, openCatalogProject, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
-import { HardHatIcon, Opening, ProjectsPage } from "./Projects";
+import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, changeRun, startRun, listCatalog, loadPrices, openCatalogFile, openTender, askDifference, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
+import { HardHatIcon, Opening, ProjectsPage, datesOf, outcomeOf, stageOf } from "./Projects";
 import { ProjectSettings } from "./Settings";
 import { PipelinePage, PipelineStrip, RunsSwitch } from "./Runs";
 import { Agent } from "./Agent";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
-import { ProjectView } from "./ProjectView";
-import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
-import { LvText, qty } from "./format";
-import { buildSections, weight, worst } from "./sections";
+import { TenderPage } from "./Tender";
+import { FindingsList, ItemSheet, type Selection } from "./components";
+import { buildSections, weight } from "./sections";
 import "./chat.css";
 import "./questions.css";
-import { LvMap } from "./LvMap";
 import { PdfView } from "./PdfView";
 import { WhatIfView } from "./WhatIf";
 import { BidView } from "./Bid";
 import { InquiriesView } from "./Inquiries";
 import { QuestionsView } from "./Questions";
 
-import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type PartnersPlace, type PipelinePlace, type Route } from "./router";
-import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
+import { HOME, docKey, formatRoute, parseRoute, viewsOf, writeRoute, type PartnersPlace, type PipelinePlace, type Route, type TenderPlace } from "./router";
+import { SEVERITIES, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type Tender, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
-type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions" | "inquiries" | "bid";
-const VIEWS: [View, string][] = [
-  ["plan", "LV map"],
-  ["table", "Item table"],
-  ["remarks", "Remarks"],
-  ["whatif", "What-if"],
-  ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
-  ["questions", "Questions"], // bidder questions: asked by e-mail, the client's reply read back in
-  ["inquiries", "Price inquiries"], // suppliers and subcontractors asked for prices, their quotes compared
-  ["bid", "Bid"], // the estimator's unit prices on the LV, and the file that goes back (X84)
-];
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
 // The partners page is its own piece of the build: fetched when it is opened, or in the background once
 // the page the app opened on stands (see `warmed` below), never before it.
@@ -54,7 +41,6 @@ const NONE: Selection = { oz: null, finding: null };
 const START = parseRoute();
 writeRoute(START, true);
 const DEEP_LINK = START.at !== "home";
-const wait = (ms: number) => new Promise<void>((done) => window.setTimeout(done, ms));
 // The shutter over the page (styles.css, "the gate"): on the way in it stays down at least this long, so
 // the name on it can be read; on the way back it only has to come down; then the time it takes to roll up.
 const GATE_HOLD = 950;
@@ -84,24 +70,20 @@ export default function App() {
   // With no files yet the dialog is open and asks for them.
   const [pending, setPending] = useState<{ files: File[]; info: Intake | null; target: string | null } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false); // the settings of the open project, a dialog
+  // The tender page (D-050): the tender of `current`, read from all its documents, and what is open in it.
+  // `key` says which files the data was read from, so that it is read again when they change.
+  const [tender, setTender] = useState<({ id: string } & TenderPlace) | null>(null);
+  const [tenderData, setTenderData] = useState<{ key: string; data: Tender } | null>(null);
   const addTarget = useRef<string | null>(null);
   const [apiDown, setApiDown] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  // A project (several trade LVs) is shown when no single LV is open; an LV opened from it keeps it.
-  const [project, setProject] = useState<Project | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<View>("plan");
-  const [tableKey, setTableKey] = useState(0);
   const [severities, setSeverities] = useState<Set<Severity>>(ALL);
   const [section, setSection] = useState<string | null>(null);
-  const [hovered, setHovered] = useState<Item | null>(null);
   const [selection, setSelection] = useState<Selection>(NONE);
-  // Pages of the item table and of the findings list, from 1. Both are part of the address.
-  const [page, setPage] = useState(1);
+  // The page of the findings list, from 1.
   const [fpage, setFpage] = useState(1);
-  // A dataset file opened by its path, with no project around it (/samples/...).
-  const [sample, setSample] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [ai, setAi] = useState<"idle" | "running" | "done">("idle");
   // The bidder questions of the open LV and where each stands (asked, sent, answered); read again when the
@@ -271,8 +253,8 @@ export default function App() {
   // A run that ends while its project is on the page: what it found is put onto the page without moving
   // it (the selection, the view and the place in the list stay). Its AI findings come with the file.
   const wasRunning = useRef(new Set<string>());
-  const pageNow = useRef({ current, analysis, project, busy, ai });
-  pageNow.current = { current, analysis, project, busy, ai };
+  const pageNow = useRef({ current, analysis, busy, ai });
+  pageNow.current = { current, analysis, busy, ai };
   useEffect(() => {
     const ended = runs.filter((r) => !r.active && wasRunning.current.has(r.id));
     wasRunning.current = new Set(runs.filter((r) => r.active).map((r) => r.id));
@@ -287,7 +269,7 @@ export default function App() {
     const here = page.current && ended.find((r) => r.project_id === page.current!.project.id);
     if (!here || !page.current || page.busy !== null || page.ai === "running") return;
     const { project: p, file } = page.current;
-    if (page.analysis && !page.project) {
+    if (page.analysis) {
       const shown = page.analysis.id;
       void openCatalogFile(p.id, file).then(
         (opened) => {
@@ -297,8 +279,6 @@ export default function App() {
         },
         () => undefined,
       );
-    } else if (page.project && !page.analysis) {
-      void openCatalogProject(p.id).then((opened) => pageNow.current.project && !pageNow.current.analysis && setProject(opened), () => undefined);
     }
   }, [runs]);
 
@@ -366,66 +346,90 @@ export default function App() {
 
   // With `through` the page is changed behind the sheet (a way into another page); without it the page
   // stays and the tapes are pulled across it (another version of the LV that is open).
-  const runProject = useCallback(async (label: string, job: () => Promise<Project>, through?: GateInfo) => {
-    setBusy(label);
-    setError(null);
-    const covered = through && closeGate("in", through);
-    try {
-      const opened = await job();
-      await covered;
-      setProject(opened);
-      setAnalysis(null);
-    } catch (e) {
-      await covered;
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(null);
-      if (through) openGate();
-    }
-  }, [closeGate, openGate]);
-
-  const run = useCallback(async (label: string, job: () => Promise<Analysis>, through?: GateInfo) => {
-    setBusy(label);
-    setError(null);
-    const covered = through && closeGate("in", through);
-    try {
-      const opened = await job();
-      await covered;
-      setAnalysis(opened);
-      setPassage(null); // a passage belongs to the file it was clicked for; cite() sets it again after this
-      setAi(opened.reviewed ? "done" : "idle"); // the project's pipeline run may have reviewed it already
-      setView("plan");
-      setSeverities(ALL);
-      setSection(null);
-      setSelection(NONE);
-      setPage(1);
-      setFpage(1);
-    } catch (e) {
-      await covered;
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(null);
-      if (through) openGate();
-    }
-  }, [closeGate, openGate]);
-
-  // `inPlace`: another version of the LV that is open, so the page stays and only its content changes.
-  const openProject = useCallback(
-    (p: CatalogProject, file = 0, inPlace = false) => {
-      if (p.kind === "trades") {
-        setCurrent({ project: p, file });
-        void runProject(p.name, () => openCatalogProject(p.id), gateInfo(p));
-      } else if (inPlace) {
-        setCurrent({ project: p, file });
-        void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file));
-      } else {
-        setCurrent({ project: p, file });
-        setProject(null);
-        void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file), gateInfo(p, file));
+  const filesKey = (p: CatalogProject) => p.files.map((f) => `${f.name}:${f.role}`).join("|");
+  /** Opens a project's tender page behind the sheet. `file`: land in the LV this file is a document of. */
+  const openTenderPage = useCallback(
+    async (p: CatalogProject, place: Partial<TenderPlace> = {}, file?: number) => {
+      setBusy(p.name);
+      setError(null);
+      const covered = closeGate("in", gateInfo(p));
+      try {
+        const [data] = await Promise.all([openTender(p.id), covered]);
+        const lv = file === undefined ? undefined : data.lvs.find((l) => l.documents.includes(file))?.id;
+        setPending(null);
+        setAnalysis(null);
+        checked.current = "";
+        setCurrent({ project: p, file: 0 });
+        setTenderData({ key: filesKey(p), data });
+        setSelection(place.item ? { oz: place.item, finding: null } : NONE);
+        const at = { step: "tender" as const, view: "map" as const, lv: null, item: null, ...place };
+        setTender({ id: p.id, ...at, lv: data.lvs.length > 1 ? lv ?? at.lv : null });
+      } catch (e) {
+        await covered;
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setBusy(null);
+        openGate();
       }
     },
-    [run, runProject, gateInfo],
+    [closeGate, openGate, gateInfo],
   );
+  // The Check step of the tender page: the findings are those of the document that carries the open LV.
+  // It is opened as an analysis like a file of the workspace of before, so the findings list, the item
+  // sheet, the AI review and Polier's chat work on it as they do there. `checked`: what is loaded.
+  const checked = useRef("");
+  const citing = useRef<{ oz: string; quote: string; at: number } | null>(null); // a passage to show once its document is read
+  // A tender in the intake is not taken on yet (D-042): only its Tender step opens, without the pages (their
+  // marks are findings), and nothing is checked until "Take it on".
+  const intakeOpen = !!(tender && current && current.project.id === tender.id && stageOf(current.project) === "intake");
+  useEffect(() => {
+    if (!intakeOpen || !tender || (tender.step === "tender" && tender.view !== "pages")) return;
+    const view = tender.view !== "pages" && viewsOf("tender").includes(tender.view) ? tender.view : "map";
+    setTender({ ...tender, step: "tender", view });
+  }, [intakeOpen, tender]);
+  const checkLv = tender && !intakeOpen && (tender.step !== "tender" || tender.view === "pages") && tenderData ? (tenderData.data.lvs.length === 1 ? tenderData.data.lvs[0] : tenderData.data.lvs.find((l) => l.id === tender.lv)) ?? null : null;
+  // what the estimator put among the questions is part of the findings: asked or taken back, they are read again
+  const checkKey = tender && checkLv && tenderData ? `${tender.id}:${checkLv.carrier}:${tenderData.key}:${tenderData.data.asked.map((a) => `${a.lv}/${a.oz}`).join(",")}` : "";
+  useEffect(() => {
+    if (!checkKey || !tender || !checkLv || checked.current === checkKey) return;
+    const [id, file] = [tender.id, checkLv.carrier];
+    let stale = false;
+    setBusy("Reading the findings");
+    setError(null);
+    openCatalogFile(id, file)
+      .then((opened) => {
+        if (stale) return;
+        checked.current = checkKey;
+        setCurrent((c) => (c && c.project.id === id ? { ...c, file } : c));
+        setAnalysis(opened);
+        setPassage(citing.current);
+        citing.current = null;
+        setAi(opened.reviewed ? "done" : "idle");
+        setSeverities(ALL);
+        setSection(null);
+        setFpage(1);
+        setSelection((sel) => (sel.oz && opened.boq.items.some((i) => i.oz === sel.oz) ? { oz: sel.oz, finding: null } : NONE));
+      })
+      .catch((e) => !stale && setError(e instanceof Error ? e.message : String(e)))
+      .finally(() => !stale && setBusy(null));
+    return () => {
+      stale = true;
+      setBusy(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkKey]);
+  // The open tender's files or their steps changed (settings, files added): it is read again, in place.
+  const tenderProject = tender ? catalog.find((x) => x.id === tender.id) : undefined;
+  const tenderKey = tenderProject ? filesKey(tenderProject) : null;
+  useEffect(() => {
+    if (!tender || tenderKey === null || !tenderData || tenderData.key === tenderKey) return;
+    let stale = false;
+    void openTender(tender.id)
+      .then((data) => !stale && setTenderData({ key: tenderKey, data }))
+      .catch((e) => !stale && setError(e instanceof Error ? e.message : String(e)));
+    return () => void (stale = true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenderKey]);
 
   /** Leaves the open page behind the sheet, drawn back the other way. */
   function leave(swap: () => void) {
@@ -476,29 +480,20 @@ export default function App() {
     const swap = () => {
       setPending(null);
       setAnalysis(null);
-      setProject(null);
       setCurrent(null);
-      setSample(null);
+      setTender(null);
+      setTenderData(null);
     };
-    if (analysis || project) leave(swap);
+    if (tender) leave(swap);
     else swap();
   }
 
   // ---- The address bar (router.ts). The state above is what is shown; `here` is the address that says it.
   // It is written whenever the state changes; on load and on Back / Forward the address is read and the
   // state brought to it (`navigate`), through the same sheet as a click.
-  const place: LvPlace = { view, item: selection.oz, page: view === "table" ? page : 1, fpage };
-  const under: Route =
-    analysis && current
-      ? project
-        ? { at: "lv", id: current.project.id, analysis: analysis.id, ...place }
-        : { at: "file", id: current.project.id, file: current.file, ...place }
-      : analysis && sample
-        ? { at: "sample", path: sample, ...place }
-        : project && current
-          ? { at: "project", id: current.project.id }
-          : HOME;
-  const here: Route = partners ? { at: "partners", ...partners } : pipeline ? { at: "pipeline", ...pipeline } : under;
+  // in the Check step the open item is the selection of the findings list and the item sheet
+  const below: Route = tender ? { at: "tender", ...tender, item: tender.step === "check" || tender.step === "prices" || tender.step === "bid" ? selection.oz : tender.step === "questions" ? null : tender.item } : HOME;
+  const here: Route = partners ? { at: "partners", ...partners } : pipeline ? { at: "pipeline", ...pipeline } : below;
   // The address being loaded (from the address bar, not from a click): until the state has reached it,
   // the state is not written back over it.
   const target = useRef<Route | null>(DEEP_LINK ? START : null);
@@ -525,14 +520,6 @@ export default function App() {
   }, [url, busy, settled]);
   /** Brings the state to an address. Null when its project is not in the catalogue. */
   function navigate(r: Route): Promise<void> | null {
-    const inside = () => {
-      if (!isLv(r)) return;
-      setView(r.view);
-      if (r.item) setSelection({ oz: r.item, finding: null });
-      setPage(r.page);
-      setFpage(r.fpage);
-    };
-    const done = () => (inside(), settle(r));
     if (r.at === "partners") {
       setPipeline(null);
       setPartners({ tab: r.tab, partner: r.partner });
@@ -544,54 +531,19 @@ export default function App() {
       return Promise.resolve();
     }
     setPipeline(null);
-    if (docKey(r) === docKey(under)) return Promise.resolve(inside()); // the page under the partners is this one
-    if (r.at === "home") {
-      closeAll();
-      return Promise.resolve();
+    if (r.at === "tender") {
+      const p = catalog.find((x) => x.id === r.id);
+      if (!p) return null;
+      const place: TenderPlace = { step: r.step, view: r.view, lv: r.lv, item: r.item };
+      if (below.at === "tender" && below.id === r.id) {
+        setTender({ id: r.id, ...place });
+        if (r.step === "check" || r.step === "prices" || r.step === "bid") setSelection({ oz: r.item, finding: null });
+        return Promise.resolve();
+      }
+      return openTenderPage(p, place, r.file).then(() => settle(r));
     }
-    if (r.at === "sample") {
-      const name = r.path.split("/").pop() ?? r.path;
-      setCurrent(null);
-      setProject(null);
-      setSample(r.path);
-      return run(name, () => loadSample(r.path), { caption: "Opening the LV", title: name }).then(done);
-    }
-    const p = catalog.find((x) => x.id === r.id);
-    if (!p) return null;
-    const sameProject = current?.project.id === p.id;
-    if (r.at === "project" && p.kind === "versions") {
-      // a project that is one LV: its first file
-      const first: Route = { at: "file", id: p.id, file: 0, view: "plan", item: null, page: 1, fpage: 1 };
-      target.current = first;
-      writeRoute(first, true);
-      return navigate(first);
-    }
-    if (r.at === "project") {
-      if (sameProject && project && analysis) leave(() => setAnalysis(null)); // back from one of its LVs
-      else if (!(sameProject && project)) openProject(p);
-      return Promise.resolve();
-    }
-    if (r.at === "file") {
-      const inPlace = sameProject && !project && analysis !== null; // another version of the LV that is open
-      setCurrent({ project: p, file: r.file });
-      setProject(null);
-      return run(p.files[r.file]?.name ?? p.name, () => openCatalogFile(p.id, r.file), inPlace ? undefined : gateInfo(p, r.file)).then(done);
-    }
-    // one trade LV of a building: the building is needed around it
-    const lv = sameProject ? project?.lvs.find((l) => l.analysis_id === r.analysis) : undefined;
-    if (sameProject && project) {
-      const through: GateInfo = { caption: "Opening the LV", title: lv?.name ?? "LV", sub: lv && `${lv.file} · ${project.name}`, counts: lv?.counts, items: lv?.items };
-      return run(lv?.name ?? "LV", () => loadAnalysis(r.analysis), through).then(done);
-    }
-    setCurrent({ project: p, file: 0 });
-    const job = async () => {
-      // the building is put in place once the sheet is across, the LV on top of it when it has loaded
-      const [building] = await Promise.all([openCatalogProject(p.id), wait(GATE_HOLD)]);
-      setProject(building);
-      setAnalysis(null);
-      return loadAnalysis(r.analysis);
-    };
-    return run(p.name, job, gateInfo(p)).then(done);
+    closeAll();
+    return Promise.resolve();
   }
   const navigateNow = useRef(navigate);
   navigateNow.current = navigate;
@@ -607,7 +559,7 @@ export default function App() {
       navigateNow.current(START);
       return;
     }
-    if (START.at !== "sample" && !catalog.some((p) => "id" in START && p.id === START.id)) return; // not arrived yet
+    if (!catalog.some((p) => "id" in START && p.id === START.id)) return; // not arrived yet
     linked.current = true;
     navigateNow.current(START);
   }, [catalog]);
@@ -619,11 +571,10 @@ export default function App() {
       if (docKey(r) === docKey(hereNow.current)) {
         if (r.at === "partners") setPartners({ tab: r.tab, partner: r.partner });
         if (r.at === "pipeline") setPipeline({ project: r.project });
-        if (!isLv(r)) return;
-        setView(r.view);
-        setSelection((s) => (s.oz === r.item ? s : { oz: r.item, finding: null }));
-        setPage(r.page);
-        setFpage(r.fpage);
+        if (r.at === "tender") {
+          setTender({ id: r.id, step: r.step, view: r.view, lv: r.lv, item: r.item });
+          if (r.step === "check" || r.step === "prices" || r.step === "bid") setSelection((sel) => (sel.oz === r.item ? sel : { oz: r.item, finding: null }));
+        }
         return;
       }
       target.current = r;
@@ -718,7 +669,8 @@ export default function App() {
       const added = [...(files ?? [])].filter((f) => !had?.files.some((h) => same(h, f)));
       if (added.length === 0) return;
       setAnalysis(null);
-      setProject(null);
+      setTender(null);
+      setTenderData(null);
       setCurrent(null);
       readPending([...(had?.files ?? []), ...added], had ? had.target : target);
     },
@@ -746,7 +698,7 @@ export default function App() {
       void refreshRuns(); // the server has started the pipeline on it
       setPending(null);
       setBusy(null);
-      if (saved) openProject(saved);
+      if (saved) void openTenderPage(saved);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setBusy(null);
@@ -769,23 +721,14 @@ export default function App() {
   // changed: the building without that LV, another version when the open one went.
   async function removeFile(index: number) {
     if (!current) return;
-    const { project: p, file } = current;
+    const { project: p } = current;
     setError(null);
     try {
       const left = await removeProjectFile(p.id, index);
       asked.current.delete(p.id);
       setSummaries(({ [p.id]: _old, ...rest }) => rest);
       void refreshCatalog();
-      if (left.kind === "trades") {
-        setCurrent({ project: left, file: 0 });
-        void runProject(left.name, () => openCatalogProject(left.id));
-        return;
-      }
-      const now = index < file ? file - 1 : Math.min(file, left.files.length - 1);
-      if (project || index === file) {
-        setProject(null);
-        openProject(left, now, true);
-      } else setCurrent({ project: left, file: now });
+      setCurrent({ project: left, file: 0 }); // the tender page reads its files again
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -835,7 +778,6 @@ export default function App() {
     try {
       const renamed = await renameProject(current.project.id, name.trim());
       setCurrent({ ...current, project: renamed });
-      setProject((p) => (p ? { ...p, name: renamed.name } : p));
       void refreshCatalog();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -898,49 +840,41 @@ export default function App() {
     };
   }, [analysis, sections, settledFindings]);
 
-  const relatedOz = useMemo(() => {
-    const f = selection.finding !== null ? analysis?.findings[selection.finding] : null;
-    return new Set(f?.related_oz ?? []);
-  }, [analysis, selection]);
-
   const open = selection.oz !== null || selection.finding !== null;
 
   const chatKey = current?.project.id ?? analysis?.id ?? "";
 
   // A passage of an answer: show its item, in this file or in the file of the project it stands in.
   // `from`: the project asked about from the list of projects, where none is open yet.
+  // A passage of an answer: its item on the pages of the Check step, in the LV whose document the file is.
+  // `from`: the project asked about from the list of projects, where none is open yet. The passage is
+  // put on the page once the document is read (the loader of the Check step takes it from `citing`).
   function cite(c: ChatCitation, from: CatalogProject | null = null) {
-    const show = () => {
+    const passage = { oz: c.oz, quote: c.quote, at: Date.now() };
+    const place = { step: "check" as const, view: "pages" as const, item: c.oz || null };
+    if (tender && analysis && c.file === analysis.boq.file && checked.current === checkKey && checkKey) {
       setSelection({ oz: c.oz || null, finding: null });
-      setView("pdf");
-      setPassage({ oz: c.oz, quote: c.quote, at: Date.now() });
-    };
-    if (analysis && c.file === analysis.boq.file) return show();
-    const lv = project?.lvs.find((l) => l.file === c.file);
-    const p = current?.project ?? from;
-    if (lv) void run(lv.name, () => loadAnalysis(lv.analysis_id)).then(show);
-    else if (p && c.index !== null) {
-      setCurrent({ project: p, file: c.index });
-      void run(c.file, () => openCatalogFile(p.id, c.index!)).then(show);
+      setTender({ ...tender, ...place });
+      setPassage(passage);
+      return;
     }
+    const p = current?.project ?? from;
+    if (!p || c.index === null) return;
+    citing.current = passage;
+    const lv = tender && tenderData && tender.id === p.id ? tenderData.data.lvs.find((l) => l.documents.includes(c.index!)) : undefined;
+    if (lv && tender) {
+      setSelection({ oz: c.oz || null, finding: null });
+      setTender({ ...tender, ...place, lv: tenderData!.data.lvs.length > 1 ? lv.id : null });
+    } else void openTenderPage(p, place, c.index);
   }
-
-  // What Polier's panel talks about: the project or LV that is open; on the list of projects it asks.
   const agentHere = analysis
-    ? { key: chatKey, analysisId: analysis.id, openFile: analysis.boq.file, label: current?.project.name ?? project?.name ?? (analysis.boq.name || analysis.boq.file) }
-    : project && project.lvs[0]
-      ? { key: chatKey, analysisId: project.lvs[0].analysis_id, openFile: "", label: project.name }
-      : null;
+    ? { key: chatKey, analysisId: analysis.id, openFile: analysis.boq.file, label: current?.project.name ?? (analysis.boq.name || analysis.boq.file) }
+    : null;
 
-  function showInTable(oz: string) {
-    setSelection({ oz, finding: null });
-    setView("table");
-    setTableKey((k) => k + 1); // remount so the table scrolls to the row
-  }
 
   return (
     <div
-      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}${gate ? " gated" : ""}${gate?.phase === "closing" ? " covering" : ""}${arriving && gate?.dir !== "out" ? " arriving" : ""}${intro === "entering" ? " entering" : ""}`}
+      className={`app${dragging ? " dragging" : ""}${!tender ? " home" : ""}${gate ? " gated" : ""}${gate?.phase === "closing" ? " covering" : ""}${arriving && gate?.dir !== "out" ? " arriving" : ""}${intro === "entering" ? " entering" : ""}`}
       onDragOver={(e) => (e.preventDefault(), setDragging(true))}
       onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)}
       onDrop={(e) => {
@@ -971,7 +905,7 @@ export default function App() {
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
                 <path d="M10 2.5 4.5 8 10 13.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
               </svg>
-              {analysis ? "LV" : project ? "Project" : "Projects"}
+              {tender ? "Tender" : "Projects"}
             </button>
             <h1 className="band-here">Pipeline</h1>
             <div className="band-slabs actions">
@@ -984,32 +918,28 @@ export default function App() {
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
                 <path d="M10 2.5 4.5 8 10 13.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
               </svg>
-              {analysis ? "LV" : project ? "Project" : "Projects"}
+              {tender ? "Tender" : "Projects"}
             </button>
             {/* the partners page puts its tabs, its search and "Your firm" here (Partners.tsx); the open tab
                 says where one is, so the band carries no title of its own */}
             <div className="band-place" ref={setBandSlot} />
           </>
-        ) : !analysis && !project ? (
+        ) : !tender ? (
           <button className="brand" onClick={closeAll} title="All projects">
             <HardHatIcon size={32} />
             Polier
           </button>
         ) : (
-          <button
-            className="band-back"
-            onClick={project && analysis ? () => leave(() => setAnalysis(null)) : closeAll}
-            title={project && analysis ? `Back to ${project.name}` : "Back to all projects"}
-          >
+          <button className="band-back" onClick={closeAll} title="Back to all projects">
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
               <path d="M10 2.5 4.5 8 10 13.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
             </svg>
-            {project && analysis ? "Project" : "Projects"}
+            Projects
           </button>
         )}
         {/* the projects page: the two other places, as slabs filling the right end of the band (a new
             project is on the head of the board, Projects.tsx) */}
-        {!partners && !pipeline && !project && (!analysis || !stats) && (
+        {!partners && !pipeline && !tender && (
           <nav className="actions band-slabs" aria-label="Places">
             {catalog.length > 0 && <RunsSwitch runs={runs} onOpen={() => toPipeline({ project: null })} />}
             <button className="band-slab" onClick={() => toPartners({ tab: "suppliers", partner: null })} title="Suppliers and subcontractors: their prices, the conversations with them, who is new">
@@ -1035,101 +965,36 @@ export default function App() {
             </button>
           </nav>
         )}
-        {!partners && !pipeline && project && !analysis && (
+        {!partners && !pipeline && tender && current && (
           <>
             <div className="doc">
-              {current ? (
-                <input
-                  key={current.project.name}
-                  className="doc-name"
-                  defaultValue={current.project.name}
-                  aria-label="Project name"
-                  maxLength={80}
-                  onBlur={(e) => void rename(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-                />
-              ) : (
-                <strong lang="de">{project.name}</strong>
-              )}
-            </div>
-            <div className="actions">
-              {current && (
-                <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
-                  <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-                    <path d="M1 3.5h12M1 10.5h12M4 1.5v4M10 8.5v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" />
-                  </svg>
-                  Settings
-                </button>
-              )}
-            </div>
-          </>
-        )}
-        {!partners && !pipeline && analysis && stats && (
-          <>
-            <div className="doc">
-              <strong lang="de" title={analysis.boq.file}>
-                <LvText text={current && !project ? current.project.name : analysis.boq.name || analysis.boq.file} />
-              </strong>
+              <input
+                key={current.project.name}
+                className="doc-name"
+                defaultValue={current.project.name}
+                aria-label="Project name"
+                maxLength={80}
+                onBlur={(e) => void rename(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+              />
             </div>
             <div className="actions">
               {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
-              <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
-                Risk report
-              </a>
-              <button className="btn" onClick={() => setView("questions")}>
-                Bidder questions
-              </button>
-              {current && (
-                <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
-                  <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-                    <path d="M1 3.5h12M1 10.5h12M4 1.5v4M10 8.5v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" />
-                  </svg>
-                  Settings
-                </button>
+              {analysis && checkKey && checked.current === checkKey && (
+                <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
+                  Risk report
+                </a>
               )}
+              <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
+                <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+                  <path d="M1 3.5h12M1 10.5h12M4 1.5v4M10 8.5v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" />
+                </svg>
+                Settings
+              </button>
             </div>
           </>
         )}
       </header>
-
-      {analysis && current && !project && current.project.kind === "versions" && current.project.files.length > 1 && (
-        <nav className="versions" aria-label="Versions of this LV">
-          <span className="caption">This LV as</span>
-          {current.project.files.map((f, n) => (
-            <button
-              key={n}
-              aria-pressed={current.file === n}
-              disabled={busy !== null}
-              title={f.name}
-              onClick={() => current.file !== n && openProject(current.project, n, true)}
-            >
-              <b>{f.role}</b> {f.format}
-            </button>
-          ))}
-        </nav>
-      )}
-
-      {/* the pipeline on this project, station by station; the run waits at the questions for the person */}
-      {current && ((analysis && stats) || (project && !analysis)) && (
-        <PipelineStrip
-          run={runHere}
-          file={analysis && !project ? current.file : null}
-          starting={startingRun}
-          onStart={() => void runAgain(current.project.id)}
-          onChange={(what) => void moveRun(what)}
-          onQuestions={analysis && stats ? () => setView("questions") : null}
-          onFind={
-            analysis && stats
-              ? (step) => {
-                  const prefix = step === "L-REVIEW" ? "l-" : step === "V-DIFF" ? "v-" : step.toLowerCase();
-                  setSelection(NONE);
-                  setFind((was) => ({ text: `check:${prefix}`, n: (was?.n ?? 0) + 1 }));
-                }
-              : null
-          }
-          onRecord={() => current && toPipeline({ project: current.project.id })}
-        />
-      )}
 
       {(intro === "loading" || intro === "opening") && <Opening phase={intro} />}
       {/* while the new-project dialog is open it says itself that it is working */}
@@ -1137,7 +1002,7 @@ export default function App() {
         <ProjectSettings
           project={current.project}
           summary={summaries[current.project.id]}
-          openFile={analysis && !project ? current.file : null}
+          openFile={analysis ? current.file : null}
           busy={busy !== null}
           error={error}
           onClose={() => (setSettingsOpen(false), setError(null))}
@@ -1201,7 +1066,7 @@ export default function App() {
             const p = catalog.find((c) => c.id === id);
             if (!p) return;
             setPipeline(null);
-            openProject(p);
+            void openTenderPage(p);
           }}
           starting={startingRun}
           onStart={(id) => void runAgain(id)}
@@ -1214,28 +1079,145 @@ export default function App() {
           onPlace={setPartners}
           onChanged={() => setDirectoryAt((n) => n + 1)}
           onOpenTender={(id, file) => {
-            const to: Route = { at: "file", id, file, view: "inquiries", item: null, page: 1, fpage: 1 };
-            target.current = to;
-            if (navigate(to) === null) (target.current = null), setPartners(null);
+            const p = catalog.find((c) => c.id === id);
+            if (!p) return;
+            setPartners(null);
+            void openTenderPage(p, { step: "prices", view: "inquiries" }, file);
           }}
         />
         </Suspense>
-      ) : project && !analysis ? (
-        <ProjectView
-          project={project}
-          onOpenLv={(id) => {
-            const lv = project.lvs.find((l) => l.analysis_id === id);
-            const through: GateInfo = {
-              caption: "Opening the LV",
-              title: lv?.name ?? "LV",
-              sub: lv && `${lv.file} · ${project.name}`,
-              counts: lv?.counts,
-              items: lv?.items,
-            };
-            void run(lv?.name ?? "LV", () => loadAnalysis(id), through);
+      ) : tender && tenderData && current ? (
+        <TenderPage
+          tender={tenderData.data}
+          plan={datesOf(current.project, summaries[current.project.id])}
+          place={tender}
+          onPlace={(place) => setTender({ id: tender.id, ...place })}
+          onAsk={(lv, oz, ask) =>
+            void askDifference(tender.id, lv, oz, ask).then(
+              (data) => setTenderData((kept) => kept && { key: kept.key, data }),
+              (e) => setError(e instanceof Error ? e.message : String(e)),
+            )
+          }
+          pipeline={
+            <PipelineStrip
+              run={runHere}
+              file={analysis && checkKey && checked.current === checkKey ? current.file : null}
+              starting={startingRun}
+              onStart={() => void runAgain(current.project.id)}
+              onChange={(what) => void moveRun(what)}
+              onQuestions={() => setTender({ ...tender, step: "questions", view: "map" })}
+              onFind={(step) => {
+                const prefix = step === "L-REVIEW" ? "l-" : step === "V-DIFF" ? "v-" : step.toLowerCase();
+                setSelection(NONE);
+                setFind((was) => ({ text: `check:${prefix}`, n: (was?.n ?? 0) + 1 }));
+              }}
+              onRecord={() => toPipeline({ project: current.project.id })}
+            />
+          }
+          pages={
+            analysis && checkKey && checked.current === checkKey ? (
+              analysis.pdf ? (
+                <PdfView key={analysis.id} analysis={analysis} visible={severities} selection={selection} onSelect={setSelection} passage={passage} />
+              ) : (
+                <p className="pdf-status">This PDF was uploaded on its own and not kept, so there are no pages to show.</p>
+              )
+            ) : null
+          }
+          whatif={analysis && checkKey && checked.current === checkKey ? <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} onBid={() => setTender({ ...tender, view: "items" })} /> : null}
+          intake={intakeOpen ? { onTake: () => void changePlan(current.project, { stage: "check" }), onPass: () => void changePlan(current.project, { outcome: "passed" }) } : null}
+          outcome={outcomeOf(current.project)}
+          onOutcome={(outcome) => void changePlan(current.project, { outcome })}
+          bid={{
+            analysisId: analysis && checkKey && checked.current === checkKey ? analysis.id : null,
+            sheet:
+              analysis && checkKey && checked.current === checkKey ? (
+                <BidView
+                  key={analysis.id}
+                  analysisId={analysis.id}
+                  amended={questions?.amendments.filter((x) => x.status === "accepted").length ?? 0}
+                  onItem={(oz) => (setSelection({ oz, finding: null }), setTender({ ...tender, view: "map" }))}
+                  onQuestions={() => setTender({ ...tender, step: "questions", view: "map" })}
+                />
+              ) : null,
           }}
+          prices={{
+            analysisId: analysis && checkKey && checked.current === checkKey ? analysis.id : null,
+            byOz: analysis && checkKey && checked.current === checkKey && prices ? priceByOz : null,
+            inquiries:
+              analysis && checkKey && checked.current === checkKey ? (
+                <InquiriesView
+                  key={analysis.id}
+                  analysisId={analysis.id}
+                  at={`${directoryAt}|${questions?.questions.map((q) => q.status).join("") ?? ""}`}
+                  onItem={(oz) => (setSelection({ oz, finding: null }), setTender({ ...tender, view: "items" }))}
+                  onQuestions={() => setTender({ ...tender, step: "questions", view: "map" })}
+                  onBid={() => setTender({ ...tender, step: "bid", view: "items" })}
+                  onDirectory={(partner) => toPartners(partner === "firm" ? { tab: "firm", partner: null } : { tab: "suppliers", partner: partner ?? null })}
+                />
+              ) : null,
+          }}
+          questions={{
+            state: analysis && checkKey && checked.current === checkKey ? questions : null,
+            view:
+              analysis && checkKey && checked.current === checkKey ? (
+                <QuestionsView
+                  key={analysis.id}
+                  analysisId={analysis.id}
+                  state={questions}
+                  onState={setQuestions}
+                  onReload={loadQuestions}
+                  onItem={(oz) => (setSelection({ oz, finding: null }), setTender({ ...tender, step: "check" }))}
+                />
+              ) : null,
+          }}
+          check={{
+            summary: (() => {
+              const known = summaries[current.project.id];
+              return known && known !== "failed" ? known : null;
+            })(),
+            // the findings of the open LV, once its carrying document is read
+            findingsByOz: analysis && checked.current === checkKey && checkKey ? findingsByOz : null,
+            selected: selection.oz,
+            onPick: (oz) => setSelection({ oz, finding: null }),
+            list:
+              analysis && stats && checkKey && checked.current === checkKey ? (
+                <FindingsList
+                  analysis={analysis}
+                  itemByOz={itemByOz}
+                  sections={sections}
+                  severities={severities}
+                  onSeverities={setSeverities}
+                  section={section}
+                  onSection={setSection}
+                  onSelect={setSelection}
+                  page={fpage}
+                  onPage={setFpage}
+                  ai={ai === "idle" && reviewingHere ? "running" : ai}
+                  onReview={() => void review()}
+                  find={find}
+                />
+              ) : null,
+            sheet:
+              analysis && open && checkKey && checked.current === checkKey ? (
+                <ItemSheet
+                  analysis={analysis}
+                  itemByOz={itemByOz}
+                  findingsByOz={findingsByOz}
+                  price={selection.oz ? priceByOz.get(selection.oz) : undefined}
+                  selection={selection}
+                  asked={askedByFinding}
+                  settled={settledFindings}
+                  amended={selection.oz ? amendedByOz.get(selection.oz) ?? [] : []}
+                  onAsked={() => setTender({ ...tender, step: "questions", view: "map" })}
+                  onSelect={setSelection}
+                  onBack={() => setSelection(NONE)}
+                  onShowInTable={(oz) => (setSelection({ oz, finding: null }), setTender({ ...tender, view: "items" }))}
+                />
+              ) : null,
+          }}
+          onDocuments={() => setSettingsOpen(true)}
         />
-      ) : !analysis || !stats ? (
+      ) : (
         <ProjectsPage
           projects={catalog}
           summaries={summaries}
@@ -1246,11 +1228,8 @@ export default function App() {
           error={error}
           onChange={(p, change) => void changePlan(p, change)}
           onOpen={(p, file) => {
-            if (file === undefined || p.kind === "versions") return openProject(p, file ?? 0);
-            // one trade LV of a building, opened straight from the list
-            setCurrent({ project: p, file });
-            setProject(null);
-            void run(p.files[file]?.name ?? p.name, () => openCatalogFile(p.id, file), gateInfo(p, file));
+            // the tender page, in the LV the clicked file is a document of
+            void openTenderPage(p, {}, file);
           }}
           onChooseFiles={(target) => {
             addTarget.current = target;
@@ -1267,175 +1246,6 @@ export default function App() {
               : null
           }
         />
-      ) : (
-        <div className="work">
-          <main className="left">
-            <div className="left-head">
-              <div className="verdict">
-                <h1>
-                  {analysis.findings.length === 0
-                    ? `No rule finding in ${analysis.boq.items.length} items`
-                    : SEVERITIES.filter((s) => stats.counts[s] > 0).map((s) => (
-                        <span key={s} className="count">
-                          <Sign severity={s} size={36} />
-                          {countLabel(stats.counts[s], s)}
-                        </span>
-                      ))}
-                </h1>
-                {analysis.findings.length > 0 && (
-                  <p>
-                    on {findingsByOz.size} of {analysis.boq.items.length} items
-                    {stats.heaviest && (
-                      <>
-                        . Most risk points: section <b>{stats.heaviest.key}</b> ({weight(stats.heaviest.counts)})
-                      </>
-                    )}
-                    {stats.closed > 0 && `. ${stats.closed} settled by the client's answers`}
-                    {prices && `. Past bids price ${prices.with_price} of ${prices.items} items.`}
-                  </p>
-                )}
-              </div>
-              <div className="views" role="tablist" aria-label="View">
-                {VIEWS.filter(([id]) => id !== "pdf" || analysis.pdf).map(([id, label]) => (
-                  <button key={id} role="tab" aria-selected={view === id} onClick={() => setView(id)}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {view === "plan" && (
-              <>
-                <LvMap
-                  sections={sections}
-                  findingsByOz={findingsByOz}
-                  visible={severities}
-                  selectedOz={selection.oz}
-                  relatedOz={relatedOz}
-                  section={section}
-                  onSection={(key) => {
-                    setSection(key);
-                    setSelection(NONE);
-                  }}
-                  onSelect={(oz) => setSelection({ oz, finding: null })}
-                  onHover={setHovered}
-                />
-                <p className="readout" aria-live="off">
-                  {hovered ? (
-                    <>
-                      {worst(findingsByOz.get(hovered.oz)) && (
-                        <Sign severity={worst(findingsByOz.get(hovered.oz))!} size={22} />
-                      )}
-                      <b>{hovered.oz}</b>
-                      <span className="readout-text" lang="de">
-                        <LvText text={itemLabel(hovered)} />
-                      </span>
-                      <span className="readout-qty">
-                        {qty(hovered.qty)} {hovered.unit_raw || hovered.unit}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="hint">
-                      One row per section, one mark per item, in LV order. Point at a mark to read it, click to open it.
-                    </span>
-                  )}
-                </p>
-              </>
-            )}
-            {view === "table" && (
-              <ItemsView
-                key={tableKey}
-                analysis={analysis}
-                findingsByOz={findingsByOz}
-                selectedOz={selection.oz}
-                page={page}
-                onPage={setPage}
-                onSelect={(oz) => setSelection({ oz, finding: null })}
-              />
-            )}
-            {view === "remarks" && <RemarksView analysis={analysis} />}
-            {view === "pdf" && analysis.pdf && (
-              <PdfView
-                key={analysis.id}
-                analysis={analysis}
-                visible={severities}
-                selection={selection}
-                onSelect={setSelection}
-                passage={passage}
-              />
-            )}
-            {view === "pdf" && !analysis.pdf && (
-              <p className="pdf-status">This PDF was uploaded on its own and not kept, so there are no pages to show. Add it to a project to read it here.</p>
-            )}
-            {view === "bid" && (
-              <BidView
-                key={analysis.id}
-                analysisId={analysis.id}
-                amended={questions?.amendments.filter((a) => a.status === "accepted").length ?? 0}
-                onItem={(oz) => setSelection({ oz, finding: null })}
-                onQuestions={() => setView("questions")}
-              />
-            )}
-            {view === "inquiries" && (
-              <InquiriesView
-                key={analysis.id}
-                analysisId={analysis.id}
-                at={`${directoryAt}|${questions?.questions.map((q) => q.status).join("") ?? ""}`}
-                onItem={(oz) => setSelection({ oz, finding: null })}
-                onQuestions={() => setView("questions")}
-                onBid={() => setView("bid")}
-                onDirectory={(partner) => toPartners(partner === "firm" ? { tab: "firm", partner: null } : { tab: "suppliers", partner: partner ?? null })}
-              />
-            )}
-            {view === "whatif" && <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} onBid={() => setView("bid")} />}
-            {view === "questions" && (
-              <QuestionsView
-                key={analysis.id}
-                analysisId={analysis.id}
-                state={questions}
-                onState={setQuestions}
-                onReload={loadQuestions}
-                onItem={(oz) => setSelection({ oz, finding: null })}
-              />
-            )}
-          </main>
-
-          <aside className="right">
-            {open ? (
-              <ItemSheet
-                analysis={analysis}
-                itemByOz={itemByOz}
-                findingsByOz={findingsByOz}
-                price={selection.oz ? priceByOz.get(selection.oz) : undefined}
-                selection={selection}
-                asked={askedByFinding}
-                settled={settledFindings}
-                amended={selection.oz ? amendedByOz.get(selection.oz) ?? [] : []}
-                onAsked={() => setView("questions")}
-                onSelect={setSelection}
-                onBack={() => setSelection(NONE)}
-                onShowInTable={showInTable}
-              />
-            ) : (
-              <FindingsList
-                analysis={analysis}
-                itemByOz={itemByOz}
-                sections={sections}
-                severities={severities}
-                onSeverities={setSeverities}
-                section={section}
-                onSection={setSection}
-                onSelect={setSelection}
-                page={fpage}
-                onPage={setFpage}
-                // the project's pipeline run is reviewing this file: the button waits for it instead of asking twice
-                ai={ai === "idle" && reviewingHere ? "running" : ai}
-                onReview={() => void review()}
-                find={find}
-              />
-            )}
-          </aside>
-        </div>
       )}
       {/* Polier, the agent, lives in the bottom-right corner; a click opens the conversation about the project */}
       <Agent
@@ -1446,7 +1256,7 @@ export default function App() {
         chats={chats}
         onTurns={(key, turns) => setChats((all) => ({ ...all, [key]: turns }))}
         onCite={cite}
-        onOpenProject={(p) => openProject(p)}
+        onOpenProject={(p) => void openTenderPage(p)}
       />
     </div>
   );

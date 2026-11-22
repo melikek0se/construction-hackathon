@@ -12,8 +12,182 @@ parsed, the LLM checks run against the Claude API, and the findings can be expor
 list of bidder questions. Excel LVs are imported, unit prices are suggested from the three priced bids (with
 very low coverage, see below), and a what-if view varies the total of the bid in progress (or of a priced file).
 
+## Started
+
+- Polier's chat as a dark side panel (2026-11-22, D-060; `Agent.tsx`, `chat.css`, `styles.css`): a click on
+  Polier opens the conversation as a full-height panel on the right edge (420px), the page makes room for it
+  and Polier steps to its left; "night shift" look (dark, yellow, mono speaker labels). Mockups of the four
+  directions in `playground/chat-panel/`. Seen in Chrome on the projects page with an answer about all
+  projects; not checked inside a project (LV citations, "Read every document"), on the tender page, or under
+  900px wide.
+
+- Tender page (2026-11-22, D-050; `src/boq/tender.py`, `GET /api/catalog/{id}/tender`, `web/src/Tender.tsx`,
+  `tender.css`, routes in `router.ts`): a project opens on its tender, read from all the documents of the
+  tender step; views Map, Read, Items; cover sheet; documents drawer; item sheet with where the item
+  stands and what another document says differently. The workspace of before is at `/archive/…`, reached
+  from the step rail and "Workspace", and has "Tender" in its band.
+  Checked: `tests/test_tender.py` (B: X83 + print-out, 248 of 248 items in both, 0 quantities and units,
+  24 texts differ; A: X83 and D83 say the same; F: 27 LVs), full pytest 214 passed, type-check and build.
+  Seen in headless Chrome at 1500 wide on the dev stack: map, item sheet, read, items, drawer on a one-LV
+  project; map and one LV's item table on the 27-LV project; an `/archive` address.
+  Not checked: a hand on the mouse; clicking through the step rail, "Workspace" and "Tender" (the
+  navigation is typed and built, not clicked); Back and Forward between the tender page and the archive;
+  settings changes (file removed, step moved) refreshing the page; widths under 1180px; the projects
+  page's cards opening the page (same code path as the address).
+  Known: the dev database holds the English copies, where 90 texts of B differ instead of 24 (translation,
+  not the client). Pipeline strip, findings and Polier's chat are not on the tender page. A project name
+  that begins with its number shows it once, in the name. The mock-ups stay in `playground/tender/`
+  (untracked; `python3 -m http.server 5300 --bind 127.0.0.1` there) and can go.
+
+- Check step on the tender page (2026-11-22, D-051; `Tender.tsx`, `tender.css`, `App.tsx` (`checkLv`,
+  the `check` handed to `TenderPage`), `router.ts`): `/projects/:id/check[/:view]`. Findings on the
+  strips in severity colours, the findings list at the left, the item sheet at the right, findings as
+  margin notes with the quoted passage marked in the Read view, a findings column in the item table,
+  "Run AI review" in the list. Several LVs: marks and counts per LV from the summary, the LV's own
+  findings when it is opened.
+  Checked: type-check, build. Seen in headless Chrome at 1500 wide on the dev stack: map with an open
+  finding, read view, item table with the sheet, the 27-LV overview and one of its LVs with the run's
+  AI findings; clicked by script: Tender → Check → Tender → Check, then Back (the address follows, the
+  open item stays).
+  Not checked: "Run AI review" pressed from this page (same function as before; costs money); a
+  finding without an item picked in the list; the "asked" link from the sheet into the archive's
+  Questions view; Forward; widths under 1180px; a project whose summary failed.
+  Known: no pipeline strip, no findings between LVs, no trade diagram on this page (under `/archive`).
+
+- Questions step on the tender page (2026-11-22, D-052; `tender.difference_findings`, `asked`,
+  `PUT /api/catalog/{id}/tender/ask`, `_document_differences` in `api.py`; `Tender.tsx`, `App.tsx`):
+  `/projects/:id/questions`. The questions view of before inside the page; at its left the items the
+  documents word differently, each with "Ask"; the same on the item's sheet in the Tender step. Asked,
+  the difference is a finding of the LV and a German bidder question in the next message.
+  Checked: `tests/test_tender.py` (asked → finding D-TEXT and its question, taken back, unknown item
+  refused; another quantity is always a finding, on a made-up pair, since the dataset has none), full
+  pytest 216 passed, type-check of these files. Seen in headless Chrome at 1500 wide on the dev stack:
+  the step on a one-LV project; "Ask" clicked by script (the question appears in the list and in the
+  draft message, the rail counts it), then taken back through the API; one LV of the 27-LV project with
+  its 12 questions.
+  Not checked: sending a message from this page (the view and its calls are unchanged); "Ask the client"
+  on the Tender step's sheet clicked; "Take it out"; an item number in the questions leading into Check;
+  the 27-LV overview of this step; widths under 1180px.
+  Known: `npm run build` fails at the moment on three unused names in `Partners.tsx` (another session's
+  work in progress, not this change). The dev database's English copies give 90 differing wordings on
+  project B, where the German files give 24.
+
+- Prices step on the tender page (2026-11-22, D-053; `Tender.tsx` (`pricedOf`, `PriceStrip`), `App.tsx`,
+  `router.ts`, `tender.css`): `/projects/:id/prices[/:view]`. Strips by how firm each item's price is,
+  a count per source at the left, unit price and where it is from in the item table, a price note in
+  the margin of the Read view, the price inquiries as a fourth view. Front end only.
+  Checked: type-check of these files; backend untouched. Seen in headless Chrome at 1500 wide on
+  project D of the dev stack (50 items: 14 with a quote for this tender, 11 asked, 1 held, 24 without):
+  map, item table, read view with "395,52 € material per m · Quote for this tender: …", the inquiries
+  view with its six packages; clicked by script: Tender → Prices → Inquiries → Check → Tender, the
+  address and the open cell follow.
+  Not checked: the item sheet in this step after the last fix (it showed the Tender step's sheet; one
+  word changed, not looked at again); a price-book or past-bids price on screen (project D has none:
+  those two branches of `pricedOf` are unseen); anything pressed inside the inquiries view from this
+  page; several LVs; widths under 1180px.
+  Since checked: the item sheet of this step is the one with the price block (seen in the DOM).
+
+- Bid step on the tender page (2026-11-22, D-054; `Tender.tsx`, `App.tsx`, `router.ts`, `tender.css`):
+  `/projects/:id/bid[/items]`. Map with priced items as thin ink lines and open ones standing, the net
+  total and three counts at the left with X84 and CSV, the bid sheet of before as the second view.
+  "To the bid" in the Prices step and in the inquiries lead here. Front end only.
+  Checked: type-check of these files. Seen in headless Chrome at 1500 wide on project D of the dev
+  stack (9 of 50 priced, 106.665,40 € net, the same figures as the sheet): map and sheet; clicked by
+  script: Prices → "To the bid" → "Bid sheet" → Back.
+  Not checked: a price typed into the sheet from this page and the map following it; the X84 and CSV
+  links pressed; a suggestion taken as it stands on the map (project D has none); several LVs; widths
+  under 1180px. The full pytest was not run again after the Questions step (no backend change since).
+  Known: `npm run build` still fails on `Partners.tsx` (another session's work in progress).
+
+- Award step on the tender page (2026-11-22, D-055; `tender._award`, `Tender.tsx` (`AwardSheet`),
+  `App.tsx`, `router.ts`): `/projects/:id/award[/items]`. With an award file: what it changed against
+  the tender and the bid on the map, in the table and on the item's sheet, contract total and bid total
+  at the left, the hand-over sheet. Without: the step says so and keeps how the tender ended.
+  Checked: `tests/test_tender.py` (B: award on LV 0, bid D84, no price differs, same total; A: 38 items
+  added, no bid; D: no award). Seen in headless Chrome at 1500 wide on the dev stack: B's map with the
+  dropped item 8.1.3 open, A's item table (197 rows with tendered, awarded, price, total), D without an
+  award; clicked by script: "Lost" set and taken back, the rail's cell follows.
+  Not checked: the row "Only in the award" on the map and an added item's sheet; a price that differs
+  from the bid and a changed quantity (the dataset has neither); "Add the award file"; the hand-over
+  link; several LVs; widths under 1180px.
+  Known: an award is matched to an LV by item numbers only; its texts are not compared.
+
+- The rest of the archive on the tender page (2026-11-22, D-056; `Tender.tsx`, `App.tsx`, `router.ts`
+  (`viewsOf`)): Pages as a view of Tender and Check, What-if as a view of Bid, the pipeline strip under
+  the rail in Check, "Between LVs" (trade diagram, findings between LVs) as a view of Check for a tender
+  of several LVs. Front end only; the components are the ones of before.
+  Checked: type-check of these files. Seen in headless Chrome at 1500 wide on the dev stack: the pages
+  in Check with a finding marked and its sheet open (78 pages drawn), the pages in Tender, the what-if
+  on project D (9 items, +10 %), the between-LVs view of the 27-LV project (diagram, 18 findings) with
+  the pipeline strip of its run above it.
+  Not checked: anything clicked in these views from this page (a mark on a page, a trade in the diagram
+  leading into its LV, "Run", "Record", a station filtering the list, a what-if change); the views'
+  switch clicked (the addresses were opened directly); widths under 1180px.
+  Known: in the Check step the rail and the pipeline strip stand one over the other, twelve cells in
+  two rows. `/archive` is still there ("Workspace" in the band, single dataset files).
+
+- The workspace of before removed (2026-11-22, D-057; `router.ts`, `App.tsx`, `LvMap.tsx` deleted): no
+  `/archive`, no "Workspace"; old addresses lead to the step that replaced them; chat citations, the
+  partners page, a new project and the risk report lead into the tender page.
+  Checked: type-check and `npm run build` (clean again). By script in headless Chrome on the dev stack:
+  `/archive/projects/…/files/2/questions` → the Questions step; `/projects/…/files/12/table?item=6.1.40`
+  on the 27-LV project → Check, items, LV 12, that item; the band holds "Risk report" and "Settings";
+  "Projects" back to the board (29 cards) and Back to the Check step again; `/samples/…` → the projects
+  page.
+  Not checked: a passage of Polier's answer clicked (the code path is new: `cite`, `citing`); "Open the
+  inquiry" from the partners page; a new project created by upload opening on its tender; files dropped
+  while a tender is open; a file removed in the settings; the old `?project=…` form. The full pytest was
+  not run (no backend change since the Award step: 217 passed then).
+  Known: `ItemsView` and `RemarksView` in `components.tsx` are unused now. A copy of `App.tsx` from
+  before this change is not kept in the repository (git has the last commit).
+  Next: a walk through all six steps by hand; then the two rows of cells in the Check step.
+
+- Issues of an LV (2026-11-22, D-058; `tender._issues`, `follow`, `view`; `_files_for_a_project` in
+  `api.py`; `catalog.hashes`; `Tender.tsx`): a re-issued LV replaces the one before with its change list,
+  the work follows to it, and files that come by mail for a known tender join its project.
+  Checked: `tests/test_tender.py` (issues, the change list, no contradiction between issues, the work
+  follows once), `tests/test_inbox.py` (a known tender's LV joins its project without the model; the same
+  file twice is not kept), full pytest 224 passed, type-check. With the mock tender T1 of the demo mail
+  data (`mock/mail/t1_birkenweg.toml`, files made by `mockmail`), on the dev stack as a throwaway intake
+  project, deleted again: issue 1 alone shows the 6 planted differences between X83 and print-out (3
+  quantities, 3 wordings); with issue 2 added the page shows "Issue 2 of 2", 9 changed or new items and
+  1 dropped, exactly what the data states, and no contradiction; seen in headless Chrome: map with a
+  changed quantity open, read view with a reworded item.
+  Not checked: the work following on a real project with sent questions and quotes (the table move is
+  tested on bid prices only); the mailbox branch against the demo mail server (the mails are not in a
+  mailbox yet); the cover sheet and the read view after the last two small fixes; several LVs with issues.
+  Since (same day): remarks are compared sentence by sentence; T1's regenerated print-out gives exactly
+  one passage "only in the PDF file" (the Zwischentermin with its Vertragsstrafe and the Lärmschutz
+  clause). The sweep reads the mailbox oldest first. Agreed with the session that makes the demo mail data
+  (`mock/mail/`): German stays; our own bid mails carry our address in Cc so the bid file reaches the
+  project; two jobs R1 and R2 with tender, bid and award inside the last 13 days are being written (R2's
+  award drops, adds, changes a quantity and a price). R2 seen on the Award step (its four generated files as a
+  throwaway intake project on the dev stack, deleted again): contract total 171.789,50 €, bid 168.915,50 €,
+  and all four marks, each on the item the data names (quantity 3.1.30, dropped 5.1.10, added 4.1.70, other
+  price 3.1.10 with 385,00 against 368,00); the sheet of the added item. Until then no price difference and
+  no changed quantity had been on screen. R1 not opened (award equals bid).
+
 ## Done
 
+- **Mock mail** (2026-11-22, D-061; `mock/mail/`, `src/boq/mockmail.py`, `tests/test_mockmail.py`): the demo
+  mail server's mailboxes hold a made-up world: 460 messages in 28 mailboxes, 37 LVs with 1413 items,
+  7 current tenders, 2 recent jobs with bid and award, 7 past jobs, the history with 14 partners. Dates are
+  relative to the day of the fill; the mail server fills at every start, `boq-mail --fill --reset` by hand.
+  Checked: every LV (all four formats, with and without prices) reads back with the parsers; a fill of
+  the dev server (16 s, a second one puts in nothing); `inbox.recent` finds the 17 messages with files of
+  the last 14 days; `partners.mailbox_history` puts 294 messages to the 14 firms; filled price sheets read
+  back with `supply.read_sheet`; the sweep made intake projects of T1–T7, R1, R2 and the forwarded list, and
+  R1/R2's bid and award and T1's Stand 2 joined their projects (seen by the tender session).
+  Not checked: the AI review on the planted defects (the rules find the missing quantities and part of the
+  risk wording only), the partners page and the style analysis on this history, the fill on Render.
+  Slip to know of: an early generator test of mine reached the dev inbox and made a test project; it was
+  deleted and T1 taken in afresh.
+
+
+- **Phone calls taken out** (2026-11-22, D-059): voice agent, ElevenLabs, call endpoints and buttons, the
+  "do not phone" flag removed; inquiries go by e-mail only. Older entries below that describe the call are
+  history; a call kept in the database from before is left out of a firm's conversations. Checked: full
+  pytest (one failure from the change fixed, then partners and API tests passed), type-check and build.
 - **Demo mail server** (2026-11-22, D-052; `src/boq/demomail.py`, `docker/mail.sh`, `docker/start.sh`,
   Dockerfile stage `mail`): Stalwart with Roundcube in place of Mailpit. Mail, accounts and settings are kept
   in Postgres (`boq_mail`), every party has a mailbox with password `demo`, the app is
@@ -28,7 +202,6 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   **Not checked: on Render and Neon themselves** (Stalwart's TLS connection to Neon, `CREATE DATABASE` there,
   Roundcube's redirects behind Render's HTTPS), the app's pages against filled mailboxes.
 
-
 - Price order: quote, then price book, then past bids (2026-11-22, D-049; `supply.book`, `api._prices`,
   `supply.item_prices`, `risk.BANDS`): an item is asked for in its tender even where an earlier price
   exists; until the quote is in, a partner's price for the same thing from another tender stands in
@@ -42,27 +215,6 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   Not done: a tender whose quote then comes in, seen in the browser (the order is tested in
   `item_prices`); the risk report's own price section still words everything as "past bids".
 
-- Partners page (2026-11-22, D-047; `src/boq/partners.py`, `partners_demo.py`, tables `partner_messages`,
-  `partner_searches`, column `suppliers.more`; `web/src/Partners.tsx`, `partners.css`; replaces the Suppliers
-  dialog, `Suppliers.tsx` is gone): `/partners`, reached from "Partners" in the band and from a firm's name
-  in the price inquiries, through the shutter with the band and the rows coming in. Tabs: Suppliers,
-  Subcontractors (list left, the firm right: what is open with it, a card counted from the record — asked,
-  answered, median time to the first reply, quotes, taken, reminders —, particulars, usual terms from its
-  quotes, a subcontractor's papers with expiry, how it writes, every price with day, validity, terms, tender
-  and the change against its price before, every message and call), Waiting (open conversations of all
-  tenders, whose move), Price book (every quoted line by what was priced), Found on the web, Your firm.
-  The agent uses it: the plan of an inquiry sees "preferred" and how often a firm answered, leaves out
-  "do not ask"; an inquiry to a firm whose style is on record has its opening and closing written that
-  way (`partners.restyle`, the items never change, the plain template is one click away); the answer to a
-  supplier's question takes the tone too; "do not phone" refuses the voice call.
-  Checked: `tests/test_partners.py` (4), full pytest 210 passed, type-check and build. On the dev stack
-  with real Claude calls: a style read (8 s: Du, "Moin Herr Kaya,", five habits each with its passage, none
-  dropped), an inquiry of project D worded that way (6 s; items identical), a web search for
-  "Tragwerksplanung / Statik" in Hamburg (about 40 s, 0.22 USD, 2 queries, 8 firms each with its page).
-  Seen in headless Chrome at 1500 wide, no console error: all six tabs, a supplier and a subcontractor,
-  the way there from the projects page and back, Waiting → "Open the inquiry" → a firm's name → back to the LV.
-  **Not run**: the mailbox history over IMAP and the call record and recording from ElevenLabs (no
-  account in `.env`; the API shapes are from the docs, as for the rest of `voice.py`); Polier's own search
 - Partners page rebuilt (2026-11-22, D-051; `web/src/Partners.tsx`, `partners.css`, `POST
   /api/partners/follow-up`; the user found the first build poor, the proposal with its drawings is in
   `data/processed/partners-proposal/`, git-ignored). Built, in the order proposed:
@@ -220,6 +372,27 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:
   ex works and free to site are not evened out, only marked.
 
+- Partners page (2026-11-22, D-047; `src/boq/partners.py`, `partners_demo.py`, tables `partner_messages`,
+  `partner_searches`, column `suppliers.more`; `web/src/Partners.tsx`, `partners.css`; replaces the Suppliers
+  dialog, `Suppliers.tsx` is gone): `/partners`, reached from "Partners" in the band and from a firm's name
+  in the price inquiries, through the shutter with the band and the rows coming in. Tabs: Suppliers,
+  Subcontractors (list left, the firm right: what is open with it, a card counted from the record — asked,
+  answered, median time to the first reply, quotes, taken, reminders —, particulars, usual terms from its
+  quotes, a subcontractor's papers with expiry, how it writes, every price with day, validity, terms, tender
+  and the change against its price before, every message and call), Waiting (open conversations of all
+  tenders, whose move), Price book (every quoted line by what was priced), Found on the web, Your firm.
+  The agent uses it: the plan of an inquiry sees "preferred" and how often a firm answered, leaves out
+  "do not ask"; an inquiry to a firm whose style is on record has its opening and closing written that
+  way (`partners.restyle`, the items never change, the plain template is one click away); the answer to a
+  supplier's question takes the tone too; "do not phone" refuses the voice call.
+  Checked: `tests/test_partners.py` (4), full pytest 210 passed, type-check and build. On the dev stack
+  with real Claude calls: a style read (8 s: Du, "Moin Herr Kaya,", five habits each with its passage, none
+  dropped), an inquiry of project D worded that way (6 s; items identical), a web search for
+  "Tragwerksplanung / Statik" in Hamburg (about 40 s, 0.22 USD, 2 queries, 8 firms each with its page).
+  Seen in headless Chrome at 1500 wide, no console error: all six tabs, a supplier and a subcontractor,
+  the way there from the projects page and back, Waiting → "Open the inquiry" → a firm's name → back to the LV.
+  **Not run**: the mailbox history over IMAP and the call record and recording from ElevenLabs (no
+  account in `.env`; the API shapes are from the docs, as for the rest of `voice.py`); Polier's own search
   on a timer (`keep_looking`: same code as the button, the loop itself was not waited for); `.eml` dropped
   on the page in a browser (the API path is tested); "Take into the directory" clicked in a browser.
   Nothing of the page is fetched while the app opens (2026-11-22): its code is its own piece of the build
@@ -339,8 +512,10 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   line with questions out, the settings dialog's stage select.
   In the intake nothing is checked, the rules neither (Atahan: half an analysis on the card confuses): the
   summary of an intake project has `checked: false`, zero counts and is not kept; the card says "268 items ·
-  not checked yet". Files added to an intake project start no run. Opening an intake project's LV still
-  shows the rule findings there (the LV page runs the rules when a file is opened).
+  not checked yet". Files added to an intake project start no run. The tender page of an intake project
+  (2026-11-22) opens only its Tender step (Map, Read, Items; no Pages, whose marks are findings): steps 2–6
+  are locked, an address like /check falls back to the Tender step, nothing is analysed, and the strip of
+  steps carries the card's "Take it on" / "Pass" (`intakeOpen` in `App.tsx`, `intake` prop of `TenderPage`).
   Known: a run recorded before this change shows no questions count until the project is run again.
 
 - Projects page, board over a docked schedule (2026-11-21, D-043): the board is on top; the schedule is one
@@ -512,7 +687,7 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 - Challenge analysis, check catalogue, pitch skeleton → `01-challenge-analysis.md`
 - Domain research (estimating, VOB, red flags, tooling, competitors) → `03-domain-primer.md`
 - Brother's field insights assessed → `04-field-insights.md`
-- Voice agent concept and ElevenLabs research → `05-voice-agent.md`
+- Voice agent concept and ElevenLabs research: dropped and deleted (D-059)
 - Architecture proposal and data model → `06-architecture.md`
 
 - GAEB XML + GAEB 90 parsers → `boq.model.BoQ` (all nine GAEB files; the three bid totals match to the cent;
@@ -830,7 +1005,10 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   auto-reload, Vite with hot reload; both reloads checked in the containers), `--profile prod` the production
   image on :8080 (password `demo`); an AI review on project D was cached in Postgres and answered from
   it after a restart in 0.03 s (the old disk-cache answers did not match the current prompts: 4 real requests). Not checked: the new Delete button clicked in a browser; a real
-  deploy (needs the team's accounts).
+  deploy. Started 2026-11-22: Neon project "polier" (Frankfurt, free) seeded with A–F and 12 cached LLM answers
+  (direct string, not `-pooler`). Render not set up yet: the team repo is private and Render's GitHub app is
+  not installed on `melikek0se`; a private copy `atahankilc/construction-hackathon` exists (git remote `deploy`,
+  `git push deploy origin/main:main`) but Render's GitHub app still needs access to it. Paused by choice.
 - Chat cost (D-027; `src/boq/retrieve.py`): the chat no longer sends the whole project with each question.
   A local search picks up to 60 passages and the model reads those plus an index of all LVs. Project F, live:
   five questions for 0.34 USD in total (0.06–0.08 USD and 5–13 s each, 12–16k input tokens), against about
@@ -1046,12 +1224,6 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## In progress
 
-- Polier's chat as a dark side panel (2026-11-22, D-060; `Agent.tsx`, `chat.css`, `styles.css`): a click on
-  Polier opens the conversation as a full-height panel on the right edge (420px), the page makes room for it
-  and Polier steps to its left; "night shift" look (dark, yellow, mono speaker labels). Mockups of the four
-  directions in `playground/chat-panel/`. Seen in Chrome on the projects page with an answer about all
-  projects; not checked inside a project (LV citations, "Read every document"), on the tender page, or under
-  900px wide.
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against
   the LV text, quantities and remarks by reading, not by an engineer:
   - 24 hold up on the facts they state (e.g. 3.2.540 lump sum "in Regie gemäß Pos. 6.1.10", which is the survey

@@ -1,0 +1,1323 @@
+/* The tender page (Tender.tsx, D-050). The language is DESIGN.md's: white, hairlines, square, small.
+   Marks here are ink only: what an item is and where the documents differ. Red, yellow and blue stay
+   with the checks, which stand on the same strips at the next step. */
+.tn {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  font-variant-numeric: tabular-nums;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+/* :where keeps these below every class rule: the findings list and the item sheet of the workspace of
+   before stand inside this page in the Check step and bring their own buttons */
+:where(.tn) button {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: inherit;
+}
+:where(.tn) :is(h2, h3, h4, p) {
+  margin: 0;
+}
+.tn-label {
+  font: 600 11px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.tn-tag {
+  display: inline-block;
+  border: 1px solid var(--line-2);
+  padding: 0 5px;
+  font: 600 10.5px/1.6 var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3f433d;
+  white-space: nowrap;
+}
+.tn-tag.ink {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.tn-btn {
+  height: 30px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 2px;
+  font: 700 12px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  transition: background 120ms var(--ease), color 120ms var(--ease);
+}
+.tn-btn.sm {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 10.5px;
+}
+.tn-btn.out {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.tn-btn.plain {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.tn-btn.out:hover,
+.tn-btn.plain:hover {
+  background: var(--ink);
+  color: #fff;
+}
+.tn-btn.ink {
+  background: var(--ink);
+  color: #fff;
+}
+.tn-btn.ink:hover {
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.tn-more {
+  margin-top: 14px;
+}
+
+/* ---- where the tender stands: this page is the first of six; the others are still the old workspace */
+.tn-stages {
+  flex: none;
+  display: flex;
+  border-bottom: 2px solid var(--ink);
+}
+.tn .tn-stage {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 16px 8px;
+  border-left: 1px solid var(--rule);
+  transition: background 120ms var(--ease);
+}
+.tn-stage:first-child {
+  border-left: 0;
+}
+.tn-stage b {
+  display: block;
+  font: 600 16px/1.1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tn-stage i {
+  font: 600 12px var(--display);
+  font-style: normal;
+  color: var(--dim);
+  margin-right: 6px;
+}
+.tn-stage span {
+  display: block;
+  font-size: 12px;
+  color: var(--mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tn-stage.on {
+  background: var(--ink);
+  color: #fff;
+}
+.tn-stage.on span {
+  color: #c9ccc3;
+}
+.tn-stage.on i {
+  color: var(--yellow);
+}
+button.tn-stage:not(.on):hover {
+  background: var(--hover);
+}
+.tn-stage.off b {
+  color: var(--dim);
+}
+.tn .tn-stage.locked {
+  cursor: not-allowed;
+}
+button.tn-stage.locked:hover {
+  background: none;
+}
+.tn-stage.locked span {
+  color: var(--dim);
+}
+/* an intake tender: the decision the card offers, at the end of the steps */
+.tn-decide {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-left: 1px solid var(--rule);
+}
+
+.tn-work {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.tn-work.open {
+  grid-template-columns: 330px minmax(0, 1fr) clamp(360px, 30vw, 470px);
+}
+
+/* ---- cover sheet */
+.tn-cover {
+  border-right: 1px solid var(--rule);
+  padding: 14px 20px 28px;
+  overflow: auto;
+}
+.tn-client {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+.tn-size {
+  color: var(--mute);
+  font-size: 13px;
+}
+.tn-cover section {
+  margin-top: 18px;
+  border-top: 2px solid var(--ink);
+  padding-top: 8px;
+}
+.tn-cover section .tn-btn {
+  margin-top: 10px;
+}
+.tn-dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.tn-dl small {
+  display: block;
+  color: var(--mute);
+  font-size: 12px;
+}
+.tn-dl b {
+  font: 600 17px/1.2 var(--display);
+  white-space: nowrap;
+}
+.tn-dl b.next {
+  background: var(--yellow);
+  padding: 1px 6px;
+}
+.tn-none,
+.tn-back,
+.tn-cmp {
+  font-size: 13px;
+  padding-top: 6px;
+}
+.tn-none {
+  color: var(--mute);
+}
+.tn-cmp b {
+  font: 600 17px/1 var(--display);
+}
+.tn-cfile {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.tn-cfile b {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.tn-cfile small {
+  display: block;
+  color: var(--mute);
+  font-size: 12px;
+}
+
+/* ---- main: head, then one of the three views */
+.tn-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+.tn-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.tn-head h2 {
+  font: 600 22px/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tn-crumbs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+  min-width: 0;
+}
+.tn-crumbs button {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  white-space: nowrap;
+}
+.tn-crumbs b {
+  font-weight: 600;
+}
+.tn-views {
+  margin-left: auto;
+  display: flex;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+}
+.tn .tn-views button {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.tn-views button + button {
+  border-left: 1px solid var(--line-2);
+}
+.tn-views button:hover:not([aria-selected="true"]) {
+  background: var(--hover);
+}
+.tn-views button[aria-selected="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+.tn-key {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.tn-key span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.tn-key i {
+  font-style: normal;
+}
+.tn-rows {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* marks */
+.tn-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  min-height: 22px;
+}
+.tn .tn-tick {
+  display: block;
+  width: 5px;
+  height: 22px;
+  background: var(--rule);
+}
+.tn .tn-tick:hover,
+.tn .tn-tick.tn-on {
+  background: var(--ink);
+}
+.tn .tn-blk {
+  display: block;
+  height: 22px;
+  min-width: 22px;
+  padding: 0 4px;
+  border: 1px solid var(--ink);
+  background: #fff;
+  font: 700 12px/20px var(--text);
+  font-style: normal;
+  text-align: center;
+}
+.tn .tn-blk.diff {
+  background: var(--ink);
+  color: #fff;
+}
+.tn button.tn-blk:hover {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.tn .tn-blk.tn-on {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.tn-strip.mini {
+  min-height: 0;
+}
+.tn .tn-strip.mini .tn-tick {
+  width: 3px;
+  height: 12px;
+}
+.tn .tn-strip.mini .tn-blk {
+  width: 6px;
+  min-width: 6px;
+  height: 12px;
+  padding: 0;
+}
+.tn .tn-key .tn-tick,
+.tn .tn-key .tn-blk {
+  height: 14px;
+  min-width: 14px;
+  font-size: 10px;
+  line-height: 12px;
+  color: var(--ink);
+}
+.tn .tn-key .tn-blk.diff {
+  color: #fff;
+}
+.tn .tn-key .tn-tick {
+  min-width: 5px;
+}
+
+/* map */
+.tn-row {
+  padding: 10px 20px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.tn-row-hd {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+.tn-ix {
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  background: var(--yellow);
+  font: 600 18px/30px var(--display);
+  text-align: center;
+}
+.tn .tn-row-t {
+  min-width: 0;
+  font: 600 14.5px/1.25 var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tn button.tn-row-t:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.tn-row-hd .tn-label {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.tn-row .tn-strip {
+  margin-left: 40px;
+}
+.tn-readout {
+  flex: none;
+  margin: 0 20px 12px;
+  height: 32px;
+  line-height: 30px;
+  padding: 0 10px;
+  background: var(--tint);
+  border: 1px solid var(--rule);
+  font-size: 13px;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* items */
+.tn-filter {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.tn-filter input {
+  width: 260px;
+}
+.tn .tn-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+.tn-toggle i {
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--line-2);
+}
+.tn-toggle[aria-pressed="true"] i {
+  background: var(--ink);
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.tn-filter .tn-label {
+  margin-left: auto;
+}
+.tn-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.tn-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  padding: 8px 10px;
+  text-align: left;
+  box-shadow: inset 0 -1px 0 var(--ink);
+  font: 600 11px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.tn-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: baseline;
+}
+.tn-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+.tn-table .first {
+  padding-left: 20px;
+}
+.tn-table th.wide {
+  width: 38%;
+}
+.tn-table td.ozc {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tn-table td.mks {
+  white-space: nowrap;
+}
+.tn-table td.src,
+.tn-table td.none {
+  color: var(--mute);
+  font-size: 12.5px;
+}
+.tn-table tr.it,
+.tn-table tr.lv {
+  cursor: pointer;
+}
+.tn-table tr.it:hover,
+.tn-table tr.it.tn-on,
+.tn-table tr.lv:hover {
+  background: var(--hover);
+}
+.tn-table tr.lv td {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.tn-table tr.sec td {
+  padding-top: 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-bottom-color: var(--line-2);
+}
+.tn .tn-lvname {
+  font-weight: 600;
+}
+.tn-mk {
+  display: inline-block;
+  min-width: 18px;
+  height: 18px;
+  margin-right: 3px;
+  border: 1px solid var(--ink);
+  font: 700 11px/16px var(--text);
+  text-align: center;
+}
+.tn-mk.diff {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* read */
+.tn-paper-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--tint);
+}
+.tn-paper {
+  display: grid;
+  grid-template-columns: minmax(0, 720px) 270px;
+  justify-content: center;
+  padding: 20px 20px 60px;
+}
+.tn-page {
+  grid-column: 1;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  padding: 30px 40px 40px;
+}
+.tn-page + .tn-page {
+  margin-top: 14px;
+}
+.tn-page h2 {
+  font: 700 20px/1.15 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tn-sub {
+  margin-top: 4px;
+  color: var(--mute);
+  max-width: 62ch;
+}
+.tn-rem {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13.5px;
+  max-width: 68ch;
+}
+.tn-rem .tn-tag {
+  display: table;
+  margin-bottom: 6px;
+}
+.tn-sech {
+  padding: 22px 0 6px;
+  border-bottom: 1px solid var(--ink);
+  font: 700 13px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tn-page > div:first-child > .tn-sech {
+  padding-top: 0;
+}
+.tn-pos {
+  position: relative;
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) 104px;
+  gap: 0 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  scroll-margin: 12px;
+}
+.tn-pos:hover {
+  background: linear-gradient(var(--hover), var(--hover)) -40px 0 / calc(100% + 80px) 100% no-repeat;
+}
+.tn-pos.tn-on::before {
+  content: "";
+  position: absolute;
+  left: -40px;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--ink);
+}
+.tn-pos .n {
+  font-weight: 700;
+}
+.tn-pos .s {
+  font-weight: 600;
+}
+.tn-pos .l {
+  margin-top: 4px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.tn-pos .qu {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tn-pos .qu small {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--mute);
+}
+.tn-notes {
+  position: absolute;
+  left: calc(100% + 56px);
+  top: 10px;
+  width: 252px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: default;
+}
+.tn-note {
+  border: 1px solid var(--line-2);
+  background: #fff;
+  padding: 8px 10px;
+  font-size: 12.5px;
+}
+.tn-note.diff {
+  border-color: var(--ink);
+}
+.tn-note b {
+  display: block;
+  margin-bottom: 2px;
+  font: 700 10.5px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tn-note p b {
+  display: inline;
+  font: 700 12.5px var(--text);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.tn-note.src {
+  border: 0;
+  background: none;
+  padding: 0 0 0 2px;
+  color: var(--mute);
+}
+.tn-quote {
+  display: block;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: var(--tint);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* ---- item sheet */
+.tn-side {
+  border-left: 1px solid var(--rule);
+  overflow: auto;
+}
+.tn-sheet {
+  padding: 14px 16px 28px;
+}
+.tn-sheet-top {
+  display: flex;
+  gap: 10px;
+}
+.tn-crumb {
+  font-size: 12px;
+  color: var(--mute);
+}
+.tn .tn-close {
+  margin-left: auto;
+  align-self: flex-start;
+  padding: 4px 6px;
+  font: 700 12px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tn-close:hover {
+  background: var(--hover);
+}
+.tn-oz {
+  margin: 8px 0 6px;
+  font: 600 30px/1 var(--display);
+  letter-spacing: 0.02em;
+}
+.tn-sheet h2 {
+  font: 600 16px/1.3 var(--text);
+}
+.tn-q {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0 4px;
+}
+.tn-q b {
+  font: 600 24px/1 var(--display);
+}
+.tn-sheet h3 {
+  margin: 18px 0 6px;
+}
+.tn-long {
+  padding: 10px 12px;
+  background: var(--tint);
+  font-size: 13.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tn-differ {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--ink);
+  font-size: 13px;
+}
+.tn-differ h4 {
+  margin-bottom: 6px;
+  font: 700 12px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tn-quiet {
+  margin-top: 8px;
+  color: var(--mute);
+  font-size: 12.5px;
+}
+.tn-where {
+  border-top: 1px solid var(--rule);
+}
+.tn-where > div,
+.tn-later {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.tn-file {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tn-where > div > :last-child,
+.tn-later > :last-child {
+  margin-left: auto;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+/* ---- documents drawer */
+.tn-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(255, 255, 255, 0.78);
+}
+.tn-drawer {
+  width: min(640px, 100%);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-left: 2px solid var(--ink);
+  animation: tn-in 320ms var(--ease);
+}
+@keyframes tn-in {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+.tn-drawer header {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--ink);
+}
+.tn-drawer header h2 {
+  font: 700 20px/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tn-drawer header .tn-btn {
+  margin-left: auto;
+}
+.tn-drawer-body {
+  padding: 14px 16px 28px;
+  overflow: auto;
+}
+.tn-drawer-body > p {
+  max-width: 62ch;
+}
+.tn-drawer-body h3 {
+  margin: 20px 0 6px;
+}
+.tn-doc {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--line-2);
+}
+.tn-doc-top {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.tn-doc-name {
+  font-weight: 600;
+  font-size: 14.5px;
+  overflow-wrap: anywhere;
+}
+.tn-doc dl {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 4px 12px;
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+.tn-doc dt {
+  font: 600 11px/1.7 var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.tn-doc dd {
+  margin: 0;
+}
+.tn-diffrow {
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.tn-diffrow:hover {
+  background: var(--hover);
+}
+.tn-diffrow small {
+  display: block;
+  color: var(--mute);
+}
+
+@media (max-width: 1180px) {
+  .tn-work,
+  .tn-work.open {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+  .tn-side {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 25;
+    width: min(440px, 100%);
+    background: #fff;
+    border-left: 2px solid var(--ink);
+  }
+  .tn-paper {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tn-notes {
+    position: static;
+    width: auto;
+    grid-column: 2 / 4;
+    margin-top: 8px;
+  }
+}
+@media (max-width: 900px) {
+  .tn-work,
+  .tn-work.open {
+    display: block;
+    overflow: auto;
+  }
+  .tn-cover {
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .tn-main {
+    min-height: 70vh;
+  }
+  .tn-stages {
+    overflow-x: auto;
+  }
+  .tn .tn-stage {
+    flex: none;
+    min-width: 130px;
+  }
+  .tn-page {
+    padding: 18px 14px;
+  }
+}
+
+/* ---- the Check step: the same LVs with what the checks found. Severity is sign plus colour, as everywhere. */
+.tn-check .tn-work {
+  grid-template-columns: clamp(340px, 27vw, 420px) minmax(0, 1fr);
+}
+.tn-check .tn-work.open {
+  grid-template-columns: clamp(340px, 27vw, 420px) minmax(0, 1fr) clamp(360px, 30vw, 470px);
+}
+.tn-found {
+  min-height: 0;
+  border-right: 1px solid var(--rule);
+  overflow: hidden;
+}
+.tn-found.tn-lvs {
+  overflow: auto;
+}
+.tn-wait {
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--mute);
+}
+.tn-found-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.tn-found-head .tn-counts {
+  margin-left: auto;
+}
+.tn .tn-lvs > button {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+.tn-lvs > button:hover {
+  background: var(--hover);
+}
+.tn-lvs > button b {
+  font-weight: 700;
+}
+.tn-lvs > button > span:nth-child(2) {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tn-lvs small {
+  color: var(--dim);
+  font-size: 12px;
+}
+.tn-counts {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tn-counts > span {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.tn-row-hd .tn-counts {
+  margin-left: auto;
+}
+.tn-row-hd .tn-counts + .tn-label {
+  margin-left: 0;
+}
+.tn .tn-flag {
+  display: block;
+  height: 22px;
+  min-width: 22px;
+  padding: 0 5px;
+  font: 700 12px/22px var(--text);
+  font-style: normal;
+  text-align: center;
+}
+.tn .tn-flag.high {
+  background: var(--red);
+  color: #fff;
+}
+.tn .tn-flag.warn {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.tn .tn-flag.info {
+  background: var(--blue);
+  color: #fff;
+}
+.tn button.tn-flag:hover {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.tn .tn-flag.tn-on {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.tn .tn-strip.mini .tn-flag {
+  width: 6px;
+  min-width: 6px;
+  height: 12px;
+  padding: 0;
+}
+.tn-note.found {
+  display: grid;
+  grid-template-columns: 15px 1fr;
+  gap: 7px;
+  align-items: start;
+}
+.tn-note.found svg {
+  margin-top: 1px;
+}
+.tn-pos mark {
+  background: var(--yellow);
+  color: var(--ink);
+}
+/* with the item sheet open there is no room for the margin: the sheet says it all */
+.tn-check .tn-work.open .tn-paper {
+  grid-template-columns: minmax(0, 720px);
+}
+.tn-check .tn-work.open .tn-notes {
+  display: none;
+}
+
+/* ---- the Questions step: at the left what the documents say differently, to be put among the questions
+   or not; beside it the questions, the message and the client's answers (Questions.tsx, as before) */
+.tn-ask .tn-work {
+  grid-template-columns: minmax(0, 1fr);
+}
+.tn-ask .tn-work:has(> .tn-found) {
+  grid-template-columns: clamp(320px, 25vw, 400px) minmax(0, 1fr);
+}
+.tn-found.tn-diffs {
+  overflow: auto;
+}
+.tn-diffs .tn-wait {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.tn-diffitem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.tn-diffitem:hover {
+  background: var(--hover);
+}
+.tn-diffitem small {
+  display: block;
+  margin-top: 2px;
+  color: var(--mute);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.tn .tn-ozlink {
+  padding: 1px 5px;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.tn .tn-ozlink:hover {
+  background: #fff;
+  border-color: var(--ink);
+}
+.tn-askrow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.tn-askrow .tn-quiet {
+  margin-top: 0;
+}
+.tn a.text-link {
+  color: var(--ink);
+  text-underline-offset: 3px;
+}
+
+/* ---- the Prices step: how firm an item's price is, from a quote for this tender down to nothing.
+   Ink only, darker is firmer: the colours of the checks mean something else. */
+.tn .tn-src {
+  display: block;
+  width: 12px;
+  min-width: 12px;
+  height: 22px;
+  border: 1px solid var(--ink);
+  background: #fff;
+}
+.tn .tn-src.is-quote {
+  background: var(--ink);
+}
+.tn .tn-src.is-book {
+  background: linear-gradient(var(--ink), var(--ink)) bottom / 100% 50% no-repeat #fff;
+}
+.tn .tn-src.is-past {
+  border-color: var(--line-2);
+  background: var(--line-2);
+}
+.tn .tn-src.is-asked {
+  border-style: dashed;
+}
+.tn .tn-src.is-held {
+  border-color: var(--line-2);
+  border-style: dashed;
+}
+.tn button.tn-src:hover {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.tn .tn-src.tn-on {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.tn .tn-key .tn-src,
+.tn .tn-srcrow .tn-src,
+.tn .tn-table .tn-src,
+.tn .tn-note .tn-src {
+  height: 14px;
+  display: inline-block;
+}
+.tn-prices {
+  overflow: auto;
+}
+.tn-srcrow {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.tn-srcrow > i {
+  margin-top: 2px;
+}
+.tn-srcrow b {
+  font-weight: 600;
+}
+.tn-srcrow small {
+  display: block;
+  color: var(--mute);
+  font-size: 12px;
+}
+.tn-srcrow.zero {
+  color: var(--dim);
+}
+.tn-srcrow.zero small {
+  color: var(--dim);
+}
+.tn-bar {
+  display: block;
+  height: 5px;
+  margin-top: 5px;
+  background: var(--rule);
+}
+.tn-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+.tn-srcrow .tn-n {
+  font: 600 20px/1 var(--display);
+}
+.tn-srcacts {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 20px;
+}
+.tn-note.price {
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  gap: 8px;
+}
+.tn-note.price b {
+  font: 600 15px/1.2 var(--display);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---- the Bid step: what is still open stands up; a priced item lies down as a thin ink line */
+.tn .tn-bidmark {
+  display: block;
+  height: 22px;
+}
+.tn .tn-bidmark.is-own {
+  width: 5px;
+  min-width: 5px;
+  background: var(--ink);
+}
+.tn .tn-bidmark.is-taken {
+  width: 12px;
+  min-width: 12px;
+  border: 1px solid var(--ink);
+  background: linear-gradient(var(--ink), var(--ink)) bottom / 100% 50% no-repeat #fff;
+}
+.tn .tn-bidmark.is-open {
+  width: 12px;
+  min-width: 12px;
+  border: 1px dashed var(--ink);
+  background: #fff;
+}
+.tn button.tn-bidmark:hover {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.tn .tn-bidmark.tn-on {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.tn .tn-key .tn-bidmark,
+.tn .tn-srcrow .tn-bidmark {
+  display: inline-block;
+  height: 14px;
+}
+.tn-net {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.tn-net b {
+  display: block;
+  margin: 4px 0;
+  font: 600 24px/1 var(--display);
+}
+.tn-net small {
+  display: block;
+  color: var(--mute);
+  font-size: 12px;
+}
+.tn a.tn-btn {
+  text-decoration: none;
+}
+
+/* ---- the Award step: what the award changed against the tender stands up, in ink */
+.tn .tn-blk.is-dropped {
+  border-style: dashed;
+}
+.tn-srcrow .tn-mk {
+  margin: 0;
+  font-style: normal;
+}
+.tn-noaward {
+  max-width: 62ch;
+  padding: 28px 28px 40px;
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+.tn-noaward h2 {
+  font: 600 22px/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tn-noaward .tn-srcacts {
+  padding: 0;
+}
+.tn-noaward .tn-label {
+  margin-top: 12px;
+}
+.tn-noaward .tn-views {
+  margin-left: 0;
+}
+
+/* ---- a new issue of the LV (D-058): what it changed stands up like a difference; what went is struck */
+.tn-cover section.tn-issue {
+  border-top-width: 4px;
+}
+.tn-quote.was {
+  text-decoration: line-through;
+  color: var(--mute);
+}
+.tn-pos.tn-on .tn-notes {
+  z-index: 2;
+}
