@@ -24,12 +24,12 @@ import time
 import uuid
 from datetime import datetime, timedelta
 from email.message import EmailMessage
-from email.utils import formatdate, make_msgid, parseaddr, parsedate_to_datetime
+from email.utils import formatdate, getaddresses, make_msgid, parseaddr, parsedate_to_datetime
 
 import anthropic
 from sqlalchemy import delete, insert, select, update
 
-from boq import db, spend
+from boq import db, demomail, spend
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable, _squash
 from boq.report import _positions
 
@@ -79,7 +79,7 @@ def account() -> dict | None:
     if not host:
         return None
     user = os.environ.get("SMTP_USER", "").strip()
-    return {"host": host, "port": int(os.environ.get("SMTP_PORT", "587")), "user": user,
+    return {"host": host, "port": int(os.environ.get("SMTP_PORT", "").strip() or "587"), "user": user,
             "password": os.environ.get("SMTP_PASSWORD", ""),
             "from": os.environ.get("SMTP_FROM", "").strip() or user}
 
@@ -103,6 +103,7 @@ def send(to: str, subject: str, body: str, attachments: list[tuple[str, bytes]] 
     message.set_content(body)
     for name, data in attachments or []:
         message.add_attachment(data, maintype="application", subtype="octet-stream", filename=name)
+    demomail.ensure_quietly(acc["from"], *(address for _, address in getaddresses([to])))  # demo server only
     try:
         if acc["port"] == 465:  # TLS from the first byte; every other port starts plain and upgrades
             server = smtplib.SMTP_SSL(acc["host"], acc["port"], timeout=30, context=ssl.create_default_context())
@@ -118,7 +119,25 @@ def send(to: str, subject: str, body: str, attachments: list[tuple[str, bytes]] 
             server.send_message(message)
     except (smtplib.SMTPException, OSError) as exc:
         raise MailUnavailable(f"The mail server did not take the message: {exc}") from exc
+    _keep_sent(message)
     return message["Message-ID"]
+
+
+def _keep_sent(message: EmailMessage) -> None:
+    """On the demo server, put what was sent into the folder of sent mail, as a mail program would and as
+    the big providers do by themselves: the history with a partner is read from there. Never fails."""
+    box = inbox()
+    if demomail.url() is None or box is None:
+        return
+    try:
+        server = open_inbox(box)
+        try:
+            server.login(box["user"], box["password"])
+            server.append('"Sent Items"', "(\\Seen)", imaplib.Time2Internaldate(time.time()), message.as_bytes(policy=email.policy.SMTP))
+        finally:
+            server.logout()
+    except (imaplib.IMAP4.error, OSError):
+        pass
 
 
 def as_file(to: str, subject: str, body: str) -> bytes:
@@ -235,10 +254,19 @@ def inbox() -> dict | None:
     host = os.environ.get("IMAP_HOST", "").strip()
     if not host:
         return None
-    return {"host": host, "port": int(os.environ.get("IMAP_PORT", "993")),
+    return {"host": host, "port": int(os.environ.get("IMAP_PORT", "").strip() or "993"),
             "user": os.environ.get("IMAP_USER", "").strip() or os.environ.get("SMTP_USER", "").strip(),
             "password": os.environ.get("IMAP_PASSWORD", "") or os.environ.get("SMTP_PASSWORD", ""),
-            "folder": os.environ.get("IMAP_FOLDER", "").strip() or "INBOX"}
+            "folder": os.environ.get("IMAP_FOLDER", "").strip() or "INBOX",
+            "tls": os.environ.get("IMAP_TLS", "1").strip().lower() not in ("0", "no", "false", "off")}
+
+
+def open_inbox(box: dict):
+    """A connection to the mailbox, not yet logged in. Over TLS, as every real provider wants it; plain only
+    where .env says IMAP_TLS=0, which is for the mail server of the demo (GreenMail in docker-compose.yml)."""
+    if box.get("tls", True):
+        return imaplib.IMAP4_SSL(box["host"], box["port"], ssl_context=ssl.create_default_context(), timeout=30)
+    return imaplib.IMAP4(box["host"], box["port"], timeout=30)
 
 
 _REPLY_PREFIX = re.compile(r"^\s*((re|aw|antwort|wg|fwd?)\s*(\[\d+\])?\s*:\s*)+", re.I)
@@ -320,7 +348,7 @@ def find_replies(mails: list[dict]) -> list[tuple[dict, str]]:
     since = min(datetime.fromisoformat(m["created"]) for m in waiting) - timedelta(days=1)
     found: dict[str, str] = {}
     try:
-        server = imaplib.IMAP4_SSL(box["host"], box["port"], ssl_context=ssl.create_default_context(), timeout=30)
+        server = open_inbox(box)
         try:
             server.login(box["user"], box["password"])
             server.select(box["folder"], readonly=True)

@@ -1,6 +1,7 @@
 # Dev environment in one command:
 #   docker compose up --watch    → UI http://localhost:5173 (hot reload), API :8000 (auto-reload), Postgres :5432,
-#                                  mail caught at http://localhost:8025 (Mailpit: nothing leaves the laptop)
+#                                  webmail http://localhost:8025/webmail/ on the demo mail server (a mailbox
+#                                  per party, password "demo"; kept in Postgres; nothing leaves the laptop)
 #                                  (--watch adds: new Python or npm packages are picked up without a restart)
 # The production image on this laptop (what Render runs, Postgres in place of Neon):
 #   docker compose --profile prod up --build   → http://localhost:8080, password "demo"
@@ -19,29 +20,47 @@ services:
       interval: 2s
       retries: 20
 
-  # Every mail the app sends in development lands here and goes no further: read it at http://localhost:8025.
+  # The mail server of the demo (Stalwart) with its webmail (Roundcube); nothing leaves the laptop. Our firm
+  # (kalkulation@polier.test), the client who sends the tender, each supplier and subcontractor have a mailbox
+  # here; every password is "demo". The app makes the mailbox of whoever it writes to; others by hand:
+  #   docker compose exec mail boq-mail bauherr@client.test
+  # Webmail, to be any of them: http://localhost:8025/webmail/ (also under /webmail/ of the app).
+  # Mail is kept in Postgres (database boq_mail, volume pgdata) and so outlives restarts.
   mail:
-    image: axllent/mailpit:latest
-    ports: ["8025:8025", "1025:1025"]  # web page, SMTP
+    build: {context: ., target: mail}
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
+      DEMO_MAIL_URL: http://127.0.0.1:8090  # for `docker compose exec mail boq-mail …`
+    ports: ["8025:8081", "3025:3025", "3143:3143"]  # webmail; SMTP and IMAP for a mail program or a script
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -o /dev/null http://127.0.0.1:8090/healthz/live"]
+      interval: 2s
+      retries: 60
 
   api:
     build: {context: ., target: dev}
     depends_on:
       db: {condition: service_healthy}
+      mail: {condition: service_healthy}
     env_file: [.env]  # ANTHROPIC_API_KEY, ELEVENLABS_*; the lines below win over it
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
-      # "Send from …" (bidder questions): Mailpit above, unless .env names a real account (SMTP_HOST=…).
+      # The app's own mailbox: the firm's account on the mail server above, unless .env names a real one
+      # (SMTP_HOST=…, IMAP_HOST=… with their users and passwords, IMAP_TLS=1 and DEMO_MAIL_URL=off).
       SMTP_HOST: ${SMTP_HOST:-mail}
-      SMTP_PORT: ${SMTP_PORT:-1025}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_PORT: ${SMTP_PORT:-3025}
+      SMTP_USER: ${SMTP_USER:-kalkulation@polier.test}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-demo}
       SMTP_FROM: ${SMTP_FROM:-kalkulation@polier.test}
-      # "Check the inbox for replies": only with a real mailbox in .env (Mailpit has none to read).
-      IMAP_HOST: ${IMAP_HOST:-}
-      IMAP_PORT: ${IMAP_PORT:-993}
-      IMAP_USER: ${IMAP_USER:-}
-      IMAP_PASSWORD: ${IMAP_PASSWORD:-}
+      IMAP_HOST: ${IMAP_HOST:-mail}
+      IMAP_PORT: ${IMAP_PORT:-3143}
+      IMAP_USER: ${IMAP_USER:-kalkulation@polier.test}
+      IMAP_PASSWORD: ${IMAP_PASSWORD:-demo}
+      IMAP_TLS: ${IMAP_TLS:-0}
+      DEMO_MAIL_URL: ${DEMO_MAIL_URL:-http://mail:8090}  # where the app makes mailboxes for those it writes to
+      WEBMAIL_URL: http://mail:8081                       # served by the app under /webmail/
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -77,6 +96,9 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
       BOQ_PASSWORD: ${BOQ_PASSWORD:-demo}
+      DEMO_MAIL: "1"  # mail server and webmail inside this container, as on Render (docker/start.sh)
+      DEMO_MAIL_DATABASE: boq_mail_prod  # its own mailboxes: two mail servers must not share one database
+    mem_limit: 512m  # what Render's free instance has
     ports: ["8080:8000"]
 
 volumes:

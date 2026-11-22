@@ -17,7 +17,6 @@ import email.policy
 import imaplib
 import json
 import re
-import ssl
 import time
 from datetime import datetime, timedelta
 from email.utils import parseaddr, parsedate_to_datetime
@@ -84,7 +83,7 @@ def recent(known: set[str]) -> list[dict]:
                                    "the sending account) into .env and restart the server, or hand the message over as a file.")
     since, out = datetime.now() - timedelta(days=LOOK_BACK_DAYS), []
     try:
-        server = imaplib.IMAP4_SSL(box["host"], box["port"], ssl_context=ssl.create_default_context(), timeout=30)
+        server = mail.open_inbox(box)
         try:
             server.login(box["user"], box["password"])
             server.select(box["folder"], readonly=True)

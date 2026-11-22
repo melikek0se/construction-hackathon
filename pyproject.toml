@@ -19,6 +19,7 @@ dependencies = [
 [project.scripts]
 boq = "boq.cli:main"
 boq-seed = "boq.seed:main"
+boq-mail = "boq.demomail:main"
 
 [dependency-groups]
 dev = [

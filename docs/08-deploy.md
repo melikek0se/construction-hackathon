@@ -44,6 +44,10 @@ file bytes to Cloudflare R2 (10 GB free) and keep only keys in `documents`.
 - `docker compose --profile prod up --build`: the `prod` image, the one Render builds, on http://localhost:8080
   with password `demo`.
 
+- Mail in both: the demo mail server with webmail (D-052), kept in Postgres. In dev it is the `mail` service,
+  webmail at http://localhost:8025/webmail/ (any account, password `demo`); the prod image runs it inside
+  itself when `DEMO_MAIL=1`, which the `app` service sets, and shows the webmail under `/webmail/`.
+
 Both use the same database (volume `pgdata`; `docker compose down -v` wipes it). It starts empty: nothing is
 put in automatically. The six dataset projects go in only on request: `docker compose exec api boq-seed`. Production differs only in its environment variables:
 `DATABASE_URL` points to Neon, and `BOQ_PASSWORD` is a real password.
@@ -58,6 +62,10 @@ put in automatically. The six dataset projects go in only on request: `docker co
    → runtime *Docker*, instance *Free*, region *Frankfurt*, health check path `/api/health`.
    Environment: `DATABASE_URL`, `ANTHROPIC_API_KEY`, `BOQ_PASSWORD` (anyone with the link could otherwise
    spend API credit on the AI review), later `ELEVENLABS_API_KEY` / `ELEVENLABS_AGENT_ID`.
+   For the mail features add `DEMO_MAIL=1`: the container then runs its own mail server and webmail
+   (`/webmail/`, behind the same password). Its mail is kept in Neon, in a database `<name>_mail` it makes
+   itself with the role of `DATABASE_URL`; sleeping and redeploying lose nothing. About 135 MB more memory
+   (206 MB in all, measured locally under a 512 MB limit).
 4. Every push to `main` deploys again. The first build takes a few minutes (Node build + Python install).
 
 ## Open

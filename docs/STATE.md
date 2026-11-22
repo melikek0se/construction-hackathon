@@ -14,6 +14,21 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Done
 
+- **Demo mail server** (2026-11-22, D-052; `src/boq/demomail.py`, `docker/mail.sh`, `docker/start.sh`,
+  Dockerfile stage `mail`): Stalwart with Roundcube in place of Mailpit. Mail, accounts and settings are kept
+  in Postgres (`boq_mail`), every party has a mailbox with password `demo`, the app is
+  `kalkulation@polier.test`. Dev: service `mail`, webmail http://localhost:8025/webmail/ (also `/webmail/` of
+  the app and of Vite). Deployed: `DEMO_MAIL=1` runs the same inside the app's container.
+  **Mailboxes are empty but for the firm's: filling them with accounts and mail is next**
+  (`docker compose exec mail boq-mail ADDRESS…` makes an account; mail goes in over SMTP or IMAP APPEND).
+  Checked in dev: `mail.send` with a file makes the supplier's mailbox, the copy lands in "Sent Items"; the
+  supplier logs into the webmail through the app, sees the inquiry, answers; after a restart of the mail
+  server `mail.find_replies` finds that answer. Checked in the prod image with a 512 MB limit:
+  `/api/inbox`, `/api/inbox/scan`, webmail login behind the password; 206 MB used. 216 tests pass.
+  **Not checked: on Render and Neon themselves** (Stalwart's TLS connection to Neon, `CREATE DATABASE` there,
+  Roundcube's redirects behind Render's HTTPS), the app's pages against filled mailboxes.
+
+
 - Price order: quote, then price book, then past bids (2026-11-22, D-049; `supply.book`, `api._prices`,
   `supply.item_prices`, `risk.BANDS`): an item is asked for in its tender even where an earlier price
   exists; until the quote is in, a partner's price for the same thing from another tender stands in
@@ -462,9 +477,8 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   messages too long for a link; whether Outlook opens it as a draft ready to send has not been seen on a
   real Outlook (none is set up on the development Mac).
   The file is named after the subject and the day (`Bieterfragen_Bachdurchlass_152516_2026-11-21.eml`).
-  In the Docker dev environment the app sends to Mailpit (`mail` in `docker-compose.yml`, read at
-  http://localhost:8025; an `SMTP_HOST` in `.env` takes its place): "Send from kalkulation@polier.test" from
-  the page arrived there whole (2026-11-21). Mailpit delivers nothing; a real provider is still untried.
+  In the Docker dev environment the app sent to Mailpit until 2026-11-22; now to the demo mail server
+  (D-052, see "Demo mail server" at the top of Done). A real provider is still untried.
   "To" is filled from the file where it names the client's address (`BoQ.client_email`): GAEB XML
   `OWN/Address/Email`; PDF the address in the letterhead of most pages, else the first on a page that is
   not LV (cover, VHB form), not for a bid (the contractor's own paper); GAEB 90 and Excel not read. In the

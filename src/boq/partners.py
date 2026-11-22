@@ -22,7 +22,6 @@ import email.policy
 import imaplib
 import json
 import re
-import ssl
 import statistics
 import time
 import uuid
@@ -718,7 +717,7 @@ def mailbox_history(years: int = 2, per_partner: int = 60) -> dict:
     partners = [s for s in supply.suppliers() if "@" in s["email"]]
     since, raws = (date.today() - timedelta(days=365 * years)).strftime("%d-%b-%Y"), []
     try:
-        server = imaplib.IMAP4_SSL(box["host"], box["port"], ssl_context=ssl.create_default_context(), timeout=30)
+        server = mail.open_inbox(box)
         try:
             server.login(box["user"], box["password"])
             folders = [(box["folder"], "FROM")]

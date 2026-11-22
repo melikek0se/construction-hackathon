@@ -863,3 +863,29 @@ counters, every section of the same weight, the open work on the third tab.
 
 Revisit if: the directory grows past what one table holds on a screen (then search and paging), or freight
 is known per quote (then the comparison can be free to site).
+
+## D-052 — The demo has its own mail server: Stalwart, kept in Postgres, with webmail, also when deployed
+
+Decided 2026-11-22, on the user's word (asked for Mailpit for our firm, the client and the partners; then:
+mail must outlive restarts and the whole thing must run in the deployed demo, no real mailboxes there).
+- Mailpit is gone. It only catches what is sent: one heap, no accounts, no IMAP, and everything the app reads
+  (replies, tenders in the inbox, the history with a partner) is read over IMAP. GreenMail, tried first, has
+  accounts and IMAP but keeps mail in memory only.
+- **Stalwart** is the server (SMTP :3025, IMAP :3143, plain; management API :8090). It keeps mail, accounts and
+  settings in **Postgres**: a database `<name>_mail` next to the app's, made at start (`boq-mail --database`).
+  So nothing is lost on a restart, and on Render (no disk) the mail lives in Neon.
+- **Accounts**: every party has a mailbox, every password is `demo`. The app is `kalkulation@polier.test`
+  (sends and reads). Stalwart takes mail only for accounts and domains it knows, so `mail.send` makes the
+  recipient's mailbox first (`demomail.ensure_quietly`) and `boq-mail ADDRESS…` makes one by hand. What the app
+  sends is also put into "Sent Items" (`mail._keep_sent`), since no provider does that for it here.
+- **Webmail** (Roundcube on PHP's own web server) is how a person is one of the other parties: log in with the
+  client's or a supplier's address, read what Polier sent, answer.
+- **One image stage** `mail` (Dockerfile; `docker/mail.sh`): the `mail` service of docker-compose.yml, webmail
+  at http://localhost:8025/webmail/. The **prod image builds on it**: with `DEMO_MAIL=1` `docker/start.sh` runs
+  the same script inside the app's container, because Render free gives one container and one HTTP port. The
+  app passes the webmail through under `/webmail/` (`api.webmail`), behind `BOQ_PASSWORD` like the rest.
+  Measured with a 512 MB limit: 206 MB (app 160, Stalwart 98, PHP 35).
+- All of this is on only where `DEMO_MAIL_URL` is set (compose sets it; `DEMO_MAIL=1` sets it). A real account
+  in `.env` works as before; `IMAP_TLS=0` (plain IMAP, `mail.open_inbox`) is for the demo server only.
+- Two mail servers must not share one database: the `app` service of compose uses `boq_mail_prod`.
+- Not done: accounts and mail for the demo (the mailboxes are empty but for the firm's).

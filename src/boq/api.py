@@ -4,6 +4,7 @@
 """
 import asyncio
 import base64
+import http.client
 import json
 import os
 import secrets
@@ -14,10 +15,12 @@ from contextlib import asynccontextmanager
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from pydantic import BaseModel
@@ -2373,6 +2376,39 @@ def list_events(project: str | None = None, after: int = 0, limit: int = 40):
     names = {p["id"]: p["name"] for p in catalog.all_projects()}
     return [{**e, "project": names.get(e["project_id"] or "", "")} for e in events.latest(project, min(limit, 200), after)]
 
+
+
+# The webmail of the demo mail server (docker/mail.sh), passed through under the app's own address: a host
+# with one HTTP port (Render free) has no other way to show it. Unset: no such page.
+WEBMAIL = urlsplit(os.environ.get("WEBMAIL_URL", "").strip())
+_HOP = {"connection", "keep-alive", "transfer-encoding", "content-length", "host", "authorization", "upgrade", "te"}
+
+
+def _webmail(method: str, target: str, headers: list[tuple[str, str]], body: bytes) -> Response:
+    link = http.client.HTTPConnection(WEBMAIL.hostname, WEBMAIL.port or 80, timeout=60)
+    try:
+        link.request(method, target, body or None, dict(headers))
+        answer = link.getresponse()
+        out = Response(answer.read(), answer.status)
+        out.raw_headers = [(k.lower().encode("latin-1"), v.encode("latin-1")) for k, v in answer.getheaders()
+                           if k.lower() not in _HOP] + [(b"content-length", str(len(out.body)).encode())]
+        return out
+    except OSError as exc:
+        raise HTTPException(502, f"The webmail did not answer: {exc}") from exc
+    finally:
+        link.close()
+
+
+@app.api_route("/webmail{rest:path}", methods=["GET", "POST", "HEAD"], include_in_schema=False)
+async def webmail(rest: str, request: Request):
+    if not WEBMAIL.hostname:
+        raise HTTPException(404, "No demo mail server here.")
+    if rest == "":
+        return Response(status_code=307, headers={"Location": "/webmail/"})
+    headers = [(k, v) for k, v in request.headers.items() if k.lower() not in _HOP]
+    headers.append(("Host", request.headers.get("host", "localhost")))
+    target = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+    return await run_in_threadpool(_webmail, request.method, target, headers, await request.body())
 
 
 class _WebApp(StaticFiles):
