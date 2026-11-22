@@ -834,7 +834,7 @@
 
 .board {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   min-height: 220px;
   border-bottom: 1px solid var(--rule);
 }
@@ -1786,7 +1786,7 @@
   }
 
   .board {
-    grid-template-columns: repeat(5, 236px);
+    grid-template-columns: repeat(4, 236px);
     overflow-x: auto;
   }
 

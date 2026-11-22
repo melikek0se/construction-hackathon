@@ -3,7 +3,7 @@ import { flushSync } from "react-dom";
 import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, changeRun, startRun, listCatalog, loadPrices, openCatalogFile, openTender, askDifference, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
 import { HardHatIcon, Opening, ProjectsPage, datesOf, outcomeOf, stageOf } from "./Projects";
 import { ProjectSettings } from "./Settings";
-import { PipelinePage, PipelineStrip, RunsSwitch } from "./Runs";
+import { PipelinePage, RunsSwitch } from "./Runs";
 import { Agent } from "./Agent";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { TenderPage } from "./Tender";
@@ -18,7 +18,7 @@ import { BidView } from "./Bid";
 import { InquiriesView } from "./Inquiries";
 import { QuestionsView } from "./Questions";
 
-import { HOME, docKey, formatRoute, parseRoute, viewsOf, writeRoute, type PartnersPlace, type PipelinePlace, type Route, type TenderPlace } from "./router";
+import { HOME, docKey, formatRoute, parseRoute, writeRoute, type PartnersPlace, type PipelinePlace, type Route, type TenderPlace } from "./router";
 import { SEVERITIES, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type Tender, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
@@ -224,7 +224,7 @@ export default function App() {
   // `runs` holds the latest run of every project: where each one stands
   const runHere = useMemo(() => runs.find((r) => r.project_id === current?.project.id), [runs, current]);
   // a step of the pipeline picked on the strip: its findings are the ones the list shows
-  const [find, setFind] = useState<{ text: string; n: number } | null>(null);
+  const [find] = useState<{ text: string; n: number } | null>(null);
 
   const reviewingHere =
     !!runHere?.active && runHere.steps.some((s) => s.kind === "agentic" && s.doc === current?.file && (s.status === "queued" || s.status === "running"));
@@ -363,7 +363,7 @@ export default function App() {
         setCurrent({ project: p, file: 0 });
         setTenderData({ key: filesKey(p), data });
         setSelection(place.item ? { oz: place.item, finding: null } : NONE);
-        const at = { step: "tender" as const, view: "map" as const, lv: null, item: null, ...place };
+        const at = { step: "check" as const, view: "map" as const, lv: null, item: null, ...place };
         setTender({ id: p.id, ...at, lv: data.lvs.length > 1 ? lv ?? at.lv : null });
       } catch (e) {
         await covered;
@@ -383,12 +383,12 @@ export default function App() {
   // A tender in the intake is not taken on yet (D-042): only its Tender step opens, without the pages (their
   // marks are findings), and nothing is checked until "Take it on".
   const intakeOpen = !!(tender && current && current.project.id === tender.id && stageOf(current.project) === "intake");
+  // an intake tender is checked as it arrives (D-065): its first step opens like any other's; the steps
+  // after it wait for "Take it on"
   useEffect(() => {
-    if (!intakeOpen || !tender || (tender.step === "tender" && tender.view !== "pages")) return;
-    const view = tender.view !== "pages" && viewsOf("tender").includes(tender.view) ? tender.view : "map";
-    setTender({ ...tender, step: "tender", view });
+    if (intakeOpen && tender && tender.step !== "check" && tender.step !== "tender") setTender({ ...tender, step: "check", view: "map" });
   }, [intakeOpen, tender]);
-  const checkLv = tender && !intakeOpen && (tender.step !== "tender" || tender.view === "pages") && tenderData ? (tenderData.data.lvs.length === 1 ? tenderData.data.lvs[0] : tenderData.data.lvs.find((l) => l.id === tender.lv)) ?? null : null;
+  const checkLv = tender && tenderData ? (tenderData.data.lvs.length === 1 ? tenderData.data.lvs[0] : tenderData.data.lvs.find((l) => l.id === tender.lv)) ?? null : null;
   // what the estimator put among the questions is part of the findings: asked or taken back, they are read again
   const checkKey = tender && checkLv && tenderData ? `${tender.id}:${checkLv.carrier}:${tenderData.key}:${tenderData.data.asked.map((a) => `${a.lv}/${a.oz}`).join(",")}` : "";
   useEffect(() => {
@@ -857,7 +857,7 @@ export default function App() {
   // put on the page once the document is read (the loader of the Check step takes it from `citing`).
   function cite(c: ChatCitation, from: CatalogProject | null = null) {
     const passage = { oz: c.oz, quote: c.quote, at: Date.now() };
-    const place = { step: "check" as const, view: "pages" as const, item: c.oz || null };
+    const place = { step: "check" as const, view: "map" as const, item: c.oz || null };
     if (tender && analysis && c.file === analysis.boq.file && checked.current === checkKey && checkKey) {
       setSelection({ oz: c.oz || null, finding: null });
       setTender({ ...tender, ...place });
@@ -1096,22 +1096,10 @@ export default function App() {
               (e) => setError(e instanceof Error ? e.message : String(e)),
             )
           }
-          pipeline={
-            <PipelineStrip
-              run={runHere}
-              file={analysis && checkKey && checked.current === checkKey ? current.file : null}
-              starting={startingRun}
-              onStart={() => void runAgain(current.project.id)}
-              onChange={(what) => void moveRun(what)}
-              onQuestions={() => setTender({ ...tender, step: "questions", view: "map" })}
-              onFind={(step) => {
-                const prefix = step === "L-REVIEW" ? "l-" : step === "V-DIFF" ? "v-" : step.toLowerCase();
-                setSelection(NONE);
-                setFind((was) => ({ text: `check:${prefix}`, n: (was?.n ?? 0) + 1 }));
-              }}
-              onRecord={() => toPipeline({ project: current.project.id })}
-            />
-          }
+          run={runHere ?? null}
+          onMove={(what) => void moveRun(what)}
+          starting={startingRun}
+          onRun={() => void runAgain(current.project.id)}
           pages={
             analysis && checkKey && checked.current === checkKey ? (
               analysis.pdf ? (
@@ -1147,7 +1135,7 @@ export default function App() {
                   key={analysis.id}
                   analysisId={analysis.id}
                   at={`${directoryAt}|${questions?.questions.map((q) => q.status).join("") ?? ""}`}
-                  onItem={(oz) => (setSelection({ oz, finding: null }), setTender({ ...tender, view: "items" }))}
+                  onItem={(oz) => (setSelection({ oz, finding: null }), setTender({ ...tender, view: "map" }))}
                   onQuestions={() => setTender({ ...tender, step: "questions", view: "map" })}
                   onBid={() => setTender({ ...tender, step: "bid", view: "items" })}
                   onDirectory={(partner) => toPartners(partner === "firm" ? { tab: "firm", partner: null } : { tab: "suppliers", partner: partner ?? null })}
@@ -1175,6 +1163,8 @@ export default function App() {
             })(),
             // the findings of the open LV, once its carrying document is read
             findingsByOz: analysis && checked.current === checkKey && checkKey ? findingsByOz : null,
+            // what the checks say about the LV as a whole, no item named
+            general: analysis && checked.current === checkKey && checkKey ? analysis.findings.filter((f) => f.item_oz === null) : null,
             selected: selection.oz,
             onPick: (oz) => setSelection({ oz, finding: null }),
             list:

@@ -304,8 +304,8 @@ Every page is a column: band, an optional bar, then the content filling the heig
 
 - **Projects page.** Content is centred with a maximum width of 1320px and at least 28px at the sides. A head
   line (title and the next date left, drop hint and the primary button right), then two parts, each under a
-  2px ink rule with a label-style heading. **Board:** five columns (Intake, Check, Pricing,
-  Submitted, Result; D-042) divided by hairlines, one outlined card per tender. **Schedule** (D-043): one lane
+  2px ink rule with a label-style heading. **Board:** four columns (Tender, Pricing,
+  Submitted, Result; D-042, D-067) divided by hairlines, one outlined card per tender. **Schedule** (D-043): one lane
   docked under the band, above the board, the full width, over a 2px ink rule: the line of all deadlines, or the
   lane of the tender whose card is pointed at; held open from the count on a card, it lists that tender's dates
   under the lane. It stays under the band while the board scrolls.
@@ -572,6 +572,21 @@ the strip's marks are ink only: a `rule` tick for a plain item, an outlined 22px
 what an item is (P lump sum, H hourly, B contingency, Z surcharge, W alternative), an ink block with "≠"
 where two documents differ. Severity colours stay with the checks. The documents open in a drawer from
 the right (640px, 2px ink line at its left, white veil).
+
+The tender and its checks are one step (D-065), so the rail has five cells, and it is the only bar under
+the band: the pipeline has no strip on this page. While Polier works on a step, that step's line says what
+it is doing and a 4px barrier tape runs along the foot of its cell. In it the page is one document (D-064), and what the checks found stands beside its item as a card like the others, with the severity sign in its head and the item's mark on the strip in the severity colour: what came, then every LV with its remarks and
+items. Nothing beside the text is a panel. A section's piece of the map (26px yellow plate, title 13.5px
+600, count, the strip with 16px marks) stands at the left of the section, 270px, sticky under the LV's
+head; the LV's head (plate, name, format tags, 2px ink rule) is sticky at the top. What there is to say
+about an item is a card at its right, 350px: white, 1px `line-2`, a 12px ink line joining it to its row,
+head in the label style with the mark; a card that waits for the estimator has an ink outline. Cards hang
+beside the text and never push it apart. A row jumped to is pale yellow with a 2px ink line inside. At the
+far left a 42px index of yellow 28 by 24px plates (ink where the reading stands, 35 % behind it, dashed
+for a number that did not come). The document's first page is the cover sheet: the tender's name in the display face 24px, client and
+counts, then four blocks under 2px ink rules in two columns (Dates with the next one on a yellow plate, How
+it came, What came, The bid goes back as). "n to look at · next" is a white button with an ink line at the
+top right, over the card column.
 
 In the Check step (D-051) the cover sheet gives way to the findings list (340 to 420px) and the strips
 carry severity: a flagged item is a 22px block in its severity colour with its item number (red and blue

@@ -67,11 +67,13 @@ def _project(row, files: list) -> dict:
     return {"id": row.id, "number": number, "name": row.name, "trade": row.trade, "note": row.note,
             "kind": row.kind, "source": row.source, "created": row.created.isoformat(timespec="seconds"),
             "plan": _plan(row.plan),
-            "files": [{"id": f.id, "name": f.name, "role": f.role, "format": f.format} for f in files]}
+            # created: when the file was put in here; the day it reached the firm by mail is in plan["arrivals"]
+            "files": [{"id": f.id, "name": f.name, "role": f.role, "format": f.format,
+                       "created": f.created.isoformat() if f.created else None} for f in files]}
 
 
 _DOC_COLUMNS = (db.documents.c.id, db.documents.c.project_id, db.documents.c.name, db.documents.c.role,
-                db.documents.c.format)
+                db.documents.c.format, db.documents.c.created)
 
 
 def all_projects() -> list[dict]:

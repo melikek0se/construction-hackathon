@@ -48,7 +48,7 @@ def test_an_invitation_to_bid_becomes_an_intake_project_once_and_other_mail_is_p
         plan = catalog.find(pid)["plan"]
         assert plan["stage"] == "intake" and plan["due"] == "2099-12-04"  # the deadline from the mail: the file states none
         assert plan["found"]["fit"] == "yes" and plan["found"]["sender"] == "vergabe@stadt.example" and plan["found"]["message_id"] == "<a@x>"
-        assert not client.get(f"/api/catalog/{pid}/summary").json()["checked"]  # in the intake nothing is checked
+        assert client.get(f"/api/catalog/{pid}/summary").json()["checked"]  # an intake tender is checked as it arrives (D-065)
         # the same messages again: each was looked at once
         again = client.post("/api/inbox/messages", files=files).json()
         assert again == {"looked": 0, "taken": [], "passed": []}

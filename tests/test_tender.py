@@ -112,6 +112,8 @@ def test_a_second_file_of_the_same_format_is_a_new_issue_and_gives_the_changes()
     assert len(v["lvs"]) == 1 and lv["issues"] == [[0, 1], [2]] and lv["carrier"] == 2 and lv["before"] == 0
     assert lv["documents"] == [2]  # the tender is its latest issue; the earlier documents are only held against it
     assert [(d["issue"], d["current"]) for d in v["documents"]] == [(1, False), (1, False), (2, True)]
+    # the checks, the questions and the prices go by the same file: the latest issue, not the first that came
+    assert tender.carriers([("tender", _boq(name, key, rows)) for name, _, key, rows in files]) == [2]
     change = {i["oz"]: i["change"] for i in lv["items"]}
     assert change["1.1"] is None and change["1.4"] is None
     assert change["1.2"] == {"kind": "quantity", "was_qty": "50", "was_unit": "m3"}

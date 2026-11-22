@@ -21,19 +21,20 @@ export function stepOf(role: string): Step {
 
 /* Where a tender stands on the contractor's side (D-042). A column says where it stands, not what is being
    done on it: the bidder questions run beside the checks and the prices, so they are a line on the card
-   and no column. Intake holds every new tender nobody has taken on yet, found by the agent in the mail or
-   dropped by the estimator: nothing is checked there. Submitted follows from the files (a bid is there);
-   Result holds every way a tender ends, not only the award. */
+   and no column. A new tender, found by the agent in the mail or dropped by the estimator, is checked the
+   moment it arrives (D-065), so the board has one column Tender for both stages "intake" (nobody has taken
+   it on yet: its card asks for that decision) and "check" (taken on). Submitted follows from the files (a
+   bid is there); Result holds every way a tender ends, not only the award. */
 const STAGES = ["intake", "check", "pricing", "submitted", "result"] as const;
 export type Stage = (typeof STAGES)[number];
-export const STAGE_LABEL: Record<Stage, string> = { intake: "Intake", check: "Check", pricing: "Pricing", submitted: "Submitted", result: "Result" };
-const STAGE_EMPTY: Record<Stage, string> = {
-  intake: "No new tender. Drop its files anywhere on the page; what Polier finds in your mail stands here too, until you take it on or pass.",
-  check: "Nothing is being checked. Take a tender on from the intake.",
-  pricing: "Nothing is being priced.",
-  submitted: "No bid is with a client.",
-  result: "No tender has ended yet.",
-};
+export const STAGE_LABEL: Record<Stage, string> = { intake: "New tender", check: "Tender", pricing: "Pricing", submitted: "Submitted", result: "Result" };
+/** The columns of the board: the stages a column holds, in the order their cards stand in it. */
+const COLUMNS: { key: string; label: string; stages: Stage[]; empty: string }[] = [
+  { key: "tender", label: "Tender", stages: ["intake", "check"], empty: "No tender at work. Drop its files anywhere on the page; what Polier finds in your mail stands here too." },
+  { key: "pricing", label: "Pricing", stages: ["pricing"], empty: "Nothing is being priced." },
+  { key: "submitted", label: "Submitted", stages: ["submitted"], empty: "No bid is with a client." },
+  { key: "result", label: "Result", stages: ["result"], empty: "No tender has ended yet." },
+];
 
 export type Outcome = NonNullable<Plan["outcome"]>;
 const OUTCOME_LABEL: Record<Outcome, string> = { won: "Won", lost: "Lost", passed: "No bid", cancelled: "Cancelled" };
@@ -816,7 +817,7 @@ function Card({
     </span>
   );
 
-  // in the intake nothing is checked yet: no strip, no counts, only how much there is to check
+  // a summary made before D-065 may say "not checked": no strip, no counts, only how much there is
   const unchecked = ready && s.checked === false;
   let strip: ReactNode = null;
   if (ready && !unchecked) {
@@ -1072,7 +1073,7 @@ function Card({
         <footer className={`kc-now is-${who}`}>
           {stage === "intake" ? (
             <span className="kc-decide" onClick={stop}>
-              <button className="btn-new" disabled={busy} title="The checks start on its files" onClick={() => onChange(p, { stage: "check" })}>
+              <button className="btn-new" disabled={busy} title="It goes on to the questions and the prices" onClick={() => onChange(p, { stage: "check" })}>
                 Take it on
               </button>
               <button className="btn-ghost" disabled={busy} title="No bid: it goes to Result as passed" onClick={() => onChange(p, { outcome: "passed" })}>
@@ -1492,12 +1493,13 @@ export function ProjectsPage({
           </div>
         </header>
         <div className="board">
-          {STAGES.map((stage) => {
-            const here = projects.filter((p) => stageOf(p) === stage);
+          {COLUMNS.map((col) => {
+            // a tender still to be taken on stands above the ones at work: it asks for a decision
+            const here = col.stages.flatMap((stage) => projects.filter((p) => stageOf(p) === stage));
             return (
-              <section key={stage} className="col" aria-label={STAGE_LABEL[stage]}>
+              <section key={col.key} className="col" aria-label={col.label}>
                 <h3>
-                  {STAGE_LABEL[stage]}
+                  {col.label}
                   <small>{here.length || "none"}</small>
                 </h3>
                 {here.map((p) => (
@@ -1506,7 +1508,7 @@ export function ProjectsPage({
                     p={p}
                     s={summaries[p.id]}
                     run={runs.find((r) => r.project_id === p.id)}
-                    stage={stage}
+                    stage={stageOf(p)}
                     busy={busy}
                     onOpen={onOpen}
                     onDropFiles={onDropFiles}
@@ -1517,7 +1519,7 @@ export function ProjectsPage({
                     onPoint={point}
                   />
                 ))}
-                {here.length === 0 && <p className="col-empty">{STAGE_EMPTY[stage]}</p>}
+                {here.length === 0 && <p className="col-empty">{col.empty}</p>}
               </section>
             );
           })}

@@ -1050,6 +1050,7 @@ export interface TenderDoc {
   extra_remarks: number;
   issue: number | null; // which issue of its LV it came with, from 1
   current: boolean; // of the latest issue (false: replaced by a later one)
+  arrived: string | null; // YYYY-MM-DD: the day it came by mail, else the day it was put in
   compare: {
     both: number;
     qty: number;

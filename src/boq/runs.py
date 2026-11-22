@@ -29,6 +29,7 @@ from sqlalchemy import insert, select, update
 
 from boq import amendments, bid, catalog, db, events, pipeline, spend, supply
 from boq import intake as intake_rules
+from boq import tender
 from boq.model import BoQ, Finding
 from boq.parsers import SUPPORTED, parse_file
 from boq.project import lv_name
@@ -241,7 +242,10 @@ def _work(run: dict, results: dict | None = None) -> None:
             chosen = {id(b) for b in intake_rules.one_per_lv([boqs[n] for n in order])}
             first = {n for n in order if id(boqs[n]) in chosen}
         else:
-            first = set(order[:1])
+            # one LV in several files: the one that carries it now (the latest issue, D-058), not the first
+            # that came. An issue the client replaced is not read by the AI, asked about or priced.
+            current = set(tender.carriers([(files[doc_id[n]]["role"], boqs[n]) for n in order]))
+            first = {order[k] for k in current} or set(order[:1])
         base: dict[int, int] = {}  # per LV group: its tender, a GAEB file before a print-out
         for n in order:
             g = groups[n]
@@ -284,6 +288,22 @@ def _work(run: dict, results: dict | None = None) -> None:
         if run.get("cancel"):
             raise _Cancelled
 
+        # Two documents of one LV (a GAEB file and its print-out) held against each other: what they state
+        # differently is a finding of the LV (boq.tender), counted here at the compare station on the row
+        # of the document that does not carry the LV, so the run says what the page shows.
+        apart: dict[int, list[Finding]] = {}
+        try:
+            every = project["files"]
+            seen = tender.view(project, [boqs.get(n) for n in range(len(every))], [None] * len(every))
+            for lv in seen["lvs"]:
+                for other in lv["documents"]:
+                    if other != lv["carrier"]:
+                        apart[other] = tender.difference_findings(lv, seen["documents"], [f["id"] for f in every],
+                                                                  tender.asked(project["id"]))
+                        break
+        except Exception:  # the comparison of documents must not end the run
+            apart = {}
+
         # 4. compare: a later version against its tender, then the LVs of a building against each other
         for n in order:
             for row in mine(n, ("compare",)):
@@ -293,8 +313,15 @@ def _work(run: dict, results: dict | None = None) -> None:
                 later_version = stage_of[n] > stage_of[b] or (stage_of[n] == stage_of[b] and boqs[n].format == boqs[b].format)
                 if n == b or not later_version:
                     with _lock:
-                        row.update(status="skipped", detail="this is the tender itself" if n == b else
-                                   f"the same step as {boqs[b].file}: a print-out, not a later version")
+                        if n in apart:
+                            figures = sum(f.check_id != "D-TEXT" for f in apart[n])
+                            row.update(status="done", counts=_counts(apart[n]),
+                                       detail=f"held against the other document of this LV: {figures} "
+                                              f"quantit{'y' if figures == 1 else 'ies'} or units differ"
+                                              + (f", {len(apart[n]) - figures} wordings asked about" if len(apart[n]) > figures else ""))
+                        else:
+                            row.update(status="skipped", detail="this is the tender itself" if n == b else
+                                       f"the same step as {boqs[b].file}: a print-out, not a later version")
                     continue
                 ctx = context(n, row, base=boqs[b])
                 got = _do(run, row, lambda row, ctx=ctx: step_of[row["step"]].run(ctx))
@@ -325,12 +352,22 @@ def _work(run: dict, results: dict | None = None) -> None:
         # 6. prices, worked out beside it: a question can be asked until shortly before the bid, so nothing
         # waits for the answers (D-042)
         waived = set(run.get("waived") or [])
+        # A tender in the intake is checked as it arrives (D-065), but nothing is drafted for the client and
+        # nobody is asked for a price before the estimator takes it on: these two stations are held, and
+        # `taken_on` works on from here. Looked up now, not at the start: it may have been taken on meanwhile.
+        held = ((catalog.find(run["project_id"]) or project)["plan"].get("stage") == "intake")
         for n in order:
             key = str(doc_id[n])
             everything = (found[n] + [Finding.model_validate(f) for f in results["llm"].get(key, [])]
                           + [Finding.model_validate(f) for f in results["extra"].get(key, [])])
             with _lock:
                 results["keys"][key] = sorted({f"{f.check_id}|{f.item_oz}|{f.evidence}" for f in everything})
+            if held:
+                with _lock:
+                    for row in mine(n, ("questions", "prices")):
+                        if row["status"] in PENDING:
+                            row.update(status="held", detail="after the tender is taken on")
+                continue
             for row in skip_others(n, ("questions", "prices")):
                 ctx = context(n, row, findings=everything, waived=doc_id[n] in waived)
                 _do(run, row, lambda row, ctx=ctx: step_of[row["step"]].run(ctx))
@@ -394,7 +431,7 @@ def _since(run: dict, results: dict) -> dict | None:
 
 def start(project_id: str, trigger: str, wait: bool = False) -> dict | None:
     """Start a run on a project; None if there is no such project. `trigger`: why it runs, for the record
-    ("taken on", "files added", "started by hand"). `wait`: run it here and return when it is done."""
+    ("tender arrived", "files added", "started by hand"). `wait`: run it here and return when it is done."""
     project = catalog.find(project_id)
     if project is None:
         return None
@@ -451,6 +488,21 @@ def _take_up(run_id: str, change, wait: bool = False) -> dict | None:
     else:
         _pool.submit(_work, run, results)
     return _view(run)
+
+
+def taken_on(project_id: str, wait: bool = False) -> None:
+    """The estimator takes a tender on: the run that checked it as it arrived goes on with what was held
+    for this moment (the questions drafted, the prices). A tender no run has looked at yet gets one."""
+    if not AUTO:
+        return
+    query = (select(db.runs.c.id, db.runs.c.state).where(db.runs.c.project_id == project_id)
+             .order_by(db.runs.c.created.desc()).limit(1))
+    with db.engine().connect() as conn:
+        latest = conn.execute(query).first()
+    if latest is None:
+        start(project_id, "taken on", wait)
+    elif any(r["status"] == "held" for r in latest.state["steps"]):
+        _take_up(latest.id, lambda run: None, wait)
 
 
 def go_on(run_id: str, wait: bool = False) -> dict | None:
@@ -532,7 +584,10 @@ def _stages(steps: list[dict]) -> list[dict]:
         held_up = [r for r in rows if r["status"] == "waiting"]
         if len(held_up) > 1 and on is held_up[0]:
             line = f"open on {len(held_up)} LVs"
-        if not on and said:
+        kept_back = next((r for r in rows if r["status"] == "held" and r["detail"]), None)
+        if not on and kept_back:  # held for a reason the strip should say: "after the tender is taken on"
+            line = kept_back["detail"]
+        elif not on and said:
             line = said[0]["detail"] if stage == "read" else said[-1]["detail"]
             if len({r["doc"] for r in said}) > 1:
                 line = f"{len(files)} files" if stage == "read" else f"{len({r['doc'] for r in said})} LVs: {line}"

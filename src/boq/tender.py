@@ -184,6 +184,21 @@ def _issues(arrived: list[int], docs: list[dict]) -> list[list[int]]:
 _FOLLOW = ("bid_prices", "mails", "amendments", "supply_plans", "quotes")  # what is kept per project and file
 
 
+def carriers(entries: list[tuple[str, BoQ | None]], whole: bool = False) -> list[int]:
+    """Which file stands for each LV of a tender: of its latest issue, a GAEB file before a print-out, as
+    `view` picks it. `entries`: role and parsed file of every file of the project, in the project's order
+    (None: could not be read). The checks, the questions and the prices belong on these files: an issue
+    the client replaced is not what the bid is made on."""
+    docs = [{"role": role, "format": boq.format if boq else ""} for role, boq in entries]
+    mine = [n for n, (role, boq) in enumerate(entries) if boq is not None and intake.step_of(role) == "tender"]
+    groups = intake.same_lv([entries[n][1] for n in mine], whole=whole)
+    out = []
+    for g in sorted(set(groups)):
+        latest = _issues([n for n, grp in zip(mine, groups) if grp == g], docs)[-1]
+        out.append(min(latest, key=lambda n: (docs[n]["role"] == "excerpt", _RANK[entries[n][1].format], -len(entries[n][1].items))))
+    return out
+
+
 def follow(project_id: str, earlier: str, now: str) -> int:
     """The work done on the earlier issue of an LV goes on with the new one: bid prices, the messages to
     the client with their answers and what they changed, the inquiries and their quotes are kept by the
@@ -212,7 +227,9 @@ def view(project: dict, boqs: list[BoQ | None], pages: list[int | None]) -> dict
                      "items": len(boq.items) if boq else 0, "remarks": len(boq.remarks) if boq else 0,
                      "priced": sum(1 for i in boq.items if i.up is not None) if boq else 0,
                      "readable": boq is not None, "extra_remarks": 0, "compare": None,
-                     "issue": None, "current": True})
+                     "issue": None, "current": True,
+                     # the day the file came: by mail as the message says, else the day it was put in
+                     "arrived": (project.get("plan", {}).get("arrivals") or {}).get(f["name"]) or (f.get("created") or "")[:10] or None})
     mine = [n for n, d in enumerate(docs) if d["step"] == "tender" and d["readable"]]
     # trade LVs of a building repeat parts of each other (F: 01 inside 00): there an LV is a whole file
     groups = intake.same_lv([boqs[n] for n in mine], whole=project["kind"] == "trades")

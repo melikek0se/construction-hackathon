@@ -40,12 +40,16 @@ export interface PipelinePlace {
 export type TenderView = "map" | "read" | "items" | "pages" | "between" | "inquiries" | "whatif";
 /** The views a step has, in the order of its switch. */
 export function viewsOf(step: TenderStep): TenderView[] {
-  if (step === "check") return ["map", "read", "items", "pages", "between"];
-  if (step === "prices") return ["map", "read", "items", "inquiries"];
+  // the first step is the tender and its checks in one (D-065): "map" is the tender as one document
+  // (D-064), with what the checks found beside its items
+  // and it is the only view of that step: what the item table, the pages and the trade diagram showed
+  // apart is to stand in the one document (Atahan, 2026-11-22)
+  if (step === "check" || step === "tender") return ["map"];
+  if (step === "prices") return ["map"]; // the document with a price beside every item; the inquiries on its cover page (D-068)
   if (step === "bid") return ["map", "items", "whatif"];
   if (step === "award") return ["map", "items"];
   if (step === "questions") return ["map"];
-  return ["map", "read", "items", "pages"];
+  return ["map"];
 }
 export type TenderStep = "tender" | "check" | "questions" | "prices" | "bid" | "award";
 /** The tender page: which step, which view, which LV of several (null: all of them), the item that is open. */
@@ -68,7 +72,7 @@ export const HOME: Route = { at: "home" };
 const BEFORE: Record<string, [TenderStep, TenderView]> = {
   plan: ["check", "map"],
   table: ["check", "items"],
-  remarks: ["tender", "read"],
+  remarks: ["check", "map"],
   pdf: ["check", "pages"],
   questions: ["questions", "map"],
   inquiries: ["prices", "inquiries"],
@@ -82,7 +86,7 @@ export function parseRoute(loc: { pathname: string; search: string } = location)
   const seg = all[0] === "archive" ? all.slice(1) : all;
   /** An address of the workspace of before: file `n` of a project in one of its views. */
   const before = (id: string, file: number | undefined, view: string | null | undefined): Route => {
-    const [step, v] = BEFORE[view ?? ""] ?? ["tender", "map"];
+    const [step, v] = BEFORE[view ?? ""] ?? ["check", "map"];
     return { at: "tender", id, file, step, view: v, lv: null, item: q.get("item") };
   };
 
@@ -100,8 +104,10 @@ export function parseRoute(loc: { pathname: string; search: string } = location)
     if (seg[2] === "files" && /^\d+$/.test(seg[3] ?? "")) return before(id, Number(seg[3]), seg[4] ?? "plan");
     if (seg[2] === "lv") return before(id, undefined, null); // one trade LV by an analysis that is gone: the tender
     const lv = q.get("lv");
-    const step: TenderStep = seg[2] === "check" || seg[2] === "questions" || seg[2] === "prices" || seg[2] === "bid" || seg[2] === "award" ? seg[2] : "tender";
-    const v = seg[step === "tender" ? 2 : 3] ?? "";
+    // no step in the address: the first one, which is "check" (the Tender step of before is part of it, D-065)
+    const named = seg[2] === "check" || seg[2] === "questions" || seg[2] === "prices" || seg[2] === "bid" || seg[2] === "award";
+    const step: TenderStep = named ? (seg[2] as TenderStep) : "check";
+    const v = seg[named ? 3 : 2] ?? "";
     return {
       at: "tender",
       id,
@@ -123,7 +129,7 @@ export function formatRoute(r: Route): string {
     if (r.lv !== null) q.set("lv", String(r.lv));
     if (r.item) q.set("item", r.item);
     const search = q.toString();
-    return `/projects/${encodeURIComponent(r.id)}${r.step === "tender" ? "" : `/${r.step}`}${r.view === "map" || r.step === "questions" ? "" : `/${r.view}`}${search ? `?${search}` : ""}`;
+    return `/projects/${encodeURIComponent(r.id)}${r.step === "tender" || r.step === "check" ? "" : `/${r.step}`}${r.view === "map" || r.step === "questions" ? "" : `/${r.view}`}${search ? `?${search}` : ""}`;
   }
   return "/";
 }

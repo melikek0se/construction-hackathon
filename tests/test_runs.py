@@ -28,6 +28,31 @@ def _tender():
     return client.post("/api/projects", files=files, data={"name": "Tender only"}).json()["id"]
 
 
+def _taken_on() -> str:
+    """The same tender, taken on by the estimator: its run goes all the way to the questions and the prices."""
+    pid = _tender()
+    catalog.set_plan(pid, {"stage": "check"})
+    return pid
+
+
+def test_a_tender_in_the_intake_is_checked_and_the_questions_and_prices_wait_until_it_is_taken_on(monkeypatch):
+    pid = _tender()
+    _stub_review(monkeypatch, lambda ctx: [])
+    arrived = runs.start(pid, "tender arrived", wait=True)
+    by = lambda run, stage: {r["status"] for r in run["steps"] if r["stage"] == stage}  # noqa: E731
+    assert "done" in by(arrived, "rules") and "done" in by(arrived, "ai")  # every check ran
+    assert by(arrived, "questions") <= {"held", "skipped"} and by(arrived, "prices") <= {"held", "skipped"}
+    assert arrived["status"] == "done"  # nothing waits for the estimator but the decision itself
+
+    monkeypatch.setattr(runs, "AUTO", True)
+    catalog.set_plan(pid, {"stage": "check"})
+    runs.taken_on(pid, wait=True)
+    done = runs.find(arrived["id"])  # the same run went on; no second one was started
+    assert len(runs.list_runs(pid)) == 1 and "held" not in {r["status"] for r in done["steps"]}
+    assert next(r for r in done["steps"] if r["step"] == "Q-GATE" and r["doc"] == 0)["status"] == "waiting"
+    assert next(r for r in done["steps"] if r["step"] == "P-PRICES" and r["doc"] == 0)["status"] == "done"
+
+
 def test_every_step_is_declared_once_and_listed():
     ids = [s["id"] for s in client.get("/api/pipeline").json()]
     assert len(ids) == len(set(ids)) and "R-ARITHMETIC" in ids and "L-REVIEW" in ids and "P-INTERFACES" in ids
@@ -36,7 +61,7 @@ def test_every_step_is_declared_once_and_listed():
 
 
 def test_a_run_records_every_step_and_its_ai_findings_open_with_the_file(monkeypatch):
-    pid = _tender()
+    pid = _taken_on()
     def review(ctx):
         ctx.tell("1 of 1 sections read")
         item = ctx.boq.items[0]
@@ -50,7 +75,10 @@ def test_a_run_records_every_step_and_its_ai_findings_open_with_the_file(monkeyp
     assert done["status"] == "waiting" and not done["active"] and done["waiting_for"].endswith("to send")
     assert done["questions"]["to_send"] == done["questions"]["total"] > 0 and done["questions"]["out"] == 0
     assert [s["id"] for s in done["stages"]] == [s for s, _ in pipeline.STAGES]
-    assert [s["status"] for s in done["stages"]] == ["done", "done", "done", "skipped", "waiting", "done"]
+    # compare: no later version, but the LV came in two documents, and those are held against each other
+    assert [s["status"] for s in done["stages"]] == ["done", "done", "done", "done", "waiting", "done"]
+    held = next(r for r in done["steps"] if r["step"] == "V-DIFF" and r["doc"] == 1)
+    assert held["status"] == "done" and held["detail"].startswith("held against the other document") and not any(held["counts"].values())
     by_doc = {}
     for row in done["steps"]:
         by_doc.setdefault(row["doc"], []).append(row)
@@ -70,7 +98,7 @@ def test_a_run_records_every_step_and_its_ai_findings_open_with_the_file(monkeyp
 
 
 def test_a_step_that_cannot_run_is_skipped_with_its_reason_and_a_failing_one_does_not_end_the_run(monkeypatch):
-    pid = _tender()
+    pid = _taken_on()
     def no_key(ctx):
         raise pipeline.Skip("No working Claude API credentials.")
 
@@ -99,10 +127,11 @@ def test_a_building_is_compared_across_its_lvs_and_a_new_project_starts_a_run_wh
     folder = DATASET / "03_pdf_hochbau_projekt"
     files = [("files", (p.name, p.read_bytes())) for p in (folder / "LV_18_Estrich.pdf", folder / "LV_07_Teppichboden.pdf")]
     created = client.post("/api/projects", files=files, data={"name": "Two trades"}).json()
-    assert started == []  # a new project stands in the intake: nothing runs before the estimator takes it on
-    assert client.get(f"/api/catalog/{created['id']}/summary").json()["checked"] is False
+    assert started == [(created["id"], "tender arrived")]  # a new project stands in the intake and is checked at once (D-065)
+    assert client.get(f"/api/catalog/{created['id']}/summary").json()["checked"] is True
     assert client.patch(f"/api/catalog/{created['id']}", json={"stage": "check"}).json()["plan"]["stage"] == "check"
-    assert started == [(created["id"], "taken on")]
+    # taken on: no run is kept here (`start` is a stand-in), so the tender gets one
+    assert started == [(created["id"], "tender arrived"), (created["id"], "taken on")]
     monkeypatch.undo()
     monkeypatch.setattr(runs, "AUTO", False)
     _stub_review(monkeypatch, lambda ctx: [])
@@ -116,13 +145,13 @@ def test_a_building_is_compared_across_its_lvs_and_a_new_project_starts_a_run_wh
 
 
 def test_the_prices_do_not_wait_for_the_questions_and_the_person_can_close_them(monkeypatch):
-    pid = _tender()
+    pid = _taken_on()
     _stub_review(monkeypatch, lambda ctx: [])
     waiting = runs.start(pid, "test", wait=True)
     gate = next(r for r in waiting["steps"] if r["step"] == "Q-GATE" and r["doc"] == 0)
     prices = next(r for r in waiting["steps"] if r["step"] == "P-PRICES" and r["doc"] == 0)
     assert gate["status"] == "waiting" and prices["status"] == "done"
-    assert catalog.find(pid)["plan"]["stage"] == "intake"  # the run does not move the tender: the estimator does
+    assert catalog.find(pid)["plan"]["stage"] == "check"  # the run does not move the tender: the estimator does
 
     rules_before = [r["ms"] for r in waiting["steps"] if r["stage"] == "rules"]
     runs.go_on(waiting["id"], wait=True)  # the person closes the questions without the answers
@@ -150,7 +179,7 @@ def test_a_later_version_is_compared_with_its_tender(monkeypatch):
 
 
 def test_the_waiting_run_goes_on_by_itself_once_the_client_has_answered(monkeypatch):
-    pid = _tender()
+    pid = _taken_on()
     from boq import mail
     from boq.report import build_report
 
@@ -176,7 +205,7 @@ def test_the_waiting_run_goes_on_by_itself_once_the_client_has_answered(monkeypa
 
 
 def test_a_run_is_stopped_after_the_step_it_is_on_and_can_be_taken_up_again(monkeypatch):
-    pid = _tender()
+    pid = _taken_on()
     stop = {"on": True}
 
     def review(ctx):
@@ -208,14 +237,15 @@ def test_a_tender_found_in_the_mail_stands_in_the_intake_until_it_is_taken_on_an
     pid = made.json()["id"]
     try:
         plan = catalog.find(pid)["plan"]
-        assert plan["stage"] == "intake" and plan["found"]["sender"] == "vergabe@example.org" and not started
-        unread = client.get(f"/api/catalog/{pid}/summary").json()  # read, and nothing checked: the rules neither
-        assert not unread["checked"] and unread["items"] == 50 and not any(unread["counts"].values())
+        assert plan["stage"] == "intake" and plan["found"]["sender"] == "vergabe@example.org"
+        assert started == [(pid, "tender arrived")]  # checked as it arrives, before anybody decides on it
+        read = client.get(f"/api/catalog/{pid}/summary").json()  # the rules' findings stand on an intake tender too
+        assert read["checked"] and read["items"] == 50 and any(read["counts"].values())
         more = DATASET / "04_pdf_tiefbau_sonstige" / "LV-Ausdruck-[PROJEKT_004].pdf"
         client.post("/api/projects", files=[("files", (more.name, more.read_bytes()))], data={"project": pid})
-        assert len(catalog.find(pid)["files"]) == 2 and not started  # more files for it: still nothing runs
+        assert len(catalog.find(pid)["files"]) == 2 and started[-1] == (pid, "files added")  # more files: checked again
         assert client.patch(f"/api/catalog/{pid}", json={"stage": "check"}).json()["plan"]["stage"] == "check"
-        assert started == [(pid, "taken on")]
+        assert started[-1] == (pid, "taken on")
         assert client.get(f"/api/catalog/{pid}/summary").json()["checked"]
         assert client.patch(f"/api/catalog/{pid}", json={"outcome": "lost"}).json()["plan"]["outcome"] == "lost"
         assert "outcome" not in client.patch(f"/api/catalog/{pid}", json={"outcome": ""}).json()["plan"]

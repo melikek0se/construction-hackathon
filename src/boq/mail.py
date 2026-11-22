@@ -235,11 +235,13 @@ def standing(questions: list[dict], mails: list[dict]) -> list[dict]:
         q = {**q, "no": no}
         state = {"status": "new", "mail_id": None, "sent_at": None, "answer": None}
         for mail in mails:  # oldest first: a later message overrides
-            if not any(item["key"] == q["key"] for item in mail["items"]):
+            item = next((item for item in mail["items"] if item["key"] == q["key"]), None)
+            if item is None:
                 continue
             answer = (mail["answers"] or {}).get(q["key"])
+            # the question reads as it was asked: the estimator may have reworded it for the message
             state = {"status": "drafted" if not mail["sent_at"] else "sent", "mail_id": mail["id"],
-                     "sent_at": mail["sent_at"], "answer": None}
+                     "sent_at": mail["sent_at"], "answer": None, "question": item.get("question") or q["question"]}
             if answer and answer["status"] in ("answered", "partly"):
                 state |= {"status": answer["status"], "answer": answer}
         out.append({**q, **state})

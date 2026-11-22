@@ -497,9 +497,9 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     `found`, a JSON object, is for the agent that reads the mailbox: where it found this tender (`via`, e.g.
     "mail"; `sender`, `subject`, `received` as YYYY-MM-DD, all optional).
 
-    A new project stands in the intake, dropped by the estimator or found by the agent: its files are kept
-    and read, but no check runs until the estimator takes it on (PATCH with stage "check") or passes
-    (outcome "passed"). Files added to a project that was taken on start its checks again.
+    A new project stands in the intake, dropped by the estimator or found by the agent, until the estimator
+    takes it on (PATCH with stage "check") or passes (outcome "passed"). It is checked at once (D-065):
+    rules and AI review; the questions and the prices wait for "taken on". Files added start the checks again.
     """
     where = None
     if found:
@@ -544,14 +544,15 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     else:
         found = intake_rules.identity(new)
         title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
-        # a new tender stands in the intake, whoever brought it: no check before the estimator takes it on
+        # a new tender stands in the intake, whoever brought it, until the estimator takes it on or passes;
+        # it is checked at once, rules and AI review (D-065)
         plan |= {"stage": "intake"} | ({"found": where} if where is not None else {})
         project_id = catalog.save_project(title, stored, kind, number=found["number"], plan=plan)
+        runs.autostart(project_id, "tender arrived")
         return {"id": project_id, "kind": kind, "name": title}
     # Nothing is analysed here: the pipeline runs on the project in the background (boq.runs) and the pages
-    # show how far it is. A project still in the intake gets more files and still no check.
-    if existing["plan"].get("stage") != "intake":
-        runs.autostart(project_id, "files added")
+    # show how far it is.
+    runs.autostart(project_id, "files added")
     return {"id": project_id, "kind": kind, "name": title}
 
 
@@ -576,19 +577,30 @@ def catalog_summary(project_id: str):
     Parses every file, so it is asked for per project and kept with the project until its files change."""
     project = _catalog(project_id)
     kept = catalog.summary(project_id)
-    # A tender in the intake is read and nothing else: no check runs on it before the estimator takes it on,
-    # the rules neither, so that a card never shows half an analysis (D-042). Its summary is not kept.
-    unchecked = project["plan"].get("stage") == "intake"
-    # v: summaries kept by an earlier version are worked out again
-    if kept is None or kept.get("v") != 4 or unchecked or not kept.get("checked", True):
+    # v: summaries kept by an earlier version are worked out again; so is one of a tender that stood
+    # unchecked in the intake before D-065
+    if kept is None or kept.get("v") != 6 or not kept.get("checked", True):
         rank = {"info": 1, "warn": 2, "high": 3}
-        docs, net, net_from, dates = [], None, None, []
+        docs, net, net_from, dates, read = [], None, None, [], []
+        # what two documents of one LV state differently is a finding of the file that carries the LV (as
+        # when that file is opened): counted here too, so the card and the page say the same number
+        differing: dict[int, list] = {}
+        try:
+            view = _tender_of(project)
+            for lv in view["lvs"]:
+                if len(lv["documents"]) > 1:
+                    differing[lv["carrier"]] = tender.difference_findings(
+                        lv, view["documents"], [f["id"] for f in project["files"]], tender.asked(project_id))
+        except Exception:  # the summary must not fail on it: the differences then show on the page only
+            differing = {}
         for index, f in enumerate(project["files"]):
             data = catalog.file_bytes(f["id"])
             dates += tender_dates.read(data, f["name"])
             try:
                 boq = _parse_bytes(data, f["name"])
+                read.append((f["role"], boq))
             except HTTPException as exc:  # one unreadable document must not hide the others
+                read.append((f["role"], None))
                 docs.append({"index": index, "name": f["name"], "role": f["role"], "format": f["format"],
                              "title": "", "items": 0, "counts": None, "marks": "", "error": str(exc.detail),
                              "questions": 0, "priced": 0})
@@ -597,7 +609,8 @@ def catalog_summary(project_id: str):
             # the rules, and what the project's pipeline run added to this file (AI review, changes against
             # the tender): the same findings the file shows when it is opened
             from_run = (runs.llm_findings(project_id, f["id"]) or []) + runs.version_findings(project_id, f["id"])
-            for finding in [] if unchecked else run_checks(boq) + from_run:
+            known = {(x.check_id, x.item_oz) for x in from_run}
+            for finding in run_checks(boq) + from_run + [x for x in differing.get(index, []) if (x.check_id, x.item_oz) not in known]:
                 counts[finding.severity] += 1
                 if finding.action == "ask_client":
                     ask.add(finding.item_oz)
@@ -612,17 +625,18 @@ def catalog_summary(project_id: str):
             docs[-1] |= {"questions": len(ask), "priced": len(totals)}
             if totals and f["role"] in ("bid", "award", "offer") and f["format"].startswith("GAEB"):
                 net, net_from = float(sum(totals)), f["role"]  # a priced GAEB version gives the net total
-        # The project's own numbers: one LV in several versions counts once (the document it opens with),
-        # trade LVs all count.
+        # The project's own numbers: one LV in several versions counts once, by the document that carries
+        # it now (its latest issue: a replaced one is not what the bid is made on); trade LVs all count.
         counted = [d for d in docs if d["counts"]]
-        counted = counted if project["kind"] == "trades" else counted[:1]
-        kept = {"v": 4, "checked": not unchecked, "lvs": len(counted), "items": sum(d["items"] for d in counted),
+        if project["kind"] != "trades":
+            now = set(tender.carriers(read))
+            counted = [d for d in counted if d["index"] in now][:1] or counted[:1]
+        kept = {"v": 6, "checked": True, "lvs": len(counted), "items": sum(d["items"] for d in counted),
                 "counts": {s: sum(d["counts"][s] for d in counted) for s in rank},
                 "net": net, "net_from": net_from, "docs": docs,
                 # the tender's dates as its files state them, each with where it was read (boq.dates)
                 "dates": tender_dates.merge(dates)}
-        if not unchecked:
-            catalog.keep_summary(project_id, kept)
+        catalog.keep_summary(project_id, kept)
     return kept
 
 
@@ -904,9 +918,9 @@ def change_project(project_id: str, body: ProjectChange):
         catalog.rename(project_id, name)
     if sent:
         catalog.set_plan(project_id, _plan(sent))
-        # a tender found in the mail is only read; the checks start when the estimator takes it on
+        # taken on: the run that checked the tender as it arrived goes on to the questions and the prices
         if before["plan"].get("stage") == "intake" and sent.get("stage") in ("check", "pricing"):
-            runs.autostart(project_id, "taken on")
+            runs.taken_on(project_id)
     return _catalog(project_id)
 
 
@@ -1308,10 +1322,12 @@ def _questions_state(analysis_id: str) -> dict:
     }
 
 
-def _picked(analysis_id: str, keys: list[str]) -> list[dict]:
-    """The questions with these keys, in LV order."""
+def _picked(analysis_id: str, keys: list[str], texts: dict[str, str] | None = None) -> list[dict]:
+    """The questions with these keys, in LV order. `texts`: the wording the estimator gave a question in
+    place of the drafted one, by key; the key stays, so the question is still the one of its finding."""
     questions = [q for q in _questions_state(analysis_id)["questions"] if q["key"] in set(keys)]
     questions = [{k: v for k, v in q.items() if k not in ("status", "mail_id", "sent_at", "answer")} for q in questions]
+    questions = [{**q, "question": " ".join(((texts or {}).get(q["key"]) or "").split()) or q["question"]} for q in questions]
     if not questions:
         raise HTTPException(422, "Pick at least one question.")
     return questions
@@ -1325,13 +1341,14 @@ def questions(analysis_id: str):
 class Draft(BaseModel):
     keys: list[str]  # the questions to ask, by key
     sender: str = ""  # the closing lines: name, company
+    texts: dict[str, str] = {}  # questions the estimator reworded, by key
 
 
 @app.post("/api/analyses/{analysis_id}/questions/compose")
 def compose_questions(analysis_id: str, body: Draft):
     """The German message with these questions, for the estimator to read and change before it goes out."""
     state = _questions_state(analysis_id)
-    subject, text = mail.compose(state["lv"], _picked(analysis_id, body.keys), body.sender)
+    subject, text = mail.compose(state["lv"], _picked(analysis_id, body.keys, body.texts), body.sender)
     return {"subject": subject, "body": text}
 
 
@@ -1341,6 +1358,7 @@ class Outgoing(BaseModel):
     subject: str
     body: str
     via: str = "draft"  # "draft": the user sends it from their own mail program; "smtp": the app sends it now
+    texts: dict[str, str] = {}  # questions the estimator reworded, by key: kept with the message as asked
 
 
 @app.post("/api/analyses/{analysis_id}/questions/mails")
@@ -1355,7 +1373,7 @@ def mail_questions(analysis_id: str, body: Outgoing):
         raise HTTPException(422, "The message needs a subject and a text.")
     if body.via not in ("draft", "smtp"):
         raise HTTPException(422, "via is draft or smtp.")
-    asked = _picked(analysis_id, body.keys)
+    asked = _picked(analysis_id, body.keys, body.texts)
     message_id = None
     if body.via == "smtp":
         try:
@@ -2229,6 +2247,9 @@ def _files_for_a_project(message: dict, read: list[tuple[str, bytes, BoQ]], date
     boqs = known + [boq for _, _, boq in fresh]
     stored = [(name, data, intake_rules.classify(boq, boqs)["role"]) for name, data, boq in fresh]
     catalog.add_files(project["id"], stored, "trades" if len(set(_same_lv(boqs))) > 1 else "versions")
+    if message.get("received"):  # the day each file reached the firm: the cover sheet's "what came when"
+        catalog.set_plan(project["id"], {"arrivals": (project["plan"].get("arrivals") or {})
+                                         | {name: message["received"] for name, _, _ in stored}})
     steps = {intake_rules.step_of(role) for _, _, role in stored}
     # The dates this message states: its text before its files, as for an invitation. A new document of the
     # tender moves the tender's dates (a second issue often comes with a later deadline); a bid or an
@@ -2247,8 +2268,7 @@ def _files_for_a_project(message: dict, read: list[tuple[str, bytes, BoQ]], date
     if had.get("due") and moved.get("due"):
         said += f" The submission deadline moved from {had['due']} to {moved['due']}."
     events.record(project["id"], "tender", said, "you")
-    if project["plan"].get("stage") != "intake":  # a tender not taken on yet is read, not checked
-        runs.autostart(project["id"], "files added")
+    runs.autostart(project["id"], "files added")
     return {**result, "taken": {"id": project["id"], "name": project["name"]}, "why": said}
 
 
@@ -2295,8 +2315,11 @@ async def _take_message(message: dict, ours: set[str]) -> dict:
                                            "received": message["received"], "summary": said["summary"],
                                            "client": said["client"], "fit": said["fit"], "why": said["why"],
                                            "message_id": message["message_id"]}}
+    if message.get("received"):
+        plan["arrivals"] = {name: message["received"] for name, _, _ in stored}
     kind = "trades" if len(set(_same_lv(boqs))) > 1 else "versions"
     project_id = catalog.save_project(title, stored, kind, number=identity["number"], plan=plan)
+    runs.autostart(project_id, "tender arrived")  # checked as it arrives (D-065)
     events.record(project_id, "tender", f"A tender was found in the mail: {said['summary']} "
                   + {"yes": "It fits your own work.", "partly": "It fits your work in part.", "no": "It is not your trade."}[said["fit"]], "you")
     return {"taken": {"id": project_id, "name": title}, "subject": message["subject"], "sender": message["sender"],

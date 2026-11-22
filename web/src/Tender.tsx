@@ -2,14 +2,16 @@
 // what came, what the bid goes back as); beside it the LVs in one of three views: the map (one mark per
 // item), the read view (the LV as a paper, notes in the margin) and the item table. The documents are
 // one click away: the sheet of an item says where it stands in each, the drawer what each one gave.
-import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { cloneElement, isValidElement, memo, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { Sign } from "./components";
 import { getBid, getSupply, openCatalogProject } from "./api";
 import { ProjectView } from "./ProjectView";
+import { TenderDocView, type StepLayer } from "./TenderDoc";
+import type { QuestionsLayer } from "./Questions";
 import { LvText, eur, qty, quotedFragments } from "./format";
 import { PLANNED, dmy } from "./Projects";
 import { viewsOf, type TenderPlace, type TenderStep, type TenderView } from "./router";
-import { KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type Bid, type BidRow, type Finding, type ItemKind, type Plan, type PriceSuggestion, type Project, type ProjectSummary, type QuestionsState, type Severity, type SupplyState, type Tender, type TenderAward, type TenderDoc, type TenderItem, type TenderLv } from "./types";
+import { KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type Bid, type BidRow, type Finding, type ItemKind, type Plan, type PriceSuggestion, type Project, type ProjectSummary, type QuestionsState, type Run, type Severity, type SupplyState, type Tender, type TenderAward, type TenderDoc, type TenderItem, type TenderLv } from "./types";
 import "./tender.css";
 
 const LETTER: Record<ItemKind, string> = { normal: "", lump_sum: "P", hourly: "H", contingency: "B", alternative: "W", surcharge: "Z" };
@@ -32,7 +34,7 @@ const SOURCES: [Source, string, string][] = [
   ["quote", "Quote for this tender", "a supplier or subcontractor answered the inquiry"],
   ["book", "Price book", "a partner's price from another tender"],
   ["past", "Past bids", "similar items of your old bids"],
-  ["asked", "Asked, no answer yet", "an inquiry is out"],
+  ["asked", "In an inquiry, no price yet", "in a package: to send, or out"],
   ["held", "Waits for the client", "not asked outside until a bidder question is answered"],
   ["none", "No price", "nothing to go by yet"],
 ];
@@ -76,6 +78,7 @@ const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export interface Check {
   summary: ProjectSummary | null; // per document: counts, and one digit per item (0 none .. 3 stop)
   findingsByOz: Map<string, Finding[]> | null; // of the open LV; null while it is read or none is open
+  general: Finding[] | null; // its findings that name no item
   selected: string | null;
   onPick: (oz: string | null) => void;
   list: ReactNode; // the findings of the open LV
@@ -84,7 +87,7 @@ export interface Check {
 const RANK: Record<Severity, number> = { info: 1, warn: 2, high: 3 };
 const BY_RANK: (Severity | null)[] = [null, "info", "warn", "high"];
 const worstOf = (fs: Finding[] | undefined): number => (fs ?? []).reduce((w, f) => Math.max(w, RANK[f.severity]), 0);
-function Counts({ counts }: { counts: Record<Severity, number> }) {
+export function Counts({ counts }: { counts: Record<Severity, number> }) {
   return (
     <span className="tn-counts">
       {SEVERITIES.filter((sev) => counts[sev] > 0).map((sev) => (
@@ -123,7 +126,7 @@ interface Section {
   items: TenderItem[];
 }
 /** The sections of an LV: its top titles, or the level below when the whole LV stands under one title. */
-function sectionsOf(lv: TenderLv): Section[] {
+export function sectionsOf(lv: TenderLv): Section[] {
   const depth = lv.items.length > 0 && lv.items.every((i) => i.path.length > 1 && i.path[0] === lv.items[0].path[0]) ? 1 : 0;
   const out: Section[] = [];
   const by = new Map<string, Section>();
@@ -139,25 +142,25 @@ function sectionsOf(lv: TenderLv): Section[] {
   }
   return out;
 }
-const lvTitle = (lv: TenderLv) => (lv.no !== null ? `${lv.no} ${lv.label}` : lv.label);
+export const lvTitle = (lv: TenderLv) => (lv.no !== null ? `${lv.no} ${lv.label}` : lv.label);
 const marked = (i: TenderItem) => i.diff !== null || i.change !== null || i.kind !== "normal";
 const CHANGED: Record<NonNullable<TenderItem["change"]>["kind"], string> = { new: "new in this issue", quantity: "another quantity than before", unit: "another unit than before", text: "reworded" };
 const pagesOf = (n: number | null) => (n === null ? "" : `${n} ${n === 1 ? "page" : "pages"}`);
-const count = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString("en")} ${n === 1 ? one : many}`;
+export const count = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString("en")} ${n === 1 ? one : many}`;
 
-function daysLeft(iso: string): string {
+export function daysLeft(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   const now = new Date();
   const n = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
   return n === 0 ? "today" : n === 1 ? "tomorrow" : n > 1 ? `in ${n} days` : n === -1 ? "yesterday" : `${-n} days ago`;
 }
-const dayText = (iso: string) => {
+export const dayText = (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number);
   return `${WEEKDAY[new Date(y, m - 1, d).getDay()]} ${dmy(iso)}`;
 };
 
 /** What the bid goes back as, in words. */
-function backText(lv: TenderLv): string {
+export function backText(lv: TenderLv): string {
   if (lv.back.form === "X84") return `X84, written onto the client's ${lv.back.file}.`;
   if (lv.back.form === "D84") return "D84: the client sent GAEB 90. Polier does not write D84; the bid comes out as a sheet (CSV).";
   return "Not stated in the files. No GAEB file came with this LV.";
@@ -207,7 +210,7 @@ function Marks({ it }: { it: TenderItem }) {
 }
 
 /** What the latest issue of the LV changed in an item against the issue before. */
-function Changed({ it }: { it: TenderItem }) {
+export function Changed({ it }: { it: TenderItem }) {
   const c = it.change;
   if (!c) return null;
   if (c.kind === "new") return <p>The issue before did not have this item.</p>;
@@ -226,7 +229,7 @@ function Changed({ it }: { it: TenderItem }) {
 }
 
 /** What another document says differently about an item. */
-function Differs({ it, docs }: { it: TenderItem; docs: TenderDoc[] }) {
+export function Differs({ it, docs }: { it: TenderItem; docs: TenderDoc[] }) {
   const d = it.diff;
   if (!d) return null;
   const other = docs[d.doc];
@@ -280,7 +283,7 @@ function AwardSheet({ award, oz, it, added, tender, onClose }: { award: TenderAw
 }
 
 /** A difference among the bidder questions: another quantity or unit always is, another wording when asked. */
-function AskRow({ it, asked, onAsk }: { it: TenderItem; asked: boolean; onAsk: (ask: boolean) => void }) {
+export function AskRow({ it, asked, onAsk }: { it: TenderItem; asked: boolean; onAsk: (ask: boolean) => void }) {
   if (it.diff && (it.diff.qty !== undefined || it.diff.unit !== undefined)) return <p className="tn-quiet">It is among the bidder questions: which figure holds is the client's to say.</p>;
   return asked ? (
     <div className="tn-askrow"><span className="tn-tag ink">Among the questions</span><button className="tn-btn out sm" onClick={() => onAsk(false)}>Take it out</button></div>
@@ -532,7 +535,7 @@ function Cover({ tender, plan, single, onDrawer, onDates }: { tender: Tender; pl
   );
 }
 
-export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, questions, prices, bid, onAsk, outcome, onOutcome, pipeline, pages, whatif, intake }: { intake: { onTake: () => void; onPass: () => void } | null; tender: Tender; plan: Plan; place: TenderPlace; onPlace: (p: TenderPlace) => void; onDocuments: () => void; check: Check; prices: Pricing; bid: { analysisId: string | null; sheet: ReactNode }; outcome: Outcome | null; onOutcome: (o: Outcome | null) => void; pipeline: ReactNode; pages: ReactNode; whatif: ReactNode; questions: { state: QuestionsState | null; view: ReactNode }; onAsk: (lv: number, oz: string, ask: boolean) => void }) {
+export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, questions, prices, bid, onAsk, outcome, onOutcome, run, starting, onRun, onMove, pages, whatif, intake }: { intake: { onTake: () => void; onPass: () => void } | null; tender: Tender; plan: Plan; place: TenderPlace; onPlace: (p: TenderPlace) => void; onDocuments: () => void; check: Check; prices: Pricing; bid: { analysisId: string | null; sheet: ReactNode }; outcome: Outcome | null; onOutcome: (o: Outcome | null) => void; run: Run | null; starting: boolean; onRun: () => void; onMove: (what: "go-on" | "cancel") => void; pages: ReactNode; whatif: ReactNode; questions: { state: QuestionsState | null; view: ReactNode }; onAsk: (lv: number, oz: string, ask: boolean) => void }) {
   const checking = place.step === "check";
   const asking = place.step === "questions";
   const pricing = place.step === "prices";
@@ -560,8 +563,11 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
     setSupply(null);
     if (!pricing || !prices.analysisId || place.view === "inquiries") return;
     let stale = false;
-    getSupply(prices.analysisId).then((s) => !stale && setSupply(s), () => undefined);
-    return () => void (stale = true);
+    const read = () => getSupply(prices.analysisId!).then((s) => !stale && setSupply(s), () => undefined);
+    void read();
+    // the inquiries on the cover page change what stands beside the items (sent, answered, taken): read again
+    const again = window.setInterval(read, 8000);
+    return () => (window.clearInterval(again), void (stale = true));
   }, [pricing, prices.analysisId, place.view]);
   const isAsked = (l: TenderLv, oz: string) => tender.asked.some((a) => a.lv === l.id && a.oz === oz);
   const single = tender.lvs.length === 1;
@@ -610,14 +616,14 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
   const close = () => (picking && lv ? check.onPick(null) : lv ? onPlace({ ...place, item: null }) : setPeek(null));
   /** To another step: the open item stays open. */
   const toStep = (step: TenderStep) => {
-    if (step === place.step || (intake && step !== "tender")) return;
+    if (step === place.step || (intake && step !== "check")) return;
     setPeek(null);
     const open = lv ? (picking ? check.selected : asking ? null : place.item) : null;
     if (step === "check" || step === "prices") check.onPick(open);
     if (step === "bid") check.onPick(open);
     // a view the next step has too stays open, but the bid's and the award's "items" are tables of their own
     const keep = viewsOf(step).includes(place.view) && !(place.view === "items" && (step === "bid" || bidding || step === "award" || awarding)) && place.view !== "between";
-    onPlace({ ...place, step, view: keep ? place.view : "map", item: step === "tender" || step === "award" ? open : null });
+    onPlace({ ...place, step, view: keep ? place.view : "map", item: step === "award" ? open : null });
   };
   const toLv = (id: number | null) => {
     setPeek(null);
@@ -659,12 +665,12 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
   const sizeOf = (l: TenderLv) => `${count(l.items.length, "item")}${l.documents.length === 1 && tender.documents[l.carrier].pages !== null ? ` · ${pagesOf(tender.documents[l.carrier].pages)}` : ""}`;
 
   // the views of this step, as its switch shows them
-  const views = viewsOf(place.step).filter((v) => (v !== "between" || !single) && (v !== "pages" || !intake));
+  const views = viewsOf(place.step).filter((v) => v !== "between" || !single);
   const switchTo = (v: TenderView) => (v === "between" ? (setPeek(null), check.onPick(null), onPlace({ ...place, view: v, lv: null, item: null })) : onPlace({ ...place, view: v }));
   const viewSwitch = (
     <div className="tn-views" role="tablist" aria-label="View">
       {views.map((id) => (
-        <button key={id} role="tab" aria-selected={place.view === id} onClick={() => switchTo(id)}>{bidding && id === "items" ? "Bid sheet" : VIEW_LABEL[id]}</button>
+        <button key={id} role="tab" aria-selected={place.view === id} onClick={() => switchTo(id)}>{bidding && id === "items" ? "Bid sheet" : checking && id === "map" ? "Document" : VIEW_LABEL[id]}</button>
       ))}
     </div>
   );
@@ -925,6 +931,67 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
   }
 
   const differing = lv ? lv.items.filter((i) => i.diff) : [];
+  // The Prices step on the tender's document (D-068): where the prices come from and the inquiries are its
+  // cover page, the price of an item stands beside it, the strip says how firm each price is.
+  const pricesLayer = useMemo<StepLayer | null>(() => {
+    if (!pricing || !lv) return null;
+    const unitOf = new Map(lv.items.map((i) => [i.oz, i.unit]));
+    const name = (src: Source) => SOURCES.find(([x]) => x === src)![1];
+    const counts = SOURCES.map(([src]) => lv.items.filter((i) => priced(i.oz).source === src).length);
+    return {
+      title: "Prices",
+      front: (
+        <div className="td-pfront">
+          {prices.byOz || supply ? (
+            <>
+              <p className="lede">{lv.items.filter((i) => priced(i.oz).unit !== null).length} of {lv.items.length} items have a price to go by. A quote for this tender comes before the price book, the price book before past bids. A supplier's price is the material part of a unit price, never the whole.</p>
+              <div className="td-srcs">
+                {SOURCES.map(([src, title, says], n) => (
+                  <div key={src} className={`tn-srcrow${counts[n] ? "" : " zero"}`}>
+                    <i className={src === "none" ? "tn-tick" : `tn-src is-${src}`} />
+                    <div><b>{title}</b><small>{says}</small><span className="tn-bar"><i style={{ width: `${(100 * counts[n]) / Math.max(1, lv.items.length)}%` }} /></span></div>
+                    <b className="tn-n">{counts[n]}</b>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="lede">Reading the prices of this LV.</p>
+          )}
+          <h3>Price inquiries</h3>
+          {prices.inquiries ?? <p className="lede">Reading the inquiries of this LV.</p>}
+        </div>
+      ),
+      lv: null,
+      item: (oz) => {
+        const p = priced(oz);
+        if (p.source === "none") return null;
+        if (p.source === "asked") {
+          // in a package: said with its name, who it went to and when, or that it is still to send
+          const pkg = supply?.packages.find((x) => x.items.some((i) => i.oz === oz));
+          const out = pkg?.ask.filter((a) => a.mail?.sent_at) ?? [];
+          return (
+            <div className={`td-cd pr${out.length ? "" : " pt"}`}>
+              <h4><i className="tn-src is-asked" />{out.length ? "Asked, no answer yet" : "In a package, not sent yet"}</h4>
+              {pkg && <b className="td-pkg" lang="de">{pkg.name}</b>}
+              {pkg && <p>{out.length ? `Sent to ${out.map((a) => `${a.supplier} (${a.mail!.sent_at!.slice(8, 10)}.${a.mail!.sent_at!.slice(5, 7)}.)`).join(", ")}.` : pkg.ask.length ? `To ask: ${pkg.ask.map((a) => a.supplier).join(", ")}. The inquiry is on the cover page.` : "Nobody to ask yet: see the cover page."}</p>}
+            </div>
+          );
+        }
+        return (
+          <div className={`td-cd pr${p.source === "held" ? "" : " has"}`}>
+            <h4><i className={`tn-src is-${p.source}`} />{name(p.source)}</h4>
+            {p.unit !== null && <b className="td-price">{eur(p.unit)}<small>{p.material ? " material" : ""} per {unitOf.get(oz)}</small></b>}
+            {(p.from || p.stale) && <p>{p.from}{p.stale && " · out of date"}</p>}
+          </div>
+        );
+      },
+      mark: (oz) => {
+        const p = priced(oz);
+        return p.source === "none" ? null : { cls: `tn-src is-${p.source}`, text: "", oz: "" };
+      },
+    };
+  }, [pricing, lv, supply, prices.byOz, prices.inquiries]); // eslint-disable-line react-hooks/exhaustive-deps
   const tally = (items: TenderItem[]) => SOURCES.map(([src]) => items.filter((i) => priced(i.oz).source === src).length);
   const addedOpen = awarding && award && place.item ? award.added.find((x) => x.oz === place.item) ?? null : null;
   const noAward = awarding && lv && !award;
@@ -933,42 +1000,78 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
   const lvsByFindings = checking && !lv ? [...tender.lvs].sort((a, b) => SEVERITIES.reduce((d, sev) => d || (docOf(b)?.counts?.[sev] ?? 0) - (docOf(a)?.counts?.[sev] ?? 0), 0)) : [];
   // in the intake the steps after the tender wait for "Take it on"
   const locked = intake ? " off locked" : "";
-  const lockedWhy = intake ? "In the intake: take the tender on to check it" : undefined;
+  // The pipeline has no strip of its own: what Polier is doing at the moment is said in the cell of the
+  // step it belongs to (read, rules, AI review and compare are the Tender step's), under a running stripe.
+  const going = (ids: string[]) => (run?.active ? run.stages.find((x) => ids.includes(x.id) && x.status === "running") ?? null : null);
+  const atTender = going(["read", "rules", "ai", "compare"]);
+  const atQuestions = going(["questions"]);
+  const atPrices = going(["prices"]);
+  const queued = !!run?.active && !atTender && !atQuestions && !atPrices;
+  const stopped = !!run && (run.status === "failed" || run.status === "interrupted" || run.status === "cancelled");
+  const lockedWhy = intake ? "In the intake: take the tender on to go on" : undefined;
   return (
     <div className={`tn${picking ? " tn-check" : ""}${wide ? " tn-ask" : ""}`}>
       <nav className="tn-stages" aria-label="Where the tender stands">
-        <button className={`tn-stage${place.step === "tender" ? " on" : ""}`} aria-current={place.step === "tender" ? "step" : undefined} onClick={() => toStep("tender")}>
+        {/* the tender and its checks are one step (D-065): what came, and what the rules and the AI review found in it */}
+        <button className={`tn-stage${checking ? " on" : ""}${atTender || queued ? " busy" : ""}`} aria-current={checking ? "step" : undefined} onClick={() => toStep("check")}>
           <b><i>1</i>Tender</b>
-          <span>{single ? "1 LV" : `${tender.lvs.length} LVs`} · {count(tender.items, "item")} · {count(tender.documents.filter((d) => d.lv !== null).length, "document")}</span>
+          <span>{atTender ? `${atTender.title} · ${atTender.line || "running"}` : queued ? "Polier is about to check it" : stopped ? `the checks stopped (${run!.status}) · ` : ""}{atTender || queued ? "" : <>{single ? "1 LV" : `${tender.lvs.length} LVs`} · {count(tender.items, "item")} · {found ? (SEVERITIES.some((sev) => found[sev] > 0) ? SEVERITIES.filter((sev) => found[sev] > 0).map((sev) => countLabel(found[sev], sev)).join(" · ") : "no finding") : "being read"}</>}</span>
         </button>
-        <button className={`tn-stage${checking ? " on" : ""}${locked}`} disabled={!!intake} title={lockedWhy} aria-current={checking ? "step" : undefined} onClick={() => toStep("check")}>
-          <b><i>2</i>Check</b>
-          <span>{found ? (SEVERITIES.some((sev) => found[sev] > 0) ? SEVERITIES.filter((sev) => found[sev] > 0).map((sev) => countLabel(found[sev], sev)).join(" · ") : "no finding") : "rules and AI review"}</span>
+        <button className={`tn-stage${asking ? " on" : ""}${locked}${atQuestions ? " busy" : ""}`} disabled={!!intake} title={lockedWhy} aria-current={asking ? "step" : undefined} onClick={() => toStep("questions")}>
+          <b><i>2</i>Questions</b>
+          <span>{intake ? "after you take it on" : atQuestions ? atQuestions.line || "Polier drafts the questions" : qs ? (qs.length ? `${qs.length} · ${qs.filter((q) => q.status === "new").length} not asked · ${qs.filter((q) => q.status === "partly" || q.status === "answered").length} answered` : "none so far") : "to the client"}</span>
         </button>
-        <button className={`tn-stage${asking ? " on" : ""}${locked}`} disabled={!!intake} title={lockedWhy} aria-current={asking ? "step" : undefined} onClick={() => toStep("questions")}>
-          <b><i>3</i>Questions</b>
-          <span>{qs ? (qs.length ? `${qs.length} · ${qs.filter((q) => q.status === "new").length} not asked · ${qs.filter((q) => q.status === "partly" || q.status === "answered").length} answered` : "none so far") : "to the client"}</span>
-        </button>
-        <button className={`tn-stage${pricing ? " on" : ""}${locked}`} disabled={!!intake} title={lockedWhy} aria-current={pricing ? "step" : undefined} onClick={() => toStep("prices")}>
-          <b><i>4</i>Prices</b>
-          <span>{pricing && lv && supply ? `${lv.items.filter((i) => priced(i.oz).unit !== null).length} of ${lv.items.length} items with a price` : "inquiries, price book, past bids"}</span>
+        <button className={`tn-stage${pricing ? " on" : ""}${locked}${atPrices ? " busy" : ""}`} disabled={!!intake} title={lockedWhy} aria-current={pricing ? "step" : undefined} onClick={() => toStep("prices")}>
+          <b><i>3</i>Prices</b>
+          <span>{intake ? "after you take it on" : atPrices ? atPrices.line || "Polier looks up prices" : pricing && lv && supply ? `${lv.items.filter((i) => priced(i.oz).unit !== null).length} of ${lv.items.length} items with a price` : "inquiries, price book, past bids"}</span>
         </button>
         <button className={`tn-stage${bidding ? " on" : ""}${locked}`} disabled={!!intake} title={lockedWhy} aria-current={bidding ? "step" : undefined} onClick={() => toStep("bid")}>
-          <b><i>5</i>Bid</b>
+          <b><i>4</i>Bid</b>
           <span>{bidding && offer ? `${offer.priced} of ${offer.items} priced · ${eur(offer.net)} net` : bids ? `${count(bids, "bid file")} came` : "unit prices on the LV"}</span>
         </button>
         <button className={`tn-stage${awarding ? " on" : ""}${tender.awards.length || outcome || awarding ? "" : " off"}${locked}`} disabled={!!intake} title={lockedWhy} aria-current={awarding ? "step" : undefined} onClick={() => toStep("award")}>
-          <b><i>6</i>Award</b>
+          <b><i>5</i>Award</b>
           <span>{tender.awards.length ? `${eur(tender.awards.reduce((n, a) => n + a.net, 0))} net` : outcome ? OUTCOMES.find(([o]) => o === outcome)![1].toLowerCase() : "not yet"}</span>
         </button>
+        {(!run || stopped) && (
+          <span className="tn-decide">
+            <button className="btn-ghost" disabled={starting} title="Rules and AI review on every file of this tender" onClick={onRun}>{stopped ? "Run the checks again" : "Run the checks"}</button>
+          </span>
+        )}
+        {run?.active && (
+          <span className="tn-decide">
+            <button className="btn-ghost" disabled={run.stopping} title="It stops after the step it is on" onClick={() => onMove("cancel")}>{run.stopping ? "Stopping" : "Stop"}</button>
+          </span>
+        )}
+        {asking && run?.status === "waiting" && (
+          <span className="tn-decide">
+            <button className="btn-ghost" title="Do not wait for the client's answers: what stays open is priced as a risk" onClick={() => onMove("go-on")}>Close the questions</button>
+          </span>
+        )}
         {intake && (
           <span className="tn-decide">
-            <button className="btn-new" title="The checks start on its files" onClick={intake.onTake}>Take it on</button>
+            <button className="btn-new" title="It goes on to the questions and the prices" onClick={intake.onTake}>Take it on</button>
             <button className="btn-ghost" title="No bid: it goes to Result as passed" onClick={intake.onPass}>Pass</button>
           </span>
         )}
       </nav>
-      {checking && pipeline}
+      {pricesLayer && lv ? (
+        <TenderDocView layer={pricesLayer} tender={tender} plan={plan} place={place} views={null} general={null} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
+          summary={check.summary} findings={null} findingsLv={lv.id} selected={check.selected} onOpenLv={(id) => onPlace({ ...place, lv: id, item: null })} />
+      ) : asking && lv && isValidElement(questions.view) ? (
+        // the Questions step is the tender's document as the Tender step shows it (D-069): under a finding
+        // the client has to settle stands its question, the message is behind the button at the top right
+        cloneElement(questions.view as ReactElement<{ layout?: (layer: QuestionsLayer) => ReactNode }>, {
+          layout: (layer: QuestionsLayer) => (
+            <TenderDocView ask={layer} tender={tender} plan={plan} place={place} views={layer.action} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
+              summary={check.summary} findings={check.findingsByOz} findingsLv={lv.id} selected={check.selected} onOpenLv={(id) => onPlace({ ...place, lv: id, item: null })} />
+          ),
+        })
+      ) : checking && place.view === "map" ? (
+        <TenderDocView tender={tender} plan={plan} place={place} views={views.length > 1 ? viewSwitch : null} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
+          summary={check.summary} findings={check.findingsByOz} findingsLv={lv?.id ?? null} selected={check.selected}
+          onOpenLv={(id) => onPlace({ ...place, lv: id, item: null })} />
+      ) : (
       <div className={`tn-work${sheetOpen ? " open" : ""}`}>
         {asking ? (
           lv ? (
@@ -978,7 +1081,7 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
                 <p className="tn-wait">Where two documents of this LV word an item differently, the app does not say which holds. Put the ones that change the price among the questions.</p>
                 {differing.map((i) => (
                   <div key={i.oz} className="tn-diffitem">
-                    <button className="tn-ozlink" onClick={() => onPlace({ ...place, step: "tender", view: "map", item: i.oz })}>{i.oz}</button>
+                    <button className="tn-ozlink" onClick={() => (check.onPick(i.oz), onPlace({ ...place, step: "check", view: "map", item: null }))}>{i.oz}</button>
                     <div>
                       <span lang="de"><LvText text={i.short} /></span>
                       <small>{i.diff!.qty !== undefined ? "another quantity" : i.diff!.unit !== undefined ? "another unit" : i.diff!.only?.length ? <>only in the {tender.documents[i.diff!.doc].format} file: <span lang="de">„<LvText text={i.diff!.only[0]} />“</span></> : `text ${Math.round((i.diff!.alike ?? 1) * 100)} % alike`}</small>
@@ -1244,6 +1347,7 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
         )}
         {sheetOpen && !asking && <aside className="tn-side">{awarding && award && openOz ? <AwardSheet award={award} oz={openOz} it={openItem} added={addedOpen} tender={tender} onClose={close} /> : picking ? check.sheet : openItem && openLv && <Sheet lv={openLv} it={openItem} tender={tender} single={single} onClose={close} asked={isAsked(openLv, openItem.oz)} onAsk={(ask) => onAsk(openLv.id, openItem.oz, ask)} />}</aside>}
       </div>
+      )}
       {drawer && <Drawer tender={tender} onClose={() => setDrawer(false)} onPick={pick} onFiles={() => (setDrawer(false), onDocuments())} />}
     </div>
   );

@@ -203,14 +203,14 @@ const json = (method: string, body: unknown) => ({
 });
 
 /** The German message with these questions, to read and change before it goes out. */
-export async function composeQuestions(id: string, keys: string[], sender: string): Promise<{ subject: string; body: string }> {
-  return read(await fetch(`/api/analyses/${id}/questions/compose`, json("POST", { keys, sender })));
+export async function composeQuestions(id: string, keys: string[], sender: string, texts: Record<string, string> = {}): Promise<{ subject: string; body: string }> {
+  return read(await fetch(`/api/analyses/${id}/questions/compose`, json("POST", { keys, sender, texts })));
 }
 
 /** Keep a message with these questions; via "smtp" the app sends it, via "draft" the user does. */
 export async function mailQuestions(
   id: string,
-  message: { keys: string[]; to: string; subject: string; body: string; via: "draft" | "smtp" },
+  message: { keys: string[]; to: string; subject: string; body: string; via: "draft" | "smtp"; texts?: Record<string, string> },
 ): Promise<QuestionsState> {
   return read(await fetch(`/api/analyses/${id}/questions/mails`, json("POST", message)));
 }

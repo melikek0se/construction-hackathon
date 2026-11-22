@@ -1168,6 +1168,52 @@ Check by itself"). Changes D-042 in one point: files dropped by the estimator no
   the checks again, as before.
 - Not touched: the seeded dataset projects, and a mail whose LV joins a project that is known already.
 
+## D-064 — The Tender step is one document; what belongs to a place stands beside it and scrolls with it
+
+**Decided** 2026-11-22 (Atahan, after five mock-ups in `playground/intake/`: "the things at the left and the
+right are not fixed; they stand beside the document and move with it"). Built for the Tender step, which is
+also the page of a tender in the intake; the other steps keep their columns for now.
+
+- The whole tender is one page to scroll: what came, then every LV with its remarks and its items, one LV
+  after the other (`web/src/TenderDoc.tsx`, `tenderdoc.css`). It takes the place of the Map and Read views
+  of the Tender step ("Document" in the switch, the address without a view); Items and Pages stay.
+- No panel beside the text. The piece of the map for a section (number, title, strip) stands at the left
+  of that section, holds at the top while the section is read and leaves with it. What there is to say
+  about an item (changed in the new issue, dropped, the documents differ with "Ask the client", what kind
+  of item) is a card at the right of that item. A card never pushes the text apart; one that would run
+  into the card above is moved down.
+- Two things stay put, because jumping needs them: a 42px index at the far left (LV numbers, or the
+  section numbers of a single LV; where the reading stands is ink, what lies behind is dimmed) and a line
+  above the page, "About this tender" (found, fit, issue, the next date), which opens the cover sheet and
+  carries "n to look at · next".
+- "To look at" are cards with a black line: an LV sent again, a wording only one document has and nobody
+  asked about, no submission deadline, no GAEB file, a number the files count past ("No LV 16 came"). They
+  are counted from the data, kept nowhere, and none of them holds back "Take it on".
+- Not built from the mock-ups: the client's mail as text with marked passages (the mail's body is not
+  kept, only Polier's summary of it), documents a mail names and does not send, the tick "bid for this LV".
+
+## D-065 — A tender is checked the moment it arrives; Tender and Check are one step
+
+**Decided** 2026-11-22 (Atahan: "let Tender and Check be one step; the moment a tender arrives we run every
+check, agentic and deterministic"). Changes D-042 and D-063 in one point each, and the six steps of D-050
+to D-057 into five.
+
+- A new project still stands in the intake until the estimator takes it on or passes (D-063 holds there),
+  but its run starts at once, trigger "tender arrived": read, rules, AI review, compare. That holds for
+  files dropped by the estimator, a tender found in the mail, and files added to a tender in the intake.
+  The summary of an intake tender carries the rules' findings like any other (`checked` is always true);
+  D-042's "nothing is checked in the intake" is gone.
+- What is for after the decision waits: the stations questions and prices of that run are "held" while
+  the tender is in the intake (no question drafted for the client, no inquiry planned, no price looked
+  up). "Take it on" lets the same run go on from there (`runs.taken_on`); a tender no run has seen gets one.
+- The steps of the tender page are five: Tender, Questions, Prices, Bid, Award. The first is the document
+  of D-064 with what the checks found as cards beside the items (sign, kind, title, the quoted evidence,
+  why, what to do, money at stake, "Details" into the item table with the full sheet), severity colours on
+  the strips, and the views Items, Pages and Between LVs of the Check step of before. In the code the
+  step is still called "check"; its address has no step in it (`/projects/:id`), `/check/…` leads there.
+- Known cost: every tender that arrives is read by Claude before anybody has decided to bid, a tender
+  found in the mail included. Answers are kept (LLM cache), so the same file is paid for once.
+
 ## D-066 — Polier's chat is a poster of its own; Polier keeps his corner; his notices look the same
 
 2026-11-22. Replaces the look of D-060 (warm paper, soft corners), which the user rejected, and three rounds
@@ -1181,3 +1227,38 @@ passages as black bars; no picture of anything. Decided with it:
 - No name in the panel's head (the user: no need for a giant "Polier" there); the head says what is asked about.
 - What Polier says by himself after doing something (`Says.tsx`) is the same black slab (the user's word).
 The pages keep their register (D-020); this is the one exception. Described in DESIGN.md.
+- Added the same day (Atahan): the first step has no other view. Items, Pages and Between LVs are out of
+  it; what they showed apart is to come onto the document, and until it does it is not on a page.
+- Added the same day (Atahan), changing D-064 in one point: no line "About this tender" above the page.
+  The cover sheet is the first page of the document.
+
+## D-067 — The board has four columns: Intake and Check are one column, Tender
+
+**Decided** 2026-11-22 (Atahan: "we merged the intake and check steps but forgot the dashboard"; chosen over
+keeping two columns and renaming Check). Follows D-065; changes the five columns of D-042 into four.
+
+- Columns: Tender, Pricing, Submitted, Result. Tender holds both stages "intake" and "check"; the stages
+  themselves stay as they are in `plan.stage` and on the server (nothing is migrated).
+- A tender nobody has taken on yet stands at the top of the column with "Take it on" and "No bid" under
+  its card; questions and prices still wait for that decision (D-063, D-065 hold).
+- Where a single stage is named (schedule, project settings) "intake" reads "New tender", "check" "Tender".
+
+## D-068 — Questions and Prices are drawn on the tender's document, each as a layer
+
+**Decided** 2026-11-22 (Atahan agreed to the proposal: the same page for every step, only what the cards
+and the marks say changes). Built for Questions and Prices; Bid and Award keep their views.
+
+- A step is a layer on the document of D-064 (`StepLayer` in `web/src/TenderDoc.tsx`): its cover page in
+  place of the tender's, its cards beside the items in place of the findings, its marks on the strips of
+  the map, the class of the item number.
+- Questions: the cover page is the message to the client (who, subject, text, the three ways to send it,
+  the messages that went out with their replies, "Check the inbox"); a question is a card beside its item
+  (tick for the next message, German question, the quoted passage, status, the client's answer and what
+  it changes to decide). Marks: yellow "?" not asked, outlined "?" with the client, ink "✓" answered.
+  `QuestionsView` hands these pieces over through `layout`; its state and its calls are unchanged.
+- Prices: the cover page is where the prices come from (six counts) and the price inquiries; beside an
+  item its price with source and day, or that it is asked or waits for the client; nothing beside an item
+  without a price. Marks: the six price marks of D-053. Prices has one view; Map, Read, Items and
+  Inquiries are gone from its switch.
+- For a tender of several LVs both steps still ask for an LV first (questions and inquiries are per LV).
+

@@ -1,0 +1,1531 @@
+/* The tender as one document (TenderDoc.tsx, D-064). Nothing beside the text is a panel: map pieces at
+   the left and cards at the right travel with it. Marks are the tender page's own (tn-tick, tn-blk). */
+.td-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 16px;
+  border-bottom: 1px solid var(--line-2);
+  min-height: 40px;
+}
+.td-line {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 40px;
+  padding: 0 12px 0 20px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+.td-line:hover {
+  background: var(--hover);
+}
+.td-line > b {
+  font: 700 12px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.td-line span {
+  color: var(--ink-2);
+}
+.td-line span b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.td-line em {
+  font: 600 16px/1 var(--display);
+  font-style: normal;
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 3px 6px;
+  margin-left: 4px;
+}
+.td-line .td-fit {
+  background: var(--yellow);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.td-line .td-warn {
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 1px 6px;
+  font-weight: 600;
+}
+.td-line u {
+  margin-left: auto;
+  font-size: 12px;
+  text-underline-offset: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.td-line .chev {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  transform: rotate(-45deg);
+}
+.td-bar.open .chev {
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+.td-cover {
+  flex: none;
+  max-height: 56vh;
+  overflow: auto;
+  border-bottom: 2px solid var(--ink);
+}
+.td-cover .tn-cover {
+  border: 0;
+  overflow: visible;
+  columns: 3 300px;
+  column-gap: 32px;
+  padding: 12px 20px 22px;
+}
+.td-cover .tn-cover section {
+  break-inside: avoid;
+}
+
+.td-flow {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+}
+.td-idx {
+  border-right: 1px solid var(--rule);
+  overflow: auto;
+  padding: 8px 0 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  scrollbar-width: none;
+}
+.tn .td-idx button {
+  flex: none;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 3px;
+  font: 600 14px/24px var(--display);
+  text-align: center;
+  background: var(--yellow);
+  cursor: pointer;
+}
+.tn .td-idx button:first-child {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  margin-bottom: 6px;
+}
+.tn .td-idx button.hole {
+  background: #fff;
+  outline: 1px dashed var(--ink);
+  outline-offset: -1px;
+}
+.tn .td-idx button.past {
+  opacity: 0.35;
+}
+.tn .td-idx button.cur,
+.tn .td-idx button:hover {
+  background: var(--ink);
+  color: var(--yellow);
+  box-shadow: none;
+  opacity: 1;
+}
+.td-page {
+  overflow: auto;
+  background: var(--tint);
+  padding-top: 16px;
+  position: relative;
+}
+.td-s {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+}
+.td-lft {
+  padding: 0 14px 0 16px;
+}
+.td-piece {
+  position: sticky;
+  top: 12px;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 2px 8px;
+  padding: 9px 0 12px;
+  align-items: baseline;
+}
+.td-lv .td-piece {
+  top: 74px;
+}
+.td-piece > i {
+  grid-row: span 2;
+  align-self: start;
+  min-width: 26px;
+  height: 26px;
+  background: var(--yellow);
+  display: grid;
+  place-items: center;
+  font: 600 16px/1 var(--display);
+  font-style: normal;
+}
+.td-piece.hole > i {
+  background: #fff;
+  outline: 1px dashed var(--ink);
+  outline-offset: -1px;
+}
+.td-piece > b {
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1.25;
+}
+.td-piece > small {
+  grid-column: 2;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+.td-piece .td-strip {
+  grid-column: 1 / -1;
+  padding-top: 6px;
+}
+.tn .td-strip .tn-tick {
+  width: 4px;
+  height: 16px;
+}
+.tn .td-strip .tn-blk {
+  min-width: 16px;
+  width: 16px;
+  height: 16px;
+  font-size: 10.5px;
+  line-height: 16px;
+}
+.td-r {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+}
+.td-mid {
+  min-width: 0;
+  background: #fff;
+  border-left: 1px solid var(--line-2);
+  border-right: 1px solid var(--line-2);
+  border-top: 1px solid var(--rule);
+}
+.td-r.first > .td-mid {
+  border-top: 1px solid var(--line-2);
+}
+.td-r.last > .td-mid {
+  border-bottom: 1px solid var(--line-2);
+}
+.td-r.last {
+  margin-bottom: 18px;
+}
+.td-r.hole > .td-mid {
+  border: 1px dashed var(--ink);
+}
+.td-r.td-on > .td-mid {
+  background: var(--hover);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+.td-rgt {
+  height: 0;
+  min-width: 0;
+  padding: 6px 16px 0 12px;
+  position: relative;
+  z-index: 1;
+}
+.td-lvh {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.td-lvh .td-mid {
+  pointer-events: auto;
+  border-bottom: 2px solid var(--ink);
+}
+.td-lvhead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+}
+.td-lvhead b {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+}
+.td-lvhead small {
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-files {
+  margin-left: auto;
+  display: flex;
+  gap: 5px;
+}
+.td-back {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.td-back .tn-label {
+  margin-right: 8px;
+}
+.td-front {
+  padding: 18px 22px 20px;
+}
+.td-front h2 {
+  font: 600 22px/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-front .lede {
+  margin-top: 6px;
+  max-width: 76ch;
+  font-size: 13.5px;
+  color: var(--mute);
+}
+.td-mail {
+  margin-top: 16px;
+  border-top: 2px solid var(--ink);
+  padding-top: 9px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  align-items: baseline;
+}
+.td-mail b {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+.td-mail small,
+.td-mail p {
+  grid-column: 2;
+}
+.td-mail small {
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-mail p {
+  margin-top: 8px;
+  font-size: 13.5px;
+  max-width: 76ch;
+  color: var(--ink-2);
+}
+.td-docs {
+  margin: 16px 0 14px;
+  border-top: 1px solid var(--ink);
+}
+.td-docs > div {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+.td-docs .tn-tag {
+  justify-self: start;
+}
+.td-docs b {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.td-docs small {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-docs .old b {
+  text-decoration: line-through;
+  color: var(--dim);
+  font-weight: 500;
+}
+.td-rem {
+  padding: 10px 22px;
+  max-width: 90ch;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: pre-line;
+}
+.td-rem.only {
+  background: linear-gradient(var(--yellow), var(--yellow)) left / 4px 100% no-repeat;
+}
+.td-sech {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 16px 8px;
+  border-top: 1px solid var(--ink);
+  font: 600 15px/1.2 var(--text);
+}
+.td-sech i {
+  flex: none;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  background: var(--yellow);
+  display: grid;
+  place-items: center;
+  font: 600 16px/1 var(--display);
+  font-style: normal;
+}
+.td-it {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) 104px;
+  column-gap: 10px;
+  padding: 8px 16px 9px;
+  font-size: 13.5px;
+}
+.td-it .oz {
+  font-weight: 700;
+}
+.td-it .tx > b {
+  font-weight: 600;
+}
+.td-it .tx p {
+  margin-top: 2px;
+  max-width: 76ch;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: pre-line;
+}
+.td-it .q {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.td-it .q small {
+  font-weight: 400;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+.td-it .q i {
+  display: block;
+  font: 400 11.5px var(--text);
+  color: var(--dim);
+}
+.td-it.gone :is(.oz, .tx, .tx p, .q) {
+  text-decoration: line-through;
+  color: var(--dim);
+}
+.td-cd {
+  position: relative;
+  margin-bottom: 6px;
+  padding: 9px 12px 11px;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+}
+.td-cd::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 16px;
+  width: 12px;
+  height: 1px;
+  background: var(--ink);
+}
+.td-cd.pt {
+  border-color: var(--ink);
+}
+.td-cd h4 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  font: 700 11px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.td-cd p {
+  margin-top: 5px;
+  color: var(--ink-2);
+}
+.td-cd .tn-quote {
+  font-size: 12.5px;
+}
+.td-cd .tn-quote.was {
+  color: var(--mute);
+  text-decoration: line-through;
+  text-decoration-color: var(--line-2);
+}
+.td-wh {
+  display: block;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--dim);
+}
+.td-kn {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 3px 0 5px;
+  font-size: 12px;
+  color: var(--mute);
+}
+.tn :is(.td-cd h4, .td-kn) .tn-blk {
+  flex: none;
+  min-width: 16px;
+  width: 16px;
+  height: 16px;
+  font: 700 10.5px/16px var(--text);
+  font-style: normal;
+  text-align: center;
+}
+.td-end {
+  padding: 8px 0 60vh;
+  text-align: center;
+  font-size: 12px;
+  color: var(--dim);
+}
+@media (max-width: 1280px) {
+  .td-s {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .td-r {
+    grid-template-columns: minmax(0, 1fr) 290px;
+  }
+}
+@media (max-width: 900px) {
+  .td-s,
+  .td-r {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .td-lft {
+    display: none;
+  }
+  .td-rgt {
+    height: auto;
+    transform: none !important;
+    padding: 6px 12px;
+  }
+}
+
+/* what the checks found, beside its item (D-065): the sign carries the colour, the card stays white */
+.tn .td-strip .tn-flag {
+  min-width: 16px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  font-size: 10.5px;
+  line-height: 16px;
+}
+.td-cd.fd h4 {
+  gap: 7px;
+}
+.td-id {
+  margin-left: auto;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+}
+.td-ft {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.td-act .tn-label {
+  margin-right: 6px;
+}
+.td-line .tn-counts {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* the cover sheet: the first page of the document (in place of the line "About this tender") */
+.td-flow {
+  position: relative;
+}
+.td-tools {
+  position: absolute;
+  top: 10px;
+  right: 22px;
+  z-index: 4;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.td-cv {
+  padding: 34px 40px 36px;
+}
+.td-cv header h2 {
+  margin-top: 6px;
+  font: 600 24px/1.1 var(--display);
+  letter-spacing: 0.01em;
+}
+.td-cv header .client {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.td-cv header .size {
+  margin-top: 4px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--mute);
+}
+.td-cv header .tn-counts {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--ink);
+}
+.td-cvgrid {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 26px 40px;
+}
+.td-cvgrid section {
+  border-top: 2px solid var(--ink);
+  padding-top: 8px;
+  min-width: 0;
+}
+.td-cvgrid h3 {
+  margin-bottom: 8px;
+  font: 700 12px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.td-cvgrid p {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.td-cvgrid p + p {
+  margin-top: 8px;
+}
+.td-cvgrid .quiet {
+  color: var(--mute);
+  font-size: 13px;
+}
+.td-cvgrid .tn-btn {
+  margin-top: 12px;
+}
+.td-cvgrid .td-mail {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+.td-cvgrid .td-docs {
+  margin: 0;
+  border-top: 0;
+}
+.td-cvgrid .td-fit {
+  background: var(--yellow);
+  border-color: var(--ink);
+  color: var(--ink);
+  margin-right: 4px;
+}
+.td-dates > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+.td-dates span {
+  font-weight: 600;
+}
+.td-dates small {
+  grid-column: 1;
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-dates b {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 3px 7px;
+  font: 600 18px/1.1 var(--display);
+}
+.td-dates .next b {
+  background: var(--yellow);
+}
+@media (max-width: 1280px) {
+  .td-cvgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* cover sheet: what came when, and where the findings are */
+.td-cvgrid section.wide {
+  grid-column: 1 / -1;
+}
+.td-cvgrid h3 span {
+  margin-left: 10px;
+  font: 400 12px var(--text);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mute);
+}
+.td-lane {
+  position: relative;
+  height: 76px;
+  margin: 4px 70px 0 4px;
+}
+.td-lane .past {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  background: var(--tint);
+  box-sizing: content-box;
+  padding-right: 4px;
+}
+.td-lane .ax {
+  position: absolute;
+  left: 0;
+  right: -70px;
+  top: 41px;
+  height: 3px;
+  background: var(--line-2);
+}
+.td-lane .ax.todo {
+  top: 37px;
+  height: 11px;
+  background: var(--ink);
+}
+.td-lane .mk {
+  position: absolute;
+  top: 0;
+  height: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.td-lane .mk.lft {
+  transform: none;
+  align-items: flex-start;
+}
+.td-lane .mk small {
+  position: absolute;
+  top: 58px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  color: var(--mute);
+}
+.td-lane .mk small b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.td-lane .mk.up small {
+  top: 4px;
+}
+.td-lane .mk.lft small {
+  left: 0;
+}
+.td-lane .mk.rgt small {
+  left: 6px;
+  top: 16px;
+}
+.tn .td-lane .arr {
+  pointer-events: auto;
+  position: absolute;
+  top: 31px;
+  width: 22px;
+  height: 22px;
+  background: var(--yellow);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  font: 600 14px/22px var(--display);
+  text-align: center;
+  cursor: pointer;
+}
+.td-lane .mk.lft .arr {
+  left: 0;
+}
+.tn .td-lane .arr:hover {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.td-lane .tod {
+  position: absolute;
+  top: 22px;
+  width: 1px;
+  height: 34px;
+  background: var(--ink);
+}
+.td-lane .dia {
+  position: absolute;
+  top: 36px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--ink);
+  transform: rotate(45deg);
+}
+.td-lane .flag {
+  position: absolute;
+  top: 20px;
+  width: 2px;
+  height: 30px;
+  background: var(--ink);
+}
+.td-lane .flag::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 13px;
+  height: 10px;
+  background: var(--ink);
+}
+.tn .td-fg button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 26px minmax(120px, 0.9fr) minmax(0, 1.4fr) 132px;
+  gap: 0 10px;
+  align-items: center;
+  padding: 5px 4px 5px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.tn .td-fg button:hover {
+  background: var(--hover);
+}
+.td-fg i {
+  min-width: 26px;
+  height: 24px;
+  background: var(--yellow);
+  font: 600 15px/24px var(--display);
+  font-style: normal;
+  text-align: center;
+}
+.td-fg b {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.td-fg .bar {
+  display: flex;
+  height: 14px;
+  background: var(--rule);
+}
+.td-fg .bar u {
+  height: 100%;
+}
+.td-fg .bar .high {
+  background: var(--red);
+}
+.td-fg .bar .warn {
+  background: #f2b600;
+}
+.td-fg .bar .info {
+  background: var(--blue);
+}
+.td-fg .n {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+  font-weight: 600;
+}
+.td-fg .n span {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.td-fg .n em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--dim);
+}
+
+/* the map as one column: all of it at once, the part being read in the middle (Atahan, 2026-11-22) */
+.td-flow {
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+.td-s {
+  grid-template-columns: minmax(0, 1fr);
+}
+.td-lft {
+  display: none;
+}
+.td-page {
+  padding-left: 16px;
+}
+.td-map {
+  position: relative;
+  overflow: hidden;
+  background: var(--tint);
+}
+.td-map::before,
+.td-map::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 1;
+  pointer-events: none;
+}
+.td-map::before {
+  top: 0;
+  background: linear-gradient(var(--tint), rgba(246, 246, 242, 0));
+}
+.td-map::after {
+  bottom: 0;
+  background: linear-gradient(rgba(246, 246, 242, 0), var(--tint));
+}
+.td-maplist {
+  position: relative;
+  will-change: transform;
+}
+.tn .td-mp {
+  display: block;
+  width: 100%;
+  padding: 7px 14px 9px 13px;
+  border-left: 3px solid transparent;
+  transition: opacity 200ms var(--ease), background 200ms var(--ease);
+}
+.td-mp.past {
+  opacity: 0.38;
+}
+.td-mp.cur {
+  background: var(--hover);
+  border-left-color: var(--ink);
+}
+.tn .td-mp .hd {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 0 8px;
+  align-items: center;
+  width: 100%;
+  cursor: pointer;
+}
+.td-mp .hd i {
+  min-width: 26px;
+  height: 24px;
+  background: var(--yellow);
+  font: 600 15px/24px var(--display);
+  font-style: normal;
+  text-align: center;
+}
+.td-mp.hole .hd i {
+  background: #fff;
+  outline: 1px dashed var(--ink);
+  outline-offset: -1px;
+}
+.td-mp.lv {
+  margin-top: 8px;
+  border-top: 1px solid var(--ink);
+}
+.td-mp.lv .hd i {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.td-mp .hd b {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.td-mp .hd small {
+  font-size: 11.5px;
+  color: var(--dim);
+}
+.td-mp .td-strip {
+  padding: 6px 0 0 34px;
+}
+
+/* the lane's caption, and the flag's label at the left of the flag */
+.td-lane {
+  height: 100px;
+}
+.td-lane .mk {
+  height: 76px;
+}
+.td-lane .mk.rgt small {
+  left: auto;
+  right: 8px;
+  top: 4px;
+}
+.td-lane .cap {
+  position: absolute;
+  left: 0;
+  right: -70px;
+  top: 80px;
+  display: flex;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-lane .cap b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.td-lane .past {
+  bottom: 24px;
+}
+
+/* where the findings are: the fingerprint strip of the cards */
+.td-fg .bar {
+  display: block;
+  height: 22px;
+  background: none;
+}
+.td-fg .bar > span {
+  display: block;
+  height: 22px;
+}
+.td-fg .bar .fingerprint {
+  display: block;
+  width: 100%;
+  height: 22px;
+}
+@media (max-width: 1280px) {
+  .td-flow {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .td-flow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .td-map {
+    display: none;
+  }
+}
+.td-fg, .td-fp {
+  --strip-base: #e9e9e4;
+}
+
+/* dates and arrivals are one block: the lane, and under it the same days in a row */
+.td-cvgrid h3 .tn-btn {
+  float: right;
+  margin-top: -6px;
+}
+.td-lane {
+  height: auto;
+  margin: 4px 0 0;
+  padding: 0 70px 0 4px;
+}
+.td-lane .past {
+  left: 0;
+  bottom: auto;
+  height: 76px;
+}
+.td-lane .ax {
+  right: 0;
+  left: 4px;
+}
+.td-lane > .mk,
+.td-lane > .ax.todo {
+  margin-left: 4px;
+}
+.td-lane::before {
+  content: "";
+  display: block;
+  height: 80px;
+}
+.td-when {
+  margin-right: -70px;
+  margin-left: -4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  border-top: 1px solid var(--rule);
+}
+.td-when > div {
+  padding: 8px 10px 9px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.td-when b {
+  display: inline-block;
+  padding: 2px 5px;
+  margin-left: -5px;
+  font: 600 16px/1.1 var(--display);
+}
+.td-when .next b {
+  background: var(--yellow);
+}
+.td-when span {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.td-when small {
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-when .gone b,
+.td-when .gone span {
+  color: var(--mute);
+}
+
+/* a row is as tall as the cards beside it: no card runs on beside the next item */
+.td-rgt {
+  height: auto;
+  padding-bottom: 8px;
+}
+.td-rgt:empty {
+  padding: 0;
+}
+.td-rgt > :last-child {
+  margin-bottom: 0;
+}
+
+/* map, document and cards keep to the middle: room at both edges of the window (Atahan, 2026-11-22) */
+.td-flow {
+  --td-gut: max(24px, calc((100vw - 1720px) / 2));
+  grid-template-columns: calc(280px + var(--td-gut)) minmax(0, 1fr);
+}
+.td-map {
+  padding-left: var(--td-gut);
+}
+.td-page {
+  padding-right: var(--td-gut);
+}
+.td-tools {
+  right: calc(22px + var(--td-gut));
+}
+@media (max-width: 1280px) {
+  .td-flow {
+    --td-gut: 12px;
+    grid-template-columns: calc(220px + var(--td-gut)) minmax(0, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .td-flow {
+    --td-gut: 0px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* the LV's head is a black slab, a section's head a grey band: neither reads as an item (Atahan, 2026-11-22) */
+.td-lvh .td-mid {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.td-lvhead {
+  gap: 14px;
+  padding: 12px 16px;
+}
+.td-lvhead .tn-ix {
+  min-width: 36px;
+  height: 36px;
+  font-size: 22px;
+  line-height: 36px;
+  color: var(--ink);
+}
+.td-lvhead b {
+  font: 600 21px/1.1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-lvhead small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.68);
+}
+.td-lvhead .tn-tag {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+.td-lvhead .tn-tag.ink {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--ink);
+}
+.td-sech {
+  gap: 12px;
+  padding: 11px 16px;
+  background: var(--tint);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line-2);
+  font: 600 18px/1.15 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-sech i {
+  min-width: 28px;
+  height: 28px;
+  letter-spacing: 0;
+}
+
+/* the points to look at: back, which one the reading stands at, on (Atahan, 2026-11-22) */
+.td-pts {
+  display: flex;
+  align-items: stretch;
+  height: 26px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ink);
+  border-radius: 2px;
+}
+.td-pts span {
+  padding: 0 10px;
+  font: 700 10.5px/26px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tn .td-pts button {
+  width: 28px;
+  font: 600 18px/24px var(--display);
+  text-align: center;
+  cursor: pointer;
+  transition: background 120ms var(--ease), color 120ms var(--ease);
+}
+.tn .td-pts button:first-child {
+  border-right: 1px solid var(--ink);
+}
+.tn .td-pts button:last-child {
+  border-left: 1px solid var(--ink);
+}
+.tn .td-pts button:hover {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* an item's number in the text carries the colour of its worst finding (the mark in the map and the sign
+   on its card say the same) */
+.td-it .oz[class*="is-"] {
+  justify-self: start;
+  align-self: start;
+  padding: 1px 6px;
+  margin: -1px 0 0 -6px;
+}
+.td-it .oz.is-high {
+  background: var(--red);
+  color: #fff;
+}
+.td-it .oz.is-warn {
+  background: var(--yellow);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.td-it .oz.is-info {
+  background: var(--blue);
+  color: #fff;
+}
+/* the items on the screen, in the map: ink. Not blue: blue is the Note sign on the same strip. */
+.tn .td-strip .tn-tick.td-vis {
+  background: var(--ink);
+}
+.tn .td-strip :is(.tn-blk, .tn-flag).td-vis {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+/* the Questions step on the document (D-068): the message is the cover page, a question a card */
+.questions.td-qfront {
+  display: block;
+  height: auto;
+  padding: 0;
+  margin-top: 22px;
+  overflow: visible;
+}
+.td-qfront .q-side {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px 28px;
+  align-items: start;
+  margin-top: 16px;
+  width: auto;
+  max-width: none;
+}
+.td-cd.qn {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 9px;
+  border-bottom: 1px solid var(--line-2);
+}
+.td-cd.qn.pt {
+  border-color: var(--ink);
+}
+.td-cd.qn > input {
+  margin-top: 3px;
+}
+.td-cd.qn .q-where {
+  flex-wrap: wrap;
+}
+
+/* the Prices step on the document (D-068) */
+.td-pfront {
+  margin-top: 18px;
+}
+.td-pfront .lede {
+  max-width: 80ch;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.td-pfront h3 {
+  margin: 26px 0 10px;
+  padding-top: 8px;
+  border-top: 2px solid var(--ink);
+  font: 700 12px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.td-srcs {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0 28px;
+}
+.td-cd.pr h4 {
+  margin-bottom: 4px;
+}
+.td-price {
+  display: block;
+  font: 600 22px/1.15 var(--display);
+}
+.td-price small {
+  font: 400 12.5px var(--text);
+  color: var(--mute);
+}
+.tn .td-strip .tn-src {
+  width: 12px;
+  height: 16px;
+}
+
+/* what the marks of the map mean: above its first piece, so it is read at the top and leaves with the reading (Atahan, 2026-11-22) */
+.td-legend {
+  padding: 0 14px 14px 16px;
+}
+.td-legend dl {
+  margin-top: 7px;
+  display: grid;
+  gap: 5px;
+}
+.td-legend dl > div {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.td-legend dt {
+  display: flex;
+  justify-content: center;
+}
+.td-legend dd {
+  font-size: 11.5px;
+  line-height: 1.25;
+  color: var(--ink-2);
+}
+.tn .td-legend .tn-tick {
+  width: 4px;
+  height: 16px;
+}
+.tn .td-legend .tn-blk,
+.tn .td-legend .tn-flag {
+  min-width: 16px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  font-size: 10.5px;
+  line-height: 14px;
+}
+.td-lg-no {
+  min-width: 22px;
+  height: 18px;
+  padding: 0 3px;
+  background: var(--yellow);
+  font: 600 13px/18px var(--display);
+  font-style: normal;
+  text-align: center;
+}
+.td-lg-no.lv {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.td-lg-no.hole {
+  background: #fff;
+  outline: 1px dashed var(--ink);
+  outline-offset: -1px;
+}
+
+/* the questions' cover page: every question on one line, to pick and to go to */
+.td-qlist {
+  margin: 14px 0 4px;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+.td-qlist li {
+  display: grid;
+  grid-template-columns: auto 58px minmax(0, 1fr) auto;
+  gap: 0 10px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.td-qlist li > span[lang] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.td-qlist .oz-link {
+  justify-self: start;
+}
+.td-qlist li.is-closed > span[lang] {
+  color: var(--mute);
+}
+.td-pkg {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+/* cover sheet: what the LVs of a building expect of each other */
+.td-btw > div {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 0 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.td-btw b {
+  font-weight: 600;
+  font-size: 14px;
+}
+.td-btw small {
+  display: block;
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-btw .tn-quote {
+  font-size: 13px;
+}
+.td-btw .tn-ozlink {
+  margin-right: 6px;
+}
+
+/* the Questions step on the tender's document (D-069): under a finding the client has to settle, its
+   question to tick and reword; the message behind a button at the top right */
+.questions.td-ask {
+  flex: none;
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+  padding: 9px 0 0;
+  overflow: visible;
+  border-top: 2px solid var(--ink);
+}
+.td-askrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.questions.td-ask .td-askrow label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.td-askrow label b {
+  font: 700 11.5px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.td-askrow > :last-child {
+  margin-left: auto;
+}
+.td-askrow .text-link {
+  font-size: 12.5px;
+}
+.questions.td-ask textarea {
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  border-width: 1px;
+  border-color: var(--line-2);
+  background: #fff;
+}
+.questions.td-ask.on textarea {
+  border-color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--yellow);
+}
+.questions.td-ask textarea:focus {
+  border-color: var(--ink);
+  outline: 2px solid var(--yellow);
+  outline-offset: 0;
+}
+.td-ask > .text-link {
+  justify-self: start;
+  font-size: 12.5px;
+}
+.td-ask .q-text {
+  margin: 0;
+  font-size: 13px;
+}
+.td-ask.is-closed .q-text {
+  color: var(--mute);
+}
+/* the marks of the questions on the map: can be asked, ticked for the next message, with the client, answered */
+.tn .td-strip .td-qm {
+  min-width: 16px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  font: 700 10.5px/16px var(--text);
+  text-align: center;
+}
+.tn .td-strip .tn-flag.td-qm.on {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.tn .td-strip .tn-blk.td-qm {
+  box-shadow: inset 0 0 0 1px var(--ink);
+  background: #fff;
+  color: var(--ink);
+}
+.tn .td-strip .tn-blk.diff.td-qm {
+  background: var(--ink);
+  color: #fff;
+}
+/* the button to the message: yellow once questions are ticked, with their number */
+.td-qbtn {
+  height: 26px;
+  background: #fff;
+  border-color: var(--ink);
+}
+.td-qbtn.on {
+  background: var(--yellow);
+}
+.td-qbtn b {
+  min-width: 18px;
+  padding: 0 5px;
+  background: var(--ink);
+  color: var(--yellow);
+  font: 700 11px/18px var(--text);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.td-qbtn i {
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+/* the message as a sign: the next message at the left, what went out at the right */
+.q-dialog .np-body > section.questions {
+  display: flex;
+  height: auto;
+  margin: 0;
+  padding: 16px 18px 20px;
+  gap: 12px;
+  overflow-y: auto;
+}
+.q-dialog .q-compose,
+.q-dialog .q-mail {
+  flex: none;
+}

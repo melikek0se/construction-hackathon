@@ -14,6 +14,188 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- The way from a mail to the first results, checked end to end (2026-11-22, before "Take it on"): a new
+  tender (made up for it: SWN-K-2026-077 Regenwasserkanal Ahornring, 15 items, X83 and print-out, with
+  planted faults; `data/processed/e2e/`, git-ignored) was sent by SMTP from the client's mailbox to
+  kalkulation@polier.test and nothing was pressed.
+  What happened: the server's own sweep found it 128 s after it was sent (it looks every 180 s); Claude
+  read the mail (restricted VOB/A tender, fits the firm's work, with the reason); the project stood in the
+  intake with number, name, client, five dates (all as the files state them), the day both files came;
+  the run started by itself ("tender arrived") and was done in 35 s for 0.15 USD: read, rules, AI review
+  on the X83, questions and prices held "after the tender is taken on". Found: the item without a
+  quantity, both risk wordings, both quantities the print-out states differently, and from the AI nine
+  more, among them the leak test in m2 (planted) and the disposal "whatever the class" (planted).
+  Two faults found by it and put right: (1) Polier's note said "3 stops" where the page and the card said
+  5: the two differences between the documents were no part of the run. They are counted at the compare
+  station now (the row of the print-out: "held against the other document of this LV: 2 quantities or
+  units differ"), so the station is "done" and not "skipped" where an LV came in two documents; run,
+  summary, card, rail and note say the same. (2) Such a difference stood twice beside its item, as a
+  finding and as "The documents differ here": once now.
+  Checked after the fix: full pytest 225 passed; the tender run again (0.00 USD, from the cache): 5 stops,
+  9 cautions in the run and in the note; the page in Chrome (five steps, four locked, "Take it on" /
+  "Pass", 16 cards, the cover's dates and strip).
+  Not checked: the board's card of it and Polier's radio call in a browser; a tender whose mail carries
+  no LV, one that is not the firm's trade, a second mail for the same tender (tested before, D-058).
+  The test project (4a9790b326d6) and its mail are still there.
+
+- Five improvements to the new steps (2026-11-22; `Questions.tsx`, `Tender.tsx`, `TenderDoc.tsx`, `App.tsx`,
+  `api.py`): (1) the questions' cover page lists every question on one line (tick for the next message,
+  item number that leads to the item, status), above the message; (2) "No message has gone out yet." where
+  the inbox line said every message had its reply; (3) a price card of an item in a package says whether
+  the inquiry went out, to whom and when, or who is to be asked, and counts as "to look at" while unsent;
+  the count is named "In an inquiry, no price yet"; (4) the price cards are read again every 8 s, so what
+  is done in the inquiries on the cover page shows beside the items; an item pressed in the inquiries
+  stays in the Prices step; (5) the summary counts what two documents of an LV state differently, as the
+  opened LV does (summaries worked out again, v 6): T1's card, rail and page all say 4 stops.
+  Checked: type-check, build, pytest on catalog, tender, runs. In Chrome on T1: 18 lines in the list, a
+  tick taken out (the message says 17 questions, the card's box follows) and put back, a number pressed
+  (the page goes to 3.1.40 and stays in the step); 37 price cards "In a package, not sent yet" with
+  package and firms, 3 waiting for the client, 4 from past bids; the rail's "4 stops".
+  Not checked: the 8 s reading after something sent, a card of an inquiry that is out.
+
+- Questions and Prices on the tender's document (2026-11-22, D-068; `TenderDoc.tsx` (`StepLayer`),
+  `Questions.tsx` (`layout`), `Tender.tsx` (`pricesLayer`), `router.ts`, `tenderdoc.css`): both steps are
+  the same page as the Tender step, with their own cover page, cards and marks. Front end only.
+  T1 Birkenweg was taken on for it (stage set to Check, a fresh run started by hand on issue 2: 17
+  questions drafted, 10 inquiry packages planned, 0.42 USD).
+  Checked: type-check, build. In Chrome on the dev stack: Questions on WVG-N-2644 (one question: the
+  message as the cover page, a "?" in the strip, the card beside 3.2.30) and on T1 (18 cards, 18 marks,
+  "1 of 18 to look at"); Prices on both (T1: the six counts, the inquiries with their packages on the
+  cover page, 44 cards and 44 marks, a press on a mark leading to its item).
+  Not checked: sending a message, ticking a question off, a reply and the changes to decide on a card;
+  anything pressed inside the inquiries on the cover page (their width there is 711px, nothing ran out
+  of it on T1); a tender of several LVs; under 1280px; the full pytest (no backend change).
+  Known: an item of a planned package that was not sent yet says "Asked, no answer yet" on its card, as
+  the counts did before; such a card does not name the firm. After something is done inside the
+  inquiries the cards beside the items are those of before until the step is opened again.
+
+- The board in four columns (2026-11-22, D-067; `Projects.tsx`, `home.css`): Intake and Check are one
+  column Tender; a tender still to be taken on stands first in it with its two buttons. Type-check clean,
+  not looked at in the browser. On the tender document the same day (`TenderDoc.tsx`, `tenderdoc.css`, the
+  blocks at the end of the file): the map on tint without a border, room at both edges (`--td-gut`), the
+  LV head as a black slab and the section head as a grey band, "x of N to look at" with back and on.
+- Cover sheet graphs, the map as one column, and the checks on the right issue (2026-11-22; `TenderDoc.tsx`,
+  `tenderdoc.css`, `tender.carriers`, `runs.py`, `api.py`, `catalog.py`):
+  **A fault put right:** a run read, and the summary counted, the first file of an LV, also when the client
+  had replaced it. T1's AI review ran on issue 1 while the page shows issue 2. Both go by the file that
+  carries the LV now (`tender.carriers`, the pick `tender.view` makes); kept summaries are worked out
+  again (v 5). **T1's issue 2 has no AI review yet: it needs a run** (nothing on the page starts one
+  while the last run is "done").
+  **Cover sheet:** "What came when" (a lane: a mark per day files arrived, today, questions until, bid due;
+  the day each file came by mail is kept in `plan.arrivals`, else the day it was put in; set by hand for
+  T1 from its two mails, 18.11. and 21.11.) and "Where the findings are" (per section, or per LV of a
+  building: the fingerprint strip of the project cards, as long as its share of the items, with counts).
+  Dates and arrivals are one block, "Dates" (Atahan: two blocks for it were absurd): the lane, and under
+  it the same days in a row in the order of time (the tender came, issue 2 came, questions until,
+  submission, binding, work starts), the next one due on yellow; "Change the dates" in its head.
+  **Map:** one column at the left with every piece at once; the part being read is held in the middle,
+  what was read stands dimmed above, what comes below; it moves at the pace of the text. The 42px index
+  and the pieces beside each section are gone.
+  Checked: type-check, build, pytest on runs, tender, catalog, inbox (the whole suite passed before the
+  map change, which is front end only). In Chrome on T1: the cover with both graphs, the counts now
+  issue 2's (10 cautions, 2 notes), the map with "Kanalbau" in the middle drifting up 0, 36, 70 px as the
+  reading goes through the section, four pieces dimmed above.
+  Not checked: a tender of several LVs (the map with LV rows, the strips per LV), a tender without dates
+  or with one arrival, under 1280px.
+  Known: the page shows one stop the header does not count (a quantity the two documents state
+  differently: it is added when the LV is opened and is not in the summary).
+
+- One bar on the tender page (2026-11-22, Atahan: "can you not put these into one bar"; `Tender.tsx`,
+  `tender.css`, `App.tsx`, `runs._stages`): the pipeline strip is off the page. What Polier is doing is
+  said in the cell of the step it belongs to (read, rules, AI review, compare: Tender; questions; prices),
+  with the barrier tape running along the cell's foot. At the end of the rail, only when they apply:
+  "Run the checks" (no run yet, or the last one stopped), "Stop" (a run is going), "Close the questions"
+  (in the Questions step while the run waits for them), then "Take it on" / "Pass". A held station says
+  why ("after the tender is taken on").
+  Checked: type-check, build, `tests/test_runs.py`; seen in Chrome on T1 after its run: one bar, the
+  Tender cell with "4 stops · 14 cautions · 6 notes". Not seen: a run going (the tape, the line that
+  changes, "Stop"), "Run the checks", "Close the questions": a run asks Claude, none was started.
+  Gone from this page with the strip: the panel of a station with its steps, "Record" (the Pipeline page
+  has the record), "retry" of failed steps (now: "Run the checks again", a whole new run), a station
+  filtering the findings. `PipelineStrip` in `Runs.tsx` is no longer used.
+
+- Cover sheet as the first page of the document (2026-11-22, Atahan: not a panel that opens above, a
+  page as in a PDF; `TenderDoc.tsx`, `tenderdoc.css`): the line "About this tender" and the cover that
+  opened under it are gone. The document begins with a page that names the tender, the client and the
+  counts, then Dates, How it came (the mail, Polier's read), What came (the files, replaced ones struck
+  through), The bid goes back as. "n to look at · next" stands at the top right over the card column.
+  Item quantities say "PDF page n" where "p. n" stood.
+  Checked: type-check, build; seen in Chrome on the dev stack on T1. Not checked: a tender without a
+  mail, one with more than eight documents, under 1280px (one column).
+
+- The first step has one view (2026-11-22, Atahan: "what is needed is to stand in one view"): no switch,
+  no Items, Pages or Between LVs in the Tender step; their addresses open the document. A finding about
+  the whole LV is a card beside the LV's head; "Details" is gone from the finding cards (it led to the
+  item table). A passage of Polier's answer opens the document on its item, not the pages.
+  Checked: type-check, build; in Chrome on the dev stack `/projects/…/items` opens the document, no
+  switch, five steps. Not on the document, so nowhere at the moment: the PDF pages with the findings
+  marked on them, the trade diagram and the findings between the LVs of a building, the finding
+  pictures, search and filter over the items, "Run AI review" (the pipeline strip's "Run" starts a run).
+  Their code is still there (`PdfView.tsx`, `ProjectView.tsx`, the item table in `Tender.tsx`).
+
+- Tender and Check one step, checks on arrival (2026-11-22, D-065; `runs.py` (`taken_on`, the held
+  stations), `api.py`, `router.ts`, `App.tsx`, `Tender.tsx`, `TenderDoc.tsx`): a new tender's run starts
+  at once (read, rules, AI review, compare); questions and prices are held until "Take it on", which lets
+  the same run go on. Five steps on the tender page; the first is the document with the findings as cards
+  beside the items and severity colours on the strips.
+  Checked: full pytest 225 passed (new: an intake tender's run does every check, holds questions and
+  prices, and goes on as the same run once taken on; the three tests of the old rule changed), type-check,
+  `npm run build`. In Chrome on the dev stack: T1 in the intake with five steps, "1 stop · 2 cautions ·
+  1 note" on the first, four finding cards of the rules beside their items, a press on a red mark in a
+  strip leading to its item.
+  Not checked: a tender arriving on the dev stack and its run starting by itself, and "Take it on" letting
+  it go on (both would ask Claude; the tests do it with a stand-in for the review); AI findings as cards
+  (the tenders in the dev database stood unchecked in the intake and have no run: "Run" in the strip, or
+  taking one on, gives them one); "Details"; a tender of several LVs ("Show them beside the items");
+  the board's intake card with its strip; the Pipeline page with held stations.
+  Known: an item with several findings and a change has a long column of cards, and the cards of the
+  items after it stand lower than their rows. Findings about the whole LV (no item) are not on the
+  document; they are in the findings list of the Items view. The map and read views of the Check step
+  are no longer reachable (their code is still in `Tender.tsx`).
+
+- Tender step as one document (2026-11-22, D-064; `web/src/TenderDoc.tsx`, `tenderdoc.css`, `Tender.tsx`,
+  `router.ts`): what came, then every LV with remarks and items on one page; the piece of the map at the
+  left of its section, the card of an item at its right, both scrolling with the text; a 42px index and
+  the line "About this tender" stay. It replaces Map and Read in the Tender step (intake included);
+  Items and Pages are as before. Front end only.
+  Checked: type-check, `npm run build`. In Chrome on the dev stack, window about 2040 wide (body zoom
+  1.15), no console error: T1 Birkenweg in the intake (issue 2 of 2: 4 documents, 13 cards, 2 to look at),
+  `?item=4.2.50` opening on that item with its card, by script a press on the index, on a mark in a strip,
+  "next" twice, the line opened (cover sheet in three columns), no card over another; a one-LV project
+  that is past the intake; Document → Items → Document.
+  Not checked: a tender of several LVs (none is in the dev database: the cards "No LV n came" and "No GAEB
+  file for n LVs", the index of LV numbers and `?lv=` are unseen in the app, seen only in the mock-up);
+  "Ask the client" pressed on a card; "Set the dates" from a card; under 1280px and under 900px; the full
+  pytest (no backend change).
+  Known: Polier's mascot stands over the lower right corner of the card column. A link that names an item
+  of the Tender step (`?item=`) scrolls there; a press on an item in the text does nothing, since its
+  card is always open. The Check, Prices and Bid steps still have their three columns.
+
+- Intake page: research and mock-ups, nothing built (2026-11-22; `playground/intake/`, untracked;
+  `cd playground/intake && python3 -m http.server 5302 --bind 127.0.0.1`): what the estimator wants to see
+  while a tender is in the intake (one LV in several formats, several LVs, a new Stand arriving meanwhile).
+  Research tab (Turkish, sources marked read / search excerpt / not found) and four designs on three
+  scenarios with real data (T1 Birkenweg from the dev API, the 27 LVs of project F): A register (row per
+  LV, column per format, Stand), B by arrival, C only what needs a decision, D recommended (A's table,
+  C's list, B's time as one lane). Waiting for Atahan's choice. Seen in headless Chrome at 1500 wide;
+  the buttons were not clicked.
+  **E, Atahan's idea, added the same day** (`doc.js`, `data-t1.js`, `data-f.js`): the whole tender as one
+  document: map at the left (LVs, the open LV's sections, passed ones dimmed, follows the scroll), the
+  text in the middle (the client's mails, then per LV the remarks and the items, notes in the margin),
+  the open item or point at the right (the list "for you to look at" while nothing is open). Cover, dates,
+  lane and the register of D fold away under a one-line bar "About this tender". Seen in headless Chrome
+  at 1500 wide on T1 with Stand 2 and on the 27 LVs (1.076 items): the top, a jump to an item, a point
+  with its passage, the map following. Not checked: a hand on the mouse, the 240 ms jump (the pictures
+  were taken with the jump made at once), the bar opened, under 1280px.
+  **E changed at Atahan's word (same day): nothing beside the text is a panel.** The piece of the map for
+  a section stands at the left of that section (it holds at the top while its section is read and leaves
+  with it), the card of an item or of a marked passage hangs at the right of it and scrolls with it;
+  cards do not push the text apart (`settle` moves one down that would run into the one above). What
+  stays put: a 42px index at the far left (LV numbers, or section numbers for one LV) to jump with, and
+  "n to look at · next" in the step rail. Seen in headless Chrome at 1500 wide: the mails with their
+  three cards, a jump to a reworded item, LV 13 of the 27. Not checked: by hand, "next", a card taken
+  and taken back, the bar opened, under 1280px.
+
 - New projects into the intake (2026-11-22, D-063; `POST /api/projects` in `api.py`, texts in `Projects.tsx`):
   a project made in the new-project dialog (or by dropping files) stands in the Intake column, read and not
   checked, until "Take it on"; no run starts by itself. Checked: `tests/test_runs.py` (no run on creation,

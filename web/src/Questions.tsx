@@ -1,16 +1,27 @@
-/* Bidder questions by e-mail. The questions that need the client are picked, the German message is written
-   by the server and can be changed, and it goes out from the estimator's own mail program (a draft) or, where
-   the server has an account, from the app. What was asked is kept; when the client answers, the reply is
-   pasted in — or found in the inbox, where the server may look into one — and read against the questions.
+/* Bidder questions by e-mail. In the Questions step the tender stands as in the Tender step (D-069): under
+   every finding the client has to settle is its question, to tick for the next message and to reword. The
+   ticked questions are one German message, written by the server; it is read, changed and sent in a dialog
+   opened from the top right of the page — from the app's own account where it has one, else from the
+   estimator's mail program (a draft). What was asked is kept; when the client answers, the reply is pasted
+   in — or found in the inbox, where the server may look into one — and read against the questions.
    What an answer changes on our side (a finding settled, a quantity corrected, a point to price as a risk)
    is put up under its question for the estimator to accept, change or reject. */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { AskLayer } from "./TenderDoc";
 import { checkReplies, composeQuestions, decideAmendment, discardMail, mailQuestions, markMailSent, readReply } from "./api";
 import { dayText } from "./controls";
-import type { Amendment, BidderQuestion, QuestionMail, QuestionsState } from "./types";
+import type { Amendment, BidderQuestion, Finding, QuestionMail, QuestionsState } from "./types";
 
 const SENDER_KEY = "lvcheck.mail.sender"; // the signature under the message (name, company), kept in this browser
 const TO_KEY = "lvcheck.mail.to"; // the client's address per LV file
+const DRAFT_KEY = "lvcheck.questions.draft"; // per LV file: the questions ticked for the next message, and reworded
+
+/** What the estimator has prepared for the next message: the questions ticked, and the ones reworded. */
+interface Draft {
+  picked: string[];
+  texts: Record<string, string>;
+}
+const EMPTY: Draft = { picked: [], texts: {} };
 
 const STATUS: Record<BidderQuestion["status"], string> = {
   new: "Not asked",
@@ -32,13 +43,16 @@ function daysLeft(iso: string): string {
   return n === 0 ? "today" : n === 1 ? "tomorrow" : n > 1 ? `in ${n} days` : n === -1 ? "yesterday" : `${-n} days ago`;
 }
 
-const stored = (key: string): Record<string, string> => {
+function stored<T = string>(key: string): Record<string, T> {
   try {
     return JSON.parse(localStorage.getItem(key) ?? "{}");
   } catch {
     return {};
   }
-};
+}
+
+/** What the layout of the tender page gets: the questions on the document, and the button that opens the message. */
+export type QuestionsLayer = AskLayer & { action: ReactNode };
 
 export function QuestionsView({
   analysisId,
@@ -46,17 +60,19 @@ export function QuestionsView({
   onState,
   onReload,
   onItem,
+  layout,
 }: {
   analysisId: string;
   state: QuestionsState | null;
   onState: (s: QuestionsState) => void;
   onReload: () => void;
   onItem: (oz: string) => void;
+  layout?: (layer: QuestionsLayer) => ReactNode; // drawn on the tender's document instead of as a view of its own
 }) {
   const file = state?.lv.file ?? "";
   const fromFile = state?.lv.email ?? ""; // the client's address as the LV gives it
-  // Picked for the next message: at first every question that is in no message yet.
-  const [picked, setPicked] = useState<Set<string> | null>(null);
+  const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [open, setOpen] = useState(false); // the dialog with the message
   const [to, setTo] = useState("");
   const [sender, setSender] = useState(() => localStorage.getItem(SENDER_KEY) ?? "");
   const [subject, setSubject] = useState("");
@@ -69,25 +85,38 @@ export function QuestionsView({
   const [checked, setChecked] = useState<string | null>(null); // what the last look into the inbox found
 
   const questions = state?.questions ?? [];
-  const keys = useMemo(() => {
-    const all = questions.map((q) => q.key);
-    return picked ? all.filter((k) => picked.has(k)) : questions.filter((q) => q.status === "new").map((q) => q.key);
-  }, [questions, picked]);
-
+  // What is ticked and reworded is kept in this browser per LV file: it outlives a change of step.
   useEffect(() => {
-    if (file) setTo(stored(TO_KEY)[file] || (fromFile.includes("@") ? fromFile : ""));
+    if (!file) return;
+    const kept = stored<Draft>(DRAFT_KEY)[file];
+    setDraft(kept && Array.isArray(kept.picked) ? { picked: kept.picked, texts: kept.texts ?? {} } : EMPTY);
+    setTo(stored(TO_KEY)[file] || (fromFile.includes("@") ? fromFile : ""));
   }, [file, fromFile]);
+  const change = (next: Draft) => {
+    setDraft(next);
+    setEdited(false); // the message follows the questions again
+    if (file) localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...stored<Draft>(DRAFT_KEY), [file]: next }));
+  };
+  // The questions of the next message, in LV order, and the wording of those that were reworded.
+  const keys = useMemo(() => questions.filter((q) => draft.picked.includes(q.key)).map((q) => q.key), [questions, draft.picked]);
+  const texts = useMemo(
+    () => Object.fromEntries(keys.filter((k) => draft.texts[k]?.trim()).map((k) => [k, draft.texts[k]])),
+    [keys, draft.texts],
+  );
 
-  // The message follows the picked questions and the signature until it is changed by hand.
+  // The message follows the ticked questions and the signature until it is changed by hand. It is written
+  // while it is looked at: in the dialog, or on the view of its own.
+  const live = open || !layout;
   const asked = useRef(0);
   useEffect(() => {
+    if (!live) return;
     if (edited || keys.length === 0) {
       if (keys.length === 0 && !edited) setBody("");
       return;
     }
     const mine = ++asked.current;
     const timer = window.setTimeout(() => {
-      composeQuestions(analysisId, keys, sender).then(
+      composeQuestions(analysisId, keys, sender, texts).then(
         (m) => {
           if (mine !== asked.current) return;
           setSubject(m.subject);
@@ -97,16 +126,17 @@ export function QuestionsView({
       );
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [analysisId, keys, sender, edited]);
+  }, [analysisId, keys, texts, sender, edited, live]);
 
-  if (!state) return <div className="questions"><p className="quiet">Reading the bidder questions…</p></div>;
+  if (!state) {
+    return layout ? layout({ card: () => null, mark: () => null, action: null }) : <div className="questions"><p className="quiet">Reading the bidder questions…</p></div>;
+  }
 
   const count = (s: BidderQuestion["status"][]) => questions.filter((q) => s.includes(q.status)).length;
-  const toggle = (key: string) => {
-    const next = new Set(keys);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    setPicked(next);
+  const toggle = (key: string) => change({ ...draft, picked: draft.picked.includes(key) ? draft.picked.filter((k) => k !== key) : [...draft.picked, key] });
+  const reword = (key: string, text: string | null) => {
+    const { [key]: _, ...rest } = draft.texts;
+    change({ ...draft, texts: text === null ? rest : { ...rest, [key]: text } });
   };
 
   // "draft": a link into the mail program; "file": the same message as an .eml file, for a message too long
@@ -116,12 +146,12 @@ export function QuestionsView({
     setError(null);
     try {
       const address = to.trim();
-      const next = await mailQuestions(analysisId, { keys, to: address, subject, body, via: via === "smtp" ? "smtp" : "draft" });
+      const next = await mailQuestions(analysisId, { keys, texts, to: address, subject, body, via: via === "smtp" ? "smtp" : "draft" });
       localStorage.setItem(SENDER_KEY, sender);
       localStorage.setItem(TO_KEY, JSON.stringify({ ...stored(TO_KEY), [file]: address }));
       onState(next);
-      setPicked(null);
-      setEdited(false);
+      // what went into the message is no longer prepared: the question reads as it was asked from now on
+      change({ picked: [], texts: Object.fromEntries(Object.entries(draft.texts).filter(([k]) => !keys.includes(k))) });
       if (via === "draft") {
         // The user's own mail program, with the message filled in; the app cannot see what happens there.
         // In a new tab: where the browser hands mailto: to a web mail page (Gmail, Yandex), that page would
@@ -165,12 +195,12 @@ export function QuestionsView({
   const proposals = (key: string) => state.amendments.filter((a) => a.key === key);
   // A question is closed once what its answer changes on our side has been decided, one way or the other.
   const closed = (key: string) => proposals(key).length > 0 && proposals(key).every((a) => a.status !== "proposed");
-  const open = state.amendments.filter((a) => a.status === "proposed").length;
+  const toDecide = state.amendments.filter((a) => a.status === "proposed").length;
+  const fresh = questions.filter((q) => q.status === "new");
 
   const ready = keys.length > 0 && /^\S+@\S+$/.test(to.trim()) && subject.trim() !== "" && body.trim() !== "";
 
-  return (
-    <div className="questions">
+  const headEl = (
       <div className="q-head">
         <p>
           <b>{questions.length}</b> bidder {questions.length === 1 ? "question" : "questions"}
@@ -190,7 +220,10 @@ export function QuestionsView({
           Download as text
         </a>
       </div>
-      {(state.inbox || open > 0) && (
+  );
+  const inboxEl = (
+    <>
+      {(state.inbox || toDecide > 0) && (
         <div className="q-inbox">
           {state.inbox && (
             <>
@@ -198,28 +231,28 @@ export function QuestionsView({
                 {checking ? "Looking into the inbox" : "Check the inbox for replies"}
               </button>
               <span className="quiet">
-                {checked ?? (waiting === 0 ? "Every message has its reply." : `${waiting} ${waiting === 1 ? "message waits" : "messages wait"} for a reply · inbox of ${state.inbox}`)}
+                {checked ?? (state.mails.length === 0 ? "No message has gone out yet." : waiting === 0 ? "Every message has its reply." : `${waiting} ${waiting === 1 ? "message waits" : "messages wait"} for a reply · inbox of ${state.inbox}`)}
               </span>
             </>
           )}
-          {open > 0 && (
+          {toDecide > 0 && (
             <span className="q-open">
-              <b>{open}</b> {open === 1 ? "change" : "changes"} from the answers to decide
+              <b>{toDecide}</b> {toDecide === 1 ? "change" : "changes"} from the answers to decide
             </span>
           )}
         </div>
       )}
-
-      {questions.length === 0 ? (
+    </>
+  );
+  const noneEl = (
         <p className="quiet q-none">
           No finding of this LV needs the client so far. The rule checks raise few questions; the AI review (in the
           findings pane) writes one for every unclear description, contradiction or missing item it finds.
         </p>
-      ) : (
-        <div className="q-cols">
-          <ol className="q-list">
-            {questions.map((q) => (
-              <li key={q.key} className={`q-row is-${q.status}${closed(q.key) ? " is-closed" : ""}`}>
+  );
+  /** One question: whether it goes into the next message, how it stands, the client's answer and what it changes. */
+  const row = (q: BidderQuestion) => (
+    <>
                 <input
                   type="checkbox"
                   aria-label={`Ask question ${q.no}`}
@@ -243,7 +276,7 @@ export function QuestionsView({
                     </span>
                   </div>
                   <p className="q-text" lang="de">
-                    {q.question}
+                    {draft.texts[q.key]?.trim() || q.question}
                   </p>
                   {q.evidence && (
                     <p className="q-quote" lang="de">
@@ -261,17 +294,28 @@ export function QuestionsView({
                   )}
                   {proposals(q.key).length > 0 && <Decision amendments={proposals(q.key)} onChanged={onReload} />}
                 </div>
-              </li>
-            ))}
-          </ol>
-
-          <div className="q-side">
+    </>
+  );
+  const composeEl = (
             <section className="q-compose">
               <h2 className="caption">
                 Message to the client{keys.length > 0 && ` · ${keys.length} ${keys.length === 1 ? "question" : "questions"}`}
               </h2>
               {keys.length === 0 ? (
-                <p className="quiet">Tick the questions to ask. Every question is already in a message.</p>
+                <>
+                  <p className="quiet">
+                    {fresh.length === 0
+                      ? "Every question is already in a message. Tick one on its card to ask it again."
+                      : "No question is ticked. Tick the ones to ask on their cards beside the items; they come together here as one message."}
+                  </p>
+                  {fresh.length > 0 && (
+                    <div className="q-actions">
+                      <button className="btn" onClick={() => change({ ...draft, picked: fresh.map((q) => q.key) })}>
+                        Take all {fresh.length} not asked
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <>
                   <label>
@@ -322,17 +366,18 @@ export function QuestionsView({
                   </label>
                   {error && <p className="q-error" role="alert">{error}</p>}
                   <div className="q-actions">
-                    <button className="btn" disabled={!ready || busy !== null} onClick={() => void send("draft")}>
-                      {busy === "draft" ? "Opening" : "Open in mail program"}
-                    </button>
-                    <button className="btn q-file" disabled={!ready || busy !== null} onClick={() => void send("file")}>
-                      {busy === "file" ? "Writing the file" : "Download for Outlook (.eml)"}
-                    </button>
+                    {/* where the app has an account, it sends: the other ways stay beside it, quieter */}
                     {state.account && (
                       <button className="btn q-send" disabled={!ready || busy !== null} onClick={() => void send("smtp")}>
                         {busy === "smtp" ? "Sending" : `Send from ${state.account}`}
                       </button>
                     )}
+                    <button className={state.account ? "text-link" : "btn"} disabled={!ready || busy !== null} onClick={() => void send("draft")}>
+                      {busy === "draft" ? "Opening" : "Open in mail program"}
+                    </button>
+                    <button className={state.account ? "text-link" : "btn q-file"} disabled={!ready || busy !== null} onClick={() => void send("file")}>
+                      {busy === "file" ? "Writing the file" : "Download for Outlook (.eml)"}
+                    </button>
                     <button
                       className="text-link"
                       disabled={!body}
@@ -356,13 +401,148 @@ export function QuestionsView({
                 </>
               )}
             </section>
+  );
+  const mailsEl = [...state.mails].reverse().map((m) => <MailCard key={m.id} mail={m} onChanged={onReload} />);
 
-            {[...state.mails].reverse().map((m) => (
-              <MailCard key={m.id} mail={m} onChanged={onReload} />
+  // On the tender's document (D-069): the tender as it stands; under a finding its question, on the map the
+  // mark of the question, at the top right the button to the message.
+  if (layout) {
+    const byFinding = new Map<string, BidderQuestion>();
+    for (const q of questions) for (const f of q.findings) byFinding.set(f, q);
+    const of = (oz: string) => questions.filter((q) => q.item_oz === oz);
+    return (
+      <>
+        {layout({
+          card: (f: Finding) => {
+            const q = byFinding.get(`${f.check_id}|${f.item_oz}|${f.evidence}`);
+            return q ? (
+              <AskCard key={q.key} q={q} picked={keys.includes(q.key)} text={draft.texts[q.key] ?? null} closed={closed(q.key)}
+                onToggle={() => toggle(q.key)} onText={(text) => reword(q.key, text)} onMessage={() => setOpen(true)}>
+                {proposals(q.key).length > 0 && <Decision amendments={proposals(q.key)} onChanged={onReload} />}
+              </AskCard>
+            ) : null;
+          },
+          mark: (oz: string) => {
+            const qs = of(oz);
+            if (!qs.length) return null;
+            if (qs.some((q) => q.status === "new")) return { cls: `tn-flag warn td-qm${qs.some((q) => q.status === "new" && keys.includes(q.key)) ? " on" : ""}`, text: "?" }; // can be asked; ticked: filled
+            if (qs.some((q) => q.status === "drafted" || q.status === "sent")) return { cls: "tn-blk td-qm", text: "→" }; // with the client
+            return { cls: "tn-blk diff td-qm", text: "✓" }; // answered
+          },
+          action: (
+            <button className={`btn-new td-qbtn${keys.length ? " on" : ""}`} onClick={() => setOpen(true)}
+              title="The ticked questions as one message to the client; the messages that went out and their replies">
+              Message to the client{keys.length > 0 && <b>{keys.length}</b>}
+              {keys.length === 0 && toDecide > 0 && <i>{toDecide} to decide</i>}
+            </button>
+          ),
+        })}
+        {open && (
+          <MessageDialog onClose={() => setOpen(false)}>
+            <section className="questions td-qfront">
+              {headEl}
+              {questions.length === 0 ? noneEl : composeEl}
+            </section>
+            <section className="questions td-qfront">
+              <h2 className="caption">Messages that went out</h2>
+              {inboxEl}
+              {state.mails.length === 0 && <p className="quiet">None yet. A message that went out stands here with the place for the client's reply.</p>}
+              {mailsEl}
+            </section>
+          </MessageDialog>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <div className="questions">
+      {headEl}
+      {inboxEl}
+      {questions.length === 0 ? (
+        noneEl
+      ) : (
+        <div className="q-cols">
+          <ol className="q-list">
+            {questions.map((q) => (
+              <li key={q.key} className={`q-row is-${q.status}${closed(q.key) ? " is-closed" : ""}`}>
+                {row(q)}
+              </li>
             ))}
+          </ol>
+          <div className="q-side">
+            {composeEl}
+            {mailsEl}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** The message to the client as a sign over the page: the next message at the left, what went out at the right. */
+function MessageDialog({ onClose, children }: { onClose: () => void; children: ReactNode }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const d = dialog.current;
+    if (d && !d.open) d.showModal();
+  }, []);
+  return (
+    <dialog ref={dialog} className="new-project q-dialog" aria-label="Message to the client" onCancel={(e) => (e.preventDefault(), onClose())} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <header>
+        <b>Message to the client</b>
+        <span>Bidder questions</span>
+        <button className="btn-ghost small" onClick={onClose}>
+          Close
+        </button>
+      </header>
+      <div className="np-body">{children}</div>
+    </dialog>
+  );
+}
+
+/** The question of a finding, under the finding's card. Not asked yet: a tick for the next message and the
+    German wording to change. Asked: how it stands, the client's answer, what it changes (`children`), and a
+    tick to ask it again. The wording is the card's own while it is typed and is handed on when left. */
+function AskCard({ q, picked, text, closed, onToggle, onText, onMessage, children }: { q: BidderQuestion; picked: boolean; text: string | null; closed: boolean; onToggle: () => void; onText: (text: string | null) => void; onMessage: () => void; children?: ReactNode }) {
+  const [typed, setTyped] = useState(text ?? q.question);
+  useEffect(() => setTyped(text ?? q.question), [text, q.question]);
+  const reworded = text !== null && text.trim() !== "" && text.trim() !== q.question.trim();
+  const open = q.status === "new" || picked; // to be worded: not asked yet, or ticked to be asked again
+  return (
+    <div className={`questions td-ask is-${q.status}${picked ? " on" : ""}${closed ? " is-closed" : ""}`}>
+      <div className="td-askrow">
+        <label>
+          <input type="checkbox" checked={picked} onChange={onToggle} />
+          <b>{q.status === "new" ? "Ask the client" : "Ask again"}</b>
+        </label>
+        {picked ? (
+          <button className="text-link" onClick={onMessage}>in the next message</button>
+        ) : (
+          <span className={`tag q-status is-${q.status}`}>
+            {closed ? "Closed" : STATUS[q.status]}
+            {q.sent_at && q.status === "sent" ? ` ${stamp(q.sent_at).slice(0, 10)}` : ""}
+          </span>
+        )}
+      </div>
+      {open ? (
+        <>
+          <textarea lang="de" aria-label="The question as it is asked" rows={Math.min(9, Math.max(3, Math.ceil(typed.length / 40)))} value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            onBlur={() => typed !== (text ?? q.question) && onText(typed.trim() && typed.trim() !== q.question.trim() ? typed : null)} />
+          {reworded && <button className="text-link" onClick={() => onText(null)}>Back to the drafted wording</button>}
+        </>
+      ) : (
+        <p className="q-text" lang="de">{q.question}</p>
+      )}
+      {q.answer && (
+        <div className="q-answer">
+          <span className="caption">{q.status === "partly" ? "The client answers in part" : "The client answers"}</span>
+          <p className="q-quote" lang="de">„{q.answer.quote}“</p>
+          {q.answer.meaning && <p>{q.answer.meaning}</p>}
+        </div>
+      )}
+      {children}
     </div>
   );
 }

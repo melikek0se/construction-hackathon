@@ -112,6 +112,15 @@
         "reason": "agent decided: the tight boxes are DESIGN.md's own tag (padding 0 5px), item-link chip and index plates, reproduced in a mockup that must match the app"
       },
       {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "playground/intake/index.html"
+        ],
+        "createdAt": "2026-11-22T04:31:43.359Z",
+        "reason": "agent decided: mock-up follows DESIGN.md's dense specs (tag padding 0 5px, file chip 0 8px, 22-30px index plates); not confirmed by the user"
+      },
+      {
         "rule": "layout-transition",
         "value": "*",
         "files": [
