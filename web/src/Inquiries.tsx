@@ -87,6 +87,7 @@ export function InquiriesView({
             <>
               <b>{state.packages.length}</b> package{state.packages.length === 1 ? "" : "s"} · <b>{asked}</b> items asked outside
               {c.quoted ? <> · <b>{c.quoted}</b> with a quote</> : null}
+              {c.at_hand ? <> · <b>{c.at_hand}</b> on an earlier quote until this tender's is in</> : null}
               {c.assumed ? <> · <b>{c.assumed}</b> assumed from past bids</> : null}
               {state.waits.length ? <> · <b>{state.waits.length}</b> wait for the client</> : null}
             </>

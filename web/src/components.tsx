@@ -546,33 +546,54 @@ export function ItemSheet({
   );
 }
 
-/** What past bids paid for similar items: a price with its band and sources, or the reason there is none. */
+/** What a price for the item can be taken from while no quote for this tender is in: first what partners
+ *  quoted for the same thing in other tenders (the price book), then what past bids paid for similar items.
+ *  A price with its band and sources, or the reason there is none. */
 function PriceBlock({ price }: { price: PriceSuggestion }) {
+  const partners = price.basis === "partners";
+  const day = (iso: string) => iso.slice(0, 10).split("-").reverse().join(".");
   return (
     <section className="price">
-      <h3 className="lv-head">Price from past bids</h3>
+      <h3 className="lv-head">{partners ? "Price from your partners' quotes" : "Price from past bids"}</h3>
       {price.unit_price !== null ? (
         <p className="price-value">
           <b className="num">{eur(String(price.unit_price))}</b>
           <span>
             per unit, {eur(String(price.low))} to {eur(String(price.high))} · {price.confidence} confidence
+            {price.stale && " · out of date"}
           </span>
         </p>
       ) : (
-        <p className="price-none">No reliable price.</p>
+        <p className="price-none">{price.material ? "No unit price to go by, only the material." : "No reliable price."}</p>
       )}
       <PriceRange price={price} />
       <p className="quiet">
         {price.reason}
-        {price.matches.length > 0 && " Each circle is one past price, lettered by project; the grey band is the range."}
+        {partners && " A quote for this tender takes its place as soon as one is in."}
+        {price.matches.length > 0 && " Each circle is one price; the grey band is the range."}
       </p>
+      {price.past && (
+        <p className="quiet">
+          Past bids say <b className="num">{eur(String(price.past.unit_price))}</b> ({eur(String(price.past.low))} to {eur(String(price.past.high))}, {price.past.confidence} confidence).
+        </p>
+      )}
+      {price.material && (
+        <p className="price-material">
+          <b className="num">{eur(String(price.material.unit_price))}</b>
+          <span>
+            for the material alone: {price.material.supplier}, {day(price.material.date)}
+            {price.material.stale ? ", out of date" : price.material.valid_until ? `, valid until ${day(price.material.valid_until)}` : ""}. A supplier's price is the material part of a unit price; labour, equipment
+            and overheads come on top.
+          </span>
+        </p>
+      )}
       {price.matches.length > 0 && (
         <ul className="price-sources">
           {price.matches.map((m, i) => (
             <li key={i}>
               <b className="num">{eur(String(m.unit_price))}</b>
               <span>
-                Project {m.project}, {m.source}, item {m.item_oz}
+                {m.source.startsWith("quote") ? `${m.project}, ${m.source} of ${day(m.date)}` : `Project ${m.project}, ${m.source}, item ${m.item_oz}`}
                 {m.qty !== null && `, ${qty(String(m.qty))} ${m.unit}`}
                 {m.same_size === false && ", other nominal size"}
                 <span className="price-label" lang="de">

@@ -25,6 +25,7 @@ import re
 import time
 import uuid
 from datetime import date, timedelta
+from decimal import Decimal
 
 import anthropic
 from openpyxl import Workbook, load_workbook
@@ -160,22 +161,66 @@ def _fresh(quote: dict, today: date) -> bool:
         return date.fromisoformat(quote["created"][:10]) >= today - timedelta(days=QUOTE_FRESH_DAYS)
 
 
-def at_hand(boq: BoQ, project_id: str | None) -> dict[str, dict]:
-    """Items a quote kept from another tender still prices: the same short text and unit, the quote still
-    valid (or, where it states no validity, not older than QUOTE_FRESH_DAYS). Nothing is asked for these."""
-    today, names = date.today(), {s["id"]: s["name"] for s in suppliers()}
-    known: dict[tuple[str, str], dict] = {}
+def book(boq: BoQ, project_id: str | None) -> dict[str, dict]:
+    """What the price book says about the items of an LV: the prices partners quoted for the same thing in
+    other tenders. Per item up to two entries: `whole` — a subcontractor's price, the whole unit price, with
+    the firm's surcharge on it; `material` — a supplier's price, which is the material part only and never a
+    unit price. A price that still holds goes before one that is out of date; an out-of-date one is used
+    where nothing else is there, and says so. The same matching as for past bids (boq.prices): same unit,
+    same thing, same nominal size. An item with a price here is still asked for in this tender: the book is
+    what stands in until the quote is in, and what is left when none comes.
+
+    Example quotes (boq.partners_demo) are made-up prices and price nothing."""
+    from boq.prices import History, HistoryItem
+
+    today, firms, surcharge = date.today(), {s["id"]: s for s in suppliers()}, company()["nu_surcharge"]
+    lines: dict[tuple[str, bool], list] = {}
+    until: dict[tuple, str] = {}
     for q in all_quotes():
-        # an example quote (boq.partners_demo) is a made-up price: it never prices a real item
-        if (q["project_id"], q["file"]) == (project_id, boq.file) or not _fresh(q, today) or (q["terms"] or {}).get("example"):
+        terms = q["terms"] or {}
+        if (q["project_id"], q["file"]) == (project_id, boq.file) or terms.get("example"):
             continue
+        who = firms.get(q["supplier_id"] or "")
+        kind, name = (who["kind"], who["name"]) if who else ("supplier", "a supplier no longer in the directory")
         for line in q["lines"]:
-            key = (_same(line.get("label", "")), line.get("unit", ""))
-            if key[0] and (key not in known or q["created"] > known[key]["date"]):
-                known[key] = {"unit_price": line["unit_price"], "supplier": names.get(q["supplier_id"], "a supplier"),
-                              "date": q["created"][:10], "valid_until": (q["terms"] or {}).get("valid_until") or None,
-                              "product": line.get("product", "")}
-    return {i.oz: known[(_same(i.label), i.unit)] for i in boq.items if (_same(i.label), i.unit) in known}
+            label, unit = line.get("label") or "", _unit(line.get("unit") or "")
+            if not label or not unit or line.get("unit_differs") or line.get("alternative"):
+                continue  # another unit or another product than asked is no price for the thing itself
+            item = Item(oz=str(line.get("oz", "")), short_text=label, unit_raw=line.get("unit") or "", unit=unit,
+                        up=Decimal(str(round(_net(line, terms), 4))), source={"file": q["file"]})
+            lines.setdefault((kind, _fresh(q, today)), []).append(HistoryItem(name, "quote", q["created"][:10], q["file"], item))
+            until[(name, q["created"][:10], q["file"], item.oz)] = terms.get("valid_until") or ""
+    index = {key: History(found) for key, found in lines.items()}
+    out: dict[str, dict] = {}
+    for item in boq.items:
+        asked = item.model_copy(update={"long_text": ""})  # the book knows short texts only
+        for kind, part in (("subcontractor", "whole"), ("supplier", "material")):
+            for fresh in (True, False):
+                found = index[(kind, fresh)].suggest(asked) if (kind, fresh) in index else None
+                if found is None or found.unit_price is None:
+                    continue
+                close = [m for m in found.matches if m.same_size is not False and m.similarity >= found.matches[0].similarity - 0.15]
+                best = max(close, key=lambda m: (m.similarity, m.history.date))
+                up = 1 + surcharge / 100 if part == "whole" else 1
+                names = list(dict.fromkeys(m.history.project for m in close))
+                out.setdefault(item.oz, {})[part] = {
+                    "unit_price": round(float(found.unit_price) * up, 2), "low": round(float(found.low) * up, 2),
+                    "high": round(float(found.high) * up, 2),
+                    # a price past its validity is a memory of a price: never better than "medium"
+                    "confidence": found.confidence if fresh else "medium", "stale": not fresh,
+                    "part": f"unit price incl. {surcharge:g} % on the subcontractor" if part == "whole" else "material",
+                    "supplier": ", ".join(names[:3]), "date": max(m.history.date for m in close),
+                    "valid_until": until.get((best.history.project, best.history.date, best.history.file, best.history.item.oz)) or None,
+                    "reason": (f"{'Median of ' + str(len(close)) + ' quotes' if len(close) > 1 else 'A quote'} from {', '.join(names[:3])} "
+                               f"for {'this work' if part == 'whole' else 'this material'} in another tender"
+                               + ("" if fresh else ", out of date: ask again before relying on it") + "."),
+                    "matches": [{"project": m.history.project, "source": "quote" + ("" if fresh else ", out of date"),
+                                 "date": m.history.date, "file": m.history.file, "item_oz": m.history.item.oz,
+                                 "label": m.history.item.label, "qty": None, "unit": m.history.item.unit_raw,
+                                 "unit_price": round(float(m.history.unit_price) * up, 2), "similarity": m.similarity,
+                                 "same_size": m.same_size} for m in close]}
+                break
+    return out
 
 
 # ------------------------------------------------------------------ the plan (Claude)
@@ -936,27 +981,33 @@ def _eur(value: float) -> str:
 
 def item_prices(plan_: dict, chosen: dict, comparisons: dict[str, dict], items: dict[str, Item],
                 wait: dict[str, str], hand: dict[str, dict], assumed: dict[str, dict]) -> dict[str, dict]:
-    """Where the price of every item comes from, as it stands: `waits` for the client, `at_hand` (a quote
-    kept from another tender), `quoted` (a quote for it is in, taken or proposed), `asked` (in a package,
-    no quote yet), `assumed` from past bids where nothing better is there, `own` (no inquiry: the firm
-    prices it) or `none`. A supplier's price is the material part only; a subcontractor's is the whole
-    unit price, with the firm's surcharge on it."""
+    """Where the price of every item comes from, as it stands, in this order: `waits` for the client;
+    `quoted` — a quote for it in this tender is in (taken or proposed); else `at_hand` — the price book has
+    it from an earlier tender (`hand`, see `book`), marked when it is out of date; else `assumed` from past
+    bids; else `asked` (in a package, nothing to go by yet) or `own` (no inquiry: the firm prices it).
+    A supplier's price is the material part only; a subcontractor's is the whole unit price, with the
+    firm's surcharge on it."""
     surcharge, out, in_package = company()["nu_surcharge"], {}, {}
     for p in plan_["packages"]:
         for oz in p["items"]:
             in_package[oz] = p
     for oz in items:
+        p = in_package.get(oz)
+        # what stands in while no quote is there: the book before past bids. Of the book, the part that fits
+        # the item: a subcontractor's price for a subcontracted item, a supplier's for bought material.
+        known = hand.get(oz) or {}
+        kept = (known.get("whole") if not p or p["kind"] == "subcontract" else None) or \
+               (known.get("material") if not p or p["kind"] == "material" else None)
         guess = assumed.get(oz)
-        fallback = ({"status": "assumed", "unit_price": guess["unit_price"], "source": "past bids",
+        fallback = ({"status": "at_hand", "unit_price": kept["unit_price"], "source": kept["supplier"], "date": kept["date"],
+                     "valid_until": kept["valid_until"], "part": kept["part"], "stale": kept["stale"],
+                     "low": kept["low"], "high": kept["high"]} if kept else
+                    {"status": "assumed", "unit_price": guess["unit_price"], "source": "past bids",
                      "low": guess["low"], "high": guess["high"], "part": "unit price"}
                     if guess and guess.get("unit_price") is not None else None)
         if oz in wait:
             out[oz] = {"status": "waits", "why": wait[oz]}
-        elif oz in hand:
-            out[oz] = {"status": "at_hand", "unit_price": hand[oz]["unit_price"], "source": hand[oz]["supplier"],
-                       "date": hand[oz]["date"], "valid_until": hand[oz]["valid_until"], "part": "material"}
-        elif oz in in_package:
-            p = in_package[oz]
+        elif p:
             cmp, choice = comparisons.get(p["id"]) or {}, chosen.get(p["id"]) or {}
             picked = choice or (cmp.get("proposal") or {})
             line = column = None

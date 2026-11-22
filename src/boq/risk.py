@@ -19,6 +19,8 @@ BANDS = {
     "quote_soft": (6.0, "a quote that is not binding, or runs out before the bid stops binding"),
     "quote_other": (8.0, "a quote for another product than tendered"),
     "own": (5.0, "typed in, no source on record"),
+    "book": (8.0, "a partner's quote for the same thing in another tender, still valid"),
+    "book_stale": (15.0, "a partner's quote from another tender that is out of date"),
     "history": (12.0, "taken from past bids"),
     "file": (0.0, "the price in the file"),
     "open_question": (20.0, "priced although a question to the client is open"),
@@ -41,6 +43,8 @@ def assess(rows: list[dict], sources: dict[str, dict], binding_until: str | None
             basis = "file"
         elif row["source"] == "suggestion":
             basis = "history"
+            if (row.get("suggestion") or {}).get("basis") == "partners":
+                basis = "book_stale" if row["suggestion"].get("stale") else "book"
         elif row["source"] == "quote" or (src.get("status") == "quoted" and src.get("taken")):
             soft = bool(src.get("valid_until") and binding_until and src["valid_until"] < binding_until)
             basis = "quote_other" if src.get("alternative") else "quote_soft" if soft else "quote"

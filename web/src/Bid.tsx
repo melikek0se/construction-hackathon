@@ -105,8 +105,8 @@ export function BidView({
       )}
       {bid.from_suggestions > 0 && (
         <p className="bid-note">
-          {bid.from_suggestions} {bid.from_suggestions === 1 ? "price is" : "prices are"} taken from past bids as they stand
-          (marked "from past bids"). They are a starting point: check each against its sources on the item.
+          {bid.from_suggestions} {bid.from_suggestions === 1 ? "price is" : "prices are"} taken from suggestions as they stand
+          (marked "suggested": a partner's quote in another tender, or past bids). They are a starting point: check each against its sources on the item.
         </p>
       )}
       {bid.corrected_quantities > 0 && (
@@ -133,7 +133,7 @@ export function BidView({
             <th>Item</th>
             <th>Description</th>
             <th className="r">Quantity</th>
-            <th className="r">From past bids</th>
+            <th className="r" title="While no quote for this tender is in: a partner's quote for the same work in another tender, else similar items of past bids">Suggested</th>
             <th className="r">Unit price</th>
             <th className="r">Allowance</th>
             <th className="r">In the bid</th>
@@ -182,7 +182,7 @@ function Row({ row, busy, onItem, onPrice }: { row: BidRow; busy: boolean; onIte
           <button
             className="text-link"
             disabled={busy}
-            title={`${row.suggestion.sources} past ${row.suggestion.sources === 1 ? "price" : "prices"}, confidence ${row.suggestion.confidence}. Click to take it.`}
+            title={`${row.suggestion.sources} ${row.suggestion.basis === "partners" ? "quote" : "past price"}${row.suggestion.sources === 1 ? "" : "s"}, confidence ${row.suggestion.confidence}. Click to take it.`}
             onClick={() => void onPrice(typed(row.suggestion!.unit_price))}
           >
             {eur(row.suggestion.unit_price)}
@@ -190,7 +190,16 @@ function Row({ row, busy, onItem, onPrice }: { row: BidRow; busy: boolean; onIte
         ) : (
           <span className="quiet">no reliable price</span>
         )}
-        {row.suggestion && <small>{row.suggestion.confidence}</small>}
+        {row.suggestion && (
+          <small>
+            {row.suggestion.basis === "partners" ? `partner's quote${row.suggestion.stale ? ", out of date" : ""}` : "past bids"} · {row.suggestion.confidence}
+          </small>
+        )}
+        {row.material && (
+          <small title={`${row.material.supplier}, ${row.material.date}${row.material.stale ? ", out of date" : ""}. A supplier's price is the material part only.`}>
+            material {eur(row.material.unit_price)}
+          </small>
+        )}
       </td>
       <td className="r">
         <input
@@ -204,7 +213,7 @@ function Row({ row, busy, onItem, onPrice }: { row: BidRow; busy: boolean; onIte
           onBlur={commit}
           onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
         />
-        {row.source === "suggestion" && <small>from past bids</small>}
+        {row.source === "suggestion" && <small>suggested</small>}
       </td>
       <td className="r num">{row.allowance_percent !== null ? `+ ${num.format(row.allowance_percent)} %` : ""}</td>
       <td className="r num">{row.price !== null ? eur(row.price) : ""}</td>

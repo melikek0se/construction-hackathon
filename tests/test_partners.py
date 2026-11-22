@@ -53,7 +53,7 @@ def test_the_examples_fill_the_page_are_marked_and_never_price_a_real_item():
     boq = BoQ(file="x.x83", format="gaeb_xml", items=[Item(oz="1", short_text="PP-Kanalrohr DN 300 SN 10", unit="m", unit_raw="m",
                                                          qty=10, source={"file": "x.x83"})])
     assert boq.items[0].label == "PP-Kanalrohr DN 300 SN 10"
-    assert supply.at_hand(boq, None) == {}
+    assert supply.book(boq, None) == {}
     client.delete("/api/partners/examples")
     assert client.get("/api/partners").json()["partners"] == []
 
@@ -107,3 +107,49 @@ def test_a_firm_found_on_the_web_is_a_candidate_until_it_is_taken_into_the_direc
     firm = supply.supplier(taken["supplier_id"])
     assert taken["status"] == "added" and firm["source"] == "web" and firm["groups"] == ["Statik"]
     assert firm["more"]["found"]["url"] == "https://a.example/" and firm["more"]["website"] == "a.example"
+
+
+def _quote(project: str, supplier: str, lines: list[tuple[str, str, float]], valid_until: str) -> None:
+    """A quote as the price inquiries keep it: (label, unit, net price) per line."""
+    with db.engine().begin() as conn:
+        conn.execute(insert(db.quotes).values(
+            id=f"{project}-{supplier}"[:12], created=db.now(), project_id=project, file="other.x83", mail_id="m", supplier_id=supplier,
+            package="p1", text="", terms={"basis": "free_to_site", "valid_until": valid_until, "binding": "binding"},
+            lines=[{"oz": str(n), "label": label, "unit": unit, "unit_price": price, "product": "", "alternative": False,
+                    "unit_differs": False, "note": "", "quote": None} for n, (label, unit, price) in enumerate(lines, 1)]))
+
+
+def test_a_price_is_the_quote_then_the_price_book_then_past_bids():
+    from boq.model import BoQ, Item
+    sub = supply.save_supplier({"name": "Asphalt Nord", "kind": "subcontractor"})["id"]
+    mat = supply.save_supplier({"name": "Rohr Nord", "kind": "supplier"})["id"]
+    _quote("old1", sub, [("Asphalttragschicht AC 22 T S, 10 cm", "m2", 20.0)], "2099-01-01")
+    _quote("old2", mat, [("PP-Kanalrohr DN 300 SN 10", "m", 40.0), ("PP-Kanalrohr DN 200 SN 10", "m", 20.0)], "2020-01-01")
+    item = lambda oz, text, unit: Item(oz=oz, short_text=text, unit=unit, unit_raw=unit, qty=10, source={"file": "new.x83"})  # noqa: E731
+    boq = BoQ(file="new.x83", format="gaeb_xml", items=[item("1", "Asphalttragschicht AC 22 T S, 10 cm", "m2"),
+                                                       item("2", "PP-Kanalrohr DN 300 SN 10", "m"),
+                                                       item("3", "Baustelle einrichten", "psch")])
+    known = supply.book(boq, "new")
+    # a subcontractor's price is a whole unit price, with the firm's 10 % on it; a supplier's is material only
+    assert known["1"]["whole"]["unit_price"] == 22.0 and not known["1"]["whole"]["stale"] and "material" not in known["1"]
+    assert known["2"]["material"]["unit_price"] == 40.0 and known["2"]["material"]["stale"] and "whole" not in known["2"]
+    assert known["2"]["material"]["confidence"] == "medium" and "out of date" in known["2"]["material"]["reason"]
+    assert "3" not in known
+    # the same quotes say nothing about the tender they were given for
+    assert supply.book(boq.model_copy(update={"file": "other.x83"}), "old1").get("1") is None
+
+    from boq.api import _prices
+    said = {s["item_oz"]: s for s in _prices(boq, "new")["suggestions"]}
+    assert said["1"]["basis"] == "partners" and said["1"]["unit_price"] == 22.0 and said["1"]["matches"][0]["project"] == "Asphalt Nord"
+    assert said["2"]["unit_price"] is None and said["2"]["material"]["supplier"] == "Rohr Nord"  # material is no unit price
+
+    items = {i.oz: i for i in boq.items}
+    plan = {"packages": [{"id": "p1", "kind": "subcontract", "items": ["1"]}, {"id": "p2", "kind": "material", "items": ["2"]}]}
+    before = supply.item_prices(plan, {}, {}, items, {}, known, {})
+    # both are in a package (asked for in this tender) and the book stands in until the quote is there
+    assert before["1"] == {**before["1"], "status": "at_hand", "unit_price": 22.0, "instead_of": "no quote for it yet", "stale": False}
+    assert before["2"]["status"] == "at_hand" and before["2"]["stale"] and before["2"]["part"] == "material"
+    assert before["3"] == {"status": "own"}
+    column = {"quote": "q1", "supplier": "Asphalt Nord", "date": "2026-11-22", "terms": {}, "lines": {"1": {"net": 19.0, "alternative": False, "product": ""}}}
+    after = supply.item_prices(plan, {"p1": {"mode": "single", "quote": "q1"}}, {"p1": {"columns": [column]}}, items, {}, known, {})
+    assert after["1"]["status"] == "quoted" and after["1"]["unit_price"] == 20.9 and after["1"]["taken"]

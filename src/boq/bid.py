@@ -126,8 +126,12 @@ def sheet(boq: BoQ, suggestions: dict | None, amendments: list[dict], kept: dict
             # the quantity the client gave in an answer; the file, and so the bid, still has `qty`
             "qty_answered": float(new_qty) if new_qty is not None else None,
             "suggestion": {"unit_price": s["unit_price"], "low": s["low"], "high": s["high"],
-                           "confidence": s["confidence"], "sources": len(s["matches"])}
+                           "confidence": s["confidence"], "sources": len(s["matches"]),
+                           # "partners": the price book (quotes of other tenders); "past bids": learned from old bids
+                           "basis": s.get("basis") or "past bids", "stale": bool(s.get("stale"))}
             if s and s["unit_price"] is not None else None,
+            # a supplier's earlier price for the material: beside the unit price, never in its place
+            "material": s.get("material") if s else None,
             "unit_price": float(base) if base is not None else None,
             "source": mine["source"] if mine else ("file" if item.up is not None else None),
             "allowance_percent": float(percent) if percent else None,

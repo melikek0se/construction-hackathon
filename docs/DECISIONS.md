@@ -816,3 +816,23 @@ send; the card should weigh into who is asked by rule and not only as a hint to 
   later files change no quantities; the only signal is token prices in bids (40 items), and the findings
   point at them barely more often than at other items (rules: 18 % against 7 %; with the AI review 25 %
   against 19 %). The dataset holds no ground truth for LV defects.
+
+## D-049 — A price is the quote for this tender, then the price book, then past bids
+Status: decided · 2026-11-22 (Atahan: "the price book is the main suggestion; before it the supplier is
+really asked for this project; if no answer comes, earlier prices or what was learned from earlier projects").
+Changes D-044 in one point.
+
+- Order per item: (1) a quote for this tender, from an inquiry; (2) until it is in, and where none comes, the
+  price book: what partners quoted for the same thing in other tenders (`supply.book`, the matching of
+  `boq.prices`: same unit, same thing, same nominal size); (3) only then similar items of past bids.
+- **An item with an earlier price is asked for all the same** (was: "a kept quote from another tender still
+  prices it, nothing is asked"). The book stands in; it does not replace asking.
+- A price past its validity (or older than 90 days without one) is still used where nothing else is
+  there, marked "out of date", never above medium confidence, with a wider risk band (15 % against 8 %).
+- A subcontractor's earlier price is a whole unit price (with the firm's surcharge) and is the suggestion
+  in the bid, before past bids, which stay beside it. A supplier's earlier price is the material part only:
+  it is shown beside the unit price and never taken as one (the rule of D-044 stands).
+- Example quotes price nothing.
+
+Revisit if: the unit price gets its labour / material / equipment split — then a supplier's price enters
+the unit price and this order holds for the material part too.

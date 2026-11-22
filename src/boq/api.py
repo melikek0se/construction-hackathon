@@ -269,8 +269,9 @@ def _item_values(analysis_id: str, boq: BoQ) -> dict[str, tuple[Decimal, str]]:
                 take(oz, up, f"the {doc['role']} of this LV ({doc['name']})")
     if len(out) < len(qty):
         try:
-            for s in (_prices(boq) or {"suggestions": []})["suggestions"]:
-                take(s["item_oz"], s["unit_price"], "past bids (a suggestion)")
+            for s in (_prices(boq, _project_id(analysis_id)) or {"suggestions": []})["suggestions"]:
+                take(s["item_oz"], s["unit_price"], "a partner's quote in another tender (a suggestion)"
+                     if s.get("basis") == "partners" else "past bids (a suggestion)")
         except Exception:  # the suggestions are a help here, never a reason to fail
             pass
     return out
@@ -1084,22 +1085,45 @@ def _analysis(analysis_id: str) -> tuple[BoQ, list[Finding]]:
     return boq, findings
 
 
-def _prices(boq: BoQ) -> dict | None:
-    """Price suggestions from the priced bids in dataset/; None for an LV that has prices already."""
+def _prices(boq: BoQ, project_id: str | None = None) -> dict | None:
+    """What a price can be suggested from, per item; None for an LV that has prices already. The order
+    (D-049): a quote for this tender is the price and is not a suggestion (boq.supply.item_prices); until it
+    is in, and where none comes, the price book — what partners quoted for the same thing in other tenders
+    (supply.book) — and only then what past bids paid for similar items (boq.prices). A subcontractor's
+    earlier price is a whole unit price and takes the place of the past-bids figure, which stays beside it
+    (`past`); a supplier's is the material part only and is given apart (`material`)."""
     if any(i.total is not None for i in boq.items):
         return None
-    return suggest_prices(boq, load_history(DATASET))
+    out = suggest_prices(boq, load_history(DATASET))
+    known, qty = supply.book(boq, project_id), {i.oz: i.qty for i in boq.items}
+    for s in out["suggestions"]:
+        entry = known.get(s["item_oz"]) or {}
+        s |= {"basis": "past bids" if s["unit_price"] is not None else None, "stale": False,
+              "material": entry.get("material"), "past": None}
+        whole = entry.get("whole")
+        if whole:
+            if s["unit_price"] is not None:
+                s["past"] = {k: s[k] for k in ("unit_price", "low", "high", "confidence", "reason")}
+            n = qty.get(s["item_oz"])
+            s |= {k: whole[k] for k in ("unit_price", "low", "high", "confidence", "reason", "stale")}
+            s |= {"basis": "partners", "matches": whole["matches"] + s["matches"],
+                  "value": float(n) * whole["unit_price"] if n is not None else None}
+    priced = [s for s in out["suggestions"] if s["unit_price"] is not None and qty.get(s["item_oz"]) is not None]
+    total = lambda key: sum(float(qty[s["item_oz"]]) * s[key] for s in priced)  # noqa: E731
+    out |= {"with_price": len(priced), "from_partners": sum(1 for s in priced if s["basis"] == "partners"),
+            "estimate": {"mid": total("unit_price"), "low": total("low"), "high": total("high")} if priced else None}
+    return out
 
 
 def _report(analysis_id: str) -> dict:
     boq, rule_findings = _analysis(analysis_id)
-    return build_report(boq, _with_stakes(analysis_id, boq, rule_findings + _llm_findings(analysis_id)), _prices(boq))
+    return build_report(boq, _with_stakes(analysis_id, boq, rule_findings + _llm_findings(analysis_id)), _prices(boq, _project_id(analysis_id)))
 
 
 @app.get("/api/analyses/{analysis_id}/prices")
 def prices(analysis_id: str):
     """Unit-price suggestions from past bids, with sources; `null` when the LV is priced."""
-    return _prices(_analysis(analysis_id)[0])
+    return _prices(_analysis(analysis_id)[0], _project_id(analysis_id))
 
 
 @app.post("/api/analyses/{analysis_id}/whatif")
@@ -1358,7 +1382,7 @@ def decide_amendment(amendment_id: str, body: Decision):
 def _bid(analysis_id: str) -> dict:
     boq, _ = _analysis(analysis_id)
     project_id = _project_id(analysis_id)
-    state = bid.sheet(boq, _prices(boq), amendments.about(project_id, boq.file), bid.entered(project_id, boq.file))
+    state = bid.sheet(boq, _prices(boq, project_id), amendments.about(project_id, boq.file), bid.entered(project_id, boq.file))
     return {**state, "file": boq.file, "format": boq.format,
             # the bid can go back as GAEB XML where the LV came as GAEB XML and its file is kept
             "x84": boq.format == "gaeb_xml" and _source_bytes(analysis_id) is not None}
@@ -1534,7 +1558,7 @@ def _supply_state(analysis_id: str) -> dict:
     dates = (project or {}).get("plan") or {}
     questions = mail.standing(_report(analysis_id)["questions"], mail.about(mail.BIDDER_QUESTIONS, project_id, boq.file))
     wait, assume = supply.held(questions)
-    hand = supply.at_hand(boq, project_id)
+    hand = supply.book(boq, project_id)
     kept = supply.find_plan(project_id, boq.file)
     directory = supply.suppliers()
     names = {s["id"]: s["name"] for s in directory}
@@ -1584,7 +1608,8 @@ def _supply_state(analysis_id: str) -> dict:
                         "quote": quote and quote["id"], "thread": thread, "status": status})
         packages.append({**p, "items": [{**row, "provisional": assume.get(row["oz"])} for row in _asked(boq, p["items"])],
                          "ask": ask, "comparison": comparisons[p["id"]], "chosen": chosen.get(p["id"])})
-    suggestions = _prices(boq)
+    # past bids alone: the price book goes before them and is `hand`
+    suggestions = None if base["priced_file"] else suggest_prices(boq, load_history(DATASET))
     assumed = {s["item_oz"]: s for s in (suggestions or {}).get("suggestions", [])}
     prices = supply.item_prices(plan_, chosen, comparisons, items, wait, hand, assumed)
     # the client has answered since the plan was made: these items can be asked for now
@@ -1613,10 +1638,10 @@ async def plan_supply(analysis_id: str):
     project_id = _project_id(analysis_id)
     questions = mail.standing(_report(analysis_id)["questions"], mail.about(mail.BIDDER_QUESTIONS, project_id, boq.file))
     wait, _ = supply.held(questions)
-    hand = supply.at_hand(boq, project_id)
+    hand = supply.book(boq, project_id)  # an earlier price stands in; the item is asked for all the same
     try:
         with spend.scope(project_id=project_id, file=boq.file):
-            packages = await supply.plan(boq, set(wait) | set(hand))
+            packages = await supply.plan(boq, set(wait))
     except LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     except Exception as exc:

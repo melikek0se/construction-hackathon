@@ -100,6 +100,27 @@ export interface PriceSuggestion {
   reason: string;
   value: number | null;
   matches: PriceMatch[];
+  // What the price rests on (D-049): "partners" — the price book, a subcontractor's quote for the same work in
+  // another tender, with the firm's surcharge on it; "past bids" — similar items of old bids. null: no price.
+  basis?: "partners" | "past bids" | null;
+  stale?: boolean; // the quote behind it is past its validity
+  material?: BookPrice | null; // a supplier's earlier price: the material part, never the unit price
+  past?: { unit_price: number; low: number; high: number; confidence: string; reason: string } | null; // what past bids say, beside a partner's price
+}
+
+/** A price of the price book for one item (supply.book). */
+export interface BookPrice {
+  unit_price: number;
+  low: number;
+  high: number;
+  confidence: string;
+  stale: boolean;
+  part: string;
+  supplier: string;
+  date: string;
+  valid_until: string | null;
+  reason: string;
+  matches: PriceMatch[];
 }
 
 export interface Prices {
@@ -573,7 +594,8 @@ export interface BidRow {
   unit: string;
   kind: string;
   qty_answered: number | null; // the quantity the client gave in an answer; the file still has `qty`
-  suggestion: { unit_price: number; low: number | null; high: number | null; confidence: string; sources: number } | null;
+  suggestion: { unit_price: number; low: number | null; high: number | null; confidence: string; sources: number; basis: "partners" | "past bids"; stale: boolean } | null;
+  material: BookPrice | null; // a supplier's earlier price for the material, beside the unit price
   unit_price: number | null; // entered, before any allowance
   source: "own" | "suggestion" | "file" | null;
   allowance_percent: number | null; // accepted from an open point of the client's answers
@@ -888,7 +910,9 @@ export interface AnswerPoint {
 
 /** Where the price of an item comes from, as it stands. */
 export interface ItemPrice {
+  // at_hand: no quote for this tender yet, the price book has one from an earlier tender (`stale`: out of date)
   status: "waits" | "at_hand" | "quoted" | "asked" | "assumed" | "own";
+  stale?: boolean;
   unit_price?: number;
   source?: string;
   date?: string;

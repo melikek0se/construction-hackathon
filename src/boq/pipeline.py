@@ -286,13 +286,13 @@ def _inquiries(ctx: Context) -> list:
     if any(i.total is not None for i in boq.items):
         raise Skip("the file carries its prices")
     wait, _ = supply.held(_questions(ctx))
-    hand = supply.at_hand(boq, project_id)
+    hand = supply.book(boq, project_id)  # an earlier price stands in; the item is asked for all the same
     old = supply.find_plan(project_id, boq.file)
     if old and old["plan"].get("hash") == supply.lv_hash(boq) and set(old["plan"].get("held") or {}) == set(wait):
         packages = old["plan"]["packages"]  # nothing changed: the plan stands, and what was chosen with it
     else:
         try:
-            packages = asyncio.run(supply.plan(boq, set(wait) | set(hand)))
+            packages = asyncio.run(supply.plan(boq, set(wait)))
         except llm.LLMUnavailable as exc:
             raise Skip(str(exc)) from exc
         supply.keep_plan(project_id, boq.file, {"hash": supply.lv_hash(boq), "packages": packages, "held": wait,

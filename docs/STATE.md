@@ -14,6 +14,19 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Done
 
+- Price order: quote, then price book, then past bids (2026-11-22, D-049; `supply.book`, `api._prices`,
+  `supply.item_prices`, `risk.BANDS`): an item is asked for in its tender even where an earlier price
+  exists; until the quote is in, a partner's price for the same thing from another tender stands in
+  (subcontractor: the suggestion in the bid, with the surcharge; supplier: "material" beside the unit
+  price, in the item sheet and the bid), out-of-date ones marked; past bids come last and stay beside.
+  The item sheet says which it is ("Price from your partners' quotes"), the bid column is "Suggested".
+  Checked: `tests/test_partners.py` (order, surcharge, stale, own tender left out), full pytest; on the
+  dev stack a second project made from project D's English X83: 4 of 50 items with a unit price from a
+  subcontractor's quote and 10 with a material price (past bids alone gave 1 of 50); bid view and two item
+  sheets seen in headless Chrome. The test project was deleted again (its run spent a few cents).
+  Not done: a tender whose quote then comes in, seen in the browser (the order is tested in
+  `item_prices`); the risk report's own price section still words everything as "past bids".
+
 - Partners page (2026-11-22, D-047; `src/boq/partners.py`, `partners_demo.py`, tables `partner_messages`,
   `partner_searches`, column `suppliers.more`; `web/src/Partners.tsx`, `partners.css`; replaces the Suppliers
   dialog, `Suppliers.tsx` is gone): `/partners`, reached from "Partners" in the band and from a firm's name

@@ -4,7 +4,7 @@ The dataset is anonymised and names no supplier, and a new installation has talk
 page would be empty where it matters: prices with their dates, who answers and how fast, how each one
 writes. This puts in a history to look at. Everything it makes is marked as an example (`more.example` on
 the firm, `terms.example` on a quote, `meta.example` on a message, `via: demo` on older mail), is shown as
-one, never prices a real item (`supply.at_hand` passes example quotes over) and is taken out again with
+one, never prices a real item (`supply.book` passes example quotes over) and is taken out again with
 `remove`. The addresses end in `.example` and reach nobody.
 """
 import uuid

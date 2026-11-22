@@ -98,3 +98,6 @@ The directory is the Partners page (`src/boq/partners.py`, `web/src/Partners.tsx
 with their dates, how it behaves, every message and call, how it writes. Two points of the list above
 changed: firms are looked for on the web (as candidates the estimator takes in; the app still writes to
 nobody on its own), and an inquiry is worded the way the firm is written to, opening and closing only.
+
+Since D-049: an item with an earlier price is asked for all the same; the price book (quotes of other
+tenders) stands in until the quote is there and goes before past bids. See `docs/DECISIONS.md`.
