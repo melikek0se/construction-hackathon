@@ -1,9 +1,7 @@
 import { useEffect, useLayoutEffect, useState, type CSSProperties } from "react";
 import { reviewProgress } from "./api";
-import { Sign } from "./components";
 import { LvText } from "./format";
-import { Fingerprint } from "./Projects";
-import { SEVERITIES, type ReviewProgress, type Severity } from "./types";
+import type { ReviewProgress, Severity } from "./types";
 
 /* Loading, the way a site says "not yet": two barrier tapes are pulled across the screen, one from each
    side, with what is being read running along them. They block the page until the work is done. */
@@ -74,22 +72,6 @@ export function Gate({ dir, phase, info, held }: { dir: "in" | "out"; phase: "cl
                 <span className="gate-sub" lang="de">
                   <LvText text={info.sub} />
                 </span>
-              )}
-              {info.marks && (
-                <div className="gate-strip">
-                  <Fingerprint marks={info.marks} />
-                </div>
-              )}
-              {info.counts && (
-                <p className="gate-counts">
-                  {SEVERITIES.map((sev) => (
-                    <span key={sev} className={info.counts![sev] === 0 ? "zero" : undefined}>
-                      <Sign severity={sev} size={18} />
-                      <b className="num">{info.counts![sev]}</b>
-                    </span>
-                  ))}
-                  {info.items !== undefined && <small>in {info.items.toLocaleString("de-DE")} items, as last read</small>}
-                </p>
               )}
             </div>
             <Tape side="right" text={doing} />

@@ -550,8 +550,7 @@ rolls up until what is left of it is the band; between pages it is let down agai
 its foot, drawn so that it lies exactly on the band's lower stripe when rolled up. While it is down the band
 carries the brand and nothing else. On the shutter, left of centre: an ink plate with "Opening the LV" in
 yellow capitals (Barlow Condensed 14px, 0.14em), the name in Barlow Condensed 600 at 34 to 72px (two lines
-at most), the file line in yellow ink 15px, the LV strip 46px high on a white plate with a 1px ink line
-(drawn in from the left), and the three signs with their counts. One tape low across it (-3 degrees)
+at most), and the file line in yellow ink 15px. Nothing about findings on it, no strip, no counts (Atahan, 2026-11-22). One tape low across it (-3 degrees)
 carries what is being read. It stays down at least 950ms; as it rolls up the page sets itself up: band
 lettering, head, map rows one after the other (45ms apart), the right pane from the right. On the way back
 it is bare and comes down in 380ms, and the band fills again as after the opening.

@@ -3495,9 +3495,6 @@ button.flow-plate:hover {
 .gate-sign > :nth-child(4) {
   animation-delay: 420ms;
 }
-.gate-sign > :nth-child(5) {
-  animation-delay: 480ms;
-}
 
 @keyframes gate-rise {
   from {
@@ -3544,54 +3541,6 @@ button.flow-plate:hover {
 .gate-sub .anon {
   color: inherit;
   opacity: 0.6;
-}
-
-/* the LV as the projects page read it: the same strip as on its card, larger, on a white plate */
-.gate-strip {
-  width: 100%;
-  margin-top: 14px;
-  padding: 8px 8px 0;
-  --strip-base: #e4e6e1;
-  background: #fff;
-  box-shadow: 0 0 0 1px var(--ink);
-}
-
-.gate-strip .fingerprint {
-  height: 46px;
-  animation: gate-strip 700ms cubic-bezier(0.65, 0, 0.2, 1) 520ms backwards;
-}
-
-@keyframes gate-strip {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-.gate-counts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 18px;
-  margin: 0;
-  font-size: 17px;
-}
-
-.gate-counts > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.gate-counts .zero {
-  opacity: 0.4;
-}
-
-.gate-counts small {
-  font-size: 13.5px;
-  color: var(--yellow-ink);
 }
 
 /* one tape low across the sheet, pulled in once the sheet is across: what is being read */
