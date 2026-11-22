@@ -37,6 +37,10 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   account in `.env`; the API shapes are from the docs, as for the rest of `voice.py`); Polier's own search
   on a timer (`keep_looking`: same code as the button, the loop itself was not waited for); `.eml` dropped
   on the page in a browser (the API path is tested); "Take into the directory" clicked in a browser.
+  Nothing of the page is fetched while the app opens (2026-11-22): its code is its own piece of the build
+  (`lazy` in `App.tsx`, 40 kB) and it and `GET /api/partners` are fetched in the background 1.5 s after
+  the first page stands and nothing is being read (`warmPartners` in `api.ts`); pressed before that, the
+  page loads then. Seen in headless Chrome: no partners request until the projects page stood.
   Known: the contact of a firm found is what the search reported, not checked against its page (the page
   says so); the example history (six made-up firms, "Your firm" → Examples) shares the price book with real
   quotes, marked "example"; the dev database has it in; a firm's widths under 1000px were not looked at.

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, listProjectRuns, changeRun, startRun, listCatalog, loadAnalysis, loadPrices, loadSample, openCatalogFile, openCatalogProject, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, type MailSorted } from "./api";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, listProjectRuns, changeRun, startRun, listCatalog, loadAnalysis, loadPrices, loadSample, openCatalogFile, openCatalogProject, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
 import { HardHatIcon, Opening, ProjectsPage } from "./Projects";
 import { ProjectSettings } from "./Settings";
 import { PipelineStrip, RunsDialog, RunsSwitch } from "./Runs";
@@ -418,6 +418,20 @@ export default function App() {
       openGate();
     });
   }
+
+  // Nothing of the partners page is fetched while the page the app opened on is still loading. Once that
+  // stands and nothing is being read, its code and the directory are fetched in the background, once, so
+  // the page is there when "Partners" is pressed; pressed earlier, it loads then.
+  const warmed = useRef(false);
+  useEffect(() => {
+    if (warmed.current || intro !== "done" || busy !== null || gate !== null || partners) return;
+    const t = window.setTimeout(() => {
+      warmed.current = true;
+      void loadPartners();
+      warmPartners();
+    }, 1500);
+    return () => window.clearTimeout(t);
+  }, [intro, busy, gate, partners]);
 
   /** Onto the partners page, or off it again: the shutter comes down, the page and the band change behind
    *  it, and what stands in the band and on the page comes in as it rolls up. Inside the page nothing moves. */
@@ -1144,6 +1158,7 @@ export default function App() {
             if (navigate(to) === null) (target.current = null), setPartners(null);
           }}
         />
+        </Suspense>
       ) : project && !analysis ? (
         <ProjectView
           project={project}
