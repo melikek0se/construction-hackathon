@@ -42,8 +42,18 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   Pressed through in Chrome on the demo mail server (the test inquiry taken out again, the state as
   before): the inquiry to Nordrohr sent, the place for the quote over it, the reminder written (not
   sent), a reply read by hand in which the firm asks back ("Asks back", "Write the answer" offered).
-  Not checked: "Write the answer" and a reminder sent, a quote read by hand, a message not sent yet
-  ("Mail program", "Mark as sent"), the page without the tender's document.
+  Second pass: "Mail program" → "Mark as sent"; a quote sent from the firm's demo mailbox was read
+  by the sweep and came onto the open page by itself (line and comparison); a second reply read by hand
+  ("Asks back"), "Write the answer" sent, an inquiry and its reminder sent to a second firm. The page
+  reads the state again every 20 s while a quote is waited for (`InquiriesView`). The place for the
+  reply says "No reply yet to our answer" when a quote is in already; the reader is emptied after a
+  reply was read. All test messages, the test quote and the two test replies in the inbox were taken
+  out again; both states are as before.
+  Not checked: a quote read by hand from a file (sheet, PDF).
+- Seen while testing, not changed (server, `mail.answered_by`): a reply found in the inbox is matched by
+  subject. When the message it answered is deleted, the next sweep reads the same reply into another
+  waiting message to the same address with the same subject (it happened to the 16-question message of
+  TBA-2026-114 and was undone by hand). Deleting an answered message while another one waits does this.
 
 - The message panel is a correspondence (2026-11-22, Atahan chose it from three mock-ups; `letterEl`,
   `Correspondence`, `OutEvent`, `ReplyEvent` in `Questions.tsx`, `.qc-*` at the end of `questions.css`).
@@ -59,8 +69,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   Pressed through in Chrome on the demo mail server (the test message taken out again, the state as
   before): "Other ways" → .eml (kept as not sent), "Take it back and write it again", "Send", a reply
   pasted in and read ("To decide" on its answer), "Delete this message and its reply".
-  Not checked: "Open in mail program", "Mark as sent", a reply found in the inbox by itself, a tender
-  without an account or inbox, a deadline that has passed.
+  Second pass: "Open in mail program" → "Mark as sent"; a reply sent from the client's demo mailbox
+  was found by the server's sweep and stands on the line as "found in the inbox"; without an account
+  or inbox and with a deadline passed (the page's answer changed in the browser, not the server): the
+  yellow button opens the mail program, the reply box stands open, the last day is red.
+  While a message waits and the app may look into an inbox, the panel reads the state again every 20 s
+  (`Correspondence`): a reply shows without a reload.
 
 - The mark of an item is compound (D-077, 2026-11-22, Atahan: priced items did not show, and an item is in
   several states at once): on the map of the tender's document the body is the finding's colour with the
@@ -171,6 +185,20 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   package and firms, 3 waiting for the client, 4 from past bids; the rail's "4 stops".
   Not checked: the 8 s reading after something sent, a card of an inquiry that is out.
 
+- Finishing and submitting the bid (2026-11-22, D-079; `Tender.tsx` (`finishing`, the panel, `tn-sent`),
+  `api.py` (`submit_bid`, `withdraw_bid`), `api.ts`, `App.tsx`, `Projects.tsx` (`stageOf`), `tenderdoc.css`):
+  Bid and Award are closed until the bid went out; "Finish the bid" is the third panel of the tender's
+  page (what is left, the price and its risk, the X84, "The bid went out"); the X84 is then kept with the
+  project and it stands at Bid, where it can be taken back or said to be won or lost.
+  Checked in Chrome: TBA-2026-114 (the list of what is left, 73 items to finish with their cards, the
+  locked steps); SWN-K-2026-077: "The bid went out" asked twice, the X84 kept as submitted bid, the page
+  on Bid with its line, "It did not go out" taken back, the tender open again (two notes of it are in
+  that project's record). pytest, type-check, build.
+  Then (D-080): a bid that went out is closed (fields, server 409, no autofill), its Bid step is the
+  document as submitted with a line for the X84, price sheet, hand-over sheet and how it ended. Checked on
+  SWN-K-2026-077: submitted, 15 fields closed, a price change refused with 409, "Won" (line says it,
+  "Open again"), "Lost" leads to Award; then the ending and the bid taken back, the project as before.
+  Not checked: an LV that is no GAEB XML, the what-if inside the panel.
 - What is left for the bid, and a unit price built on a supplier's price (2026-11-22, D-078; `Tender.tsx`,
   `TenderDoc.tsx` (`Build`), `tenderdoc.css`): the block on the cover sheet with the three counts, the
   deadline and "Write the X84"; under the field of an item with a material price the parts of a unit price.

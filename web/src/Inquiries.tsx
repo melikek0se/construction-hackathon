@@ -58,6 +58,17 @@ export function InquiriesView({
     getSupply(analysisId).then(setState, (e) => setError(say(e)));
   }, [analysisId, at]);
 
+  // The server looks into the inbox by itself; while a firm's quote is waited for, the state is read
+  // again every 20 s, so that a reply stands on the firm's line when it has been read, without a reload.
+  const waiting = !!state?.inbox && state.packages.some((p) => p.ask.some((x) => x.status === "sent" || x.status === "later"));
+  const idle = useRef(true);
+  idle.current = busy === null;
+  useEffect(() => {
+    if (!waiting) return;
+    const t = window.setInterval(() => idle.current && getSupply(analysisId).then((next) => idle.current && setState(next), () => undefined), 20_000);
+    return () => window.clearInterval(t);
+  }, [waiting, analysisId]);
+
   /** One request at a time, with what it is said on the button that started it. */
   async function act(label: string, job: () => Promise<SupplyState | void>) {
     setBusy(label);
@@ -367,8 +378,9 @@ function FirmLine({ ask, mailId, to, inbox, replyBy, busy, onSent, onRead }: { a
             <div className="at num"><small>{since(last.sent_at!)}</small></div>
             <i className="node" />
             <div className="what">
-              <h4><ClockIcon />{ask.status === "later" ? "A quote is promised, none is in yet" : "No quote yet"}</h4>
-              {replyBy && <p className="sub">needed by {dayText(replyBy)}</p>}
+              {/* a quote may be in already while an answer or a reminder of ours waits for its reply */}
+              <h4><ClockIcon />{ask.status === "answered" ? `No reply yet to ${last.kind === "answer" ? "our answer" : last.kind === "reminder" ? "the reminder" : "the inquiry"}` : ask.status === "later" ? "A quote is promised, none is in yet" : "No quote yet"}</h4>
+              {replyBy && ask.status !== "answered" && <p className="sub">needed by {dayText(replyBy)}</p>}
               {inbox && <p className="qc-inbox"><i />The inbox of <b>{inbox}</b> is watched: a reply is read as it arrives.</p>}
               {inbox ? (
                 <details className="qc-fold">
@@ -600,6 +612,8 @@ function Reader({ mailId, onDone }: { mailId: string; onDone: (note: string) => 
           (got.dropped ? `; ${got.dropped} dropped because the passage was not in the reply` : "") +
           ".",
       );
+      setText(""); // read: the place is empty for the next reply
+      setFile(null);
     } catch (e) {
       setError(say(e));
     } finally {

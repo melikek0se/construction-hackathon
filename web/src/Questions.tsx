@@ -914,6 +914,16 @@ export function since(iso: string): string {
  *  whether what it changes on our side is decided. */
 function Correspondence({ state, notAsked, onItem, onChanged, onBack }: { state: QuestionsState; notAsked: number; onItem: (oz: string) => void; onChanged: () => void; onBack: (mail: QuestionMail) => void }) {
   const [notes, setNotes] = useState<Record<string, string>>({}); // per message: what was left out when its reply was read
+  // The server looks into the inbox by itself; while a message waits there, the panel reads the state
+  // again every 20 s, so that a reply stands on the line when it has been read, without a reload.
+  const waiting = state.inbox !== null && state.mails.some((m) => m.sent_at && !m.reply);
+  const again = useRef(onChanged);
+  again.current = onChanged;
+  useEffect(() => {
+    if (!waiting) return;
+    const t = window.setInterval(() => again.current(), 20_000);
+    return () => window.clearInterval(t);
+  }, [waiting]);
   // every message is on the line where it went out (or was written), its reply where it came in
   const events = state.mails
     .flatMap((m) => [
