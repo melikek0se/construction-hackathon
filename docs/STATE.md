@@ -142,6 +142,26 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   before this change is not kept in the repository (git has the last commit).
   Next: a walk through all six steps by hand; then the two rows of cells in the Check step.
 
+- Polier says what it did (2026-11-22; `web/src/Says.tsx`, `says.css`, `App.tsx`): a call over the site
+  radio at the left of the mascot in place of the notice under the band (first a plain white bubble,
+  which Atahan found boring; he chose the radio from three in `playground/says/`, port 5301: ink plate,
+  signal bars, what Polier calls out, the sentence letter by letter, the mascot hops, confetti and a
+  cheer for an award). Seen in headless Chrome on the dev stack with two events written while the board
+  was open: "YOU WON IT!" with its sentence, "1 more", the button and the line at the foot; the test
+  events deleted again. Not seen: the confetti and the mascot's moves (a still picture cannot show
+  them), the typing, the second call following the first. The page asks `GET /api/events?after=…` every
+  6 s; what Polier noted since the page opened is said one at a time, oldest first, in the first person
+  ("I found this in your mail: …"), with "Open <project>" where it belongs to one; a bubble goes after
+  14 s unless the pointer rests on it; a tender or a run among the news makes the board read its projects
+  again. "Check mail" that finds nothing says so in the bubble too. Hidden while the chat is open.
+  Also fixed: "Check mail" (`/api/inbox/scan`, which the page also calls every three minutes) and the
+  hand-over of .eml files now wait for the same lock as the server's sweep; two looks at once had made
+  two projects of each invitation (seen on the fresh database: 17 projects, 7 of them twice; removed).
+  Checked: type-check; in headless Chrome on the dev stack one event written while the board was open
+  appeared as a bubble about 8 s later with its headline, text and "Open …" (the test event deleted
+  again). Not checked: several bubbles in a row, the 14 s, "Open", the bubble during a real sweep, narrow
+  widths; the wording after the last change (first-person sentences) not looked at.
+
 - Issues of an LV (2026-11-22, D-058; `tender._issues`, `follow`, `view`; `_files_for_a_project` in
   `api.py`; `catalog.hashes`; `Tender.tsx`): a re-issued LV replaces the one before with its change list,
   the work follows to it, and files that come by mail for a known tender join its project.

@@ -604,6 +604,20 @@ Further views (D-056) sit in the same switch, at its end: "Pages" in Tender and 
 "Between LVs" in Check for a tender of several LVs (the trade diagram and its findings), "Inquiries" in
 Prices, "What-if" in Bid. In the Check step the pipeline strip stands under the rail.
 
+### What Polier says (the site radio)
+At the left of the mascot's hard hat, when Polier did something by itself (a tender came in the mail, the
+client sent the LV again, an award came, a supplier answered): an ink plate with a 2px yellow line inside
+its edge, square corners, at most 390px wide, with a square-cut tail towards the mascot. Chosen by Atahan
+from three (a yellow sticker, a tape pulled out of the corner, the radio) after a plain white bubble read
+as boring. First line: four signal bars that move while the line is coming, "POLIER CALLING" in 12px
+capitals at 0.14em, "n more" for what waits, a cross. Then what Polier calls out in Barlow Condensed 700,
+24px, yellow ("NEW TENDER!", "THE LV CHANGED!", "YOU WON IT!"), then the sentence in white 14px, letter by
+letter behind a yellow caret, in the first person. "Open <project>" is a yellow button that comes once the
+line is through. A yellow line along the foot runs out in 14s and starts again when the pointer leaves.
+The plate comes in from the corner with a small overshoot (380ms); the mascot hops as it speaks, and for
+a contract won it cheers and square confetti (yellow, ink, white, 6 to 14px) flies out of the corner.
+Ink as a surface is used here as on the gate's plate and the open step: for the one thing that speaks.
+
 ### Trade diagram (project view)
 The one three-dimensional drawing (D-018): each trade LV is a lettered slab, standing one storey above the last
 trade it builds on, so the order of work reads from the ground up ("Built first" to "Built later"). Trades with

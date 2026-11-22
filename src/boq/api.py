@@ -2318,11 +2318,14 @@ async def scan_inbox():
     """Look into the mailbox for tenders: every message of the last two weeks with an LV attached that was
     not looked at yet. An invitation to bid becomes a project in the intake; nothing in the mailbox is
     changed. `taken` are the projects made, `passed` the messages left, each with the reason."""
-    try:
-        messages = inbox.recent(inbox.seen())[::-1]
-    except mail.MailUnavailable as exc:
-        raise HTTPException(503, str(exc)) from exc
-    return await _sort_mail(messages)
+    # under the same lock as the server's own sweep: two looks at the same moment each made a project of
+    # the same invitation (seen on 2026-11-22: "Check mail" pressed while a sweep was running)
+    async with _sweeping:
+        try:
+            messages = (await asyncio.to_thread(inbox.recent, inbox.seen()))[::-1]
+        except mail.MailUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+        return await _sort_mail(messages)
 
 
 @app.post("/api/inbox/messages")
@@ -2335,7 +2338,8 @@ async def sort_messages(files: list[UploadFile]):
         if len(data) > MAX_BYTES or not (file.filename or "").lower().endswith(".eml"):
             raise HTTPException(422, "Hand over e-mails as .eml files of at most 30 MB.")
         messages.append(inbox.from_eml(data))
-    return await _sort_mail(messages)
+    async with _sweeping:
+        return await _sort_mail(messages)
 
 
 
@@ -2365,7 +2369,7 @@ async def sweep_inbox() -> dict:
                 except HTTPException as exc:
                     if exc.status_code not in (422,):  # a reply that says nothing stays where it is
                         raise
-        sorted_ = await _sort_mail(await asyncio.to_thread(inbox.recent, inbox.seen()))
+        sorted_ = await _sort_mail((await asyncio.to_thread(inbox.recent, inbox.seen()))[::-1])
         out["tenders"] = sorted_["taken"]
         return out
 

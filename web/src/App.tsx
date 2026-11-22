@@ -7,6 +7,7 @@ import { PipelinePage, PipelineStrip, RunsSwitch } from "./Runs";
 import { Agent } from "./Agent";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { TenderPage } from "./Tender";
+import { Says, useSaid } from "./Says";
 import { FindingsList, ItemSheet, type Selection } from "./components";
 import { buildSections, weight } from "./sections";
 import "./chat.css";
@@ -629,26 +630,31 @@ export default function App() {
   // Tenders found in the mail (src/boq/inbox.py): where the app has a mailbox it looks into it when the
   // projects page opens and every few minutes after; an e-mail dropped on the page as a file goes the same way.
   const [mailbox, setMailbox] = useState<string | null>(null);
-  const [mailNote, setMailNote] = useState<string | null>(null);
+  // What Polier says by itself, in the bubble at its left (Says.tsx): what the server noted that it did
+  // while the page is open. A tender that came, or files that joined one, change the board: it is read again.
+  const refreshNow = useRef<() => void>(() => undefined);
+  const [said, say, unsay] = useSaid((kinds) => {
+    if (kinds.some((k) => k === "tender" || k === "run")) refreshNow.current();
+  });
   const [mailBusy, setMailBusy] = useState(false);
   const sorted = useCallback(
     async (job: () => Promise<MailSorted>, quiet = false) => {
       setMailBusy(true);
       try {
         const got = await job();
-        if (got.taken.length > 0) {
-          await refreshCatalog();
-          setMailNote(`Polier found ${got.taken.length === 1 ? "a tender" : `${got.taken.length} tenders`} in your mail: ${got.taken.map((t) => t.name).join(", ")}. ${got.taken.length === 1 ? "It stands" : "They stand"} in the intake.`);
-        } else if (!quiet)
-          setMailNote(got.looked === 0 ? "Nothing new in the mail." : `${got.looked} new message${got.looked === 1 ? "" : "s"} looked at, no invitation to bid among them${got.passed[0] ? ` (${got.passed[0].why})` : ""}.`);
+        // what was found is said by Polier itself, from the server's record; here only that nothing was
+        if (got.taken.length > 0) await refreshCatalog();
+        else if (!quiet)
+          say({ id: -Date.now(), kind: "note", project_id: null, project: "", text: got.looked === 0 ? "Nothing new in your mail." : `I looked at ${got.looked} new message${got.looked === 1 ? "" : "s"}: no invitation to bid among them${got.passed[0] ? ` (${got.passed[0].why})` : ""}.` });
       } catch (e) {
         if (!quiet) setError(e instanceof Error ? e.message : String(e));
       } finally {
         setMailBusy(false);
       }
     },
-    [refreshCatalog],
+    [refreshCatalog], // eslint-disable-line react-hooks/exhaustive-deps
   );
+  refreshNow.current = () => void refreshCatalog();
   useEffect(() => {
     getInbox().then((box) => setMailbox(box.user), () => undefined);
   }, []);
@@ -1039,14 +1045,6 @@ export default function App() {
           </button>
         </div>
       )}
-      {mailNote && !pending && (
-        <div className="notice" role="status">
-          <span>{mailNote}</span>
-          <button className="text-link" onClick={() => setMailNote(null)}>
-            Dismiss
-          </button>
-        </div>
-      )}
       {apiDown && !analysis && (
         <div className="notice error" role="alert">
           <span>
@@ -1247,6 +1245,15 @@ export default function App() {
           }
         />
       )}
+      <Says
+        said={said}
+        hidden={agentOpen || pending !== null}
+        onGone={unsay}
+        onOpen={(id) => {
+          const p = catalog.find((c) => c.id === id);
+          if (p) void openTenderPage(p);
+        }}
+      />
       {/* Polier, the agent, lives in the bottom-right corner; a click opens the conversation about the project */}
       <Agent
         open={agentOpen}

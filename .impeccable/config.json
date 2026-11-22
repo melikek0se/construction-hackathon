@@ -83,6 +83,15 @@
         ],
         "createdAt": "2026-11-22T03:10:13.863Z",
         "reason": "user confirmed: picked the night-shift mockup (yellow-edged cards, LIVE dot, 11.5px mono labels) to apply to the real panel, D-060; file is a throwaway proposal page"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "playground/says/index.html"
+        ],
+        "createdAt": "2026-11-22T04:00:36.252Z",
+        "reason": "agent triage: the page is a demo of a speech bubble inside the product's own scale (DESIGN.md: body 14px, labels 11px, nothing above 30px); the bubble's headline is 24 to 28px against 14px text, the small steps the detector sees are the demo's control panel"
       }
     ]
   }

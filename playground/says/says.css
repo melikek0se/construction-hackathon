@@ -1,0 +1,103 @@
+/* What Polier says by itself (Says.tsx): a speech bubble at the left of its hard hat. A white plate with
+   an ink line and square corners, a square-cut tail towards the mascot; nothing round, no shadow. */
+.says {
+  position: fixed;
+  right: 150px;
+  bottom: 62px;
+  z-index: 55;
+  width: min(360px, calc(100vw - 180px));
+  padding: 10px 12px 12px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  font-size: 13.5px;
+  line-height: 1.4;
+  animation: says-in 360ms var(--ease) both;
+}
+/* the tail: two triangles, ink behind and white in front, pointing at the mascot */
+.says::before,
+.says::after {
+  content: "";
+  position: absolute;
+  bottom: 14px;
+  border-style: solid;
+  border-color: transparent;
+}
+.says::before {
+  right: -14px;
+  border-width: 9px 0 9px 14px;
+  border-left-color: var(--ink);
+}
+.says::after {
+  right: -10px;
+  bottom: 16px;
+  border-width: 7px 0 7px 11px;
+  border-left-color: #fff;
+}
+@keyframes says-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+.says-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.says-top b {
+  font: 700 12px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--yellow);
+  padding: 2px 6px;
+}
+.says-more {
+  font-size: 12px;
+  color: var(--mute);
+}
+.says button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ink);
+}
+.says .says-x {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+}
+.says .says-x:hover {
+  background: var(--hover);
+}
+.says p {
+  margin: 0;
+  max-height: 7.2em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.says .says-open {
+  margin-top: 8px;
+  max-width: 100%;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .says {
+    right: 12px;
+    bottom: 150px;
+    width: calc(100vw - 24px);
+  }
+  .says::before,
+  .says::after {
+    display: none;
+  }
+}

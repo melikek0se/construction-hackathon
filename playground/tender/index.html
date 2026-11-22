@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Polier · tender page options</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<nav class="pg" aria-label="Mock-up controls">
+  <b>Tender page · options</b>
+  <div class="seg" id="pg-opt" role="tablist" aria-label="Option">
+    <button data-v="research">Research</button>
+    <button data-v="a">A · Register</button>
+    <button data-v="b">B · Cover sheet + map</button>
+    <button data-v="c">C · Reader</button>
+  </div>
+  <span class="pg-l">Example</span>
+  <div class="seg" id="pg-proj" role="tablist" aria-label="Example tender">
+    <button data-v="B">One LV, two documents</button>
+    <button data-v="F">27 LVs</button>
+  </div>
+  <span class="pg-note" id="pg-note"></span>
+</nav>
+<div id="app"></div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
