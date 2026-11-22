@@ -373,6 +373,26 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   (the open conversations, the table, a firm's page) and "Your firm"; every old address opens the firms.
   "Add a firm" in the row of the chips is yellow and readable again (the chips' rule had made it a white box).
   Seen in headless Chrome, no console error; build clean.
+  **The open conversations in plain sentences (2026-11-22)**, at the user's word (looking at "Your reply is
+  needed" said nothing): each card now says what happened ("X asked 4 questions before it will quote", "X has
+  not replied for 6 days"), for which package of which tender and when it was asked, then the firm's
+  questions or the days waited against its usual time with the sentence that reads the bar; the button says
+  who does what ("Let Polier draft the answer", with "you read and change the text before it is sent" under
+  it), and the draft says that nothing has been sent. Headings: "A firm is waiting for your answer", "You are
+  waiting for prices from 2 firms". "Let Polier draft the answer" pressed in headless Chrome with a real
+  Claude call: the draft with its four points stood after 12 s; nothing was sent.
+  **No tab, "partner" not "firm", "Your firm" a dialog, nothing for the demo (2026-11-22)**, at the user's
+  word. The band shows "Partners" with the count (a press leads back to the list) and "Your firm"; the page
+  is the list (open conversations, then the table) or one partner. Every text of the page, of the web finds
+  and of the price inquiries says "partner" where it said "firm" ("Add a partner", "All partners", "A partner
+  is waiting for your answer"); "Your firm" keeps its name, being the user's own. "Your firm" opens as a
+  dialog (the sign of the other dialogs) over the page and no longer has an address of its own (the old one
+  opens the dialog). Gone from the page altogether: the row "For the demo" (example firms in and out, read
+  the mailbox, hand over .eml), "Put in six example firms" in the empty list, and .eml dropped on a partner's
+  page; the server's endpoints for them stand, `uv run boq-seed` and the API are the way now.
+  Seen in headless Chrome at 1500 and 900 wide: no tab, the word "firm" nowhere on the list or a partner's
+  page, the dialog opened, closed, and opened from the old address, nothing outside the dialog; no console
+  error; build clean.
   **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
   freight per unit), grouping the price book by material group proper (the package stands in for it). The
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:

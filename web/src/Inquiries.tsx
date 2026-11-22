@@ -265,7 +265,7 @@ function Package({
       <ul className="sup-ask">
         {p.ask.map((a) => (
           <li key={a.supplier_id} className={`is-${a.status}`}>
-            <button className="text-link sup-who" onClick={() => onPartner(a.supplier_id)} title="What is known about this firm: prices, conversations, how it writes">
+            <button className="text-link sup-who" onClick={() => onPartner(a.supplier_id)} title="What is known about this partner: prices, conversations, how it writes">
               {a.supplier}
             </button>
             <span className={`q-status is-${CHIP[a.status]}`}>{STATUS[a.status]}</span>

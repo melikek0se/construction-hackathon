@@ -3940,3 +3940,125 @@ ol.pt-points .pt-point-src li {
   opacity: 0.5;
   cursor: default;
 }
+
+/* 2026-11-22: the open conversations say in plain sentences what happened and what the button does */
+.pt-fu-row {
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: 40px;
+  padding: 16px 14px 18px;
+}
+
+.pt-fu-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pt-fu-title .pt-fu-firm {
+  display: inline;
+  font-size: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.pt-fu-sub {
+  margin: 4px 0 0;
+  max-width: 90ch;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.pt-fu-sub b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pt-fu-label {
+  display: block;
+  margin: 14px 0 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.pt-fu-story .pt-fu-asks {
+  max-width: 90ch;
+  font-size: 14.5px;
+}
+
+.pt-fu-wait {
+  margin-top: 12px;
+}
+
+.pt-fu-wait p {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.pt-fu-act {
+  justify-items: stretch;
+  gap: 8px;
+  text-align: left;
+}
+
+.pt-fu-act small {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.pt-fu-act .text-link {
+  justify-self: start;
+  margin-top: 2px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.pt-draft-how {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.pt-follow-draft .pt-fu-label {
+  margin: 6px 0 0;
+}
+
+@media (max-width: 1100px) {
+  .pt-fu-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+
+/* 2026-11-22: no tabs; "Partners" in the band is the page's name (its look is with the band's rules above).
+   "Your firm" is a dialog. */
+dialog.pt-yf {
+  width: min(900px, calc(100vw - 40px));
+}
+
+dialog.pt-yf .pt-yf-cols {
+  margin-top: 0;
+  gap: 28px;
+}
+
+/* the dialog's own body: padded, the form beside the card (the sign's `.np-body` lays out sections of a
+   different kind) */
+.pt-yf-body {
+  padding: 20px 22px 22px;
+  overflow-y: auto;
+}
+
+dialog.pt-yf .pt-yf-cols {
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+}
+
+dialog.pt-yf .pt-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}

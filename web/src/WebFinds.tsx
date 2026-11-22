@@ -52,10 +52,10 @@ export default function WebFinds({
     <div className="wf">
       <div className="wf-head">
         <b>Nobody to ask.</b>
-        <span>None of your firms {kind === "supplier" ? "sells" : "does"} this.</span>
+        <span>None of your partners {kind === "supplier" ? "sells" : "does"} this.</span>
         {searches !== null && (
           <button className="btn-ghost small" disabled={busy} onClick={look} title="Claude searches the web and reports firms with the page each was found on: about half a minute and a few cents">
-            {busy ? "Searching the web: about half a minute…" : found.length ? "Search again" : "Search the web for firms"}
+            {busy ? "Searching the web: about half a minute…" : found.length ? "Search again" : "Search the web for new partners"}
           </button>
         )}
       </div>
@@ -76,7 +76,7 @@ export default function WebFinds({
                 </p>
               </div>
               <div className="wf-act">
-                <button className="btn-ghost small" onClick={() => void decide(s, n, true)} title="Becomes one of your firms and is put on this package; you write the inquiry">
+                <button className="btn-ghost small" onClick={() => void decide(s, n, true)} title="Becomes one of your partners and is put on this package; you write the inquiry">
                   Add and ask
                 </button>
                 <button className="text-link" onClick={() => void decide(s, n, false)}>
