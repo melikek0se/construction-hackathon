@@ -89,11 +89,20 @@ def recent(known: set[str]) -> list[dict]:
             server.login(box["user"], box["password"])
             server.select(box["folder"], readonly=True)
             _, data = server.uid("SEARCH", None, "SINCE", since.strftime("%d-%b-%Y"))
-            for uid in reversed((data[0] or b"").split()[-300:]):
+            uids = (data[0] or b"").split()[-300:]
+            # the heads of all of them in one request: one round trip per message made a look into a busy
+            # mailbox take a minute and more
+            heads: dict[bytes, bytes] = {}
+            if uids:
+                _, got = server.uid("FETCH", b",".join(uids).decode(), "(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID CONTENT-TYPE)])")
+                for part in got:
+                    found = isinstance(part, tuple) and re.search(rb"UID (\d+)", part[0])
+                    if found:
+                        heads[found.group(1)] = part[1]
+            for uid in reversed(uids):
                 if len(out) >= MAX_MESSAGES:
                     break
-                _, got = server.uid("FETCH", uid, "(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID CONTENT-TYPE)])")
-                raw = next((part[1] for part in got if isinstance(part, tuple)), None)
+                raw = heads.get(uid)
                 if raw is None:
                     continue
                 head = email.message_from_bytes(raw, policy=email.policy.default)

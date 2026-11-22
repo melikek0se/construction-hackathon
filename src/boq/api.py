@@ -2223,7 +2223,7 @@ async def _take_message(message: dict, ours: set[str]) -> dict:
             dates += tender_dates.read(data, name)
         if suffix in SUPPORTED and len(data) <= MAX_BYTES:
             try:
-                read.append((name, data, _parse_bytes(data, name)))
+                read.append((name, data, await asyncio.to_thread(_parse_bytes, data, name)))
             except HTTPException:
                 pass
     if not read:
@@ -2285,16 +2285,23 @@ def inbox_state():
     return {"user": (mail.inbox() or {}).get("user") or None}
 
 
+_SCAN = asyncio.Lock()
+
+
 @app.post("/api/inbox/scan")
 async def scan_inbox():
     """Look into the mailbox for tenders: every message of the last two weeks with an LV attached that was
     not looked at yet. An invitation to bid becomes a project in the intake; nothing in the mailbox is
     changed. `taken` are the projects made, `passed` the messages left, each with the reason."""
-    try:
-        messages = inbox.recent(inbox.seen())
-    except mail.MailUnavailable as exc:
-        raise HTTPException(503, str(exc)) from exc
-    return await _sort_mail(messages)
+    if _SCAN.locked():  # another page asked a moment ago: one look at a time
+        return {"looked": 0, "taken": [], "passed": []}
+    async with _SCAN:
+        try:
+            # in a thread: the mailbox answers slowly, and on the event loop every other request waited for it
+            messages = await asyncio.to_thread(inbox.recent, inbox.seen())
+        except mail.MailUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+        return await _sort_mail(messages)
 
 
 @app.post("/api/inbox/messages")
