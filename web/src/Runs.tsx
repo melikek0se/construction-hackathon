@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { getSpend } from "./api";
+import { getSpend, listProjectRuns } from "./api";
 import { Sign } from "./components";
 import { SEVERITIES, SEVERITY_LABEL, type Run, type RunStage, type RunStep, type Severity, type Spend, type StageId } from "./types";
 import "./runs.css";
@@ -9,9 +9,9 @@ import "./runs.css";
    - PipelineStrip: the six stations under the band of a project or an LV. A station opens to its steps;
      the one the run waits at holds what the person has to do.
    - RunSegs: the same six stations as marks on a project's card.
-   - RunsSwitch: the button in the band of the projects page. While a run is going it counts the steps done.
-   - RunsDialog: on the projects page every project against the six stations; on a project the record of
-     its runs, each with its documents and every step. The same sign on two posts as the other dialogs. */
+   - RunsSwitch: the slab in the band of the projects page. While a run is going it counts the steps done.
+   - PipelinePage: the page of the pipeline (/pipeline): every project against the six stations, the runs
+     of the one picked with every step, what Polier did and what Claude cost beside them. */
 
 const KIND = { deterministic: "Rule", agentic: "AI", human: "You" } as const;
 
@@ -62,29 +62,46 @@ function nowDoing(run: Run): string {
   return `${first.title}${where}${on.length > 1 ? ` and ${on.length - 1} more` : ""}`;
 }
 
-export function RunsSwitch({ runs, onOpen }: { runs: Run[]; onOpen: () => void }) {
+export function RunsSwitch({ runs, onOpen, still = false }: { runs: Run[]; onOpen: () => void; still?: boolean }) {
   const active = runs.filter((r) => r.active);
   const done = active.reduce((n, r) => n + r.finished_steps, 0);
   const total = active.reduce((n, r) => n + r.total, 0);
+  const last = runs.reduce<string | null>((t, r) => (r.finished && (!t || r.finished > t) ? r.finished : t), null);
+  const inner = (
+    <>
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+        <path d="M2 11h18" stroke="currentColor" strokeWidth="2" />
+        <path d="M1 8h4v6H1zM9 8h4v6H9zM17 8h4v6h-4z" fill="currentColor" />
+      </svg>
+      <b>{still ? (active.length > 0 ? "Running" : "Idle") : "Pipeline"}</b>
+      <small>
+        {active.length > 0 ? (
+          <>
+            Checking <em className="num">{done}/{total}</em> · {active[0].project}
+            {active.length > 1 ? ` +${active.length - 1}` : ""}
+          </>
+        ) : last ? (
+          `Six stations · last run ${ago(last)}`
+        ) : (
+          "Six stations, from file to price"
+        )}
+      </small>
+    </>
+  );
+  // on the pipeline page itself it only says what runs: a slab that is not a button
+  if (still)
+    return (
+      <div className={`band-slab is-still runs-switch${active.length > 0 ? " going" : ""}`} role="status">
+        {inner}
+      </div>
+    );
   return (
     <button
-      className={`btn plain runs-switch${active.length > 0 ? " going" : ""}`}
+      className={`band-slab runs-switch${active.length > 0 ? " going" : ""}`}
       onClick={onOpen}
       title={active.length > 0 ? `${nowDoing(active[0])}` : "The checks run on the files, step by step"}
     >
-      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-        <path d="M1 2.5h4M1 7h4M1 11.5h4M8 2.5h5M8 7h5M8 11.5h5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" />
-      </svg>
-      {active.length > 0 ? (
-        <>
-          Checking
-          <b className="num">
-            {done}/{total}
-          </b>
-        </>
-      ) : (
-        "Pipeline"
-      )}
+      {inner}
     </button>
   );
 }
@@ -445,7 +462,7 @@ const tokens = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 100000 ? 0
 
 /** The audit of what Claude was asked and what it cost (src/boq/spend.py): one line, opening to the sums
  *  per purpose and the latest requests. `at` changes when there may be something new to read. */
-function SpendAudit({ projectId, at }: { projectId: string | null; at: string }) {
+function SpendAudit({ projectId, at, open = false }: { projectId: string | null; at: string; open?: boolean }) {
   const [spend, setSpend] = useState<Spend | null>(null);
   useEffect(() => {
     let live = true;
@@ -457,7 +474,7 @@ function SpendAudit({ projectId, at }: { projectId: string | null; at: string })
   if (!spend) return null;
   const none = spend.requests + spend.cached === 0;
   return (
-    <details className="spend">
+    <details className="spend" open={open || undefined}>
       <summary>
         <b>Claude</b>
         {none ? (
@@ -547,15 +564,26 @@ function SpendAudit({ projectId, at }: { projectId: string | null; at: string })
 }
 
 /** Every project against the six stations: where each stands, and which waits for the person. */
-function RunsTable({ projects, runs, onOpen }: { projects: { id: string; name: string }[]; runs: Run[]; onOpen: (id: string) => void }) {
+function RunsTable({
+  projects,
+  runs,
+  onOpen,
+  selected = null,
+}: {
+  projects: { id: string; name: string }[];
+  runs: Run[];
+  onOpen: (id: string) => void;
+  selected?: string | null;
+}) {
   const titles = runs[0]?.stages.map((s) => s.title) ?? ["Read", "Rules", "AI review", "Compare", "Questions", "Prices"];
+  const ids: StageId[] = runs[0]?.stages.map((s) => s.id) ?? ["read", "rules", "ai", "compare", "questions", "prices"];
   return (
     <table className="runs-table">
       <thead>
         <tr>
           <th>Project</th>
           {titles.map((title, n) => (
-            <th key={title}>
+            <th key={title} title={ABOUT[ids[n]]}>
               <span className="num">{n + 1}</span> {title}
             </th>
           ))}
@@ -565,7 +593,14 @@ function RunsTable({ projects, runs, onOpen }: { projects: { id: string; name: s
         {projects.map((p) => {
           const run = runs.find((r) => r.project_id === p.id);
           return (
-            <tr key={p.id} onClick={() => onOpen(p.id)} tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onOpen(p.id)}>
+            <tr
+              key={p.id}
+              className={selected === p.id ? "is-open" : undefined}
+              aria-current={selected === p.id || undefined}
+              onClick={() => onOpen(p.id)}
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && onOpen(p.id)}
+            >
               <th lang="de">
                 {p.name}
                 {run && <small>{run.active ? "running" : `${STATUS[run.status]} · ${ago(run.finished ?? run.created)}`}</small>}
@@ -608,7 +643,7 @@ const MOVE = { you: "Your move", client: "With the client", supplier: "With the 
 
 /** What Polier did on its own, newest first (src/boq/events.py): mail read, quotes compared, checks run.
  *  The record to read after being away; a line that leaves the next move with the estimator says so. */
-function Happened({ projectId, at }: { projectId: string | null; at: string }) {
+function Happened({ projectId, at, few = 6 }: { projectId: string | null; at: string; few?: number }) {
   const [list, setList] = useState<Happening[] | null>(null);
   const [all, setAll] = useState(false);
   useEffect(() => {
@@ -621,7 +656,7 @@ function Happened({ projectId, at }: { projectId: string | null; at: string }) {
     return () => window.clearInterval(t);
   }, [projectId, at]);
   if (!list || list.length === 0) return null;
-  const shown = all ? list : list.slice(0, 6);
+  const shown = all ? list : list.slice(0, few);
   return (
     <section className="happened" aria-label="What Polier did">
       <h3>What Polier did</h3>
@@ -638,7 +673,7 @@ function Happened({ projectId, at }: { projectId: string | null; at: string }) {
           </li>
         ))}
       </ol>
-      {list.length > 6 && (
+      {list.length > few && (
         <button className="text-link" onClick={() => setAll(!all)}>
           {all ? "Show the newest only" : `Show all ${list.length}`}
         </button>
@@ -647,83 +682,109 @@ function Happened({ projectId, at }: { projectId: string | null; at: string }) {
   );
 }
 
-export function RunsDialog({
+/** The pipeline as a page (/pipeline[/:project]): every project against the six stations at the top; the
+ *  runs of the project picked under it, the latest open with every step; beside them what Polier did and what
+ *  Claude cost, both open. Nothing here is behind a dialog. */
+export function PipelinePage({
   runs,
-  project,
   projects,
+  project,
+  onPick,
   onOpenProject,
   starting,
   onStart,
-  onClose,
 }: {
-  runs: Run[]; // of the project, newest first; or the latest run of every project
-  project: { id: string; name: string } | null; // null: all projects
-  projects?: { id: string; name: string }[]; // all projects: the rows of the table
-  onOpenProject?: (id: string) => void;
+  runs: Run[]; // the latest run of every project
+  projects: { id: string; name: string }[];
+  project: string | null; // the one whose runs are open
+  onPick: (id: string | null) => void;
+  onOpenProject: (id: string) => void;
   starting: boolean;
-  onStart: (() => void) | null;
-  onClose: () => void;
+  onStart: (id: string) => void;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const d = dialog.current;
-    if (d && !d.open) d.showModal();
-  }, []);
-  // re-render once in a while so "2 min ago" moves on while the dialog stays open
+  // re-render once in a while so "2 min ago" moves on
   const [, tick] = useState(0);
   useEffect(() => {
     const t = window.setInterval(() => tick((n) => n + 1), 30000);
     return () => window.clearInterval(t);
   }, []);
+  const latest = project ? runs.find((r) => r.project_id === project) : undefined;
+  const picked = projects.find((p) => p.id === project) ?? null;
+  // the picked project's runs, newest first: read again whenever its latest run moves on
+  const [history, setHistory] = useState<Run[] | null>(null);
+  useEffect(() => {
+    if (!project) return setHistory(null);
+    let live = true;
+    void listProjectRuns(project).then((h) => live && setHistory(h), () => live && setHistory([]));
+    return () => {
+      live = false;
+    };
+  }, [project, latest?.id, latest?.status, latest?.finished_steps]);
   const active = runs.filter((r) => r.active);
-  const first = active[0] ?? runs[0];
+  const at = runs.map((r) => `${r.id}${r.status}${r.finished_steps}`).join();
+  const mine = history ?? [];
+  // a project picked in the table: its runs are scrolled into sight under it
+  const runsAt = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (project) runsAt.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [project]);
   return (
-    <dialog
-      ref={dialog}
-      className="new-project settings runs"
-      aria-label={project ? `Pipeline runs of ${project.name}` : "Pipeline runs"}
-      onCancel={(e) => (e.preventDefault(), onClose())}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <header>
-        <b>Pipeline</b>
-        <span lang="de">{project ? project.name : "all projects"}</span>
-        <button className="btn-ghost small" onClick={onClose}>
-          Close
-        </button>
-      </header>
-      <div className="runs-body">
-        <Happened projectId={project?.id ?? null} at={runs.map((r) => `${r.id}${r.status}${r.finished_steps}`).join()} />
-        <SpendAudit projectId={project?.id ?? null} at={runs.map((r) => `${r.id}${r.status}${r.finished_steps}`).join()} />
-        {project && runs.length === 0 && (
-          <p className="runs-empty">
-            <b>No run yet.</b>
-            A run starts by itself when a project is created or gets files: every file is read, every rule is run on
-            it, Claude reviews one file per LV, versions and LVs are compared, the bidder questions are drafted and
-            the prices are worked out beside them.
-            {project ? " Start one for this project below." : ""}
-          </p>
+    <main className="pipe-page">
+      <div className="pipe-page-main">
+        <section className="pipe-page-block" aria-label="Every project against the six stations">
+          <header className="pipe-page-head">
+            <h1>All projects</h1>
+            <p>
+              {active.length > 0
+                ? `${active.length === 1 ? "One run is" : `${active.length} runs are`} going: ${nowDoing(active[0])}.`
+                : "Nothing is running. A run starts by itself when a project is created or gets files."}{" "}
+              One row per project, one column per station; a row opens its runs below.
+            </p>
+          </header>
+          <RunsTable projects={projects} runs={runs} selected={project} onOpen={(id) => onPick(id === project ? null : id)} />
+          <dl className="pipe-page-about">
+            {(Object.keys(ABOUT) as StageId[]).map((id, n) => (
+              <div key={id}>
+                <dt>
+                  <span className="num">{n + 1}</span> {runs[0]?.stages[n]?.title ?? id}
+                </dt>
+                <dd>{ABOUT[id]}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {picked && (
+          <section className="pipe-page-block" aria-label={`Runs of ${picked.name}`} ref={runsAt}>
+            <header className="pipe-page-head">
+              <h2 lang="de">{picked.name}</h2>
+              <p>{history === null ? "Reading its runs…" : mine.length === 0 ? "No run yet." : `${mine.length} run${mine.length === 1 ? "" : "s"}, the newest first.`}</p>
+              <div className="pipe-page-acts">
+                <button className="btn-ghost" onClick={() => onOpenProject(picked.id)}>
+                  Open the project
+                </button>
+                <button className="btn-new" onClick={() => onStart(picked.id)} disabled={starting || !!latest?.active}>
+                  {latest?.active ? "Running" : "Run again"}
+                </button>
+                <button className="btn-ghost" onClick={() => onPick(null)} aria-label="Close the runs of this project">
+                  Close
+                </button>
+              </div>
+            </header>
+            {mine.map((r, i) => (
+              <RunCard key={r.id} run={r} open={i === 0} showProject={false} />
+            ))}
+          </section>
         )}
-        {project ? (
-          runs.map((r) => <RunCard key={r.id} run={r} open={r === first} showProject={false} />)
-        ) : (
-          <RunsTable projects={projects ?? []} runs={runs} onOpen={(id) => (onClose(), onOpenProject?.(id))} />
-        )}
+
+        <section className="pipe-page-block" aria-label="What Claude cost">
+          <SpendAudit projectId={project} at={at} open />
+        </section>
       </div>
-      <footer className={active.length > 0 ? "busy" : undefined}>
-        <span>
-          {active.length > 0
-            ? `${active.length === 1 ? "One run is" : `${active.length} runs are`} going in the background. You can close this and go on working.`
-            : project
-              ? "Runs go in the background. What they find is on the LV when you open it."
-              : "One row per project, one column per station. A click opens the project."}
-        </span>
-        {onStart && (
-          <button className="btn-new" onClick={onStart} disabled={starting || active.length > 0}>
-            Run again
-          </button>
-        )}
-      </footer>
-    </dialog>
+
+      <aside className="pipe-page-side">
+        <Happened projectId={project} at={at} few={40} />
+      </aside>
+    </main>
   );
 }

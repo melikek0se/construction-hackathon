@@ -1,33 +1,14 @@
-/* The pipeline runs: the switch in the band and the record in a dialog (Runs.tsx). The dialog is the sign
+/* The pipeline runs: the slab in the band and the record in a dialog (Runs.tsx). The dialog is the sign
    of home.css (.new-project.settings); here is only what stands on it. */
 
-.runs-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.runs-switch b {
-  font-weight: 700;
-}
-
-/* a run is going: the tape runs along the lower edge of the button */
-.band .btn.plain.runs-switch.going {
-  position: relative;
-  background: var(--yellow);
-}
-
-.band .btn.plain.runs-switch.going:hover {
-  background: var(--ink);
-}
-
+/* a run is going: the hazard tape runs along the foot of the Pipeline slab in the band (home.css) */
 .runs-switch.going::after {
   content: "";
   position: absolute;
-  left: 1px;
-  right: 1px;
-  bottom: 1px;
-  height: 4px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
   background: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) repeat-x;
   background-size: 22.63px 100%;
   animation: hazard-run 600ms linear infinite;
@@ -938,4 +919,176 @@
 
 .happened li.is-yours em {
   background: var(--yellow);
+}
+
+/* ------------------------------------------------------------------ the pipeline page (/pipeline) */
+
+/* Two columns the height of the window, each scrolling on its own: on the left every project against the six
+   stations and, under them, the runs of the project picked; on the right, on the quiet tint, what Claude cost
+   and what Polier did. */
+.pipe-page {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  overflow: clip;
+}
+
+.pipe-page-main,
+.pipe-page-side {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.pipe-page-main {
+  padding: 26px 40px 64px;
+}
+
+.pipe-page-side {
+  padding: 24px 24px 64px;
+  background: var(--tint);
+  border-left: 2px solid var(--ink);
+}
+
+.pipe-page-block + .pipe-page-block {
+  margin-top: 40px;
+}
+
+.pipe-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.pipe-page-head h1,
+.pipe-page-head h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.pipe-page-head h2 {
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.pipe-page-head p {
+  margin: 0;
+  flex: 1 1 320px;
+  font-size: 13.5px;
+  color: var(--mute);
+}
+
+.pipe-page-acts {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* the table at full width, larger than in the dialog of before */
+.pipe-page .runs-table {
+  font-size: 14px;
+}
+
+.pipe-page .runs-table thead th {
+  top: -26px; /* stays under the band while the column scrolls (the column's top padding) */
+  font-size: 15px;
+}
+
+.pipe-page .runs-table th,
+.pipe-page .runs-table td {
+  padding: 11px 14px;
+}
+
+.pipe-page .runs-table tbody tr.is-open {
+  background: var(--hover);
+}
+
+.pipe-page .runs-table tbody tr.is-open th {
+  box-shadow: inset 5px 0 0 var(--ink);
+}
+
+/* what each station does, once, under the table */
+.pipe-page-about {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 28px;
+  margin: 18px 0 0;
+}
+
+.pipe-page-about dt {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pipe-page-about dt .num {
+  color: var(--mute);
+}
+
+.pipe-page-about dd {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* the runs of the project picked: the cards of the dialog of before, with room */
+.pipe-page .run {
+  margin-top: 0;
+}
+
+.pipe-page .run-step {
+  font-size: 13.5px;
+}
+
+/* the side column: the record of what Polier did, in full */
+.pipe-page .pipe-page-block[aria-label^="Runs"] {
+  scroll-margin-top: 16px;
+}
+
+.pipe-page-side .happened {
+  border-bottom: 0;
+}
+
+.pipe-page-side .happened li {
+  grid-template-columns: 5.5em minmax(0, 1fr);
+  font-size: 13.5px;
+}
+
+.pipe-page-side .happened em {
+  grid-column: 2;
+  justify-self: start;
+}
+
+/* the band of the page: its name as the open cell after the way back, what runs at the right end */
+.band .band-here {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin: -4px 0 -4px -22px; /* right at the way back, the band's gap taken out */
+  padding: 0 24px;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.band-slab.is-still,
+.band-slab.is-still:hover {
+  cursor: default;
+  background: var(--ink);
 }

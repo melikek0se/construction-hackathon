@@ -334,6 +334,38 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   board's head, which keeps only the drop hint). The schedule is always open: its switch in the band
   (`ScheduleSwitch`) and the sliding wrapper are gone. Checked: type-check, the page in headless Chrome at 1440
   wide. Not checked: clicking the two buttons in the browser; the page with no project.
+  Revised (2026-11-22, Atahan chose B of four proposals in `playground/home-nav/`): "Pipeline" and "Partners"
+  are places, not buttons: two ink slabs filling the right end of the band from stripe to stripe, each with a
+  sign, its name and a live line (Pipeline: "Checking 4/6 · project" with the tape at its foot, else the last
+  run; Partners: open threads and firms, from the overview read in the background). "New project" is back at
+  the right end of the board's head, in a dashed frame "Drop the files of a tender here, or", with "Check mail"
+  beside it. Checked: type-check, the page in headless Chrome at 1440 wide. Not checked: a running run on the
+  slab; clicking through.
+  The partners page in the same manner (2026-11-22): no shutter onto it or off it, the page changes in place
+  (View Transitions, `swapPage` in App.tsx: the sideways slide described below; a plain swap without the API;
+  reduced motion is ignored, D-038). Its tabs (counts kept), the search with "Add a firm" and
+  "Your firm" moved into the band: tabs are full-height cells, the open one ink; search and firm on an ink slab
+  at the right end; the "Partners" title went (the open tab says it). Done by a portal into `.band-place`, the
+  state stays in `PartnersPage`. Checked in headless Chrome at 1440 and 1280: click onto Partners, tab
+  changes, "Your firm", back to Projects, no console errors.
+  Then (2026-11-22): the brand on the projects page at 40 px with a 32 px hat, the band still 70 px high; the
+  way back ("Projects" / "Project", on every band) is a full-height cell at the band's left end in the display
+  face, ink with yellow when pointed at (styles.css, end). Measured: band 70 px on home, partners, a project.
+  Then: projects ↔ partners slides sideways, the whole screen with the band, the new page pushing the old one
+  (480 ms; onto Partners from the right, back from the left; only the Polier agent stays). The page's code is
+  awaited first and drawn straight from the module (`ReadyPartners`), so the page sliding in is never blank.
+  The jump on arrival is gone: the directory's entrance (`pt-fresh`) no longer replays when the warm copy
+  already stood, `.pt` clips, and the scrolling parts keep a stable scroll-bar gutter. Measured with real
+  scroll bars in headless Chrome: content width 1425 on both pages through the whole change, no document scroll.
+  The pipeline is a page, no longer a dialog (2026-11-22): `/pipeline[/:project]` (router.ts `PipelinePlace`),
+  `PipelinePage` in Runs.tsx, reached from the Pipeline slab on the projects page and from "Record" on a
+  project's strip, with the same sideways slide as Partners; it lies over what was open and the way back
+  returns there. Band: the way back, "Pipeline" as the open ink cell, what runs as a still slab at the right.
+  Page: every project against the six stations at full width (a row opens that project's runs under the
+  table, scrolled into sight: every run, the latest open with each file's steps, "Open the project", "Run
+  again"), what each station does under the table, the Claude spend open at the foot; at the right the whole
+  record of what Polier did. `RunsDialog` is gone. Checked in headless Chrome: slab → page, row → runs,
+  back, deep link `/pipeline/:id`, "Record" on an archive project → page with it open → back; no errors.
 
 - Audit of what Claude costs (2026-11-21; `src/boq/spend.py`, table `llm_calls`, `GET /api/spend[?project=]`):
   one row per request to the Claude API (AI review, second look, chat, chat about all projects, reply

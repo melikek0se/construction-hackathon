@@ -2066,6 +2066,183 @@
   }
 }
 
+/* ------------------------------------------------------------------ band nav (0a): the tabs in the band */
+
+/* The partners page puts its tabs, its search and "Your firm" into the band (App.tsx `.band-place`), in the
+   manner of the projects page's band: the tabs are cells the full height of the band, the open one ink; the
+   search and the firm stand on an ink slab at its right end (`.band-slab`, home.css). */
+.band-place {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  margin: -4px -20px -4px 0; /* over the band's padding, to its edges */
+}
+
+.pt-nav {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.pt-band-tabs {
+  display: flex;
+  align-items: stretch;
+  margin-left: 6px;
+  border-right: 1.5px solid rgb(18 20 19 / 0.3);
+}
+
+.pt-band-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 0;
+  border-left: 1.5px solid rgb(18 20 19 / 0.3);
+  background: none;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease), color 120ms var(--ease);
+}
+
+.pt-band-tab:hover {
+  background: rgb(255 255 255 / 0.45);
+}
+
+.pt-band-tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -5px;
+}
+
+.pt-band-tab[aria-selected="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+
+.pt-band-tab .pt-count {
+  font-family: var(--text);
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--yellow-ink);
+}
+
+.pt-band-tab[aria-selected="true"] .pt-count {
+  color: var(--yellow);
+}
+
+/* the estimator's move: ink on the yellow band, yellow on the open ink tab */
+.pt-band-tab .pt-count.is-you {
+  padding: 1px 5px;
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.pt-band-tab[aria-selected="true"] .pt-count.is-you {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.pt-band-tab .pt-count.is-gap {
+  padding: 1px 5px;
+  background: var(--red);
+  color: #fff;
+}
+
+.pt-band-tools {
+  display: flex;
+  align-items: stretch;
+  margin-left: auto;
+  background: var(--ink);
+}
+
+.pt-band-find {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 0 20px;
+  color: #c9cbc5;
+}
+
+.pt-band-find .pt-search {
+  width: 230px;
+  height: 34px;
+  border: 1px solid #4a4e4b;
+  background: #222524;
+  color: #fff;
+}
+
+.pt-band-find .pt-search::placeholder {
+  color: #8b8e87;
+}
+
+.pt-band-find .pt-search:focus {
+  border-color: var(--yellow);
+}
+
+.pt-band-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pt-band-add:hover {
+  background: #fff;
+}
+
+.pt-band-firm.is-on,
+.pt-band-firm.is-on:hover {
+  background: #fff;
+  color: var(--ink);
+}
+
+.pt-band-firm.is-on > svg {
+  color: var(--ink);
+}
+
+.pt-band-firm.is-on small {
+  color: var(--mute);
+}
+
+@media (max-width: 1600px) {
+  .pt-band-firm {
+    min-width: 0;
+  }
+
+  .pt-band-firm small {
+    display: none;
+  }
+}
+
+@media (max-width: 1360px) {
+  .pt-band-tab {
+    padding: 0 11px;
+    font-size: 17px;
+  }
+
+  .pt-band-find .pt-search {
+    width: 160px;
+  }
+}
+
 /* 2026-11-22, second pass */
 .pt-back {
   display: none;
@@ -2190,6 +2367,55 @@ ol.pt-points button {
   .pt-lines td:nth-child(5) {
     display: none;
   }
+}
+
+.pt-band-firm {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* when the band is short of room, the search field gives way first, then the tabs' padding */
+.pt-band-tools {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.pt-band-find {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.pt-band-find .pt-search {
+  flex: 0 1 230px;
+  width: auto;
+  min-width: 90px;
+}
+
+.pt-band-tabs {
+  flex: none;
+}
+
+.pt-band-find > svg {
+  flex: none;
+}
+
+/* the tabs start right at the way back (styles.css `.band-back`), which draws the rule between them */
+.band .band-place {
+  margin-left: -22px; /* the band's gap */
+}
+
+.band .pt-band-tabs {
+  margin-left: 0;
+}
+
+.pt-band-tab:first-child {
+  border-left: 0;
+}
+
+/* the page scrolls in its parts (`.pt-wide`, `.pt-list`, …); what moves in from below while it comes in
+   must not hang out of the window and give the whole document a scroll bar for a moment */
+.pt {
+  overflow: clip;
 }
 
 /* 2026-11-22, third pass: firms side by side, the price book by package, web finds under a gap */

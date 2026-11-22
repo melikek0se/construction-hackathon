@@ -8,6 +8,7 @@
    thing on one line), what the web search found, and the firm's own particulars. Server side:
    src/boq/partners.py. */
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   composeFollowUp,
   decideCandidate,
@@ -144,12 +145,15 @@ export function PartnersPage({
   onPlace,
   onOpenTender,
   onChanged,
+  bandSlot = null,
 }: {
   place: PartnersPlace;
   onPlace: (place: PartnersPlace) => void;
   /** Opens the price inquiries of a tender's file. */
   onOpenTender: (projectId: string, file: number) => void;
   onChanged: () => void;
+  /** The place in the band (App.tsx) where the tabs, the search and "Your firm" stand. */
+  bandSlot?: HTMLElement | null;
 }) {
   // the copy read in the background after the projects page stood, if there is one; read again right away
   const [data, setData] = useState<PartnersOverview | null>(takeWarmPartners);
@@ -164,7 +168,7 @@ export function PartnersPage({
   // the first time the directory is there, its rows come in one after the other (partners.css, `pt-fresh`);
   // not when the copy read in the background stood on the page from the start (it slid in with it)
   const [fresh, setFresh] = useState(false);
-  const shown = useRef(false);
+  const shown = useRef(data !== null);
   const load = useCallback(
     () =>
       getPartners().then(
@@ -241,34 +245,56 @@ export function PartnersPage({
   const unsigned = data !== null && (!data.company.name.trim() || !data.company.email.trim());
   const typical = useMemo(() => median(all.map((p) => p.card.reply_hours).filter((h): h is number => h !== null)), [all]);
 
-  return (
-    <div className={`pt${fresh ? " pt-fresh" : ""}`}>
-      <div className="pt-tabs">
-        <div className="views" role="tablist" aria-label="Partners">
-          {TABS.map((t) => (
-            <button key={t.id} role="tab" aria-selected={place.tab === t.id || (t.id === "suppliers" && directory) || (t.id === "coverage" && place.tab === "discovered")} onClick={() => onPlace({ tab: t.id, partner: null })}>
-              {t.label}
-              {count(t.id) !== null && <span className={`pt-count${t.id === "waiting" && data?.waiting.some(yours) ? " is-you" : t.id === "coverage" ? " is-gap" : t.id === "prices" && soon ? " is-soon" : ""}`} title={t.id === "coverage" ? "Packages of tenders in work with nobody to ask" : t.id === "prices" && soon ? `${soon} of the prices that hold run out within 7 days` : undefined}>{count(t.id)}</span>}
-            </button>
-          ))}
-        </div>
+  const nav = (
+    <nav className="pt-nav" aria-label="Partners">
+      <div className="pt-band-tabs" role="tablist" aria-label="Partners">
+        {TABS.map((t) => (
+          <button key={t.id} role="tab" className="pt-band-tab" aria-selected={place.tab === t.id || (t.id === "suppliers" && directory) || (t.id === "coverage" && place.tab === "discovered")} onClick={() => onPlace({ tab: t.id, partner: null })}>
+            {t.label}
+            {count(t.id) !== null && <span className={`pt-count${t.id === "waiting" && data?.waiting.some(yours) ? " is-you" : t.id === "coverage" ? " is-gap" : t.id === "prices" && soon ? " is-soon" : ""}`} title={t.id === "coverage" ? "Packages of tenders in work with nobody to ask" : t.id === "prices" && soon ? `${soon} of the prices that hold run out within 7 days` : undefined}>{count(t.id)}</span>}
+          </button>
+        ))}
+      </div>
+      <div className="pt-band-tools">
         {directory && (
-          <>
-            <input type="search" className="pt-search" placeholder="Find a firm, a material, a place" value={query} onChange={(e) => setQuery(e.target.value)} />
-            <button className="btn-new" onClick={() => (setAdding(true), onPlace({ tab: "suppliers", partner: null }))}>
+          <div className="pt-band-find">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
+              <circle cx="6.5" cy="6.5" r="4.5" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M10 10l4.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+            </svg>
+            <input type="search" className="pt-search" placeholder="Find a firm, a material, a place" aria-label="Find a firm" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <button className="pt-band-add" onClick={() => (setAdding(true), onPlace({ tab: "suppliers", partner: null }))}>
+              <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden>
+                <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="square" />
+              </svg>
               Add a firm
             </button>
-          </>
+          </div>
         )}
-        <button className={`btn-ghost${place.tab === "firm" ? " is-on" : ""}`} aria-pressed={place.tab === "firm"} onClick={() => onPlace({ tab: "firm", partner: null })}>
-          Your firm
-          {unsigned && (
-            <i className="pt-band-warn" role="img" aria-label="Name and e-mail are not entered" title="Your firm's name and e-mail are not entered: an inquiry says who is asking, and a supplier gives an unknown sender the list price, or nothing">
-              !
-            </i>
-          )}
+        <button className={`band-slab pt-band-firm${place.tab === "firm" ? " is-on" : ""}`} aria-pressed={place.tab === "firm"} onClick={() => onPlace({ tab: "firm", partner: null })}>
+          <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+            <path d="M2 20V9l9-6 9 6v11h-6v-6H8v6z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="miter" />
+          </svg>
+          <b>
+            Your firm
+            {unsigned && (
+              <i className="pt-band-warn" role="img" aria-label="Name and e-mail are not entered" title="Your firm's name and e-mail are not entered: an inquiry says who is asking, and a supplier gives an unknown sender the list price, or nothing">
+                !
+              </i>
+            )}
+          </b>
+          <small className={unsigned ? "is-missing" : ""} title={unsigned ? "An inquiry says who is asking: a supplier gives an unknown sender the list price, or nothing" : undefined}>
+            {unsigned ? "Name and e-mail are not entered" : data?.company.name || "Who asks, and what you do yourselves"}
+          </small>
         </button>
       </div>
+    </nav>
+  );
+
+  return (
+    <div className={`pt${fresh ? " pt-fresh" : ""}`}>
+      {/* the tabs, the search and the firm stand in the band (App.tsx gives the place); without it, here */}
+      {bandSlot ? createPortal(nav, bandSlot) : <div className="pt-tabs">{nav}</div>}
       {error && (
         <p className="q-error pt-error">
           {error}{" "}

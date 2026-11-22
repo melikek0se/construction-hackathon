@@ -1402,6 +1402,8 @@ export function ProjectsPage({
   onConfirm,
   onCancel,
   onChange,
+  onNew,
+  mail,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
@@ -1417,6 +1419,8 @@ export function ProjectsPage({
   onConfirm: (name: string, target: string | null, roles: (string | null)[], dates: Partial<Record<TenderDate, string>>) => void;
   onCancel: () => void;
   onChange: (project: CatalogProject, change: Change) => void;
+  onNew: (() => void) | null; // null: not now (something is loading, or the dialog is open)
+  mail: { busy: boolean; onCheck: () => void; title: string } | null; // a mailbox is watched: look into it now
 }) {
   const [focus, setFocus] = useState<Focus>(null);
   /* The card pointed at. Leaving a card lets go of it a moment later, so the pointer can cross to the
@@ -1465,9 +1469,23 @@ export function ProjectsPage({
       <section className="board-wrap" aria-label="Tenders by stage">
         <header className="board-head">
           <h1>Projects</h1>
-          {/* "New project" is in the band, top right */}
+          {/* a new project, top right of the board */}
           <div className="register-new">
-            <span>Drop the files of a tender anywhere on this page</span>
+            {mail && (
+              <button className="btn plain" disabled={mail.busy} onClick={mail.onCheck} title={mail.title}>
+                {mail.busy ? "Reading mail…" : "Check mail"}
+              </button>
+            )}
+            {/* the page takes the files anywhere (App.tsx); the frame says so where one looks for it */}
+            <div className="register-drop">
+              <span>Drop the files of a tender here, or</span>
+              <button className="btn" disabled={onNew === null} onClick={() => onNew?.()}>
+                <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
+                </svg>
+                New project
+              </button>
+            </div>
           </div>
         </header>
         <div className="board">

@@ -6,6 +6,8 @@
 //   /projects/:id/lv/:analysis[/:view]      one trade LV, opened from the project's overview
 //   /samples/<folder>/<file>[?view=]        a single dataset file (no project around it)
 //   /partners[/:tab][/:partner]             suppliers and subcontractors: a tab of the page, one firm open in it
+//   /pipeline[/:project]                    the pipeline: every project against the six stations, what Polier
+//                                           did, what Claude cost; one project's runs open beside it
 //
 // The app's state is what is shown; App.tsx writes it here whenever it changes, and reads the address on
 // load and on Back / Forward.
@@ -32,9 +34,15 @@ export interface PartnersPlace {
   partner: string | null;
 }
 
+/** The pipeline page: the project whose runs are open (null: none). */
+export interface PipelinePlace {
+  project: string | null;
+}
+
 export type Route =
   | { at: "home" }
   | ({ at: "partners" } & PartnersPlace)
+  | ({ at: "pipeline" } & PipelinePlace)
   | { at: "project"; id: string } // the overview of a building, or file 0 of an LV in versions
   | ({ at: "file"; id: string; file: number } & LvPlace)
   | ({ at: "lv"; id: string; analysis: string } & LvPlace)
@@ -74,6 +82,7 @@ export function parseRoute(loc: { pathname: string; search: string } = location)
     const tab = PARTNER_TABS.includes(seg[1] ?? "") ? (seg[1] as PartnerTab) : "suppliers";
     return { at: "partners", tab, partner: seg[2] ?? null };
   }
+  if (seg[0] === "pipeline") return { at: "pipeline", project: seg[1] ?? null };
   if (seg[0] === "projects" && seg[1]) {
     const id = seg[1];
     if (seg[2] === "files" && /^\d+$/.test(seg[3] ?? "")) return { at: "file", id, file: Number(seg[3]), ...place(seg[4]) };
@@ -87,6 +96,7 @@ export function parseRoute(loc: { pathname: string; search: string } = location)
 export function formatRoute(r: Route): string {
   if (r.at === "home") return "/";
   if (r.at === "partners") return `/partners${r.tab === "suppliers" && !r.partner ? "" : `/${r.tab}`}${r.partner ? `/${encodeURIComponent(r.partner)}` : ""}`;
+  if (r.at === "pipeline") return `/pipeline${r.project ? `/${encodeURIComponent(r.project)}` : ""}`;
   if (r.at === "project") return `/projects/${encodeURIComponent(r.id)}`;
   const q = new URLSearchParams();
   let path: string;
@@ -113,6 +123,7 @@ export const isLv = (r: Route): r is LvRoute => r.at === "file" || r.at === "lv"
 export function docKey(r: Route): string {
   if (r.at === "home") return "home";
   if (r.at === "partners") return "partners";
+  if (r.at === "pipeline") return "pipeline";
   if (r.at === "project") return `project:${r.id}`;
   if (r.at === "file") return `file:${r.id}:${r.file}`;
   if (r.at === "lv") return `lv:${r.id}:${r.analysis}`;

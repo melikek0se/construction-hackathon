@@ -1,8 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, listProjectRuns, changeRun, startRun, listCatalog, loadAnalysis, loadPrices, loadSample, openCatalogFile, openCatalogProject, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { flushSync } from "react-dom";
+import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, changeRun, startRun, listCatalog, loadAnalysis, loadPrices, loadSample, openCatalogFile, openCatalogProject, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
 import { HardHatIcon, Opening, ProjectsPage } from "./Projects";
 import { ProjectSettings } from "./Settings";
-import { PipelineStrip, RunsDialog, RunsSwitch } from "./Runs";
+import { PipelinePage, PipelineStrip, RunsSwitch } from "./Runs";
 import { Agent } from "./Agent";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { ProjectView } from "./ProjectView";
@@ -18,7 +19,7 @@ import { BidView } from "./Bid";
 import { InquiriesView } from "./Inquiries";
 import { QuestionsView } from "./Questions";
 
-import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type PartnersPlace, type Route } from "./router";
+import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type PartnersPlace, type PipelinePlace, type Route } from "./router";
 import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
 type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions" | "inquiries" | "bid";
@@ -35,8 +36,17 @@ const VIEWS: [View, string][] = [
 const CHATS_KEY = "lvcheck.chats.v2"; // v2: answers carry scope, cost and the whole-project offer
 // The partners page is its own piece of the build: fetched when it is opened, or in the background once
 // the page the app opened on stands (see `warmed` below), never before it.
-const loadPartners = () => import("./Partners");
-const PartnersPage = lazy(() => loadPartners().then((m) => ({ default: m.PartnersPage })));
+// Once its code is there it is drawn straight from the module (`ReadyPartners`): through `lazy` the first
+// drawing waits a turn, and the page sliding in (`swapPage`) would be blank.
+let ReadyPartners: typeof import("./Partners").PartnersPage | null = null;
+const loadPartners = () => import("./Partners").then((m) => ((ReadyPartners = m.PartnersPage), m));
+const LazyPartners = lazy(() => loadPartners().then((m) => ({ default: m.PartnersPage })));
+/** The partners page, from the module if it is there when the page is put up, else through `lazy`; chosen
+ *  once, so the page is not put up anew when the code arrives later. */
+function PartnersNow(props: ComponentProps<typeof LazyPartners>) {
+  const [Page] = useState(() => ReadyPartners ?? LazyPartners);
+  return <Page {...props} />;
+}
 const ALL = new Set<Severity>(SEVERITIES);
 const NONE: Selection = { oz: null, finding: null };
 // A link straight into a project or a file: the page opens behind the sheet, without the opening.
@@ -50,6 +60,20 @@ const wait = (ms: number) => new Promise<void>((done) => window.setTimeout(done,
 const GATE_HOLD = 950;
 const GATE_BACK = 380;
 const GATE_CUT = 780;
+
+/** A change of page without the shutter: the screen slides sideways, the new page pushing the old one out
+ *  (View Transitions; styles.css says how). "forward" comes in from the right, "back" from the left. Without
+ *  the API the page just changes. It ignores reduced motion, as every animation of the app does. */
+function swapPage(swap: () => void, dir: "forward" | "back") {
+  const doc = document as Document & { startViewTransition?: (update: () => void) => { finished: Promise<void> } };
+  if (!doc.startViewTransition) return swap();
+  const root = document.documentElement;
+  root.dataset.swap = dir;
+  doc
+    .startViewTransition(() => flushSync(swap))
+    .finished.catch(() => undefined)
+    .finally(() => delete root.dataset.swap);
+}
 
 export default function App() {
   const [catalog, setCatalog] = useState<CatalogProject[]>([]);
@@ -140,14 +164,13 @@ export default function App() {
   // with it down.
   const [gate, setGate] = useState<{ dir: "in" | "out"; phase: "closing" | "opening"; info: GateInfo | null; held: boolean } | null>(
     // the partners page has nothing to load behind the sheet: it opens bare
-    () => (DEEP_LINK && START.at !== "partners" ? { dir: "in", phase: "closing", info: null, held: true } : null),
+    () => (DEEP_LINK && START.at !== "partners" && START.at !== "pipeline" ? { dir: "in", phase: "closing", info: null, held: true } : null),
   );
   const [arriving, setArriving] = useState(false); // the opened page is still setting itself up
   const gateTimers = useRef<number[]>([]);
   /** Draws the sheet across; resolves once the page is covered (and, on the way in, its name was readable). */
   const closeGate = useCallback((dir: "in" | "out", info: GateInfo | null) => {
     gateTimers.current.forEach(clearTimeout);
-    if (dir === "in") setCrossed(false);
     setArriving(false);
     // a sheet that is across already stays as it is, with the new lettering
     setGate((g) => ({ dir, info, phase: "closing", held: g?.phase === "closing" }));
@@ -199,11 +222,11 @@ export default function App() {
   // The pipeline runs in the background on the server (src/boq/runs.py): asked every second while one is
   // going, now and then otherwise (a run can be started from another window).
   const [runs, setRuns] = useState<Run[]>([]);
-  const [runsOpen, setRunsOpen] = useState(false);
+  // The pipeline page (Runs.tsx) lies over whatever is open, as the partners page does.
+  const [pipeline, setPipeline] = useState<PipelinePlace | null>(null);
   // The partners page (suppliers and subcontractors, Partners.tsx) lies over whatever is open: leaving it
   // shows that again as it was. `directoryAt` counts the directory's changes, so the inquiries are read again.
   const [partners, setPartners] = useState<PartnersPlace | null>(null);
-  const [crossed, setCrossed] = useState(false); // the last change of page was onto or off the partners page
   const [directoryAt, setDirectoryAt] = useState(0);
   const [startingRun, setStartingRun] = useState(false);
   const refreshRuns = useCallback(() => listRuns().then(setRuns, () => undefined), []);
@@ -217,13 +240,6 @@ export default function App() {
   }, [pace, refreshRuns]);
   // `runs` holds the latest run of every project: where each one stands
   const runHere = useMemo(() => runs.find((r) => r.project_id === current?.project.id), [runs, current]);
-  // the record of the project on the page (its earlier runs too), while the dialog is open
-  const [history, setHistory] = useState<Run[]>([]);
-  const hereId = current?.project.id;
-  useEffect(() => {
-    if (!runsOpen || !hereId) return;
-    void listProjectRuns(hereId).then(setHistory, () => undefined);
-  }, [runsOpen, hereId, runHere?.status, runHere?.finished_steps]);
   // a step of the pipeline picked on the strip: its findings are the ones the list shows
   const [find, setFind] = useState<{ text: string; n: number } | null>(null);
 
@@ -423,22 +439,37 @@ export default function App() {
   // stands and nothing is being read, its code and the directory are fetched in the background, once, so
   // the page is there when "Partners" is pressed; pressed earlier, it loads then.
   const warmed = useRef(false);
+  // where the partners page puts its tabs in the band
+  const [bandSlot, setBandSlot] = useState<HTMLDivElement | null>(null);
+  // what the Partners slab in the band says under its name, once the overview has been read
+  const [partnersGlance, setPartnersGlance] = useState<{ firms: number; waiting: number } | null>(null);
   useEffect(() => {
     if (warmed.current || intro !== "done" || busy !== null || gate !== null || partners) return;
     const t = window.setTimeout(() => {
       warmed.current = true;
       void loadPartners();
-      warmPartners();
+      void warmPartners().then((d) => d && setPartnersGlance({ firms: d.partners.length, waiting: d.waiting.length }));
     }, 1500);
     return () => window.clearTimeout(t);
   }, [intro, busy, gate, partners]);
 
-  /** Onto the partners page, or off it again: the shutter comes down, the page and the band change behind
-   *  it, and what stands in the band and on the page comes in as it rolls up. Inside the page nothing moves. */
+  /** Onto the partners page, or off it again. Its code and its data are mostly read in the background
+   *  already, so there is nothing to wait for behind a shutter: the screen slides sideways (`swapPage`).
+   *  Inside the page nothing moves. */
   function toPartners(place: PartnersPlace | null) {
     if ((place === null) === (partners === null)) return setPartners(place);
-    setCrossed(true);
-    leave(() => setPartners(place));
+    if (pipeline) setPipeline(null);
+    // the page's code is there before the slide starts, so the page coming in is never blank
+    void loadPartners().then(
+      () => swapPage(() => setPartners(place), place ? "forward" : "back"),
+      () => setPartners(place),
+    );
+  }
+
+  /** Onto the pipeline page, or off it again: the same sideways slide as the partners page. */
+  function toPipeline(place: PipelinePlace | null) {
+    if ((place === null) === (pipeline === null)) return setPipeline(place);
+    swapPage(() => (setPartners(null), setPipeline(place)), place ? "forward" : "back");
   }
 
   function closeAll() {
@@ -467,7 +498,7 @@ export default function App() {
         : project && current
           ? { at: "project", id: current.project.id }
           : HOME;
-  const here: Route = partners ? { at: "partners", ...partners } : under;
+  const here: Route = partners ? { at: "partners", ...partners } : pipeline ? { at: "pipeline", ...pipeline } : under;
   // The address being loaded (from the address bar, not from a click): until the state has reached it,
   // the state is not written back over it.
   const target = useRef<Route | null>(DEEP_LINK ? START : null);
@@ -503,10 +534,16 @@ export default function App() {
     };
     const done = () => (inside(), settle(r));
     if (r.at === "partners") {
+      setPipeline(null);
       setPartners({ tab: r.tab, partner: r.partner });
       return Promise.resolve();
     }
     setPartners(null);
+    if (r.at === "pipeline") {
+      setPipeline({ project: r.project });
+      return Promise.resolve();
+    }
+    setPipeline(null);
     if (docKey(r) === docKey(under)) return Promise.resolve(inside()); // the page under the partners is this one
     if (r.at === "home") {
       closeAll();
@@ -565,7 +602,7 @@ export default function App() {
   const linked = useRef(false);
   useEffect(() => {
     if (linked.current || !DEEP_LINK) return;
-    if (START.at === "partners") {
+    if (START.at === "partners" || START.at === "pipeline") {
       linked.current = true;
       navigateNow.current(START);
       return;
@@ -581,6 +618,7 @@ export default function App() {
       const r = parseRoute();
       if (docKey(r) === docKey(hereNow.current)) {
         if (r.at === "partners") setPartners({ tab: r.tab, partner: r.partner });
+        if (r.at === "pipeline") setPipeline({ project: r.project });
         if (!isLv(r)) return;
         setView(r.view);
         setSelection((s) => (s.oz === r.item ? s : { oz: r.item, finding: null }));
@@ -902,7 +940,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}${gate ? " gated" : ""}${gate?.phase === "closing" ? " covering" : ""}${arriving && (gate?.dir !== "out" || crossed) ? " arriving" : ""}${intro === "entering" ? " entering" : ""}`}
+      className={`app${dragging ? " dragging" : ""}${!analysis && !project ? " home" : ""}${gate ? " gated" : ""}${gate?.phase === "closing" ? " covering" : ""}${arriving && gate?.dir !== "out" ? " arriving" : ""}${intro === "entering" ? " entering" : ""}`}
       onDragOver={(e) => (e.preventDefault(), setDragging(true))}
       onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)}
       onDrop={(e) => {
@@ -927,7 +965,20 @@ export default function App() {
       <header className="band">
         {/* the brand stands on the projects page only; an open LV or project has the way back in its place:
             one step up, to the project an LV was opened from, else to the projects */}
-        {partners ? (
+        {pipeline ? (
+          <>
+            <button className="band-back" onClick={() => toPipeline(null)} title="Back to where you were">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
+                <path d="M10 2.5 4.5 8 10 13.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+              </svg>
+              {analysis ? "LV" : project ? "Project" : "Projects"}
+            </button>
+            <h1 className="band-here">Pipeline</h1>
+            <div className="band-slabs actions">
+              <RunsSwitch runs={runs} onOpen={() => undefined} still />
+            </div>
+          </>
+        ) : partners ? (
           <>
             <button className="band-back" onClick={() => toPartners(null)} title="Back to where you were">
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
@@ -935,13 +986,13 @@ export default function App() {
               </svg>
               {analysis ? "LV" : project ? "Project" : "Projects"}
             </button>
-            <div className="doc">
-              <strong>Partners</strong>
-            </div>
+            {/* the partners page puts its tabs, its search and "Your firm" here (Partners.tsx); the open tab
+                says where one is, so the band carries no title of its own */}
+            <div className="band-place" ref={setBandSlot} />
           </>
         ) : !analysis && !project ? (
           <button className="brand" onClick={closeAll} title="All projects">
-            <HardHatIcon size={24} />
+            <HardHatIcon size={32} />
             Polier
           </button>
         ) : (
@@ -956,27 +1007,35 @@ export default function App() {
             {project && analysis ? "Project" : "Projects"}
           </button>
         )}
-        {/* the projects page has two buttons, top right: the pipeline and a new project */}
-        {!partners && !project && (!analysis || !stats) && (
-          <div className="actions">
-            {catalog.length > 0 && <RunsSwitch runs={runs} onOpen={() => setRunsOpen(true)} />}
-            {mailbox && (
-              <button className="btn plain" disabled={mailBusy} onClick={() => void sorted(scanInbox)} title={`Polier looks into ${mailbox} for tenders: messages of the last two weeks with an LV attached`}>
-                {mailBusy ? "Reading mail…" : "Check mail"}
-              </button>
-            )}
-            <button className="btn plain" onClick={() => toPartners({ tab: "suppliers", partner: null })} title="Suppliers and subcontractors: their prices, the conversations with them, who is new">
-              Partners
-            </button>
-            <button className="btn band-new" disabled={busy !== null || pending !== null} onClick={() => setPending({ files: [], info: null, target: null })}>
-              <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
-                <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />
+        {/* the projects page: the two other places, as slabs filling the right end of the band (a new
+            project is on the head of the board, Projects.tsx) */}
+        {!partners && !pipeline && !project && (!analysis || !stats) && (
+          <nav className="actions band-slabs" aria-label="Places">
+            {catalog.length > 0 && <RunsSwitch runs={runs} onOpen={() => toPipeline({ project: null })} />}
+            <button className="band-slab" onClick={() => toPartners({ tab: "suppliers", partner: null })} title="Suppliers and subcontractors: their prices, the conversations with them, who is new">
+              <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+                <rect x="2" y="5" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" />
+                <rect x="9" y="9" width="11" height="11" fill="currentColor" />
               </svg>
-              New project
+              <b>Partners</b>
+              <small>
+                {partnersGlance ? (
+                  <>
+                    {partnersGlance.waiting > 0 && (
+                      <>
+                        <em className="num">{partnersGlance.waiting}</em> open ·{" "}
+                      </>
+                    )}
+                    {partnersGlance.firms} firms
+                  </>
+                ) : (
+                  "Suppliers and subcontractors"
+                )}
+              </small>
             </button>
-          </div>
+          </nav>
         )}
-        {!partners && project && !analysis && (
+        {!partners && !pipeline && project && !analysis && (
           <>
             <div className="doc">
               {current ? (
@@ -1005,7 +1064,7 @@ export default function App() {
             </div>
           </>
         )}
-        {!partners && analysis && stats && (
+        {!partners && !pipeline && analysis && stats && (
           <>
             <div className="doc">
               <strong lang="de" title={analysis.boq.file}>
@@ -1068,7 +1127,7 @@ export default function App() {
                 }
               : null
           }
-          onRecord={() => setRunsOpen(true)}
+          onRecord={() => current && toPipeline({ project: current.project.id })}
         />
       )}
 
@@ -1097,20 +1156,6 @@ export default function App() {
             closeAll();
             void removeProject(doomed);
           }}
-        />
-      )}
-      {runsOpen && (
-        <RunsDialog
-          runs={current ? history : runs}
-          project={current ? { id: current.project.id, name: current.project.name } : null}
-          projects={catalog}
-          onOpenProject={(id) => {
-            const p = catalog.find((c) => c.id === id);
-            if (p) openProject(p);
-          }}
-          starting={startingRun}
-          onStart={current ? () => void runAgain(current.project.id) : null}
-          onClose={() => setRunsOpen(false)}
         />
       )}
       {gate && <Gate {...gate} />}
@@ -1146,10 +1191,26 @@ export default function App() {
         </div>
       )}
 
-      {partners ? (
+      {pipeline ? (
+        <PipelinePage
+          runs={runs}
+          projects={catalog}
+          project={pipeline.project}
+          onPick={(id) => setPipeline({ project: id })}
+          onOpenProject={(id) => {
+            const p = catalog.find((c) => c.id === id);
+            if (!p) return;
+            setPipeline(null);
+            openProject(p);
+          }}
+          starting={startingRun}
+          onStart={(id) => void runAgain(id)}
+        />
+      ) : partners ? (
         <Suspense fallback={null}>
-        <PartnersPage
+        <PartnersNow
           place={partners}
+          bandSlot={bandSlot}
           onPlace={setPartners}
           onChanged={() => setDirectoryAt((n) => n + 1)}
           onOpenTender={(id, file) => {
@@ -1199,6 +1260,12 @@ export default function App() {
           onConfirm={(name, target, roles, dates) => void confirmIntake(name, target, roles, dates)}
           onRemoveFile={dropPendingFile}
           onCancel={() => (setPending(null), setError(null))}
+          onNew={busy !== null || pending !== null ? null : () => setPending({ files: [], info: null, target: null })}
+          mail={
+            mailbox
+              ? { busy: mailBusy, onCheck: () => void sorted(scanInbox), title: `Polier looks into ${mailbox} for tenders: messages of the last two weeks with an LV attached` }
+              : null
+          }
         />
       ) : (
         <div className="work">

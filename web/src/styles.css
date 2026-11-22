@@ -3818,3 +3818,111 @@ button.flow-plate:hover {
   font-weight: 600;
   white-space: nowrap;
 }
+
+/* ------------------------------------------------------------------ a change of page without the shutter */
+
+/* Onto the partners page and off it (App.tsx `swapPage`): the whole screen slides, band and all, the new page
+   pushing the old one out with no gap between them, from the right onto Partners, from the left back. Only
+   Polier (the agent at the corner) stays put. */
+.agent-dock {
+  view-transition-name: agent;
+}
+
+:root[data-swap]::view-transition-old(root),
+:root[data-swap]::view-transition-new(root) {
+  animation-duration: 480ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  animation-fill-mode: both;
+  mix-blend-mode: normal;
+}
+
+:root[data-swap="forward"]::view-transition-old(root) {
+  animation-name: slide-out-left;
+}
+
+:root[data-swap="forward"]::view-transition-new(root) {
+  animation-name: slide-in-right;
+}
+
+:root[data-swap="back"]::view-transition-old(root) {
+  animation-name: slide-out-right;
+}
+
+:root[data-swap="back"]::view-transition-new(root) {
+  animation-name: slide-in-left;
+}
+
+@keyframes slide-out-left {
+  to {
+    translate: -100% 0;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    translate: 100% 0;
+  }
+}
+
+@keyframes slide-out-right {
+  to {
+    translate: 100% 0;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    translate: -100% 0;
+  }
+}
+
+/* The scrolling parts keep the room of a scroll bar whether they need one or not: a page whose content comes
+   in after it stands (the partners directory) does not jump sideways when the bar appears. */
+.register,
+.pt-wide,
+.pt-list,
+.pt-profile,
+.pt-look,
+.pt-searches {
+  scrollbar-gutter: stable;
+}
+
+/* ------------------------------------------------------------------ the brand and the way back, 2026-11-22 */
+
+/* The brand on the projects page as large as the band takes without growing: 44 px inside it. */
+.band .brand {
+  gap: 12px;
+  font-size: 40px;
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+
+/* The way back in the manner of the band's slabs and tabs: a cell the full height of the band at its left
+   end, the arrow and the place it leads to in the display face; ink when pointed at. */
+.band .band-back {
+  align-self: stretch;
+  height: auto;
+  margin: -4px 0 -4px -20px; /* over the band's padding, to its edges */
+  padding: 0 22px 0 18px;
+  gap: 8px;
+  border-right: 1.5px solid rgb(18 20 19 / 0.3);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.band .band-back svg {
+  width: 18px;
+  height: 18px;
+}
+
+.band .band-back:hover,
+.band .band-back:focus-visible {
+  background: var(--ink);
+  color: var(--yellow);
+  outline: none;
+}

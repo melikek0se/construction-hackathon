@@ -406,8 +406,8 @@ export async function getPartners(): Promise<PartnersOverview> {
 // it again behind it; if the button is pressed first, the page reads it itself.
 let warm: PartnersOverview | null = null;
 
-export function warmPartners(): void {
-  getPartners().then((d) => (warm = d), () => undefined);
+export function warmPartners(): Promise<PartnersOverview | null> {
+  return getPartners().then((d) => (warm = d), () => null);
 }
 
 /** The copy read in the background, once: a later visit reads afresh. */

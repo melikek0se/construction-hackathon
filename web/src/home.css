@@ -2598,3 +2598,126 @@
     translate: -8px 0;
   }
 }
+
+/* ------------------------------------------------------------------ the band of the projects page */
+
+/* The two other places, Pipeline and Partners, as ink slabs filling the right end of the band from stripe
+   to stripe: a sign, the name, and under it what stands there now. They are places to go, not actions; a new
+   project is on the head of the board. */
+.band .band-slabs {
+  align-self: stretch;
+  display: flex;
+  gap: 0;
+  margin: -4px -20px -4px auto; /* over the band's padding, to its edges */
+}
+
+.band-slab {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-content: center;
+  min-width: 220px;
+  padding: 0 24px;
+  border: 0;
+  border-left: 2px solid var(--yellow);
+  border-radius: 0;
+  background: var(--ink);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease);
+}
+
+.band-slab:first-child {
+  border-left: 0;
+}
+
+.band-slab:hover,
+.band-slab:focus-visible {
+  background: #2a2d2b;
+}
+
+.band-slab:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: -4px;
+}
+
+.band-slab > svg {
+  grid-row: 1 / 3;
+  align-self: center;
+  color: var(--yellow);
+}
+
+.band-slab b {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.band-slab small {
+  margin-top: 3px;
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #c9cbc5;
+}
+
+.band-slab small em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+/* a run is going: the hazard tape runs along the slab's foot */
+.band-slab.runs-switch.going {
+  position: relative;
+}
+
+/* the head of the board: the new project at its right end, in a dashed frame that says files go anywhere */
+.register-body .board-head {
+  align-items: center;
+}
+
+.board-head .register-new {
+  margin-left: auto;
+}
+
+.register-drop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 46px;
+  padding: 0 7px 0 16px;
+  border: 2px dashed var(--ink);
+  background: #fff;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.app.dragging .register-drop {
+  background: var(--hover);
+}
+
+.register-drop .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+}
+
+.register-new .btn.plain {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.register-new .btn.plain:hover:not(:disabled) {
+  background: var(--ink);
+  color: #fff;
+}

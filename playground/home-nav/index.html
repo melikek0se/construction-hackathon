@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Polier: home navigation proposals</title>
+<style>
+@font-face { font-family: Barlow; font-weight: 400; src: url(../tender/fonts/barlow-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 500; src: url(../tender/fonts/barlow-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 600; src: url(../tender/fonts/barlow-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 700; src: url(../tender/fonts/barlow-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url(../tender/fonts/barlow-condensed-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; src: url(../tender/fonts/barlow-condensed-latin-700-normal.woff2) format("woff2"); }
+
+:root {
+  --yellow: #ffc400; --yellow-ink: #3a2c00; --ink: #121413; --ink-2: #3b403a; --red: #c4161c; --blue: #0a5aa8;
+  --rule: #e3e3dd; --line-2: #c4c4bc; --tint: #f6f6f2; --hover: #fff7cf; --mute: #5f635c; --dim: #8b8e87;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif; --text: "Barlow", system-ui, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--text); font-size: 14px; color: var(--ink); background: #fff; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+/* ---------- the switcher (not part of the design) ---------- */
+.switcher {
+  position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 8px 20px; background: #1d1f1e; color: #ddd; font-size: 12px;
+}
+.switcher b { color: #fff; margin-right: 8px; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+.switcher button { border: 1px solid #555; background: transparent; color: #ddd; padding: 5px 10px; border-radius: 2px; }
+.switcher button[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); font-weight: 700; }
+.switcher label { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.note { padding: 12px 20px; background: #f3f3ef; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+.note strong { color: var(--ink); }
+
+/* ---------- shared: the band ---------- */
+.band {
+  display: flex; align-items: stretch; gap: 0; height: 88px; padding: 0 0 0 20px;
+  background: var(--yellow);
+  border-block: 9px solid; border-image: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) 9;
+}
+.brand {
+  display: flex; align-items: center; gap: 8px; padding-right: 28px;
+  font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: .025em; text-transform: uppercase;
+  background: none; border: 0;
+}
+.spacer { flex: 1; }
+.live { display: inline-flex; align-items: center; gap: 5px; font-family: var(--display); font-weight: 700; font-variant-numeric: tabular-nums; }
+.live i { width: 7px; height: 7px; background: var(--red); border-radius: 50%; }
+.ico { flex: none; }
+
+/* ---------- shared: schedule stub ---------- */
+.sched { display: grid; grid-template-columns: 400px 1fr; border-bottom: 2px solid var(--ink); height: 130px; }
+.sched-l { padding: 16px 20px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--rule); }
+.sched-l .ctl { display: flex; gap: 6px; align-items: center; color: var(--mute); font-size: 12px; }
+.sched-l .ctl span { border: 1px solid var(--line-2); padding: 3px 9px; font-weight: 700; font-size: 11px; letter-spacing: .08em; color: var(--ink-2); }
+.sched-l small { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--mute); }
+.sched-r { position: relative; background: repeating-linear-gradient(90deg, transparent 0 85px, var(--rule) 85px 86px); }
+.sched-r .today { position: absolute; left: 160px; top: 0; bottom: 0; border-left: 2px solid var(--ink); }
+.sched-r .today::before { content: "TODAY · SUN 22.11."; position: absolute; top: 0; left: 0; background: var(--ink); color: var(--yellow); font-size: 10.5px; font-weight: 700; padding: 3px 7px; letter-spacing: .06em; white-space: nowrap; }
+.tag { position: absolute; font-family: var(--display); font-weight: 600; font-size: 14px; padding: 1px 6px; background: var(--yellow); }
+.tag.o { background: #fff; outline: 1.5px solid var(--ink); }
+
+/* ---------- shared: the board ---------- */
+.board-area { padding: 30px 60px 40px; }
+.board-head { display: flex; align-items: center; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); min-height: 66px; }
+.board-head h1 { margin: 0; font-family: var(--display); font-size: 26px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.board-head .hint { color: var(--mute); font-size: 13px; }
+.cols { display: grid; grid-template-columns: repeat(5, 1fr); }
+.col { border-right: 1px solid var(--rule); padding: 0 12px 16px; min-height: 200px; }
+.col:last-child { border-right: 0; }
+.col h3 { display: flex; justify-content: space-between; margin: 0 0 12px; padding: 14px 0 10px; border-bottom: 1px solid var(--rule); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.col h3 small { font-weight: 400; color: var(--mute); letter-spacing: 0; }
+.card { border: 1px solid var(--rule); padding: 12px; margin-bottom: 10px; background: #fff; }
+.card.y { background: var(--hover); }
+.card.k { background: var(--ink); color: #fff; }
+.card .no { display: inline-block; background: var(--yellow); color: var(--ink); font-family: var(--display); font-weight: 600; font-size: 18px; padding: 1px 7px; }
+.card p { margin: 8px 0 0; font-weight: 600; font-size: 15px; line-height: 1.25; }
+.card .bars { height: 18px; margin-top: 12px; background: repeating-linear-gradient(90deg, var(--yellow) 0 3px, transparent 3px 9px, var(--red) 9px 11px, transparent 11px 17px); opacity: .8; }
+
+/* ---------- shared buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 14px; border: 0; border-radius: 2px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.btn.ink { background: var(--ink); color: #fff; }
+.btn.ink:hover { background: var(--ink-2); }
+.btn.yel { background: var(--yellow); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+
+/* =====================================================================
+   A · TABS: three full-height tabs after the brand; the open one is white
+   ===================================================================== */
+.vA .nav { display: flex; align-items: stretch; margin-left: 8px; }
+.vA .tab {
+  position: relative; display: flex; align-items: center; gap: 9px; padding: 0 22px; border: 0; background: none;
+  border-left: 1.5px solid rgb(18 20 19 / .35); font-family: var(--display); font-size: 21px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--ink); transition: background-color 120ms var(--ease);
+}
+.vA .tab:last-child { border-right: 1.5px solid rgb(18 20 19 / .35); }
+.vA .tab:hover { background: rgb(255 255 255 / .45); }
+.vA .tab[aria-current="page"] { background: #fff; }
+.vA .tab[aria-current="page"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -9px; height: 9px; background: #fff; } /* opens into the page through the stripe */
+.vA .tab .count { font-family: var(--text); font-size: 11px; font-weight: 700; background: var(--ink); color: var(--yellow); padding: 2px 6px; border-radius: 2px; letter-spacing: .04em; }
+.vA .tab .live { font-size: 15px; color: var(--red); }
+
+/* New project: on the head of the board, the one strong button */
+.vA .board-head .hint, .vB .board-head .hint, .vC .board-head .hint, .vD .board-head .hint { margin-left: auto; }
+
+/* =====================================================================
+   B · SLABS: Pipeline and Partners as full-height ink slabs at the right
+   ===================================================================== */
+.vB .slabs { display: flex; align-items: stretch; margin-left: auto; }
+.vB .slab {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 12px; align-content: center;
+  min-width: 210px; padding: 0 24px; border: 0; border-left: 2px solid var(--yellow); text-align: left;
+  background: var(--ink); color: #fff; transition: background-color 120ms var(--ease);
+}
+.vB .slab:hover { background: #2a2d2b; }
+.vB .slab .ico { grid-row: 1 / 3; align-self: center; color: var(--yellow); }
+.vB .slab b { font-family: var(--display); font-size: 22px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; line-height: 1; }
+.vB .slab small { font-size: 12px; color: #c9cbc5; margin-top: 3px; }
+.vB .slab small em { font-style: normal; color: var(--yellow); font-weight: 700; }
+.vB .slab .arrow { display: none; }
+
+/* =====================================================================
+   C · STENCIL: the page names as large words in the band, a thick ink bar under the open one
+   ===================================================================== */
+.vC .nav { display: flex; align-items: stretch; gap: 4px; margin-left: 12px; }
+.vC .tab {
+  position: relative; display: flex; align-items: center; gap: 8px; padding: 0 18px; border: 0; background: none;
+  font-family: var(--display); font-size: 26px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  color: rgb(18 20 19 / .55); transition: color 120ms var(--ease);
+}
+.vC .tab:hover { color: var(--ink); }
+.vC .tab::after { content: ""; position: absolute; left: 18px; right: 18px; bottom: 0; height: 6px; background: var(--ink); transform: scaleX(0); transform-origin: left; transition: transform 200ms var(--ease); }
+.vC .tab:hover::after { transform: scaleX(.35); }
+.vC .tab[aria-current="page"] { color: var(--ink); }
+.vC .tab[aria-current="page"]::after { transform: scaleX(1); }
+.vC .tab sup { font-family: var(--text); font-size: 11px; font-weight: 700; color: var(--yellow-ink); align-self: flex-start; margin-top: 22px; }
+.vC .tab .live { font-size: 15px; color: var(--red); }
+.vC .brand { border-right: 2px solid var(--ink); padding-right: 22px; margin: 16px 0; }
+
+/* =====================================================================
+   D · STATIONS: the band split into equal cells, like a site board; each cell a page with a live line
+   ===================================================================== */
+.vD .band { padding-left: 0; }
+.vD .brand { padding: 0 28px 0 20px; background: var(--ink); color: var(--yellow); }
+.vD .cell {
+  display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 230px; padding: 0 20px; border: 0; text-align: left;
+  background: none; border-right: 2px solid var(--ink); transition: background-color 120ms var(--ease);
+}
+.vD .cell:hover { background: rgb(255 255 255 / .5); }
+.vD .cell[aria-current="page"] { background: #fff; }
+.vD .cell .k { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--yellow-ink); }
+.vD .cell b { font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; line-height: 1; }
+.vD .cell small { font-size: 12px; color: var(--ink-2); }
+.vD .cell small em { font-style: normal; font-weight: 700; }
+.vD .cell .live { font-size: 12px; color: var(--red); }
+
+/* the New project button on the board, two forms */
+.np-drop {
+  display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 8px 0 16px; margin-left: 16px;
+  border: 2px dashed var(--ink); background: #fff; font-size: 13px; color: var(--mute);
+}
+.np-drop .btn { height: 30px; }
+
+.hidden { display: none !important; }
+.variant-title { font-family: var(--display); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding: 0 60px; margin-top: -18px; }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="toolbar">
+  <b>Home nav</b>
+  <button data-v="A" aria-pressed="true">A · Tabs</button>
+  <button data-v="B">B · Ink slabs</button>
+  <button data-v="C">C · Stencil words</button>
+  <button data-v="D">D · Station cells</button>
+  <button data-v="now">Today (as built)</button>
+  <label><input type="checkbox" id="running" checked /> pipeline running</label>
+</div>
+<div class="note" id="note"></div>
+
+<div id="stage"></div>
+
+<template id="t-icons">
+  <!-- pipeline: six stations on a line -->
+  <svg data-i="pipe" class="ico" width="22" height="22" viewBox="0 0 22 22" aria-hidden><path d="M2 11h18" stroke="currentColor" stroke-width="2"/><g fill="currentColor"><rect x="1" y="8" width="4" height="6"/><rect x="9" y="8" width="4" height="6"/><rect x="17" y="8" width="4" height="6"/></g></svg>
+  <!-- partners: two hard hats / handshake as two overlapping squares -->
+  <svg data-i="part" class="ico" width="22" height="22" viewBox="0 0 22 22" aria-hidden><rect x="2" y="5" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="9" width="11" height="11" fill="currentColor"/></svg>
+  <svg data-i="proj" class="ico" width="22" height="22" viewBox="0 0 22 22" aria-hidden><g fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="5" height="16"/><rect x="9" y="3" width="5" height="11"/><rect x="16" y="3" width="4" height="7"/></g></svg>
+  <svg data-i="plus" width="14" height="14" viewBox="0 0 24 24" aria-hidden><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"/></svg>
+  <svg data-i="hat" width="34" height="22" viewBox="0 0 34 22" aria-hidden><path d="M3 18h28v3H3zM6 18c0-8 5-14 11-14s11 6 11 14z" fill="currentColor"/></svg>
+</template>
+
+<script>
+const ic = (n) => document.getElementById("t-icons").content.querySelector(`[data-i="${n}"]`).outerHTML;
+const running = () => document.getElementById("running").checked;
+
+const NOTES = {
+  A: `<strong>A · Tabs.</strong> Projects, Pipeline and Partners become the page navigation: three tabs right after the brand, each the full height of the band. The open page is a white tab, like a folder tab. A run shows as a red dot and its count in the Pipeline tab. <strong>New project</strong> moves to the right end of the board head, the only dark button on the page.`,
+  B: `<strong>B · Ink slabs.</strong> The band stays for the brand alone; Pipeline and Partners are two dark slabs filling the right end of the band from stripe to stripe, each with a sign and a live line under its name (what runs, what waits). They read as places to go, not as actions. <strong>New project</strong> sits on the board head as a drop target: dashed frame, "drop the files here or" + button.`,
+  C: `<strong>C · Stencil words.</strong> The quietest: the page names stand in the band in the brand's face, large; the open page is full ink with a thick bar on the band's floor, the others half-tone. No boxes at all. <strong>New project</strong> on the right of the board head as a yellow button with an ink frame, so it is the one yellow thing on white.`,
+  D: `<strong>D · Station cells.</strong> The band is divided like a site sign board: the brand in an ink cell, then one cell per page, each with a small label, its name and a live line (6 tenders · 2 waiting; 1 running 4/6; 3 follow-ups). Most information, most "dashboard". <strong>New project</strong> as in A.`,
+  now: `<strong>Today.</strong> Three equal outline buttons top right; New project in the band, the hint at the right of the board head.`,
+};
+
+function band(v) {
+  const r = running();
+  const brand = `<button class="brand">${ic("hat")}Polier</button>`;
+  if (v === "A") return `<header class="band">${brand}
+    <nav class="nav">
+      <button class="tab" aria-current="page">Projects <span class="count">6</span></button>
+      <button class="tab">${ic("pipe")}Pipeline ${r ? `<span class="live"><i></i>4/6</span>` : ""}</button>
+      <button class="tab">${ic("part")}Partners <span class="count">3</span></button>
+    </nav><div class="spacer"></div></header>`;
+  if (v === "B") return `<header class="band">${brand}
+    <div class="slabs">
+      <button class="slab">${ic("pipe")}<b>Pipeline</b><small>${r ? `<span class="live" style="color:#fff"><i></i></span> Checking <em>4/6</em> · 501-24-01` : `6 stations · last run 2 h ago`}</small></button>
+      <button class="slab">${ic("part")}<b>Partners</b><small><em>3</em> follow-ups · 41 firms</small></button>
+    </div></header>`;
+  if (v === "C") return `<header class="band">${brand}
+    <nav class="nav">
+      <button class="tab" aria-current="page">Projects</button>
+      <button class="tab">Pipeline ${r ? `<span class="live"><i></i>4/6</span>` : ""}</button>
+      <button class="tab">Partners <sup>3</sup></button>
+    </nav><div class="spacer"></div></header>`;
+  if (v === "D") return `<header class="band">${brand}
+      <button class="cell" aria-current="page"><span class="k">Tenders ${ic("proj")}</span><b>Projects</b><small><em>6</em> open · <em>2</em> wait for you</small></button>
+      <button class="cell"><span class="k">Checks ${r ? `<span class="live"><i></i>running</span>` : ic("pipe")}</span><b>Pipeline</b><small>${r ? `<em>4/6</em> stations · 501-24-01` : `last run 2 h ago`}</small></button>
+      <button class="cell"><span class="k">Suppliers ${ic("part")}</span><b>Partners</b><small><em>3</em> follow-ups · 41 firms</small></button>
+      <div class="spacer"></div></header>`;
+  // today
+  return `<header class="band" style="align-items:center;padding-right:20px;height:70px">${brand}<div class="spacer"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="background:#fff;box-shadow:inset 0 0 0 1px var(--ink)">${ic("pipe")}Pipeline</button>
+      <button class="btn" style="background:#fff;box-shadow:inset 0 0 0 1px var(--ink)">Partners</button>
+      <button class="btn ink">${ic("plus")}New project</button>
+    </div></header>`;
+}
+
+function boardHead(v) {
+  const hint = `<span class="hint">Drop the files of a tender anywhere on this page</span>`;
+  if (v === "now") return `<h1>Projects</h1>${hint}`;
+  if (v === "B") return `<h1>Projects</h1><div class="np-drop" style="margin-left:auto">Drop the files of a tender here, or <button class="btn ink">${ic("plus")}New project</button></div>`;
+  if (v === "C") return `<h1>Projects</h1>${hint}<button class="btn yel" style="height:38px;padding:0 18px">${ic("plus")}New project</button>`;
+  return `<h1>Projects</h1>${hint}<button class="btn ink" style="height:38px;padding:0 18px">${ic("plus")}New project</button>`;
+}
+
+const card = (cls, no, t) => `<div class="card ${cls}"><span class="no">${no}</span><p>${t}</p><div class="bars"></div></div>`;
+const cols = `<div class="cols">
+  <div class="col"><h3>Intake <small>2</small></h3>${card("y","501-24-01","[PROJEKT_001] Tiefbau und Verlegung")}${card("y","79-222","Ausbildungszentrum und Bürogebäude")}</div>
+  <div class="col"><h3>Check <small>1</small></h3>${card("","27 LVs","27 LVs, 21.11.2026")}</div>
+  <div class="col"><h3>Pricing <small>2</small></h3>${card("","501-24-01","[PROJEKT_001] civil works and laying")}</div>
+  <div class="col"><h3>Submitted <small>1</small></h3>${card("","WV","WV [ORT_0000009], FWL")}</div>
+  <div class="col"><h3>Result <small>2</small></h3>${card("k","15145","Well water ring closure")}</div>
+</div>`;
+
+const sched = `<div class="sched"><div class="sched-l"><div class="ctl"><span>←</span><span>Today</span><span>→</span> 8 weeks · 13 months</div><small>ALL TENDERS</small></div>
+  <div class="sched-r"><div class="today"></div><span class="tag o" style="left:100px;top:50px">501-24-01</span><span class="tag" style="left:200px;top:50px">501-24-01</span><span class="tag" style="left:160px;top:74px">79-222</span></div></div>`;
+
+function render(v) {
+  document.querySelectorAll(".switcher [data-v]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+  document.getElementById("note").innerHTML = NOTES[v];
+  document.getElementById("stage").innerHTML = `<div class="v${v}">${band(v)}${sched}<div class="board-area"><div class="board-head">${boardHead(v)}</div>${cols}</div></div>`;
+  history.replaceState(null, "", "#" + v);
+}
+let cur = (location.hash.slice(1) || "A");
+document.querySelectorAll(".switcher [data-v]").forEach((b) => b.addEventListener("click", () => render((cur = b.dataset.v))));
+document.getElementById("running").addEventListener("change", () => render(cur));
+document.addEventListener("keydown", (e) => { const m = { 1: "A", 2: "B", 3: "C", 4: "D", 0: "now" }[e.key]; if (m) render((cur = m)); });
+render(cur);
+</script>
+</body>
+</html>
