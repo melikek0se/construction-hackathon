@@ -2575,3 +2575,136 @@ body:has(.pt) .agent-button:focus-visible {
   font: 700 13px/1 var(--text);
   font-style: normal;
 }
+
+/* 2026-11-22: the table of firms, written again. Six columns of fixed share, one size of row, the value above
+   and what qualifies it in a quieter line under it; nothing under or beside the table. */
+.pt-reg {
+  padding-top: 20px;
+}
+
+.pt-reg .pt-chips {
+  margin-bottom: 14px;
+}
+
+.pt-firms {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.pt-firms th {
+  padding: 0 20px 9px 0;
+  border-bottom: 2px solid var(--ink);
+  text-align: left;
+  vertical-align: bottom;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.pt-firms th button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pt-firms th button:hover,
+.pt-firms th button.is-on {
+  color: var(--ink);
+}
+
+.pt-firms td {
+  height: 64px;
+  padding: 10px 20px 10px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+  line-height: 1.35;
+}
+
+.pt-firms th:first-child,
+.pt-firms td:first-child {
+  padding-left: 12px;
+}
+
+.pt-firms tbody tr {
+  cursor: pointer;
+  transition: background-color 120ms var(--ease);
+}
+
+.pt-firms tbody tr:hover {
+  background: var(--hover);
+}
+
+.pt-firms td b {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pt-firms td small {
+  margin-top: 1px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.pt-firms-name {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-size: 15.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pt-firms tr:hover .pt-firms-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pt-firms tr.is-blocked .pt-firms-name {
+  color: var(--mute);
+}
+
+.pt-firms-now {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.pt-firms-now .pt-mark:not(.is-you) + * {
+  font-weight: 400;
+}
+
+.pt-fresh .pt-firms tbody tr {
+  animation: arrive 480ms var(--ease) backwards;
+}
+
+@media (max-width: 1000px) {
+  .pt-firms col:nth-child(2),
+  .pt-firms th:nth-child(2),
+  .pt-firms td:nth-child(2),
+  .pt-firms col:nth-child(4),
+  .pt-firms th:nth-child(4),
+  .pt-firms td:nth-child(4) {
+    display: none;
+  }
+}
+
+.pt-firms-wait {
+  font-weight: 400;
+}

@@ -76,10 +76,7 @@ const median = (list: number[]) => {
   const s = [...list].sort((a, b) => a - b);
   return s.length === 0 ? null : s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
 };
-/** A subcontractor's papers that have run out, or do within 45 days. */
-const papersDue = (p: { more: { documents: SupplierMore["documents"] } }) =>
-  p.more.documents.filter((d) => d.valid_until && daysTo(d.valid_until) <= 45).sort((a, b) => a.valid_until.localeCompare(b.valid_until));
-const paperSays = (d: SupplierMore["documents"][number]) => (daysTo(d.valid_until) < 0 ? `${d.name} ran out ${day(d.valid_until)}` : `${d.name} runs out ${day(d.valid_until)}`);
+
 
 /** What became of every inquiry to a firm, one mark each: quoted, declined, still waiting, never answered.
     Counted from the record, so the marks stand by outcome, not in the order the inquiries went out. */
@@ -137,7 +134,7 @@ function priceLevel(book: PartnersOverview["book"], id: string): { low: number; 
   return n ? { low, n, pct: n > low ? sum / (n - low) : 0 } : null;
 }
 
-type Filter = "all" | "supplier" | "subcontractor" | "preferred" | "open" | "papers";
+type Filter = "all" | "supplier" | "subcontractor";
 type Sort = "open" | "name" | "answers" | "speed" | "prices" | "level" | "contact";
 
 export function PartnersPage({
@@ -201,7 +198,7 @@ export function PartnersPage({
     const list = all.filter(
       (p) =>
         (filter === "all" ||
-          (filter === "preferred" ? p.more.preferred : filter === "open" ? p.card.open.length > 0 : filter === "papers" ? papersDue(p).length > 0 : p.kind === filter)) &&
+          p.kind === filter) &&
         (!q || [p.name, p.place, ...p.groups, ...p.products.map((x) => x.name)].some((t) => t.toLowerCase().includes(q))),
     );
     const rate = (p: PartnerRow) => p.card.answer_rate ?? -1;
@@ -328,8 +325,6 @@ export function PartnersPage({
             <Register
               rows={rows}
               all={all}
-              book={data.book}
-              onChanged={changed}
               filter={filter}
               onFilter={setFilter}
               sort={sort}
@@ -339,8 +334,6 @@ export function PartnersPage({
               onCancelAdd={() => setAdding(false)}
               onOpen={openPartner}
               onExamples={() => putExamples(true).then(changed, (e) => setError(say(e)))}
-              onFirm={() => onPlace({ tab: "firm", partner: null })}
-              onWeb={() => onPlace({ tab: "discovered", partner: null })}
               onError={setError}
             />
           )}
@@ -378,13 +371,11 @@ export function PartnersPage({
   );
 }
 
-/* ------------------------------------------------------------------ the register: every firm, side by side */
+/* ------------------------------------------------------------------ the firms, one row each */
 
 function Register({
   rows,
   all,
-  book,
-  onChanged,
   filter,
   onFilter,
   sort,
@@ -394,14 +385,10 @@ function Register({
   onCancelAdd,
   onOpen,
   onExamples,
-  onFirm,
-  onWeb,
   onError,
 }: {
   rows: PartnerRow[];
   all: PartnerRow[];
-  book: PartnersOverview["book"];
-  onChanged: () => void;
   filter: Filter;
   onFilter: (f: Filter) => void;
   sort: Sort;
@@ -411,8 +398,6 @@ function Register({
   onCancelAdd: () => void;
   onOpen: (id: string) => void;
   onExamples: () => void;
-  onFirm: () => void;
-  onWeb: () => void;
   onError: (e: string) => void;
 }) {
   const [fresh, setFresh] = useState<{ name: string; email: string; groups: string; kind: Supplier["kind"] }>({ name: "", email: "", groups: "", kind: filter === "subcontractor" ? "subcontractor" : "supplier" });
@@ -421,38 +406,14 @@ function Register({
       (s) => (setFresh({ ...fresh, name: "", email: "", groups: "" }), onAdded(s.id)),
       (e) => onError(say(e)),
     );
-  const n = (f: Filter) =>
-    f === "all" ? all.length : f === "preferred" ? all.filter((p) => p.more.preferred).length : f === "open" ? all.filter((p) => p.card.open.length > 0).length : f === "papers" ? all.filter((p) => papersDue(p).length > 0).length : all.filter((p) => p.kind === f).length;
-  const chips: [Filter, string][] = [
-    ["all", "All"],
-    ["supplier", "Suppliers"],
-    ["subcontractor", "Subcontractors"],
-    ["preferred", "Preferred"],
-    ["open", "Something open"],
-    ["papers", "Papers running out"],
+  const chips: [Filter, string, number][] = [
+    ["all", "All", all.length],
+    ["supplier", "Suppliers", all.filter((p) => p.kind === "supplier").length],
+    ["subcontractor", "Subcontractors", all.filter((p) => p.kind === "subcontractor").length],
   ];
-  const examples = all.filter((p) => p.more.example).length;
-  // firms with something on record that Polier has not summed up yet
-  const unread = all.filter((p) => !p.more.read && (p.card.asked > 0 || p.card.prices > 0));
-  const [picked, setPicked] = useState<string[]>([]);
-  const pick = (id: string) => setPicked((now) => (now.includes(id) ? now.filter((x) => x !== id) : now.length < 3 ? [...now, id] : now));
-  const [reading, setReading] = useState<number | null>(null);
-  const readAll = async () => {
-    for (let i = 0; i < unread.length; i += 1) {
-      setReading(unread.length - i);
-      try {
-        await readPartnerFirm(unread[i].id);
-      } catch (e) {
-        onError(say(e));
-        break;
-      }
-    }
-    setReading(null);
-    onChanged();
-  };
-  const head = (key: Sort, label: string, title?: string) => (
+  const head = (key: Sort, label: string) => (
     <th aria-sort={sort === key ? "descending" : undefined}>
-      <button className={sort === key ? "is-on" : ""} onClick={() => onSort(sort === key ? "open" : key)} title={title}>
+      <button className={sort === key ? "is-on" : ""} onClick={() => onSort(sort === key ? "open" : key)} title="Sort by this column">
         {label}
       </button>
     </th>
@@ -460,21 +421,11 @@ function Register({
   return (
     <section className="pt-wide pt-reg">
       <div className="pt-chips" role="group" aria-label="Show">
-        {chips
-          .filter(([f]) => f === "all" || f === filter || n(f) > 0)
-          .map(([f, label]) => (
-            <button key={f} aria-pressed={filter === f} onClick={() => onFilter(filter === f ? "all" : f)}>
-              {label} <span className="num">{n(f)}</span>
-            </button>
-          ))}
-        {examples > 0 && (
-          <span className="pt-chips-note">
-            {examples === all.length ? "All" : examples} of these {examples === 1 ? "is an example" : "are examples"} with a made-up history ·{" "}
-            <button className="text-link" onClick={onFirm}>
-              take them out
-            </button>
-          </span>
-        )}
+        {chips.map(([f, label, n]) => (
+          <button key={f} aria-pressed={filter === f} onClick={() => onFilter(f)}>
+            {label} <span className="num">{n}</span>
+          </button>
+        ))}
       </div>
       {adding && (
         <form className="pt-add" onSubmit={(e) => (e.preventDefault(), fresh.name.trim() && void add())}>
@@ -506,68 +457,59 @@ function Register({
           </div>
         )
       ) : (
-        <table className="pt-table">
+        <table className="pt-firms">
+          <colgroup>
+            <col style={{ width: "28%" }} />
+            <col style={{ width: "28%" }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "12%" }} />
+            <col style={{ width: "16%" }} />
+          </colgroup>
           <thead>
             <tr>
               {head("name", "Firm")}
               <th>Sells or does</th>
-              {head("answers", "Replies", "One mark per inquiry: answered, declined, still open, never answered")}
-              {head("speed", "First reply", "Median time to the first reply")}
-              {head("prices", "Prices that hold")}
-              {head("level", "Lowest on", "Of the things another firm priced too, on how many this firm is the lowest (prices that hold, net as quoted)")}
+              {head("answers", "Answers our inquiries")}
               {head("contact", "Last contact")}
-              {head("open", "Open")}
+              {head("open", "Right now")}
             </tr>
           </thead>
           <tbody>
             {rows.map((p) => {
               const c = p.card;
-              const due = papersDue(p)[0];
-              const level = priceLevel(book, p.id);
+              const you = c.open.some(yours);
               return (
                 <tr key={p.id} className={p.more.blocked ? "is-blocked" : ""} onClick={() => onOpen(p.id)}>
                   <td>
-                    <input
-                      type="checkbox"
-                      className="pt-pick"
-                      checked={picked.includes(p.id)}
-                      disabled={!picked.includes(p.id) && picked.length >= 3}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={() => pick(p.id)}
-                      aria-label={`Set ${p.name} beside others`}
-                      title="Tick two or three firms to set them side by side"
-                    />
-                    <button className="pt-table-name" onClick={(e) => (e.stopPropagation(), onOpen(p.id))}>
+                    <button className="pt-firms-name" onClick={(e) => (e.stopPropagation(), onOpen(p.id))}>
                       {p.name}
                     </button>
-                    {p.more.preferred && <em className="tag pt-pref">preferred</em>}
-                    {p.more.blocked && <em className="tag">not asked</em>}
-                    {p.source === "web" && <em className="tag">web</em>}
                     <small>
-                      <span lang="de">{[KIND[p.kind], p.place].filter(Boolean).join(" · ")}</span>
-                      {due && <span className="pt-up" lang="de"> · {paperSays(due)}</span>}
+                      {[KIND[p.kind], p.place, p.more.preferred && "preferred", p.more.blocked && "not asked"].filter(Boolean).join(" · ")}
                     </small>
-                    {p.gist && <small className="pt-gist" title="The first sentence of Polier's read of this firm">{p.gist}</small>}
                   </td>
                   <td lang="de">{p.groups.slice(0, 4).join(", ") || <span className="quiet" lang="en">nothing entered</span>}</td>
                   <td>
-                    <Replies c={c} />
+                    {c.asked === 0 ? (
+                      <span className="quiet">not asked yet</span>
+                    ) : (
+                      <>
+                        <b className="num">
+                          {c.answered} of {c.asked}
+                        </b>
+                        <small>{c.reply_hours === null ? "no reply so far" : `usually within ${took(c.reply_hours)}`}</small>
+                      </>
+                    )}
                   </td>
-                  <td className="num">{c.reply_hours === null ? <span className="quiet">–</span> : took(c.reply_hours)}</td>
-                  <td>
-                    <Holds c={c} />
-                  </td>
-                  <td className="num">{level ? `${level.low} of ${level.n}` : <span className="quiet">–</span>}</td>
                   <td className="num">{c.last_contact ? day(c.last_contact) : <span className="quiet">–</span>}</td>
                   <td>
-                    {c.open.length > 0 ? (
-                      <span className="pt-table-open">
-                        <Mark you={c.open.some(yours)} />
-                        {c.open.some(yours) ? "you" : "they"}
-                        {c.open.length > 1 && <span className="quiet num"> +{c.open.length - 1}</span>}
-                      </span>
-                    ) : (
+                    {c.open.length === 0 ? (
                       <span className="quiet">–</span>
+                    ) : (
+                      <span className="pt-firms-now">
+                        <Mark you={you} />
+                        <span className={you ? "" : "pt-firms-wait"}>{you ? "Your reply needed" : "Waiting for their reply"}</span>
+                      </span>
                     )}
                   </td>
                 </tr>
@@ -576,108 +518,7 @@ function Register({
           </tbody>
         </table>
       )}
-      {picked.length >= 2 && <Compare firms={all.filter((p) => picked.includes(p.id))} book={book} onOpen={onOpen} onClear={() => setPicked([])} />}
-      {rows.length > 0 && (
-        <p className="pt-key quiet">
-          Replies, one mark per inquiry:
-          <span className="pt-strip"><i className="is-yes" /></span> answered
-          <span className="pt-strip"><i className="is-declined" /></span> declined
-          <span className="pt-strip"><i className="is-waiting" /></span> still open
-          <span className="pt-strip"><i className="is-silent" /></span> never answered
-          {unread.length > 0 && (
-            <button className="text-link" disabled={reading !== null} onClick={() => void readAll()} title="Polier sums up each firm from its record, every sentence on its source. Asks Claude: a few seconds and a few cents per firm">
-              {reading !== null ? `Polier is reading: ${reading} to go…` : `Let Polier read the ${unread.length === 1 ? "one firm" : `${unread.length} firms`} it has not read`}
-            </button>
-          )}
-          <button className="text-link" onClick={onWeb}>
-            Find more firms on the web
-          </button>
-        </p>
-      )}
     </section>
-  );
-}
-
-/** Two or three firms side by side: how they answer, and their prices for what more than one of them priced
-    (prices that still hold, net as quoted, each with its terms). */
-function Compare({ firms, book, onOpen, onClear }: { firms: PartnerRow[]; book: PartnersOverview["book"]; onOpen: (id: string) => void; onClear: () => void }) {
-  const things = book
-    .map((b) => ({ b, per: firms.map((f) => b.offers.filter((o) => o.fresh && o.supplier_id === f.id).sort((x, y) => x.net - y.net)[0]) }))
-    .filter((t) => t.per.filter(Boolean).length >= 2);
-  return (
-    <div className="pt-compare">
-      <h3>
-        Side by side
-        <small>{things.length ? `${plural(things.length, "thing")} more than one of them priced; prices that hold, net as quoted` : "they have priced nothing in common that still holds"}</small>
-        <button className="btn-ghost small" onClick={onClear}>
-          Close
-        </button>
-      </h3>
-      <table className="pt-prices">
-        <thead>
-          <tr>
-            <th />
-            {firms.map((f) => (
-              <th key={f.id}>
-                <button className="text-link" onClick={() => onOpen(f.id)}>
-                  {f.name}
-                </button>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Replies</td>
-            {firms.map((f) => (
-              <td key={f.id}>
-                <Replies c={f.card} /> {f.card.asked > 0 && <span className="num">{f.card.answered} of {f.card.asked}</span>}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td>First reply, median</td>
-            {firms.map((f) => (
-              <td key={f.id} className="num">
-                {took(f.card.reply_hours)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td>Prices that hold</td>
-            {firms.map((f) => (
-              <td key={f.id}>
-                <Holds c={f.card} />
-              </td>
-            ))}
-          </tr>
-          {things.map(({ b, per }) => {
-            const low = Math.min(...per.filter(Boolean).map((o) => o.net));
-            return (
-              <tr key={`${b.label}|${b.unit}`}>
-                <td lang="de">
-                  {b.label}
-                  <small lang="en">per {b.unit || "unit"}</small>
-                </td>
-                {per.map((o, i) => (
-                  <td key={firms[i].id} className="num">
-                    {o ? (
-                      <>
-                        <b className={o.net === low ? "pt-lowest" : ""}>{price(o.net)}</b>
-                        {o.net > low && <span className="quiet"> +{pct.format(((o.net - low) / low) * 100)} %</span>}
-                        <small>{BASIS[o.basis]}</small>
-                      </>
-                    ) : (
-                      <span className="quiet">no price that holds</span>
-                    )}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
@@ -790,7 +631,6 @@ function Profile({
   // the next day a price that still holds runs out, and how many go with it
   const ends = p.prices.filter((r) => r.fresh && r.valid_until).map((r) => r.valid_until!).sort();
   const nextEnd = ends[0];
-  const due = papersDue(p);
   const threads = new Set(p.timeline.map(threadKey)).size;
   const facts = [p.contact, p.email, p.phone, p.place, p.more.customer_no && `customer no. ${p.more.customer_no}`].filter(Boolean);
   const SHEETS: [Sheet, string, number | null][] = [
@@ -864,11 +704,6 @@ function Profile({
           )}
         </div>
       </header>
-      {due.length > 0 && (
-        <p className="pt-note pt-warn" lang="de">
-          {due.map(paperSays).join(" · ")}
-        </p>
-      )}
       {p.more.found && (
         <p className="pt-note">
           Found on the web on {day(p.more.found.at)} while looking for <span lang="de">„{p.more.found.what}“</span>:{" "}
@@ -1105,7 +940,6 @@ function Profile({
             ) : (
               <p className="quiet">No quote from this firm yet, so nothing is known about its terms.</p>
             )}
-            {p.kind === "subcontractor" && <Documents list={p.more.documents} onSave={(documents) => void more({ documents })} />}
             <h3 className="pt-sub">How Polier treats this firm</h3>
             <div className="pt-flags">
               <label className="check" title="Asked first where several fit">
@@ -1389,40 +1223,6 @@ const Trait = ({ label, value, quote, de }: { label: string; value: string; quot
     </dd>
   </div>
 );
-
-/** A subcontractor's papers: what a main contractor has to hold before the firm may work for it. */
-function Documents({ list, onSave }: { list: SupplierMore["documents"]; onSave: (list: SupplierMore["documents"]) => void }) {
-  const [name, setName] = useState("");
-  const [until, setUntil] = useState("");
-  const today = new Date().toISOString().slice(0, 10);
-  const soon = new Date(Date.now() + 45 * 864e5).toISOString().slice(0, 10);
-  return (
-    <>
-      <h3 className="pt-sub">Papers</h3>
-      {list.length === 0 && <p className="quiet">None on record (prequalification, § 48b exemption, liability insurance).</p>}
-      <ul className="pt-docs">
-        {list.map((d, i) => (
-          <li key={i} className={d.valid_until && d.valid_until < today ? "is-over" : d.valid_until && d.valid_until < soon ? "is-soon" : ""}>
-            <span lang="de">{d.name}</span>
-            <span className="num">
-              {d.valid_until ? (d.valid_until < today ? `ran out ${day(d.valid_until)}` : `until ${day(d.valid_until)}`) : "no date"}
-            </span>
-            <button className="sup-x" aria-label={`Remove ${d.name}`} onClick={() => onSave(list.filter((_, n) => n !== i))}>
-              ×
-            </button>
-          </li>
-        ))}
-      </ul>
-      <form className="pt-doc-add" onSubmit={(e) => (e.preventDefault(), name.trim() && (onSave([...list, { name: name.trim(), valid_until: /^\d{2}\.\d{2}\.\d{4}$/.test(until) ? until.split(".").reverse().join("-") : "" }]), setName(""), setUntil("")))}>
-        <input type="text" lang="de" placeholder="Paper" value={name} onChange={(e) => setName(e.target.value)} />
-        <input type="text" placeholder="valid until, TT.MM.JJJJ" value={until} onChange={(e) => setUntil(e.target.value)} />
-        <button className="btn-ghost small" disabled={!name.trim()}>
-          Add
-        </button>
-      </form>
-    </>
-  );
-}
 
 function Prices({ rows, sub, who, onOpen }: { rows: PartnerPrice[]; sub?: boolean; who?: boolean; onOpen?: (id: string) => void }) {
   return (

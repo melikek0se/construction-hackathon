@@ -142,6 +142,16 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   days are the price book's badge and a shelf there, a missing name or e-mail of the firm is a "!" on "Your
   firm". A firm is a page under the directory, the full width, with "Directory › name" and "Previous / Next"
   above it; the narrow second list beside it is gone. Seen in headless Chrome at 1500 wide, no console error.
+  **The table of firms written again (2026-11-22)**, at the user's word (hard to read, columns nobody could
+  name): five columns in plain words (Firm, Sells or does, Answers our inquiries "5 of 6 / usually within 5
+  days", Last contact, Right now "Your reply needed" or "Waiting for their
+  reply"), three chips (All, Suppliers, Subcontractors). Taken out of the table: "Valid prices" (a price is asked for again at every tender,
+  D-049, so a count of prices still within their validity said nothing to act on), the reply marks, "Lowest on",
+  Polier's first sentence, the tick boxes and the side-by-side of firms, the key, "Let Polier read the N
+  firms", "Find more firms on the web", the note about the examples. **Papers are out of the page
+  altogether** (the chip, the red line in the table and on the firm's page, the form under "Terms and
+  particulars"); `suppliers.more.documents` is still kept on the server and the example firms still carry
+  theirs. Seen in headless Chrome at 1500 wide, no console error.
   **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
   freight per unit), grouping the price book by material group proper (the package stands in for it). The
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:
