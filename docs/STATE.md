@@ -14,6 +14,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- Pitch deck (2026-11-22, asked by the video session on Atahan's word): `docs/pitch/deck.pdf`, 7 slides
+  (title, problem, what we built, what is different, tech stack and architecture, measured, next), made from
+  `deck.html` by `render.mjs` (Playwright of `scripts/demo_video`; previews in `docs/pitch/preview/`, not in git).
+  Screenshots of TBA-2026-114 from the dev app. Numbers from this file only (planted 29/30, PDF 1.254 items,
+  prices 5/643). Not checked: read by the team; the submission form (Tally, by Sunday 12:00) not filled.
+
 - Demo video "The Estimator" (2026-11-22, Atahan: a fun demo story of two minutes, then shoot it): a
   film-trailer parody, story and how it is made in `10-demo-video.md`, the tooling in `scripts/demo_video/`
   (`story.mjs` the lines and shots, `make.mjs` voice and music from ElevenLabs, the shots recorded from the
