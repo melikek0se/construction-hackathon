@@ -4,7 +4,7 @@ Challenge A: **AI Estimation and Bidding Assistant for Bills of Quantities.**
 Upload a German LV (GAEB / PDF) → errors, risks and change-order potential per item → prices with provenance →
 supplier inquiries for the price gaps.
 
-**Demo video:** https://youtu.be/2p-mdkDk9NY · **Pitch deck:** [`docs/pitch/deck.pdf`](docs/pitch/deck.pdf)
+**Live app:** https://classifieds-cnet-radical-ministry.trycloudflare.com · **Demo video:** https://youtu.be/2p-mdkDk9NY · **Pitch deck:** [`docs/pitch/deck.pdf`](docs/pitch/deck.pdf)
 
 Status: repository prepared, no application code yet. See [`docs/STATE.md`](docs/STATE.md).
 
