@@ -3994,21 +3994,21 @@ button.agent-scope:hover {
   align-self: stretch;
   height: auto;
   margin: -4px 0 -4px -20px; /* over the band's padding, to its edges */
-  padding: 0 22px 0 18px;
-  gap: 8px;
+  padding: 0 18px 0 15px;
+  gap: 6px;
   border-right: 1.5px solid rgb(18 20 19 / 0.3);
   border-radius: 0;
   background: none;
   box-shadow: none;
   font-family: var(--display);
-  font-size: 19px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 
 .band .band-back svg {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
 }
 
 .band .band-back:hover,
