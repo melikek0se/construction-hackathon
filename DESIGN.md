@@ -311,7 +311,7 @@ Every page is a column: band, an optional bar, then the content filling the heig
   under the lane. It stays under the band while the board scrolls.
 - **Workspace.** Under the band a bar with the versions of the LV, then two panes: the left pane takes the
   remaining width, the right pane is `clamp(360px, 32vw, 520px)` with a hairline on its left. Left: the verdict
-  and the view switch (LV map, Item table, Remarks, What-if), the view, and the readout bar at the bottom of
+  and the view switch (LV map, Item table, What-if), the view, and the readout bar at the bottom of
   the map. Right: the findings list, replaced by the item sheet when an item is open. Gutter 20px on the left
   pane, 16px in the right pane, 12px inside a card.
 - **Project view.** Same two panes: the trade diagram left, findings between the LVs right.

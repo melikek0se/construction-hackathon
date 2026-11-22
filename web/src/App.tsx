@@ -6,7 +6,7 @@ import { PipelineStrip, RunsDialog, RunsSwitch } from "./Runs";
 import { Agent } from "./Agent";
 import { Gate, LoadingTapes, ReviewTapes, type GateInfo } from "./Loading";
 import { ProjectView } from "./ProjectView";
-import { FindingsList, ItemSheet, ItemsView, RemarksView, Sign, itemLabel, type Selection } from "./components";
+import { FindingsList, ItemSheet, ItemsView, Sign, itemLabel, type Selection } from "./components";
 import { LvText, qty } from "./format";
 import { buildSections, weight, worst } from "./sections";
 import "./chat.css";
@@ -21,11 +21,10 @@ import { QuestionsView } from "./Questions";
 import { HOME, docKey, formatRoute, isLv, parseRoute, writeRoute, type LvPlace, type PartnersPlace, type Route } from "./router";
 import { SEVERITIES, countLabel, type Analysis, type CatalogProject, type Finding, type Intake, type Item, type Plan, type Prices, type Project, type ProjectSummary, type ChatCitation, type ChatTurn, type Severity, type TenderDate, type QuestionsState, type Run, type Amendment } from "./types";
 
-type View = "plan" | "table" | "remarks" | "whatif" | "pdf" | "questions" | "inquiries" | "bid";
+type View = "plan" | "table" | "whatif" | "pdf" | "questions" | "inquiries" | "bid";
 const VIEWS: [View, string][] = [
   ["plan", "LV map"],
   ["table", "Item table"],
-  ["remarks", "Remarks"],
   ["whatif", "What-if"],
   ["pdf", "PDF"], // the LV's pages: its own PDF, or pages drawn from a GAEB / Excel file (Analysis.pdf)
   ["questions", "Questions"], // bidder questions: asked by e-mail, the client's reply read back in
@@ -867,11 +866,11 @@ export default function App() {
 
   const open = selection.oz !== null || selection.finding !== null;
 
-  // A finding on a remark has no item to open: it is shown where it stands, in the remarks (or on the page).
+  // A finding on a remark has no item to open: it is shown where the client wrote it, on the page.
   function pick(s: Selection) {
     setSelection(s);
     const f = s.finding !== null ? analysis?.findings[s.finding] : undefined;
-    if (f && f.item_oz === null && f.check_id === "R-REMARK-WORDING" && view !== "pdf") setView("remarks");
+    if (f && f.item_oz === null && f.check_id === "R-REMARK-WORDING" && analysis?.pdf) setView("pdf");
   }
 
   const chatKey = current?.project.id ?? analysis?.id ?? "";
@@ -1292,9 +1291,6 @@ export default function App() {
                 onPage={setPage}
                 onSelect={(oz) => setSelection({ oz, finding: null })}
               />
-            )}
-            {view === "remarks" && (
-              <RemarksView analysis={analysis} itemByOz={itemByOz} selection={selection} onSelect={setSelection} />
             )}
             {view === "pdf" && analysis.pdf && (
               <PdfView
