@@ -76,6 +76,58 @@ def keep(project_id: str | None, file: str, prices: dict[str, tuple[Decimal | No
                                                           unit_price=str(price), source=source, updated=db.now()))
 
 
+# ------------------------------------------------------------------ a unit price built on a material price
+
+BUILD_DEFAULTS = {"surcharge": 15.0, "wage": 48.0}  # per cent on cost; euros per hour of labour
+BUILD_PARTS = ("material", "waste", "hours", "wage", "equipment", "surcharge")
+
+
+def build_price(parts: dict) -> Decimal:
+    """(material × (1 + waste %) + hours × wage + equipment) × (1 + surcharge %), per unit of the item.
+    The supplier prices the material only; waste goes onto the material, never onto the LV's quantity."""
+    v = {k: Decimal(str(parts.get(k) or 0)) for k in BUILD_PARTS}
+    if any(x < 0 for x in v.values()):
+        raise ValueError("The parts of a unit price are zero or more.")
+    cost = v["material"] * (1 + v["waste"] / 100) + v["hours"] * v["wage"] + v["equipment"]
+    return _money(cost * (1 + v["surcharge"] / 100))
+
+
+def _setting(key: str):
+    with db.engine().connect() as conn:
+        return conn.execute(select(db.settings.c.value).where(db.settings.c.key == key)).scalar()
+
+
+def _set_setting(key: str, value) -> None:
+    with db.engine().begin() as conn:
+        conn.execute(delete(db.settings).where(db.settings.c.key == key))
+        conn.execute(insert(db.settings).values(key=key, value=value))
+
+
+def build_defaults() -> dict:
+    """The surcharge and the wage a new build starts with: the ones used last."""
+    return {**BUILD_DEFAULTS, **(_setting("build_defaults") or {})}
+
+
+def builds(project_id: str | None, file: str) -> dict[str, dict]:
+    """The parts kept for the items of an LV file whose unit price was built, by item number."""
+    mine = f"{project_id or ''}|{file}|"
+    return {k[len(mine):]: v for k, v in (_setting("builds") or {}).items() if k.startswith(mine)}
+
+
+def keep_build(project_id: str | None, file: str, oz: str, parts: dict | None) -> None:
+    """Keep the parts of a built price, or forget them (None: the price was typed over)."""
+    kept = dict(_setting("builds") or {})
+    key = f"{project_id or ''}|{file}|{oz}"
+    if parts is None:
+        if key not in kept:
+            return
+        kept.pop(key)
+    else:
+        kept[key] = {k: float(parts.get(k) or 0) for k in BUILD_PARTS}
+        _set_setting("build_defaults", {"surcharge": kept[key]["surcharge"], "wage": kept[key]["wage"] or build_defaults()["wage"]})
+    _set_setting("builds", kept)
+
+
 def tally(project_id: str) -> dict | None:
     """How far the bid of a project is, for its card: the items with a unit price entered, counted on the
     LV file that has the most (`priced`: the same LV in two formats is priced once) and over all files
@@ -95,12 +147,14 @@ def tally(project_id: str) -> dict | None:
 
 # ------------------------------------------------------------------ the sheet
 
-def sheet(boq: BoQ, suggestions: dict | None, amendments: list[dict], kept: dict[str, dict]) -> dict:
+def sheet(boq: BoQ, suggestions: dict | None, amendments: list[dict], kept: dict[str, dict],
+          builds_of: dict[str, dict] | None = None) -> dict:
     """The bid as it stands: one row per item, and the sums.
 
     `suggestions`: boq.prices.suggest_prices for the LV, or None. `amendments`: of this file; only the
     accepted ones count. An item of the LV that carries a price already (a bid file) is shown with it."""
     suggested = {s["item_oz"]: s for s in (suggestions or {}).get("suggestions", [])}
+    built = builds_of or {}
     accepted = [a for a in amendments if a["status"] == "accepted"]
     rows, net, allowance_sum, missing, corrected = [], Decimal(0), Decimal(0), 0, 0
     for item in boq.items:
@@ -134,6 +188,7 @@ def sheet(boq: BoQ, suggestions: dict | None, amendments: list[dict], kept: dict
             "material": s.get("material") if s else None,
             "unit_price": float(base) if base is not None else None,
             "source": mine["source"] if mine else ("file" if item.up is not None else None),
+            "build": built.get(item.oz),  # the parts of a price built on a material price, where it was
             "allowance_percent": float(percent) if percent else None,
             "price": float(price) if price is not None else None,  # what goes into the bid
             "total": float(total) if total is not None else None,

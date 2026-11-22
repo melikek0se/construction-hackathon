@@ -190,6 +190,11 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   package and firms, 3 waiting for the client, 4 from past bids; the rail's "4 stops".
   Not checked: the 8 s reading after something sent, a card of an inquiry that is out.
 
+- The last corners before the demo (2026-11-22): tests for a bid that went out (kept, closed, taken back,
+  an LV that is no GAEB XML) and for a built unit price; the parts of a built price on the server with
+  hours times wage; a tender of several LVs taken on (OP-2614-LV1): the board offers its LVs, an LV opened
+  has its questions, its open price fields and the three stations; the what-if inside "Finish the bid".
+  OP-2614-LV1 stays taken on (it was in the intake before).
 - Finishing and submitting the bid (2026-11-22, D-079; `Tender.tsx` (`finishing`, the panel, `tn-sent`),
   `api.py` (`submit_bid`, `withdraw_bid`), `api.ts`, `App.tsx`, `Projects.tsx` (`stageOf`), `tenderdoc.css`):
   Bid and Award are closed until the bid went out; "Finish the bid" is the third panel of the tender's

@@ -5,7 +5,7 @@
 import { cloneElement, isValidElement, memo, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { Sign } from "./components";
-import { getBid, getBidRisk, getSupply, openCatalogProject, setBidPrices } from "./api";
+import { buildUnitPrice, getBid, getBidRisk, getSupply, openCatalogProject, setBidPrices } from "./api";
 import { ProjectView } from "./ProjectView";
 import { TenderDocView, type AskLayer, type BoardRow, type DocPrices } from "./TenderDoc";
 import type { QuestionsLayer } from "./Questions";
@@ -599,7 +599,8 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
     // typed once the tender is taken on, and no more once the bid went out (D-080)
     set: intake || plan.sent ? null : (oz, text) => void setBidPrices(bid.analysisId!, { [oz]: text }).then(setOffer, () => undefined),
     why: plan.sent ? "The bid went out: take it back to change a price" : undefined,
-    file: offer.file,
+    build: (oz, parts) => void buildUnitPrice(bid.analysisId!, oz, parts).then(setOffer, () => undefined),
+    defaults: offer.build_defaults,
     // a supplier's price for the material: the quote for this tender, else the price book's
     material: (oz) => {
       const s = supply?.prices[oz], m = rowBy.get(oz)?.material;
@@ -1112,11 +1113,6 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
             <button className="btn-ghost" disabled={run.stopping} title="It stops after the step it is on" onClick={() => onMove("cancel")}>{run.stopping ? "Stopping" : "Stop"}</button>
           </span>
         )}
-        {(checking || asking || pricing) && !intake && run?.status === "waiting" && (
-          <span className="tn-decide">
-            <button className="btn-ghost" title="Do not wait for the client's answers: what stays open is priced as a risk" onClick={() => onMove("go-on")}>Close the questions</button>
-          </span>
-        )}
       </nav>,
       bandSlot)}
       {/* the bid that went out (D-079): when, what, how long it binds; how it ended leads on to Award, and a bid
@@ -1186,6 +1182,7 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
             // packages not sent, else the bid itself.
             const toAsk = qs?.filter((x) => x.status === "new").length ?? 0;
             const answered = qs?.filter((x) => x.status === "partly" || x.status === "answered").length ?? 0;
+            const sentOut = qs?.filter((x) => x.status === "sent").length ?? 0; // answered in part counts as answered here, once
             const closed = !!plan.questions_due && /ago$|^yesterday$/.test(daysLeft(plan.questions_due)); // the last day for questions is over
             const askable = toAsk > 0 && !closed;
             const nextRow = askable ? "client" : toSend > 0 ? "prices" : "bid";
@@ -1193,10 +1190,12 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
             const board: BoardRow[] = [
               {
                 key: "client", n: qs ? qs.length : "…", name: "Client", next: nextRow === "client", open: asking,
-                says: qs ? (qs.length ? <><b>{toAsk ? `${toAsk} to ask` : "Nothing to ask"}</b> · {notAsked - toAsk > 0 ? `${notAsked - toAsk} in a message not sent · ` : ""}{withClient} with the client · {answered} answered</> : <b>No finding needs the client</b>) : "Reading the questions",
+                says: qs ? (qs.length ? <><b>{toAsk ? `${toAsk} to ask` : "Nothing to ask"}</b> · {notAsked - toAsk > 0 ? `${notAsked - toAsk} in a message not sent · ` : ""}{sentOut} with the client · {answered} answered</> : <b>No finding needs the client</b>) : "Reading the questions",
                 sub: [q.toDecide ? `${count(q.toDecide, "change")} from the answers to decide` : "", plan.questions_due ? `questions close ${daysLeft(plan.questions_due)}` : ""].filter(Boolean).join(" · ") || undefined,
                 share: qs && qs.length ? (qs.length - toAsk) / qs.length : null,
                 act: { label: "Ask the client", count: q.count || toAsk, title: "The questions to the client as one message: tick, reword, send", onClick: () => toStep(asking ? "check" : "questions") },
+                // while the pipeline waits for the client's answers: stop waiting (it stood in the band)
+                more: run?.status === "waiting" ? { label: "Close the questions", title: "Do not wait for the client's answers: what stays open is priced as a risk", onClick: () => onMove("go-on") } : null,
               },
               {
                 key: "prices", n: supply ? toSend + waiting : "…", name: "Prices", next: nextRow === "prices", open: pricing,
@@ -1373,6 +1372,13 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
         })
       ) : checking && place.view === "map" ? (
         <TenderDocView prices={lv ? docPrices : null} tender={tender}
+          // taken on, several LVs, none open: the questions, the prices and the bid are worked on per LV, so
+          // the board offers the LVs to open
+          board={!intake && !lv && !single && !submitted ? tender.lvs.map((l, n) => ({
+            key: `lv-${l.id}`, n: l.no ?? l.id + 1, name: `LV ${l.no ?? l.id + 1}`,
+            says: l.label, sub: `${count(l.items.length, "item")} · its questions, prices and bid are worked on in the LV`,
+            act: { label: "Open this LV", onClick: () => onPlace({ ...place, lv: l.id, item: null }) }, next: n === 0,
+          })) : null}
           intake={intake} plan={plan} place={place} views={views.length > 1 ? viewSwitch : null} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
           summary={check.summary} findings={check.findingsByOz} findingsLv={lv?.id ?? null} selected={check.selected}
           onOpenLv={(id) => onPlace({ ...place, lv: id, item: null })} />

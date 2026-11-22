@@ -90,3 +90,60 @@ def test_the_bid_is_priced_carries_allowances_and_goes_back_as_x84(database, tmp
         lone = client.post("/api/analyze", files={"file": (source.name, fh)}).json()["id"]
     assert client.get(f"/api/analyses/{lone}/bid").json()["x84"] is False
     assert client.get(f"/api/analyses/{lone}/bid.x84").status_code == 422
+
+
+def test_a_bid_that_went_out_is_kept_closed_and_can_be_taken_back(database):
+    """D-079, D-080: "The bid went out" keeps the X84 with the project and notes the day; from then on no
+    price is changed; taken back, the tender is open again as it was."""
+    client = TestClient(api.app)
+    analysis_id = client.get("/api/catalog/D/files/0").json()["id"]
+    before = client.get("/api/catalog").json()
+    files_before = [f["name"] for f in next(p for p in before if p["id"] == "D")["files"]]
+    first = client.get(f"/api/analyses/{analysis_id}/bid").json()["rows"][0]["item_oz"]
+    client.put(f"/api/analyses/{analysis_id}/bid", json={"prices": {first: "100"}})
+
+    project = client.post(f"/api/analyses/{analysis_id}/bid/submit").json()
+    kept = [f for f in project["files"] if f["role"] == "submitted bid"]
+    assert project["plan"]["sent"] and len(kept) == 1 and kept[0]["name"].startswith("Angebot_") and kept[0]["name"].endswith(".x84")
+    # the same bid said to have gone out a second time is not kept twice
+    again = client.post(f"/api/analyses/{analysis_id}/bid/submit").json()
+    assert len([f for f in again["files"] if f["role"] == "submitted bid"]) == 1
+
+    # closed: a price typed is refused, and Polier puts nothing in
+    refused = client.put(f"/api/analyses/{analysis_id}/bid", json={"prices": {first: "999"}})
+    assert refused.status_code == 409 and "went out" in refused.json()["detail"]
+    assert client.put(f"/api/analyses/{analysis_id}/bid", json={"take_suggestions": True}).status_code == 409
+    rows = {r["item_oz"]: r for r in client.get(f"/api/analyses/{analysis_id}/bid").json()["rows"]}
+    assert rows[first]["unit_price"] == 100
+
+    back = client.post("/api/catalog/D/bid/withdraw").json()
+    assert not back["plan"].get("sent") and [f["name"] for f in back["files"]] == files_before
+    assert client.put(f"/api/analyses/{analysis_id}/bid", json={"prices": {first: "120"}}).status_code == 200
+
+
+def test_a_bid_on_an_lv_that_is_no_gaeb_xml_is_noted_without_a_file(database):
+    """No X84 can be written onto a PDF: the day the bid went out is noted, nothing is added to the files."""
+    client = TestClient(api.app)
+    analysis_id = client.get("/api/catalog/D/files/1").json()["id"]
+    assert client.get(f"/api/analyses/{analysis_id}/bid").json()["x84"] is False
+    n = len(next(p for p in client.get("/api/catalog").json() if p["id"] == "D")["files"])
+    project = client.post(f"/api/analyses/{analysis_id}/bid/submit").json()
+    assert project["plan"]["sent"] and len(project["files"]) == n
+    assert client.get(f"/api/analyses/{analysis_id}/bid.csv").status_code == 200
+
+
+def test_a_unit_price_is_built_on_a_material_price_and_its_parts_are_kept(database):
+    """D-078: (material x (1 + waste) + hours x wage + equipment) x (1 + surcharge); the parts stay with the
+    item until a price is typed over them, and the last surcharge and wage are the next defaults."""
+    client = TestClient(api.app)
+    analysis_id = client.get("/api/catalog/D/files/0").json()["id"]
+    oz = client.get(f"/api/analyses/{analysis_id}/bid").json()["rows"][0]["item_oz"]
+    parts = {"material": 4.85, "waste": 5, "hours": 0.1, "wage": 50, "equipment": 1.2, "surcharge": 15}
+    sheet = client.put(f"/api/analyses/{analysis_id}/bid/build", json={"oz": oz, **parts}).json()
+    row = next(r for r in sheet["rows"] if r["item_oz"] == oz)
+    assert row["unit_price"] == 12.99 and row["source"] == "own" and row["build"] == parts  # (5.0925 + 5 + 1.2) x 1.15
+    assert sheet["build_defaults"] == {"surcharge": 15, "wage": 50}
+    assert client.put(f"/api/analyses/{analysis_id}/bid/build", json={"oz": "9.9.9", **parts}).status_code == 422
+    assert client.put(f"/api/analyses/{analysis_id}/bid/build", json={"oz": oz, "material": -1}).status_code == 422
+    typed = client.put(f"/api/analyses/{analysis_id}/bid", json={"prices": {oz: "20"}}).json()
+    assert next(r for r in typed["rows"] if r["item_oz"] == oz)["build"] is None

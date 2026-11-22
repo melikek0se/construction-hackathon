@@ -1507,8 +1507,9 @@ def decide_amendment(amendment_id: str, body: Decision):
 def _bid(analysis_id: str) -> dict:
     boq, _ = _analysis(analysis_id)
     project_id = _project_id(analysis_id)
-    state = bid.sheet(boq, _prices(boq, project_id), amendments.about(project_id, boq.file), bid.entered(project_id, boq.file))
-    return {**state, "file": boq.file, "format": boq.format,
+    state = bid.sheet(boq, _prices(boq, project_id), amendments.about(project_id, boq.file), bid.entered(project_id, boq.file),
+                      bid.builds(project_id, boq.file))
+    return {**state, "file": boq.file, "format": boq.format, "build_defaults": bid.build_defaults(),
             # the bid can go back as GAEB XML where the LV came as GAEB XML and its file is kept
             "x84": boq.format == "gaeb_xml" and _source_bytes(analysis_id) is not None}
 
@@ -1617,11 +1618,43 @@ def set_bid_prices(analysis_id: str, body: BidPrices):
             changes[oz] = (bid.price_of(text), "own")
         except ValueError as exc:
             raise HTTPException(422, f"Item {oz}: {exc}") from exc
+        bid.keep_build(_project_id(analysis_id), boq.file, oz, None)  # typed over: it is no built price any more
     if body.take_suggestions:
         for row in _bid(analysis_id)["rows"]:
             if row["unit_price"] is None and row["suggestion"] and row["item_oz"] not in changes:
                 changes[row["item_oz"]] = (bid.price_of(f"{row['suggestion']['unit_price']:.2f}"), "suggestion")
     bid.keep(_project_id(analysis_id), boq.file, changes)
+    return _bid(analysis_id)
+
+
+class Build(BaseModel):
+    oz: str
+    material: float = 0  # the supplier's price per unit
+    waste: float = 0  # per cent on the material
+    hours: float = 0  # labour per unit
+    wage: float = 0  # euros per hour
+    equipment: float = 0  # per unit
+    surcharge: float = 0  # per cent on cost: overheads, risk, profit
+
+
+@app.put("/api/analyses/{analysis_id}/bid/build")
+def build_unit_price(analysis_id: str, body: Build):
+    """A unit price built on a supplier's material price (D-078): the parts are kept with the item, the
+    result goes in as the estimator's own price."""
+    boq, _ = _analysis(analysis_id)
+    _bid_open(analysis_id)
+    if body.oz not in {i.oz for i in boq.items}:
+        raise HTTPException(422, f"The LV has no item {body.oz}.")
+    parts = body.model_dump(exclude={"oz"})
+    try:
+        price = bid.build_price(parts)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if price <= 0:
+        raise HTTPException(422, "The parts give no price.")
+    project_id = _project_id(analysis_id)
+    bid.keep(project_id, boq.file, {body.oz: (price, "own")})
+    bid.keep_build(project_id, boq.file, body.oz, parts)
     return _bid(analysis_id)
 
 

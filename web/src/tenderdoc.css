@@ -2826,6 +2826,18 @@
 .td-brow > .td-actbtn {
   justify-self: end;
 }
+/* the end of a row: its action, and before it a quieter second one (close the questions) */
+.td-bacts {
+  justify-self: end;
+  display: flex;
+  flex-direction: column-reverse; /* the button first, the quieter one under it: the rows' columns stay in line */
+  align-items: flex-end;
+  gap: 5px;
+}
+.td-bacts .text-link {
+  font-size: 12.5px;
+  white-space: nowrap;
+}
 .td-brow .td-fp {
   display: block;
   height: 20px;
@@ -2948,15 +2960,16 @@
   border: 1px solid var(--line-2);
   border-bottom: 2px solid var(--ink);
   box-shadow: 0 -17px 0 var(--tint); /* the page's top padding above it: nothing reads through */
+  /* it opens downwards from its top edge and never moves above the page, where it would lie over the band */
   visibility: hidden;
-  transform: translateY(-100%);
-  transition: transform 260ms var(--ease), visibility 0s 260ms;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 260ms var(--ease), visibility 0s 260ms;
 }
 .td-actbar.on .td-dock {
   pointer-events: auto;
   visibility: visible;
-  transform: none;
-  transition: transform 260ms var(--ease);
+  clip-path: inset(-17px 0 0 0);
+  transition: clip-path 260ms var(--ease);
 }
 .td-dockname {
   margin-right: auto;
@@ -3230,4 +3243,43 @@
   font: 600 15px/1.2 var(--display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+.td-actsays {
+  align-self: center;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.tn .td-actbtn > i[lang] {
+  max-width: 22ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.td-buildrow label {
+  width: 86px;
+}
+.td-buildrow label:last-of-type {
+  width: 120px;
+}
+.td-buildrow {
+  gap: 6px 5px;
+  flex-wrap: nowrap;
+}
+.td-buildrow label {
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.td-buildrow label:last-of-type {
+  width: auto;
+  flex: 1.2 1 0;
+}
+.td-buildrow label small {
+  white-space: normal;
+}
+.td-buildsum {
+  flex: none;
+}
+.td-fwhat > summary {
+  position: static;
 }

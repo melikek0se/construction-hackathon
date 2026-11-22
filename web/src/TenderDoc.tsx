@@ -8,7 +8,7 @@ import { Sign } from "./components";
 import { LvText, eur, qty } from "./format";
 import { Fingerprint, PLANNED } from "./Projects";
 import type { TenderPlace } from "./router";
-import { ACTION_LABEL, CATEGORY_LABEL, KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type BidRow, type Finding, type ItemKind, type Plan, type Project, type ProjectSummary, type Severity, type Tender, type TenderItem, type TenderLv } from "./types";
+import { ACTION_LABEL, CATEGORY_LABEL, KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type BidRow, type BuildParts, type Finding, type ItemKind, type Plan, type Project, type ProjectSummary, type Severity, type Tender, type TenderItem, type TenderLv } from "./types";
 import { AskRow, Changed, Differs, backText, count, dayText, daysLeft, lvTitle, sectionsOf } from "./Tender";
 import "./tenderdoc.css";
 
@@ -55,7 +55,8 @@ export interface DocPrices {
   net: number;
   // a supplier's price for the material of an item, where one is at hand: what a unit price is built on
   material?: (oz: string) => { unit_price: number; supplier: string } | null;
-  file?: string; // the LV file: what was put into a built price is kept in this browser under it
+  build?: (oz: string, parts: BuildParts) => void; // keeps the parts and puts their result in as the unit price
+  defaults?: { surcharge: number; wage: number }; // what a new build starts with
   why?: string; // why nothing can be typed, where `set` is null
 }
 
@@ -66,24 +67,19 @@ const typedNumber = (text: string) => {
 };
 
 /** A unit price built on a supplier's price (D-078): the supplier prices the material only, so the
- *  estimator adds what the item costs besides. (material + waste + labour + equipment) × (1 + surcharge).
- *  Waste goes onto the material, never onto the LV's quantity. The parts are kept in this browser; the
- *  result goes into the field as the estimator's own price. */
-function Build({ store, material, unit, onPut, onClose }: { store: string; material: { unit_price: number; supplier: string }; unit: string; onPut: (text: string) => void; onClose: () => void }) {
-  const kept = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem(store) ?? "null") as Record<string, string> | null;
-    } catch {
-      return null;
-    }
-  }, [store]);
-  const [v, setV] = useState<Record<string, string>>({
-    material: priceText(material.unit_price), waste: kept?.waste ?? "0", labour: kept?.labour ?? "", equipment: kept?.equipment ?? "",
-    surcharge: kept?.surcharge ?? localStorage.getItem("lvcheck.build.surcharge") ?? "15",
+ *  estimator adds what the item costs besides. (material × (1 + waste %) + hours × wage + equipment) ×
+ *  (1 + surcharge %). Waste goes onto the material, never onto the LV's quantity. The parts are kept with
+ *  the item on the server; the result goes into the field as the estimator's own price. */
+function Build({ kept, defaults, material, unit, onPut, onClose }: { kept: BuildParts | null; defaults: { surcharge: number; wage: number }; material: { unit_price: number; supplier: string }; unit: string; onPut: (parts: BuildParts) => void; onClose: () => void }) {
+  const show = (n: number) => (n ? n.toLocaleString("de-DE", { maximumFractionDigits: 3 }) : "");
+  const [v, setV] = useState<Record<keyof BuildParts, string>>({
+    material: priceText(material.unit_price), waste: show(kept?.waste ?? 0), hours: show(kept?.hours ?? 0), wage: show(kept?.wage || defaults.wage),
+    equipment: show(kept?.equipment ?? 0), surcharge: show(kept?.surcharge ?? defaults.surcharge),
   });
-  const cost = typedNumber(v.material) * (1 + typedNumber(v.waste) / 100) + typedNumber(v.labour) + typedNumber(v.equipment);
-  const result = cost * (1 + typedNumber(v.surcharge) / 100);
-  const field = (key: string, label: string, hint: string) => (
+  const n = (k: keyof BuildParts) => typedNumber(v[k]);
+  const labour = n("hours") * n("wage");
+  const result = (n("material") * (1 + n("waste") / 100) + labour + n("equipment")) * (1 + n("surcharge") / 100);
+  const field = (key: keyof BuildParts, label: string, hint: string) => (
     <label>
       <span>{label}</span>
       <input type="text" inputMode="decimal" value={v[key]} placeholder="0" onChange={(e) => setV({ ...v, [key]: e.target.value })} />
@@ -98,23 +94,23 @@ function Build({ store, material, unit, onPut, onClose }: { store: string; mater
         <i>+</i>
         {field("waste", "Waste", "% on the material")}
         <i>+</i>
-        {field("labour", "Labour", `€/${unit}`)}
+        {field("hours", "Labour", `hours per ${unit}`)}
+        <i>×</i>
+        {field("wage", "Wage", `€/h${labour ? ` = ${priceText(labour)} €/${unit}` : ""}`)}
         <i>+</i>
         {field("equipment", "Equipment", `€/${unit}`)}
         <i>×</i>
-        {field("surcharge", "Surcharge", "% overheads, risk, profit")}
+        {field("surcharge", "Surcharge", "% overheads, profit")}
         <i>=</i>
         <span className="td-buildsum"><b>{priceText(result)}</b><small>€/{unit}</small></span>
       </div>
       <div className="tn-askrow">
         <button className="tn-btn ink sm" disabled={result <= 0} onClick={() => {
-          localStorage.setItem(store, JSON.stringify(v));
-          localStorage.setItem("lvcheck.build.surcharge", v.surcharge);
-          onPut(priceText(result));
+          onPut({ material: n("material"), waste: n("waste"), hours: n("hours"), wage: n("wage"), equipment: n("equipment"), surcharge: n("surcharge") });
           onClose();
         }}>Put it in as the unit price</button>
         <button className="tn-btn plain sm" onClick={onClose}>Close</button>
-        {typedNumber(v.labour) === 0 && typedNumber(v.equipment) === 0 && <span className="td-buildnote">No labour and no equipment yet: this is the material with the surcharge on it.</span>}
+        {labour === 0 && n("equipment") === 0 && <span className="td-buildnote">No labour and no equipment yet: this is the material with the surcharge on it.</span>}
       </div>
     </div>
   );
@@ -130,6 +126,7 @@ export interface BoardRow {
   sub?: ReactNode;
   share?: number | null; // how far it is, 0 to 1: a bar
   act?: { label: string; count?: number; title?: string; onClick: () => void } | null;
+  more?: { label: string; title?: string; onClick: () => void } | null; // a second, quieter thing to do in the row
   next?: boolean;
   open?: boolean;
 }
@@ -141,9 +138,9 @@ const priceText = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigi
  *  the field and is set in the quieter face; one the estimator typed is ink. The field is small: an empty
  *  one says what goes into it ("€/m"), a filled one stands beside its quantity's unit and its total in
  *  euros; what the columns are is said once, on the section's head. */
-function PriceCells({ row, unit, onSet, material, store, why }: { why?: string; row: BidRow | undefined; unit: string; onSet: ((text: string) => void) | null; material: { unit_price: number; supplier: string } | null; store: string }) {
+function PriceCells({ row, unit, onSet, material, onBuild, defaults, why }: { why?: string; onBuild: ((parts: BuildParts) => void) | null; defaults: { surcharge: number; wage: number }; row: BidRow | undefined; unit: string; onSet: ((text: string) => void) | null; material: { unit_price: number; supplier: string } | null }) {
   const [building, setBuilding] = useState(false);
-  const built = !!material && row?.source === "own" && localStorage.getItem(store) !== null;
+  const built = !!row?.build && row.source === "own";
   const kept = row?.unit_price != null ? priceText(row.unit_price) : "";
   const [typed, setTyped] = useState(kept);
   const [busy, setBusy] = useState(false); // typing: what the server says meanwhile does not write over it
@@ -172,7 +169,7 @@ function PriceCells({ row, unit, onSet, material, store, why }: { why?: string; 
         )}
       </label>
       <span className="gp">{row?.total != null ? eur(row.total) : "–"}</span>
-      {building && material && onSet && <Build store={store} material={material} unit={unit} onPut={onSet} onClose={() => setBuilding(false)} />}
+      {building && material && onBuild && <Build kept={row?.build ?? null} defaults={defaults} material={material} unit={unit} onPut={onBuild} onClose={() => setBuilding(false)} />}
     </>
   );
 }
@@ -545,7 +542,7 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
                       <span className="q">{it.qty === null ? "–" : qty(it.qty)} <small lang="de">{it.unit}</small>{page ? <i>PDF page {page}</i> : null}
                         {/* the client corrected the quantity in an answer: said here, the file's quantity stays the bid's */}
                         {!gone && prices?.rows.get(it.oz)?.qty_answered != null && <em className="qa" title="The client gave this quantity in an answer. The bid keeps the quantity of the file until a corrected LV comes.">client: {prices.rows.get(it.oz)!.qty_answered!.toLocaleString("de-DE")}</em>}</span>
-                      {prices && (gone ? <><span /><span /></> : <PriceCells row={prices.rows.get(it.oz)} unit={it.unit} onSet={prices.set && ((text) => prices.set!(it.oz, text))} why={prices.why} material={prices.material?.(it.oz) ?? null} store={`lvcheck.build.${prices.file ?? ""}.${it.oz}`} />)}
+                      {prices && (gone ? <><span /><span /></> : <PriceCells row={prices.rows.get(it.oz)} unit={it.unit} onSet={prices.set && ((text) => prices.set!(it.oz, text))} why={prices.why} material={prices.material?.(it.oz) ?? null} onBuild={prices.set && prices.build ? (parts) => prices.build!(it.oz, parts) : null} defaults={prices.defaults ?? { surcharge: 15, wage: 48 }} />)}
                     </div>
                   </R>
                 );
@@ -972,7 +969,10 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
                           <span className="name">{r.name}</span>
                           <span className="td-bsays">{r.says}{r.sub && <small>{r.sub}</small>}</span>
                           {r.share != null ? <span className="td-bbar" aria-hidden><i style={{ width: `${Math.round(100 * Math.min(1, Math.max(0, r.share)))}%` }} /></span> : <span />}
-                          {r.act ? <button className={`td-actbtn ${r.next ? "on" : "plain"}`} onClick={r.act.onClick} title={r.act.title}>{r.act.label}{r.act.count ? <b>{r.act.count}</b> : null}</button> : <span />}
+                          <span className="td-bacts">
+                            {r.more && <button className="text-link" onClick={r.more.onClick} title={r.more.title}>{r.more.label}</button>}
+                            {r.act && <button className={`td-actbtn ${r.next ? "on" : "plain"}`} onClick={r.act.onClick} title={r.act.title}>{r.act.label}{r.act.count ? <b>{r.act.count}</b> : null}</button>}
+                          </span>
                         </div>
                       ))}
                       {intake && ([["Client", "Questions are drafted once you take it on"], ["Prices", "Nobody is asked for a price before that"], ["Bid", `${count(tender.items, "item")} to price`]] as const).map(([name, says]) => (

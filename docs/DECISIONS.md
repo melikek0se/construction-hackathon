@@ -1426,7 +1426,10 @@ Revisit if: a fifth thing has to be shown (inquiry out, quote in): the foot can 
   (material + waste % + labour + equipment) × (1 + surcharge %). Waste goes onto the material, never
   onto the LV's quantity. The result goes in as the estimator's own price ("built on material"); the
   parts are kept in this browser only (`lvcheck.build.<file>.<oz>`), the last surcharge is the next default.
-- Not built: parts kept on the server, labour from hours and a wage, a surcharge of the firm's own.
+- Completed the same day: the parts are kept with the item on the server (`bid.builds`, in `settings`;
+  `PUT /api/analyses/{id}/bid/build`), labour is hours per unit times a wage, and the surcharge and wage
+  used last are what the next build starts with (`bid.build_defaults`: 15 %, 48 EUR/h at first). A price
+  typed over a built one forgets its parts.
 
 ## D-079 — The Bid step is the bid that went out; before that the bid is finished on the tender's page
 
@@ -1486,7 +1489,8 @@ mock of three options served on a port: "option 1").
   panel stands beside the document the strip is there from the start and leads with "Back to the tender".
 - The board replaces "What is left for the bid" (D-078), the two lines of "Questions and prices" and
   "Where the findings are" on the cover sheet; "Where the prices come from" keeps the sources. No action
-  on the tender stands in the band (it keeps "Run the checks", "Stop", "Close the questions").
+  on the tender stands in the band (it keeps "Run the checks" and "Stop"); "Close the questions" is the
+  Client row's second, quieter action while the pipeline waits for the answers.
 - Why: an action is read with the state it changes (SAP Fiori action placement: object actions stay
   visible while scrolling, one primary action per page; ServiceNow and Salesforce show recommended
   actions as a list with their state); a header may shrink and stay (Wix page header, NN/g on sticky

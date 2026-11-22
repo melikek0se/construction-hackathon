@@ -541,8 +541,9 @@ function Schedule({
               {[...sameDay.values()]
                 .filter((l) => l.length > 1)
                 .map((l) => (
-                  <span key={l[0].day.getTime()} className="rail-clash" style={{ left: `calc(${l[0].at}% + ${Math.round(Math.max(...l.map((m) => railWidth(m.p)))) + 6}px)` }}>
-                    {l.length} submissions {wd(l[0].day)}
+                  // short, so that two such days a week apart do not write over each other; the title says it in full
+                  <span key={l[0].day.getTime()} className="rail-clash" title={`${l.length} submissions on ${wd(l[0].day)}`} style={{ left: `calc(${l[0].at}% + ${Math.round(Math.max(...l.map((m) => railWidth(m.p)))) + 6}px)` }}>
+                    {l.length} due {wd(l[0].day)}
                   </span>
                 ))}
             </div>

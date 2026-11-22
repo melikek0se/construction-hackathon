@@ -596,6 +596,17 @@ export interface ModelChoice {
 }
 
 /** One item of the bid in progress (GET /api/analyses/{id}/bid). */
+/** What a unit price built on a material price is made of: (material × (1 + waste %) + hours × wage +
+ *  equipment) × (1 + surcharge %), per unit of the item. */
+export interface BuildParts {
+  material: number;
+  waste: number;
+  hours: number;
+  wage: number;
+  equipment: number;
+  surcharge: number;
+}
+
 export interface BidRow {
   item_oz: string;
   label: string;
@@ -608,6 +619,7 @@ export interface BidRow {
   material: BookPrice | null; // a supplier's earlier price for the material, beside the unit price
   unit_price: number | null; // entered, before any allowance
   source: "own" | "suggestion" | "quote" | "file" | null; // own: typed; suggestion: price book or past bids; quote: a quote for this tender (both put in by Polier)
+  build: BuildParts | null; // the parts of a unit price built on a supplier's material price
   allowance_percent: number | null; // accepted from an open point of the client's answers
   price: number | null; // what goes into the bid: unit price with the allowance
   total: number | null;
@@ -625,6 +637,7 @@ export interface Bid {
   file: string;
   format: string;
   x84: boolean; // the bid can be downloaded as GAEB XML phase 84
+  build_defaults: { surcharge: number; wage: number }; // what a new build starts with: the ones used last
 }
 
 /* ------------------------------------------------------------------ price inquiries (src/boq/supply.py) */

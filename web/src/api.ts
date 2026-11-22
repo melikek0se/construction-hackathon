@@ -1,4 +1,4 @@
-import type { PartnerProfile, PartnerSearch, PartnerRead, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, ModelChoice, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, Tender, TenderDate, WhatIfResult } from "./types";
+import type { PartnerProfile, PartnerSearch, PartnerRead, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, BuildParts, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, ModelChoice, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, Tender, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -288,6 +288,11 @@ export async function getBid(id: string): Promise<Bid> {
 /** Set unit prices as typed (an empty text clears one), or take the suggested price wherever none is set. */
 export async function setBidPrices(id: string, prices: Record<string, string>, takeSuggestions = false): Promise<Bid> {
   return read(await fetch(`/api/analyses/${id}/bid`, json("PUT", { prices, take_suggestions: takeSuggestions })));
+}
+
+/** A unit price built on a supplier's material price: the parts are kept, the result is the item's price. */
+export async function buildUnitPrice(id: string, oz: string, parts: BuildParts): Promise<Bid> {
+  return read(await fetch(`/api/analyses/${id}/bid/build`, json("PUT", { oz, ...parts })));
 }
 
 /** The bid went out: the X84 as it stands is kept with the project as the submitted bid (where the LV is GAEB
