@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Polier's panel: three worlds of its own</title>
+<link rel="icon" href="../chat-panel/favicon.svg" />
+<style>
+@font-face { font-family: Barlow; font-weight: 400; src: url(../tender/fonts/barlow-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 500; src: url(../tender/fonts/barlow-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 600; src: url(../tender/fonts/barlow-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 700; src: url(../tender/fonts/barlow-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url(../tender/fonts/barlow-condensed-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; src: url(../tender/fonts/barlow-condensed-latin-700-normal.woff2) format("woff2"); }
+
+:root {
+  --yellow: #ffc400; --deep: #e0a800; --ink: #121413; --ink-2: #3b403a; --paper: #fffdf6;
+  --rule: #e3e3dd; --line-2: #c4c4bc; --tint: #f6f6f2; --mute: #5f635c; --dim: #8b8e87;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif; --text: "Barlow", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1); --hop: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --stripe: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px);
+  --tape: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--yellow) 12px 24px);
+  --truss: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Crect width='28' height='28' fill='%23ffc400'/%3E%3Cpath d='M1 0V28M27 0V28M0 1H28M0 27H28M2 2L26 26M26 2L2 26' stroke='%23121413' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font: 400 14px/1.45 var(--text); color: var(--ink); background: #2a2c2a; display: flex; flex-direction: column; overflow: hidden; }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+p, h3, ul, ol { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+::selection { background: var(--ink); color: var(--yellow); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+mark { background: none; color: inherit; }
+.tok { opacity: .7; border-bottom: 1px dotted currentColor; }
+
+/* ---------- the switcher (not part of the design) ---------- */
+.switcher { flex: none; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; padding: 7px 14px; background: #1d1f1e; color: #ddd; font-size: 12px; }
+.switcher b { color: #fff; margin: 0 4px 0 0; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+.switcher button, .switcher a { padding: 5px 10px; border: 1px solid #444; background: #2a2d2b; color: #ddd; text-decoration: none; }
+.switcher button[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); font-weight: 700; }
+.switcher .gap { width: 12px; }
+.switcher a { margin-left: auto; }
+.note { flex: none; min-height: 48px; padding: 6px 14px 7px; background: #262826; color: #c9c9c2; font-size: 12.5px; line-height: 1.4; border-top: 1px solid #333; }
+.note b { color: var(--yellow); font-weight: 600; }
+
+/* ---------- the artboard: the real tender page (a screenshot) at 1440 x 860, scaled to the window ---------- */
+.fit { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.board { position: absolute; left: 0; top: 0; width: 1440px; height: 860px; transform-origin: 0 0; background: #fff; overflow: hidden; }
+.bg { position: absolute; left: 0; top: 0; height: 860px; }
+.bg.side { width: 980px; visibility: hidden; }
+.bg.full { width: 1440px; }
+.board.talk .bg.side { visibility: visible; }
+.board.talk .bg.full { visibility: hidden; }
+
+/* ---------- Polier: he keeps his corner and his size ---------- */
+#pol { position: absolute; z-index: 30; left: 1290px; top: 712px; width: 134px; height: 128px; cursor: pointer; transition: left .5s var(--hop), top .5s var(--hop); }
+#pol img { display: block; width: 100%; transform-origin: 50% 96%; filter: drop-shadow(0 3px 1px rgba(0, 0, 0, .16)); animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-3px) rotate(1.2deg); } }
+[data-s="typing"] #pol img { animation: none; transform: rotate(-11deg) translateX(-7px); transition: transform .3s var(--hop); }
+[data-s="reading"] #pol img { animation: think .7s ease-in-out infinite; }
+@keyframes think { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-4px); } }
+[data-s="answer"] #pol img { animation: hop .55s var(--ease) 1, bob 3.2s ease-in-out .55s infinite; }
+@keyframes hop { 0% { transform: scale(1.08, .88); } 40% { transform: translateY(-22px) scale(.95, 1.06); } 75% { transform: scale(1.05, .93); } 100% { transform: none; } }
+[data-s="none"] #pol img { animation: none; transform: rotate(15deg) translateY(2px); transition: transform .35s var(--hop); }
+.talk #pol { left: 1300px; top: var(--pol-top, 724px); }
+[data-w="kran"][data-s="reading"] #pol img { animation: lookup 1.6s ease-in-out infinite; }
+@keyframes lookup { 0%, 100% { transform: rotate(-14deg) translateY(-2px); } 50% { transform: rotate(-8deg); } }
+
+@keyframes run { to { background-position: 34px 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes slide { from { transform: translateX(100%); } }
+@keyframes pop { from { opacity: 0; transform: translateX(26px) scale(.7); } }
+
+/* ---------- shared skeleton ---------- */
+.panel { position: absolute; z-index: 10; inset: 0 0 0 auto; width: 460px; display: none; flex-direction: column; }
+.log { flex: 1; min-height: 0; overflow: hidden auto; scrollbar-width: none; }
+.ask { display: flex; align-items: flex-end; }
+.ask textarea { flex: 1; min-width: 0; min-height: 44px; max-height: 110px; field-sizing: content; padding: 11px 12px; border: 0; outline: 0; resize: none; background: none; line-height: 20px; }
+.stack { position: absolute; z-index: 20; right: 168px; bottom: 26px; width: 400px; display: none; flex-direction: column; gap: 10px; transform-origin: 100% 100%; animation: pop .34s var(--hop) both; }
+:is([data-s="invite"], [data-s="typing"]) .stack { display: flex; }
+.stack [data-hello] > div { display: none; }
+.ex button { display: block; width: 100%; }
+
+/* =====================================================================================================
+   1 · KRAN. The panel is a tower crane: the mast down its left edge, the jib across the top. An answer
+   comes in on the hook as a load and is set down on the pile; the question is the tag tied to it.
+   ===================================================================================================== */
+[data-w="kran"].talk .w-kran { display: flex; animation: slide .45s var(--ease) both; }
+[data-w="kran"] { --pol-top: 720px; }
+.w-kran { background-color: #f7f8f6; background-image: radial-gradient(#d4d6d0 1px, transparent 1.2px); background-size: 16px 16px; border-left: 2px solid var(--ink); padding-left: 28px; }
+.w-kran::before { content: ""; position: absolute; left: 0; top: 0; bottom: 12px; width: 28px; background: var(--truss); border-right: 2px solid var(--ink); }
+.w-kran .top { flex: none; position: relative; height: 112px; }
+.w-kran .jib { position: absolute; left: -28px; right: 0; top: 14px; height: 28px; background: var(--truss); border-block: 2px solid var(--ink); }
+.w-kran .jib::after { content: ""; position: absolute; right: 0; top: -2px; width: 0; height: 0; border: solid transparent; border-width: 0 0 28px 30px; border-bottom-color: #f7f8f6; }
+.w-kran .trolley { position: absolute; left: 197px; top: 42px; width: 38px; height: 12px; background: var(--ink); transition: left .8s var(--ease); }
+.w-kran .trolley::before { content: ""; position: absolute; left: 18px; top: 12px; width: 2px; height: 60px; background: var(--ink); }
+[data-s="reading"] .w-kran .trolley { animation: travel 1.6s ease-in-out infinite alternate; }
+@keyframes travel { from { left: 150px; } to { left: 245px; } }
+.w-kran .sign { position: absolute; left: 16px; top: 56px; padding: 5px 12px 6px; background: var(--ink); color: var(--yellow); font: 700 27px/1 var(--display); letter-spacing: .05em; transform: rotate(-1.5deg); transform-origin: 20% 0; animation: sway 4s ease-in-out infinite; }
+.w-kran .sign::before, .w-kran .sign::after { content: ""; position: absolute; top: -14px; width: 2px; height: 14px; background: var(--ink); }
+.w-kran .sign::before { left: 12px; } .w-kran .sign::after { right: 12px; }
+@keyframes sway { 50% { transform: rotate(1.5deg); } }
+.w-kran .x { position: absolute; right: 12px; top: 54px; width: 34px; height: 34px; display: grid; place-items: center; background: #fff; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); transition: transform .1s, box-shadow .1s; }
+.w-kran .x:hover { background: var(--yellow); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.w-kran .site { position: absolute; left: 252px; right: 56px; top: 62px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 600 11px/1.3 var(--text); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.w-kran .log { padding: 0 18px 10px; }
+.w-kran .pile { position: relative; min-height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+/* the rope from the trolley down to the load that came last; behind the loads that already lie there */
+.w-kran .rope { position: absolute; left: 50%; top: 0; width: 2px; margin-left: -1px; background: var(--ink); }
+.w-kran .load { position: relative; z-index: 1; margin-top: 30px; padding: 30px 14px 12px; background: #fff; border: 2px solid var(--ink); box-shadow: 0 6px 0 #c9cac3, 0 6px 0 2px var(--ink); }
+.w-kran .load + .load::before, .w-kran .load + .load::after { content: ""; position: absolute; top: -20px; width: 34px; height: 10px; background: #b98b4e; border: 2px solid var(--ink); }
+.w-kran .load + .load::before { left: 40px; } .w-kran .load + .load::after { right: 40px; }
+.w-kran .load.last { margin-top: 64px; margin-bottom: 8px; }
+.w-kran .load.last::before, .w-kran .load.last::after { display: none; }
+.w-kran .sling { position: absolute; left: 0; right: 0; bottom: 100%; height: 34px; margin-bottom: 2px; }
+.w-kran .load.last.new { animation: lower 1s var(--ease) both; transform-origin: 50% -400px; }
+@keyframes lower { 0% { transform: translateY(-340px) rotate(2.5deg); } 60% { transform: translateY(6px) rotate(-1.2deg); } 80% { transform: rotate(.5deg); } 100% { transform: none; } }
+/* the tag tied to the load: your question */
+.w-kran .tagq { position: relative; display: block; width: fit-content; margin: -47px 0 10px -6px; max-width: calc(100% - 50px); padding: 6px 12px 7px 30px; background: var(--yellow); border: 2px solid var(--ink); font: 600 14px/1.25 var(--text); transform: rotate(-1.6deg); clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px), 0 12px); }
+.w-kran .tagq::before { content: ""; position: absolute; left: 10px; top: 50%; width: 9px; height: 9px; margin-top: -5px; border-radius: 50%; background: #f7f8f6; box-shadow: 0 0 0 2px var(--ink); }
+.w-kran .tagq small { display: block; font: 700 10.5px var(--text); letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+.w-kran .ans { font-size: 15px; line-height: 1.5; }
+.w-kran .ans mark { background: linear-gradient(transparent 55%, var(--yellow) 55%); }
+.w-kran .stamp { display: inline-block; margin-bottom: 8px; padding: 2px 8px; border: 2px solid var(--ink); font: 700 13px var(--display); letter-spacing: .1em; text-transform: uppercase; transform: rotate(-2deg); }
+.w-kran .cites { margin-top: 12px; border-top: 2px dashed var(--ink); }
+.w-kran .cites button { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; align-items: start; width: 100%; padding: 8px 4px; border-bottom: 1px dashed var(--line-2); transition: background .1s; }
+.w-kran .cites button:hover { background: var(--yellow); }
+.w-kran .cites b { justify-self: start; padding: 1px 6px; background: var(--ink); color: var(--yellow); font: 700 12px/1.5 var(--text); font-variant-numeric: tabular-nums; }
+.w-kran .cites .q { font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+.w-kran .q mark { background: var(--yellow); padding: 0 1px; }
+.w-kran .cites button:hover .q mark { background: #fff; }
+.w-kran .foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; font: 600 10.5px var(--text); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.w-kran .foot button { margin-left: auto; padding: 4px 8px; background: #fff; border: 2px solid var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+.w-kran .foot button:hover { background: var(--yellow); }
+/* while he reads: only the tag hangs on the hook and swings */
+.w-kran .hang { position: relative; z-index: 1; height: 96px; margin-top: 30px; transform-origin: 50% -300px; animation: swing 1.6s ease-in-out infinite alternate; }
+@keyframes swing { from { transform: rotate(-2.2deg); } to { transform: rotate(2.2deg); } }
+.w-kran .hang .hook { position: absolute; left: 50%; top: 0; margin-left: -9px; }
+.w-kran .hang .tagq { position: absolute; left: 50%; top: 30px; margin: 0 0 0 -150px; width: 300px; max-width: none; transform: rotate(3deg); }
+.w-kran .stand { flex: none; position: relative; height: 142px; padding: 0 152px 0 18px; display: flex; flex-direction: column; justify-content: flex-end; margin-left: -28px; padding-left: 46px; }
+.w-kran .stand::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: var(--tape); background-size: 34px 100%; border-top: 2px solid var(--ink); }
+[data-s="reading"] .w-kran .stand::after { animation: run .7s linear infinite; }
+.w-kran .ask, [data-w="kran"] .stack .ask { background: #fff; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.w-kran .ask { margin-bottom: 34px; }
+.w-kran .ask:focus-within, [data-w="kran"] .stack .ask:focus-within { background: #fffbe6; }
+.go-kran { flex: none; align-self: stretch; padding: 0 14px; background: var(--ink); color: var(--yellow); font: 700 15px var(--display); letter-spacing: .1em; text-transform: uppercase; }
+.go-kran:hover { background: var(--yellow); color: var(--ink); }
+.w-kran .hint { margin-bottom: 8px; font: 600 10.5px var(--text); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+/* no message yet */
+[data-w="kran"] .stack .h-kran { display: block; position: relative; margin-top: 16px; padding: 30px 14px 6px; background: #fff; border: 2px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); }
+[data-w="kran"] .stack .h-kran .tagq { position: absolute; left: 10px; top: -15px; padding: 6px 12px 7px 30px; background: var(--yellow); border: 2px solid var(--ink); font: 700 13px var(--text); letter-spacing: .08em; text-transform: uppercase; transform: rotate(-1.6deg); clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px), 0 12px); }
+.h-kran p { font-size: 14.5px; line-height: 1.45; }
+.h-kran .ex { margin-top: 10px; border-top: 2px dashed var(--ink); }
+.h-kran .ex button { padding: 7px 4px; border-bottom: 1px dashed var(--line-2); font-weight: 600; }
+.h-kran .ex li:last-child button { border-bottom: 0; }
+.h-kran .ex button:hover { background: var(--yellow); }
+[data-w="kran"] .stack .ask .go-beleg, [data-w="kran"] .stack .ask .go-plakat, [data-w="beleg"] .stack .ask .go-kran, [data-w="beleg"] .stack .ask .go-plakat, [data-w="plakat"] .stack .ask .go-kran, [data-w="plakat"] .stack .ask .go-beleg { display: none; }
+
+/* =====================================================================================================
+   2 · BELEG. The panel is signal yellow; a paper roll runs out of the printer Polier stands at.
+   Every answer is a receipt: what was asked, the answer, the passages as its lines, what it cost,
+   and the LV as its bar code with the cited items standing out.
+   ===================================================================================================== */
+[data-w="beleg"].talk .w-beleg { display: flex; animation: slide .45s var(--ease) both; }
+[data-w="beleg"] { --pol-top: 722px; }
+.w-beleg { background: var(--yellow); border-left: 2px solid var(--ink); }
+.w-beleg .top { flex: none; display: flex; align-items: flex-end; gap: 10px; height: 84px; padding: 0 14px 12px 22px; }
+.w-beleg .top strong { font: 700 44px/.82 var(--display); letter-spacing: .01em; text-transform: uppercase; }
+.w-beleg .top span { flex: 1; padding-bottom: 1px; font: 500 11.5px/1.25 var(--mono); }
+.w-beleg .x { width: 34px; height: 34px; display: grid; place-items: center; background: var(--ink); color: var(--yellow); }
+.w-beleg .x:hover { background: #fff; color: var(--ink); }
+.w-beleg .log { padding: 6px 0 0 22px; }
+.w-beleg .roll { width: 392px; min-height: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 16px; filter: drop-shadow(6px 6px 0 var(--deep)); }
+.w-beleg .slip { position: relative; padding: 16px 18px 14px; background: var(--paper); font: 500 12px/1.5 var(--mono); }
+.w-beleg .slip::before, .w-beleg .slip::after { content: ""; position: absolute; left: 0; right: 0; height: 7px; background: linear-gradient(135deg, var(--paper) 50%, transparent 50%) 0 0 / 12px 7px, linear-gradient(225deg, var(--paper) 50%, transparent 50%) 0 0 / 12px 7px; }
+.w-beleg .slip::before { top: -7px; transform: scaleY(-1); }
+.w-beleg .slip::after { bottom: -7px; }
+.w-beleg .slip.last::after { display: none; }
+.w-beleg .slip.last { padding-bottom: 20px; }
+.w-beleg .slip.new { animation: feed 1.1s steps(14) both; }
+@keyframes feed { from { clip-path: inset(-8px 0 100% 0); margin-bottom: -260px; } to { clip-path: inset(-8px 0 0 0); margin-bottom: 0; } }
+.w-beleg .hd { display: flex; justify-content: space-between; gap: 10px; text-transform: uppercase; }
+.w-beleg .hd b { font: 700 20px/1 var(--display); letter-spacing: .06em; }
+.w-beleg .dash { height: 0; margin: 9px 0; border-top: 1.5px dashed var(--ink); }
+.w-beleg .ask2 { font: 700 19px/1.12 var(--display); letter-spacing: .02em; text-transform: uppercase; }
+.w-beleg .ans { font: 400 15px/1.5 var(--text); }
+.w-beleg .ans mark { font-weight: 700; }
+.w-beleg .lines button { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; width: 100%; padding: 4px 0; }
+.w-beleg .lines button:hover { background: var(--yellow); box-shadow: -18px 0 0 var(--yellow), 18px 0 0 var(--yellow); }
+.w-beleg .lines b { font-weight: 700; }
+.w-beleg .lines .q { font: 400 13px/1.4 var(--text); }
+.w-beleg .q mark { background: var(--yellow); padding: 0 1px; }
+.w-beleg .lines button:hover .q mark { background: var(--paper); }
+.w-beleg .sum div { display: flex; justify-content: space-between; text-transform: uppercase; }
+.w-beleg .sum .tot { margin-top: 2px; font: 700 21px/1.1 var(--display); letter-spacing: .04em; }
+.w-beleg .code { display: flex; align-items: flex-end; gap: 2px; height: 40px; margin-top: 12px; }
+.w-beleg .code i { flex: 1 1 0; height: 26px; background: var(--ink); }
+.w-beleg .code i.on { flex: 0 0 14px; height: 40px; background: var(--yellow); box-shadow: inset 0 0 0 2px var(--ink); display: grid; place-items: center; font: 700 11px/1 var(--display); font-style: normal; }
+.w-beleg .cap { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10.5px; text-transform: uppercase; }
+.w-beleg .more { display: block; width: 100%; margin-top: 10px; padding: 6px; border: 1.5px dashed var(--ink); text-align: center; text-transform: uppercase; font-weight: 700; }
+.w-beleg .more:hover { background: var(--ink); color: var(--yellow); }
+.w-beleg .stamp { display: inline-block; margin: 2px 0 8px; padding: 3px 9px; border: 3px double var(--ink); font: 700 15px var(--display); letter-spacing: .1em; text-transform: uppercase; transform: rotate(-3deg); }
+.w-beleg .printing::after { content: "▌"; animation: blink .6s steps(2) infinite; }
+/* the printer: the paper comes out of its slot; you type on its display */
+.w-beleg .stand { flex: none; position: relative; height: 128px; padding: 0 0 22px 22px; display: flex; align-items: flex-end; }
+.w-beleg .printer, [data-w="beleg"] .stack .ask { position: relative; width: 392px; padding: 16px 150px 10px 10px; background: var(--ink); box-shadow: 6px 6px 0 var(--deep); }
+.w-beleg .printer::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7px; background: #000; border-bottom: 1px solid #44483f; }
+[data-s="reading"] .w-beleg .printer::before { background: var(--tape); background-size: 34px 100%; animation: run .5s linear infinite; }
+.w-beleg .ask, [data-w="beleg"] .stack .ask { align-items: stretch; }
+.w-beleg .ask { background: #262a24; box-shadow: inset 0 0 0 1px #44483f; }
+.w-beleg .ask textarea, [data-w="beleg"] .stack textarea { color: #f4f1e4; caret-color: var(--yellow); font: 500 13px/20px var(--mono); }
+.w-beleg .ask textarea::placeholder, [data-w="beleg"] .stack textarea::placeholder { color: #8b8e87; }
+.go-beleg { flex: none; padding: 0 12px; background: var(--yellow); color: var(--ink); font: 700 12px var(--mono); text-transform: uppercase; box-shadow: inset 0 -4px 0 var(--deep); }
+.go-beleg:hover { background: #fff; }
+.go-beleg:active { box-shadow: none; transform: translateY(2px); }
+[data-w="beleg"] .stack { gap: 0; filter: drop-shadow(6px 6px 0 rgba(18, 20, 19, .22)); }
+[data-w="beleg"] .stack .h-beleg { display: block; position: relative; padding: 16px 18px 20px; background: var(--paper); font: 500 12px/1.5 var(--mono); }
+[data-w="beleg"] .stack .h-beleg::before { content: ""; position: absolute; left: 0; right: 0; top: -7px; height: 7px; transform: scaleY(-1); background: linear-gradient(135deg, var(--paper) 50%, transparent 50%) 0 0 / 12px 7px, linear-gradient(225deg, var(--paper) 50%, transparent 50%) 0 0 / 12px 7px; }
+.h-beleg .hd { display: flex; justify-content: space-between; text-transform: uppercase; }
+.h-beleg .hd b { font: 700 20px/1 var(--display); letter-spacing: .06em; }
+.h-beleg .dash { margin: 9px 0; border-top: 1.5px dashed var(--ink); }
+.h-beleg p { font: 400 14.5px/1.45 var(--text); }
+.h-beleg .ex button { padding: 3px 0; font-weight: 700; }
+.h-beleg .ex button::before { content: "> "; }
+.h-beleg .ex button:hover { background: var(--yellow); }
+[data-w="beleg"] .stack .ask { width: auto; padding: 14px 10px 10px; box-shadow: none; }
+[data-w="beleg"] .stack .ask::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: #000; }
+[data-w="beleg"] .stack .ask textarea { background: #262a24; box-shadow: inset 0 0 0 1px #44483f; }
+
+/* =====================================================================================================
+   3 · PLAKAT. No picture of anything: letters at poster size. Black slab, yellow slab, huge numerals,
+   the question as a headline, the passages as black bars that turn yellow under the pointer.
+   ===================================================================================================== */
+[data-w="plakat"].talk .w-plakat { display: flex; animation: slide .45s var(--ease) both; }
+[data-w="plakat"] { --pol-top: 726px; }
+.w-plakat { background: #fff; padding-left: 16px; }
+.w-plakat::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 16px; background: var(--tape); background-size: 34px 34px; }
+[data-s="reading"] .w-plakat::before { animation: runy .7s linear infinite; }
+@keyframes runy { to { background-position: 0 34px; } }
+.w-plakat .top { flex: none; position: relative; height: 118px; overflow: hidden; background: var(--ink); color: #fff; }
+.w-plakat .top strong { position: absolute; left: 14px; top: 20px; font: 700 132px/.78 var(--display); letter-spacing: -.01em; text-transform: uppercase; }
+.w-plakat .top span { position: absolute; left: 18px; top: 9px; font: 700 10.5px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--yellow); }
+.w-plakat .x { position: absolute; right: 0; top: 0; width: 44px; height: 44px; display: grid; place-items: center; background: var(--yellow); color: var(--ink); }
+.w-plakat .x:hover { background: #fff; }
+.w-plakat .log { padding: 0 20px 18px 18px; }
+.w-plakat .p { padding: 18px 0 20px; border-bottom: 6px solid var(--ink); }
+.w-plakat .p:last-child { border-bottom: 0; }
+.w-plakat .p.new { animation: rise .4s var(--ease) both; }
+.w-plakat .hq { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
+.w-plakat .num { font: 700 76px/.76 var(--display); color: var(--yellow); -webkit-text-stroke: 2px var(--ink); letter-spacing: -.02em; }
+.w-plakat .hq h3 { font: 700 29px/.98 var(--display); letter-spacing: .005em; text-transform: uppercase; text-wrap: balance; }
+.w-plakat .hq small { display: block; margin-bottom: 5px; font: 700 10.5px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--mute); }
+.w-plakat .ans { margin-top: 14px; font-size: 16.5px; line-height: 1.42; }
+.w-plakat .ans mark { background: var(--ink); color: #fff; padding: 0 4px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.w-plakat .stamp { display: inline-block; margin-top: 14px; padding: 4px 10px 5px; background: var(--ink); color: var(--yellow); font: 700 17px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; }
+.w-plakat .stamp + .ans { margin-top: 8px; }
+.w-plakat .bars { display: grid; gap: 4px; margin-top: 16px; }
+.w-plakat .bars button { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: start; width: 100%; padding: 9px 12px 10px; background: var(--ink); color: #fff; transition: background .1s, color .1s, transform .15s var(--ease); }
+.w-plakat .bars button:hover { background: var(--yellow); color: var(--ink); transform: translateX(6px); }
+.w-plakat .bars b { font: 700 19px/1.15 var(--display); letter-spacing: .03em; color: var(--yellow); font-variant-numeric: tabular-nums; }
+.w-plakat .bars button:hover b { color: var(--ink); }
+.w-plakat .bars .q { font-size: 13.5px; line-height: 1.4; }
+.w-plakat .q mark { color: var(--yellow); font-weight: 600; }
+.w-plakat .bars button:hover .q mark { color: var(--ink); text-decoration: underline 2px; text-underline-offset: 3px; }
+.w-plakat .foot { display: flex; align-items: center; gap: 10px; margin-top: 12px; font: 700 10.5px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+.w-plakat .foot button { margin-left: auto; padding: 5px 9px; border: 2px solid var(--ink); color: var(--ink); white-space: nowrap; }
+.w-plakat .foot button:hover { background: var(--ink); color: var(--yellow); }
+.w-plakat .wait { margin-top: 14px; font: 700 44px/.9 var(--display); text-transform: uppercase; color: var(--ink); }
+.w-plakat .wait i { font-style: normal; color: var(--yellow); -webkit-text-stroke: 2px var(--ink); animation: blink 1s steps(2) infinite; }
+.w-plakat .stand { flex: none; height: 132px; padding: 0 150px 28px 18px; background: var(--yellow); display: flex; align-items: flex-end; }
+.w-plakat .ask, [data-w="plakat"] .stack .ask { align-items: stretch; background: #fff; border: 3px solid var(--ink); }
+.w-plakat .ask { flex: 1; }
+.go-plakat { flex: none; padding: 0 16px; background: var(--ink); color: #fff; font: 700 22px var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.go-plakat:hover { background: var(--yellow); color: var(--ink); }
+[data-w="plakat"] .stack { gap: 0; }
+[data-w="plakat"] .stack .h-plakat { display: block; padding: 14px 16px 6px; background: var(--ink); color: #fff; }
+.h-plakat strong { display: block; font: 700 64px/.8 var(--display); text-transform: uppercase; color: var(--yellow); }
+.h-plakat p { margin-top: 10px; font-size: 14.5px; line-height: 1.4; }
+.h-plakat .ex { margin-top: 10px; }
+.h-plakat .ex button { padding: 7px 0; border-top: 1px solid #44483f; font: 700 17px/1.1 var(--display); letter-spacing: .03em; text-transform: uppercase; color: #fff; }
+.h-plakat .ex button:hover { color: var(--yellow); padding-left: 8px; }
+[data-w="plakat"] .stack .ask { border-top: 0; }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="toolbar" aria-label="Design">
+  <b>Panel</b>
+  <button data-set="kran">1 · Kran</button>
+  <button data-set="beleg">2 · Beleg</button>
+  <button data-set="plakat">3 · Plakat</button>
+  <span class="gap"></span>
+  <b>Durum</b>
+  <button data-state="closed">Kapalı</button>
+  <button data-state="invite">Davet</button>
+  <button data-state="typing">Yazarken</button>
+  <button data-state="reading">Okuyor</button>
+  <button data-state="answer">Cevap</button>
+  <button data-state="none">Bulamadı</button>
+  <a href="panels-v1.html">önceki: uygulamanın dilinde paneller</a>
+</div>
+<div class="note" id="note"></div>
+
+<div class="fit"><div class="board" id="board">
+  <img class="bg full" src="bg-full.png" alt="" />
+  <img class="bg side" src="bg-side.png" alt="" />
+
+  <!-- 1 -->
+  <section class="panel w-kran" aria-label="Ask Polier">
+    <div class="top"><div class="jib"></div><div class="trolley"></div>
+      <div class="sign">POLIER</div><div class="site" lang="de">Wohnquartier Störwiesen<br />2 documents</div>
+      <button class="x" data-close aria-label="Close"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" /></svg></button></div>
+    <div class="log" data-log="kran"></div>
+    <div class="stand"><div class="hint" data-hint></div>
+      <form class="ask"><textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea><button class="go-kran" type="submit">Lift</button></form></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="panel w-beleg" aria-label="Ask Polier">
+    <div class="top"><strong>Polier</strong><span lang="de">WOHNQUARTIER STÖRWIESEN<br />2 DOCUMENTS · 87 ITEMS</span>
+      <button class="x" data-close aria-label="Close"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" /></svg></button></div>
+    <div class="log" data-log="beleg"></div>
+    <div class="stand"><div class="printer"><form class="ask"><textarea rows="1" placeholder="ask about the project_" aria-label="Question"></textarea><button class="go-beleg" type="submit">Print</button></form></div></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="panel w-plakat" aria-label="Ask Polier">
+    <div class="top"><span lang="de">Wohnquartier Störwiesen · 2 documents</span><strong>Polier</strong>
+      <button class="x" data-close aria-label="Close"><svg width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" /></svg></button></div>
+    <div class="log" data-log="plakat"></div>
+    <div class="stand"><form class="ask"><textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea><button class="go-plakat" type="submit">Ask</button></form></div>
+  </section>
+
+  <!-- no message yet: beside Polier, in the world's own hand -->
+  <div class="stack">
+    <div data-hello>
+      <div class="h-kran"><span class="tagq">Polier</span><p data-hi></p><ul class="ex" data-ex-list></ul></div>
+      <div class="h-beleg"><div class="hd"><b>Polier</b><span>No. 0000</span></div><div class="dash"></div><p data-hi></p><div class="dash"></div><ul class="ex" data-ex-list></ul></div>
+      <div class="h-plakat"><strong>Ask me.</strong><p data-hi></p><ul class="ex" data-ex-list></ul></div>
+    </div>
+    <form class="ask"><textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea>
+      <button class="go-kran" type="submit">Lift</button><button class="go-beleg" type="submit">Print</button><button class="go-plakat" type="submit">Ask</button></form>
+  </div>
+
+  <div id="pol" role="button" aria-label="Polier"><img src="polier.png" alt="" /></div>
+</div></div>
+
+<script>
+const NOTES = {
+  kran: "<b>1 · Kran.</b> Panel bir kule vinç: sol kenar direk, üst kenar bom. Cevap kancada yük olarak iner ve yığına konur; soru yüke bağlı sarı etikettir. Polier yerde, yukarı bakar. En oyuncu olan. ",
+  beleg: "<b>2 · Beleg.</b> Panel düz sinyal sarısı; Polier'in başında durduğu yazıcıdan kâğıt rulo çıkar. Her cevap bir fiş: soru, cevap, dayanaklar fişin satırları, toplam kaça mal olduğu, LV de fişin barkodu (dayanak kalemler sarı). 'Belgesiz cevap yok' fikrini kendisi anlatan. ",
+  plakat: "<b>3 · Plakat.</b> Hiçbir şeyin resmi yok, yalnızca afiş boyunda harf: siyah blok, sarı blok, dev numara, soru manşet, dayanaklar üstüne gelince sarıya dönen siyah şeritler. En sert ve en hızlı uygulanan. ",
+  closed: "Kapalı: Polier köşesinde. Tıkla.",
+  invite: "Mesaj yokken panel yok: selamı ve senin yazı alanın, o dünyanın kendi diliyle Polier'in yanında.",
+  typing: "Yazarken Polier yazı alanına eğilir.",
+  reading: "Okurken: vinçte araba gidip gelir ve kancada yalnızca etiket sallanır; fişte yazıcının ağzı akar; afişte kenar bandı akar.",
+  answer: "Cevap: vinçte yük kancayla iner, fişte kâğıt yazılarak çıkar. Canlı görmek için bir soru yaz ya da 'Okuyor'dan → tuşuyla geç.",
+  none: "Belgede yoksa: damga ile söylenir, dayanak listesi olmaz.",
+};
+const SEED = [
+  { q: "Which work does this LV expect from others (bauseits)?", at: "13:58", found: true,
+    a: "Two things come from the client: <mark>site power</mark> and the <mark>setting-out of the main axes</mark> by the client's surveyor. Everything else, traffic safety included, is the contractor's.",
+    c: [ { oz: "01.01.0010", at: 1, q: "Baustelle einrichten, vorhalten und räumen. <mark>Baustrom wird bauseits gestellt</mark>." },
+         { oz: "01.01.0030", at: 3, q: "<mark>Absteckung der Hauptachsen erfolgt bauseits</mark> durch den Vermesser des AG, <span class='tok'>[FIRMA_044]</span>" } ],
+    n: 11, usd: "0.02" },
+  { q: "Is dewatering paid as an item of its own?", at: "14:02", found: true,
+    a: "No. LV 1 has <mark>no item for dewatering</mark>. The trenches go down to 3.50 m, the soil report expects groundwater from 1.80 m, and the remarks put keeping them dry into the unit prices. Worth a bidder question before 01.12.",
+    c: [ { oz: "01.03.0040", at: 26, q: "Rohrgraben ausheben, <mark>Tiefe bis 3,50 m</mark>, einschl. Verbau, Boden seitlich lagern" },
+         { oz: "01.03.0120", at: 41, q: "Rohrleitung PP DN 300 verlegen, <mark>Grundwasserstand</mark> lt. Baugrundgutachten <mark>ca. 1,80 m unter GOK</mark>" },
+         { oz: "", at: 0, q: "Die <mark>Wasserhaltung</mark> ist <mark>in die Einheitspreise</mark> der Rohrgrabenpositionen <mark>einzurechnen</mark>." } ],
+    n: 14, usd: "0.02" },
+];
+const CANNED = [
+  { found: false, a: "The documents do not say who carries the landfill fees. Item 01.02.0090 pays the haulage; a fee is named nowhere.", c: [], n: 9, usd: "0.01" },
+  { found: true, a: "Yes. Clearing the site is <mark>part of the site-setup item</mark> and is paid with it, as a lump sum.",
+    c: [ { oz: "01.01.0010", at: 1, q: "Baustelle einrichten, vorhalten und <mark>räumen</mark>, <mark>pauschal</mark>" } ], n: 12, usd: "0.02" },
+];
+const Q3 = "Who pays the landfill fees?";
+const EXAMPLES = ["Which work does this LV expect from others (bauseits)?", "Is clearing the site paid as an item of its own?", "Welche Leistungen sind in die Einheitspreise einzurechnen?"];
+const HELLO = "Ask me about this project. I answer only from its 2 documents and show you the item and the passage. What they do not say, I do not answer.";
+
+let w = "kran", s = "invite", turns = [], k = 0, timer = 0, fresh = false;
+const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [...r.querySelectorAll(q)];
+const board = $("#board");
+const esc = (t) => t.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+const name = (c) => c.oz || "Remarks";
+const last = () => turns[turns.length - 1];
+const two = (n) => String(n).padStart(2, "0");
+const hook = `<svg class="hook" width="18" height="30" viewBox="0 0 18 30" fill="none" stroke="#121413" stroke-width="2.4"><path d="M9 0v12M9 12a5 5 0 1 1-5 5" /><rect x="5" y="8" width="8" height="5" fill="#ffc400" /></svg>`;
+const sling = `<svg class="sling" viewBox="0 0 100 34" preserveAspectRatio="none" fill="none" stroke="#121413"><path d="M6 34L50 6L94 34" stroke-width="2" vector-effect="non-scaling-stroke" /><circle cx="50" cy="5" r="3.2" fill="#ffc400" stroke-width="2" vector-effect="non-scaling-stroke" /></svg>`;
+
+const draw = {
+  kran(log) {
+    log.innerHTML = `<div class="pile"><i class="rope"></i>${turns.map((t, n) => {
+      const end = n === turns.length - 1, tag = `<div class="tagq"><small>Question ${n + 1} · ${t.at}</small>${esc(t.q)}</div>`;
+      if (t.a === undefined) return `<div class="hang">${hook}${tag}</div>`;
+      return `<article class="load${end ? " last" : ""}${end && fresh ? " new" : ""}">${end ? sling : ""}${tag}
+        ${t.found ? "" : `<span class="stamp">Not in the documents</span>`}<p class="ans">${t.a}</p>
+        ${t.c.length ? `<ul class="cites">${t.c.map((c) => `<li><button><b>${name(c)}</b><span class="q" lang="de">„${c.q}“</span></button></li>`).join("")}</ul>` : ""}
+        <div class="foot"><span>${t.n} passages · 2 of 2 documents · ${t.usd} USD</span>${end ? `<button type="button">Read all</button>` : ""}</div></article>`;
+    }).join("")}</div>`;
+    log.scrollTop = log.scrollHeight;
+    const pile = $(".pile", log), tip = pile.lastElementChild, rope = $(".rope", log);
+    if (tip && tip !== rope) rope.style.height = tip.offsetTop - (tip.classList.contains("hang") ? 0 : 34) + "px";
+    $("[data-hint]").textContent = s === "reading" ? "Reading 2 documents, 87 items…" : "Answers only from the 2 documents";
+  },
+  beleg(log) {
+    log.innerHTML = `<div class="roll">${turns.map((t, n) => {
+      const end = n === turns.length - 1, on = new Map((t.c || []).map((c, i) => [c.at, i + 1]));
+      const head = `<div class="hd"><b>Polier</b><span>No. ${String(n + 1).padStart(4, "0")}</span></div><div class="hd"><span>22.11.2026 ${t.at}</span><span>Störwiesen</span></div><div class="dash"></div><p class="ask2">${esc(t.q)}</p><div class="dash"></div>`;
+      if (t.a === undefined) return `<article class="slip last">${head}<p class="printing">READING 2 DOCUMENTS </p></article>`;
+      let code = ""; for (let i = 0; i < 50; i++) code += on.has(i) ? `<i class="on">${on.get(i)}</i>` : `<i style="flex-grow:${[2, 1, 3, 1, 2, 1, 1][i % 7]}"></i>`;
+      return `<article class="slip${end ? " last" : ""}${end && fresh ? " new" : ""}">${head}
+        ${t.found ? "" : `<span class="stamp">Not in the documents</span>`}<p class="ans">${t.a}</p>
+        ${t.c.length ? `<div class="dash"></div><ul class="lines">${t.c.map((c, i) => `<li><button><b>${i + 1} ${name(c)}</b><span class="q" lang="de">„${c.q}“</span></button></li>`).join("")}</ul>` : ""}
+        <div class="dash"></div><div class="sum"><div><span>Passages read</span><span>${t.n}</span></div><div><span>Documents</span><span>2 of 2</span></div><div class="tot"><span>Total</span><span>${t.usd} USD</span></div></div>
+        ${t.c.length ? `<div class="code">${code}</div><div class="cap"><span>LV 1 · 50 items</span><span>${t.c.length} cited</span></div>` : ""}
+        ${end ? `<button class="more" type="button">* read every document: about 0.21 USD *</button>` : ""}</article>`;
+    }).join("")}</div>`;
+    log.scrollTop = log.scrollHeight;
+  },
+  plakat(log) {
+    log.innerHTML = turns.map((t, n) => {
+      const end = n === turns.length - 1;
+      return `<article class="p${end && fresh ? " new" : ""}"><div class="hq"><span class="num">${two(n + 1)}</span><h3><small>${t.at} · you asked</small>${esc(t.q)}</h3></div>
+        ${t.a === undefined ? `<p class="wait">Reading<i>...</i></p>` : `
+        ${t.found ? "" : `<span class="stamp">Not in the documents</span>`}<p class="ans">${t.a}</p>
+        ${t.c.length ? `<ul class="bars">${t.c.map((c) => `<li><button><b>${name(c)}</b><span class="q" lang="de">„${c.q}“</span></button></li>`).join("")}</ul>` : ""}
+        <div class="foot"><span>${t.n} passages / 2 of 2 docs / ${t.usd} USD</span>${end ? `<button type="button">Read all</button>` : ""}</div>`}</article>`;
+    }).join("");
+    log.scrollTop = log.scrollHeight;
+  },
+};
+
+function render() {
+  const talk = ["reading", "answer", "none"].includes(s);
+  board.dataset.w = w; board.dataset.s = s; board.classList.toggle("talk", talk);
+  draw[w]($(`[data-log="${w}"]`));
+  $$("[data-set]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === w));
+  $$("[data-state]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.state === s));
+  $("#note").innerHTML = NOTES[w] + NOTES[s];
+  history.replaceState(null, "", `#${w}/${s}`);
+  fresh = false; fit();
+}
+function state(to) {
+  clearTimeout(timer); s = to; k = 0;
+  const [one, sec] = structuredClone(SEED);
+  turns = to === "reading" ? [one, { q: sec.q, at: sec.at }] : to === "answer" ? [one, sec] : to === "none" ? [one, sec, { q: Q3, at: "14:06", ...CANNED[0] }] : [];
+  if (to === "none") k = 1;
+  $$("textarea").forEach((ta) => (ta.value = to === "typing" ? SEED[1].q.slice(0, 24) : ""));
+  render();
+}
+const time = () => new Date().toTimeString().slice(0, 5);
+function ask(q) {
+  q = q.trim();
+  if (!q || s === "reading") return;
+  $$("textarea").forEach((ta) => (ta.value = ""));
+  const first = turns.length === 0;
+  turns.push({ q, at: time() }); s = "reading"; fresh = true; render();
+  timer = setTimeout(() => {
+    const a = first ? SEED[1] : CANNED[k++ % CANNED.length];
+    Object.assign(last(), structuredClone({ ...a, q: last().q, at: last().at }));
+    s = a.found ? "answer" : "none"; fresh = true; render();
+  }, 2600);
+}
+$$("[data-hi]").forEach((el) => (el.textContent = HELLO));
+$$("[data-ex-list]").forEach((el) => (el.innerHTML = EXAMPLES.map((q) => `<li><button data-ex type="button">${esc(q)}</button></li>`).join("")));
+$$("form").forEach((f) => {
+  const ta = $("textarea", f);
+  f.onsubmit = (e) => { e.preventDefault(); ask(ta.value); };
+  ta.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); f.requestSubmit(); } };
+  ta.oninput = () => { if (s === "invite" || s === "typing") { s = ta.value ? "typing" : "invite"; board.dataset.s = s; $$("[data-state]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.state === s)); } };
+});
+$("#pol").onclick = () => state(s === "closed" ? "invite" : "closed");
+document.addEventListener("click", (e) => {
+  const ex = e.target.closest("[data-ex]");
+  if (ex) ask(ex.textContent);
+  if (e.target.closest("[data-close]")) state("closed");
+});
+$$("[data-set]").forEach((b) => (b.onclick = () => { w = b.dataset.set; render(); }));
+$$("[data-state]").forEach((b) => (b.onclick = () => state(b.dataset.state)));
+const ORDER = ["closed", "invite", "typing", "reading", "answer", "none"], WS = ["kran", "beleg", "plakat"];
+addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA") return;
+  if (WS[+e.key - 1]) { w = WS[+e.key - 1]; render(); }
+  const at = ORDER.indexOf(s);
+  if (e.key === "ArrowRight" && at < 5) { if (s === "reading") { fresh = true; s = "answer"; turns = structuredClone(SEED); render(); } else state(ORDER[at + 1]); }
+  if (e.key === "ArrowLeft" && at > 0) state(ORDER[at - 1]);
+});
+function fit() { const r = $(".fit").getBoundingClientRect(), z = Math.min(r.width / 1440, r.height / 860); board.style.transform = `translateX(${Math.max(0, (r.width - 1440 * z) / 2)}px) scale(${z})`; }
+addEventListener("resize", fit);
+const [hw, hs] = location.hash.slice(1).split("/");
+if (WS.includes(hw)) w = hw;
+state(ORDER.includes(hs) ? hs : "answer");
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 // Polier in the corner, and the conversation a click on it opens: questions about a project (Chat.tsx),
-// the only place they are asked. It opens small, a box beside Polier to type a question into; the first
-// question grows it into a side panel along the right edge of the window (the page makes room for it).
+// the only place they are asked. With nothing asked yet it is a black slab beside Polier ("Ask me.", questions
+// to start with, the field); the first question opens the side panel along the right edge of the window (the
+// page makes room for it). Polier keeps his corner and his size; the panel is a poster of its own (D-066).
 // A conversation already under way opens as the panel. Inside a project or an LV it is that project's conversation; on the list of projects it is
 // about all projects at once (answered from their overview), or about one that is picked there.
 import { useEffect, useRef, useState } from "react";
@@ -68,20 +69,28 @@ export function Agent({
   // small until there is a conversation to show; the list of projects to pick from is always the panel
   const full = !target || (chats[target.key]?.length ?? 0) > 0;
 
+  // Closing is seen: the panel stays in the page while it slides out (and the page takes its room back in
+  // the same time), the slab while it goes back into the corner; then it is taken away.
+  const [shown, setShown] = useState(open);
+  if (open && !shown) setShown(true);
+  const closing = shown && !open;
+  useEffect(() => {
+    if (!closing) return;
+    const t = window.setTimeout(() => setShown(false), full ? 450 : 180);
+    return () => window.clearTimeout(t);
+  }, [closing, full]);
+
   return (
     <>
-      {open && (
+      {(open || shown) && (
         <section
-          className={`agent-chat ${full ? "full" : "compact"}`}
+          className={`agent-chat ${full ? "full" : "compact"}${closing ? " closing" : ""}`}
           aria-label="Ask Polier"
           onKeyDown={(e) => e.key === "Escape" && onOpen(false)}
         >
           <header className="agent-head">
-            <span className="agent-mark" aria-hidden="true">
-              <Helmet />
-            </span>
             <div className="agent-who">
-              <strong>Polier</strong>
+              <span className="agent-label">{target ? "Asking about" : "Ask about"}</span>
               {!here && projects.length > 0 && picked !== null ? (
                 <button className="agent-scope" onClick={() => setPicked(null)} title="Ask about another project">
                   <span lang="de">{target?.label ?? project?.name}</span>
@@ -89,7 +98,7 @@ export function Agent({
                 </button>
               ) : (
                 <span className="agent-scope" lang="de">
-                  {target?.label ?? (picked === null ? "Pick what to ask about" : project?.name)}
+                  {target?.label ?? (picked === null ? "Pick a project" : project?.name)}
                 </span>
               )}
             </div>
@@ -169,15 +178,5 @@ export function Agent({
         </button>
       </div>
     </>
-  );
-}
-
-/** Polier's helmet, the mark of the conversation (the favicon's drawing). */
-function Helmet() {
-  return (
-    <svg width="18" height="18" viewBox="4 12 58 38" aria-hidden="true">
-      <path d="M9 41 C9 25 18.5 14 31.5 14 C44 14 52 23.5 53 38 L53.5 41 Z" fill="currentColor" />
-      <path d="M5 40.5 H52 C56.5 40.5 60 41.8 61.5 44 C62.2 45.3 61.4 46.8 59.8 46.8 H7 C5 46.8 4 44.5 5 40.5 Z" fill="currentColor" />
-    </svg>
   );
 }

@@ -92,6 +92,87 @@
         ],
         "createdAt": "2026-11-22T04:00:36.252Z",
         "reason": "agent triage: the page is a demo of a speech bubble inside the product's own scale (DESIGN.md: body 14px, labels 11px, nothing above 30px); the bubble's headline is 24 to 28px against 14px text, the small steps the detector sees are the demo's control panel"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T04:30:14.488Z",
+        "reason": "agent decided: sizes are the project's DESIGN.md scale (label 11px, tag 10.5px, sources 11.5px) in a mockup that must match the app"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T04:31:31.321Z",
+        "reason": "agent decided: the tight boxes are DESIGN.md's own tag (padding 0 5px), item-link chip and index plates, reproduced in a mockup that must match the app"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T04:46:24.391Z",
+        "reason": "agent decided: throwaway mockup; the flat picture of the mascot is moved by left/top/size to show its places, the real one is a three.js canvas"
+      },
+      {
+        "rule": "buried-raster",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T04:46:24.413Z",
+        "reason": "agent decided: false positive; two backdrop screenshots are switched by opacity 0/1, each is fully shown in its state"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T04:46:24.435Z",
+        "reason": "agent decided: DESIGN.md sets the condensed headline at line-height 1 to 1.08; body text is 1.45 to 1.55"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T05:03:31.428Z",
+        "reason": "agent decided: mockup; the yellow poster numerals carry a 2px ink outline and are decoration beside the question, placeholder greys are on purpose"
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T05:03:31.451Z",
+        "reason": "agent decided: intended; the crane rope and the cropped poster letters are cut by their container on purpose, no menus or tooltips live there"
+      },
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T05:04:17.967Z",
+        "reason": "agent decided: mockup; the capitals are the question set as a poster headline and the short meta lines of a receipt, the answers themselves are mixed case"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "playground/chat-native/index.html"
+        ],
+        "createdAt": "2026-11-22T05:04:17.988Z",
+        "reason": "agent decided: false positive; the one-sided line is the edge of the whole side panel against the page, not an accent on a card"
       }
     ]
   }

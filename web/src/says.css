@@ -1,36 +1,25 @@
-/* What Polier says by itself (Says.tsx): the site radio. An ink plate at the left of the hard hat with a
-   yellow line inside its edge and a square-cut tail towards the mascot; the call sign with signal bars that
-   move while the line is coming, what Polier calls out in the display face, the sentence letter by letter.
-   Ink is used here as on the gate's plate and the stage that is open: for the one thing that speaks. */
+/* What Polier says by itself (Says.tsx): what he did while you were not looking. The same black slab as
+   the one that asks "Ask me." when he is clicked (D-066): at the left of the hard hat, no frame and no tail,
+   what happened in poster letters, the sentence letter by letter under it, the way to the project as a line
+   at the foot. Two bars at its head move while the line is coming. */
 .says {
   position: fixed;
-  right: 150px;
-  bottom: 62px;
+  right: 168px;
+  bottom: 26px;
   z-index: 55;
-  width: min(390px, calc(100vw - 190px));
-  padding: 12px 14px 16px;
+  width: min(400px, calc(100vw - 186px));
+  padding: 11px 16px 14px;
   background: var(--ink);
   color: #fff;
-  border: 2px solid var(--ink);
-  box-shadow: inset 0 0 0 2px var(--yellow);
-  font-size: 14px;
+  font-size: 14.5px;
   line-height: 1.4;
   transform-origin: 100% 100%;
-  animation: says-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-.says::after {
-  content: "";
-  position: absolute;
-  right: -16px;
-  bottom: 16px;
-  border: solid transparent;
-  border-width: 10px 0 10px 15px;
-  border-left-color: var(--ink);
+  animation: says-in 340ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 @keyframes says-in {
   from {
     opacity: 0;
-    transform: translateX(30px) scale(0.6);
+    transform: translateX(26px) scale(0.7);
   }
 }
 .says button {
@@ -42,12 +31,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding-right: 30px;
 }
 .says-bars {
   display: flex;
   gap: 2px;
   align-items: flex-end;
-  height: 14px;
+  height: 11px;
 }
 .says-bars i {
   width: 3px;
@@ -78,26 +68,30 @@
   }
 }
 .says-call {
-  font: 700 12px var(--text);
-  letter-spacing: 0.14em;
+  font: 700 10.5px var(--text);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--yellow);
 }
 .says-more {
-  font-size: 12px;
-  font-weight: 600;
+  font: 700 10.5px var(--text);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: #a9aca4;
 }
 .says .says-x {
-  margin-left: auto;
-  width: 24px;
-  height: 24px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  color: #fff;
+  background: var(--yellow);
+  color: var(--ink);
 }
 .says .says-x:hover {
-  background: #2c2f2b;
+  background: #fff;
 }
 .says .says-x:focus-visible,
 .says .says-open:focus-visible {
@@ -105,14 +99,16 @@
   outline-offset: 2px;
 }
 .says h3 {
-  margin: 8px 0 0;
-  font: 700 24px/1.05 var(--display);
-  letter-spacing: 0.03em;
+  margin: 12px 0 0;
+  font: 700 52px/0.84 var(--display);
+  letter-spacing: 0;
   text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
   color: var(--yellow);
 }
 .says p {
-  margin: 6px 0 0;
+  margin: 12px 0 0;
   min-height: 2.8em;
   overflow-wrap: anywhere;
 }
@@ -131,34 +127,38 @@
   }
 }
 .says .says-open {
-  margin-top: 12px;
-  height: 30px;
-  max-width: 100%;
-  padding: 0 12px;
-  border-radius: 2px;
-  background: var(--yellow);
-  color: var(--ink);
-  font: 700 12px var(--text);
-  letter-spacing: 0.08em;
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 0 2px;
+  border-top: 1px solid #44483f;
+  color: #fff;
+  font: 700 17px/1.1 var(--display);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 200ms var(--ease), background-color 120ms var(--ease);
+  transition:
+    opacity 200ms var(--ease),
+    color 100ms,
+    padding 150ms var(--ease);
 }
 .says.done .says-open {
   opacity: 1;
 }
 .says .says-open:hover {
-  background: #fff;
+  padding-left: 8px;
+  color: var(--yellow);
 }
 /* how long the call stays: a yellow line along the foot that runs out; it starts again when the pointer leaves */
 .says-timer {
   position: absolute;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 4px;
   background: var(--yellow);
   transform-origin: 0 50%;
@@ -199,8 +199,5 @@
     right: 12px;
     bottom: 150px;
     width: calc(100vw - 24px);
-  }
-  .says::after {
-    display: none;
   }
 }

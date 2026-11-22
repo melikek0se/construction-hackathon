@@ -75,6 +75,7 @@ export function Chat({
       <div className="scroll chat-turns">
         {turns.length === 0 && (
           <div className="chat-empty">
+            <strong className="chat-hello">Ask me.</strong>
             <p>
               {analysisId === null
                 ? "Ask about all your tenders: stages, dates, files, findings, net totals. The answer comes only from the overview of the projects and names the line it rests on. What stands inside an LV is asked in its project."
@@ -87,31 +88,40 @@ export function Chat({
             ))}
           </div>
         )}
-        {turns.map((t, n) =>
-          t.role === "user" ? (
-            <p key={n} className="chat-q">
-              {t.content}
-            </p>
-          ) : (
-            <Answer
-              key={n}
-              turn={t}
-              openFile={openFile}
-              onCite={onCite}
-              onWhole={busy || n !== turns.length - 1 ? undefined : () => void send(turns[n - 1]?.content ?? "", n)}
-            />
-          ),
-        )}
-        {busy && (
-          <p className="chat-wait" role="status">
-            <span className="chat-dots" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
-            {analysisId === null ? "Reading the overview of the projects" : "Reading the project documents"}
-          </p>
-        )}
+        {turns.map((t, n) => {
+          if (t.role !== "user") return null;
+          const reply = turns[n + 1]?.role === "assistant" ? turns[n + 1] : null;
+          const no = turns.slice(0, n + 1).filter((x) => x.role === "user").length;
+          return (
+            <article key={n} className="chat-p">
+              <div className="chat-hq">
+                <span className="chat-num" aria-hidden="true">
+                  {String(no).padStart(2, "0")}
+                </span>
+                <h3 className={t.content.length > 90 ? "long" : undefined}>
+                  <small>You asked</small>
+                  {t.content}
+                </h3>
+              </div>
+              {reply ? (
+                <Answer
+                  turn={reply}
+                  openFile={openFile}
+                  onCite={onCite}
+                  onWhole={busy || n + 1 !== turns.length - 1 ? undefined : () => void send(t.content, n + 1)}
+                />
+              ) : (
+                busy &&
+                n === turns.length - 1 && (
+                  <p className="chat-wait" role="status">
+                    Reading<i aria-hidden="true">...</i>
+                    <small>{analysisId === null ? "The overview of the projects" : "The project documents"}</small>
+                  </p>
+                )
+              )}
+            </article>
+          );
+        })}
         {error && (
           <p className="chat-error" role="alert">
             {error}
@@ -126,6 +136,7 @@ export function Chat({
           void send(draft);
         }}
       >
+        <div className="chat-box">
         <textarea
           value={draft}
           rows={1}
@@ -140,9 +151,10 @@ export function Chat({
             }
           }}
         />
-        <button type="submit" disabled={busy || !draft.trim()} aria-label="Ask" title="Ask (Enter)">
-          <Icon d="M8 13V3M3.5 7.5L8 3l4.5 4.5" />
+        <button type="submit" disabled={busy || !draft.trim()} title="Ask (Enter)">
+          Ask
         </button>
+        </div>
       </form>
     </div>
   );
@@ -163,10 +175,10 @@ function Answer({
 }) {
   const a = turn.answer;
   return (
-    <div className="chat-a">
-      {a && !a.found && <p className="chat-flag">{a.scope === "overview" ? "Not in the overview of the projects" : "Not in the project documents"}</p>}
+    <>
+      {a && !a.found && <p className="chat-stamp">{a.scope === "overview" ? "Not in the overview" : "Not in the documents"}</p>}
       {a && a.found && !a.grounded && (
-        <p className="chat-flag warn">
+        <p className="chat-flag">
           {a.scope === "overview"
             ? "No line of the overview could be confirmed for this answer. Treat it as unverified."
             : "No passage in the documents could be confirmed for this answer. Treat it as unverified."}
@@ -181,10 +193,9 @@ function Answer({
               return (
                 <li key={k}>
                   <button className="cite-project" onClick={() => onCite(c)} title={`Open ${c.project_name}`}>
-                    <span className="chat-cite-head">
-                      <b lang="de">{c.project_name}</b>
-                      <span>open the project</span>
-                    </span>
+                    <b className="chat-cite-oz" lang="de">
+                      {c.project_name}
+                    </b>
                     <span className="chat-cite-quote">
                       <LvText text={c.quote} />
                     </span>
@@ -194,12 +205,12 @@ function Answer({
             return (
             <li key={k}>
               <button onClick={() => onCite({ ...c, here })} title={here ? "Show this item" : `Open ${c.file} at this item`}>
-                <span className="chat-cite-head">
-                  <b>{c.oz || "Remarks"}</b>
-                  <span>{here ? "this file" : c.file}</span>
-                </span>
-                <span className="chat-cite-quote" lang="de">
-                  <LvText text={`„${c.quote}“`} />
+                <b className="chat-cite-oz">{c.oz || "Remarks"}</b>
+                <span>
+                  <span className="chat-cite-quote" lang="de">
+                    <LvText text={`„${c.quote}“`} />
+                  </span>
+                  <span className="chat-cite-file">{here ? "this file" : c.file}</span>
                 </span>
               </button>
             </li>
@@ -238,7 +249,7 @@ function Answer({
           )}
         </button>
       )}
-    </div>
+    </>
   );
 }
 

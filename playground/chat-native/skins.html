@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Polier chat: proposals in the app's own language</title>
+<link rel="icon" href="../chat-panel/favicon.svg" />
+<style>
+@font-face { font-family: Barlow; font-weight: 400; src: url(../tender/fonts/barlow-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 500; src: url(../tender/fonts/barlow-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 600; src: url(../tender/fonts/barlow-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 700; src: url(../tender/fonts/barlow-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url(../tender/fonts/barlow-condensed-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; src: url(../tender/fonts/barlow-condensed-latin-700-normal.woff2) format("woff2"); }
+
+:root {
+  --yellow: #ffc400; --yellow-ink: #3a2c00; --ink: #121413; --ink-2: #3b403a; --red: #c4161c; --blue: #0a5aa8;
+  --rule: #e3e3dd; --line-2: #c4c4bc; --tint: #f6f6f2; --hover: #fff7cf; --mute: #5f635c; --dim: #8b8e87;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif; --text: "Barlow", system-ui, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --stripe: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px);
+  --w: 460px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font: 400 14px/1.45 var(--text); color: var(--ink); background: #2a2c2a; display: flex; flex-direction: column; overflow: hidden; }
+button, textarea, input { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+p, h3, ul, ol { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+::selection { background: var(--yellow); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ---------- the switcher (not part of the design) ---------- */
+.switcher { flex: none; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 7px 14px; background: #1d1f1e; color: #ddd; font-size: 12px; }
+.switcher b { color: #fff; margin-right: 6px; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+.switcher button { padding: 5px 11px; border: 1px solid #444; background: #2a2d2b; color: #ddd; }
+.switcher button[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); font-weight: 700; }
+.switcher .gap { width: 14px; }
+.switcher .note { margin-left: auto; color: #9a9d97; max-width: 62ch; text-align: right; line-height: 1.3; }
+
+/* ---------- the artboard: the real tender page (a screenshot) at 1440 x 860, scaled to the window ---------- */
+.fit { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.board { position: absolute; left: 0; top: 0; width: 1440px; height: 860px; transform-origin: 0 0; background: #fff; overflow: hidden; }
+.bg { position: absolute; left: 0; top: 0; height: 860px; display: none; }
+[data-v="now"] .bg.now { display: block; width: 1440px; height: auto; }
+[data-v="dock"] .bg.full { display: block; width: 1440px; }
+[data-v="register"] .bg.side, [data-v="funk"] .bg.side, [data-v="beleg"] .bg.side { display: block; width: 980px; }
+.v { display: none; }
+[data-v="register"] .v-register, [data-v="funk"] .v-funk, [data-v="beleg"] .v-beleg { display: flex; }
+[data-v="dock"] .v-dock { display: grid; }
+
+/* ---------- shared pieces, as the app draws them ---------- */
+.lab { font: 600 11px var(--text); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+.plate { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; background: var(--yellow); color: var(--ink); font: 600 16px/1 var(--display); font-variant-numeric: tabular-nums; }
+.btn { display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 2px; font: 700 12px var(--text); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; transition: background .12s var(--ease), color .12s var(--ease), border-color .12s var(--ease); }
+.btn.primary { background: var(--yellow); color: var(--ink); }
+.btn.primary:hover { background: var(--ink); color: var(--yellow); }
+.btn.ghost { height: 26px; padding: 0 9px; font-size: 10.5px; border: 1px solid var(--line-2); }
+.btn.ghost:hover { background: var(--yellow); border-color: var(--ink); }
+.oz { flex: none; display: inline-block; padding: 1px 6px; border: 1px solid var(--line-2); border-radius: 2px; font: 700 12px/1.5 var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; background: #fff; }
+.tok { color: var(--mute); border-bottom: 1px dotted var(--dim); }
+.fn { display: inline-grid; place-items: center; width: 15px; height: 15px; margin: 0 1px 0 2px; background: var(--yellow); font: 700 11px/1 var(--display); vertical-align: 2px; cursor: pointer; transition: background .12s, color .12s; }
+.fn:hover, .fn.lit { background: var(--ink); color: var(--yellow); }
+mark { background: none; color: inherit; }
+.tape { height: 6px; background: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--yellow) 12px 24px); background-size: 34px 100%; animation: tape 0.7s linear infinite; }
+@keyframes tape { to { background-position: 34px 0; } }
+.rise { animation: rise .32s var(--ease) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.caret { display: inline-block; width: 7px; height: 14px; margin-left: 2px; vertical-align: -2px; background: currentColor; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* the LV as a strip of its items; the items an answer rests on stand up */
+.strip { display: flex; align-items: flex-end; gap: 2px; height: 22px; }
+.strip i { flex: 1 1 0; height: 14px; background: var(--rule); }
+.strip i.sec { margin-left: 5px; }
+.strip i.on { flex: 0 0 18px; height: 22px; display: grid; place-items: center; background: var(--yellow); box-shadow: inset 0 0 0 1.5px var(--ink); font: 700 12px/1 var(--display); font-style: normal; cursor: pointer; transition: background .12s, color .12s; }
+.strip i.on:hover, .strip i.on.lit { background: var(--ink); color: var(--yellow); }
+
+/* ---------- the side panel, shared by 1 to 3: the band runs on across it ---------- */
+.side { position: absolute; top: 0; right: 0; bottom: 0; width: var(--w); flex-direction: column; background: #fff; border-left: 2px solid var(--ink); }
+.head { flex: none; height: 70px; display: flex; align-items: center; gap: 12px; padding: 0 8px 0 18px; background: var(--ink); color: #fff; border-block: 9px solid; border-image: var(--stripe) 9; }
+.head svg.helmet { flex: none; color: var(--yellow); }
+.head .who { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.head strong { font: 700 22px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.head .who span { font-size: 12px; line-height: 1.2; color: #d6d6cf; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.head .x { width: 34px; height: 34px; display: grid; place-items: center; color: #fff; }
+.head .x:hover { background: var(--yellow); color: var(--ink); }
+.log { flex: 1; min-height: 0; overflow: hidden auto; scrollbar-width: thin; scrollbar-color: var(--ink) transparent; }
+.side .log::after { content: ""; display: block; height: 58px; }
+.perch { position: absolute; right: 14px; width: 74px; pointer-events: none; filter: drop-shadow(0 3px 1px rgba(0, 0, 0, .12)); animation: bob 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes bob { 50% { transform: translateY(-3px) rotate(1.2deg); } }
+.busy .perch { animation: think .7s ease-in-out infinite; }
+@keyframes think { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg) translateY(-3px); } }
+
+/* =============== 1. REGISTER: the conversation is a register of numbered entries =============== */
+.v-register .scope { flex: none; display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 18px; border-bottom: 1px solid var(--rule); }
+.v-register .scope .lab { white-space: nowrap; }
+.v-register .scope .sel { min-width: 0; white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; height: 24px; padding: 0 8px; border: 1px solid var(--line-2); border-radius: 2px; font-size: 12px; font-weight: 600; }
+.v-register .scope .sel:hover { border-color: var(--ink); }
+.v-register .scope .n { margin-left: auto; }
+.v-register .e { border-bottom: 2px solid var(--ink); padding: 14px 18px 12px; }
+.v-register .e:last-child { border-bottom: 0; }
+.v-register .e > header { display: flex; gap: 10px; align-items: flex-start; }
+.v-register .e h3 { flex: 1; font: 600 15px/1.3 var(--text); padding-top: 2px; }
+.v-register .e time { padding-top: 5px; }
+.v-register .ans { margin: 10px 0 0 34px; font-size: 14px; line-height: 1.5; max-width: 60ch; }
+.v-register .flag { display: inline-block; margin: 10px 0 -4px 34px; padding: 0 5px; border: 1px solid var(--line-2); font: 600 10.5px/1.6 var(--text); letter-spacing: .08em; text-transform: uppercase; color: #3f433d; }
+.v-register .rest { margin: 14px 0 0 34px; }
+.v-register .rest > .lab { padding-bottom: 5px; border-bottom: 1px solid var(--ink); }
+.v-register .rows button { display: grid; grid-template-columns: 96px minmax(0, 1fr) 10px; gap: 10px; align-items: start; width: 100%; padding: 8px 6px 8px 0; border-bottom: 1px solid var(--rule); transition: background .12s; }
+.v-register .rows button:hover { background: var(--hover); }
+.v-register .rows .oz { justify-self: start; }
+.v-register .rows button:hover .oz { border-color: var(--ink); }
+.v-register .rows .q { font-size: 13px; line-height: 1.4; }
+.v-register .rows .f { display: block; margin-top: 2px; font-size: 11.5px; color: var(--dim); }
+.v-register .rows .go { margin-top: 5px; width: 7px; height: 7px; border-top: 2px solid var(--line-2); border-right: 2px solid var(--line-2); transform: rotate(45deg); }
+.v-register .rows button:hover .go { border-color: var(--ink); }
+.v-register .e footer { display: flex; align-items: center; gap: 10px; margin: 9px 0 0 34px; font-size: 11.5px; color: var(--dim); }
+.v-register .e footer .btn { margin-left: auto; color: var(--ink); }
+.v-register .wait { margin: 12px 0 2px 34px; }
+.v-register .wait .lab { display: block; margin-top: 7px; }
+.v-register .intro { padding: 16px 18px; }
+.v-register .intro p { color: var(--mute); max-width: 52ch; }
+.v-register .intro .lab { display: block; margin: 16px 0 5px; padding-bottom: 5px; border-bottom: 1px solid var(--ink); }
+.v-register .intro button { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding: 9px 6px 9px 0; border-bottom: 1px solid var(--rule); font-weight: 500; }
+.v-register .intro button:hover { background: var(--hover); }
+.v-register .ask { flex: none; position: relative; padding: 12px 18px 14px; border-top: 2px solid var(--ink); }
+.v-register .ask .lab { display: block; margin-bottom: 6px; }
+.v-register .ask .line { display: flex; gap: 8px; align-items: flex-end; }
+.v-register .ask textarea { flex: 1; min-width: 0; height: 32px; min-height: 32px; max-height: 120px; field-sizing: content; padding: 5px 9px; border: 1px solid var(--line-2); border-radius: 2px; background: #fff; resize: none; outline: 0; line-height: 20px; }
+.v-register .ask textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 2px var(--yellow); }
+.v-register .perch { top: -67px; }
+
+/* =============== 2. FUNK: radio traffic, plates with a keyline; Polier speaks in ink as in his calls =============== */
+.v-funk .log { padding: 16px 18px 0; display: flex; flex-direction: column; gap: 14px; }
+.v-funk .call { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font: 700 11px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.v-funk .q { align-self: flex-end; max-width: 84%; }
+.v-funk .q .call { justify-content: flex-end; }
+.v-funk .q p { position: relative; padding: 8px 12px; background: var(--yellow); border: 2px solid var(--ink); font-weight: 500; }
+.v-funk .q p::after { content: ""; position: absolute; right: 14px; bottom: -11px; border: solid transparent; border-width: 9px 0 0 12px; border-top-color: var(--ink); }
+.v-funk .a { position: relative; margin-right: 26px; padding: 11px 14px 12px; background: var(--ink); color: #fff; border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--yellow); }
+.v-funk .a:last-child::after { content: ""; position: absolute; right: 30px; bottom: -14px; border: solid transparent; border-width: 12px 14px 0 0; border-top-color: var(--ink); }
+.v-funk .a .call { color: var(--yellow); margin-bottom: 7px; }
+.v-funk .a .call time { margin-left: auto; color: #a9aca4; letter-spacing: .08em; }
+.v-funk .bars { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+.v-funk .bars i { width: 3px; height: 100%; background: var(--yellow); transform-origin: 50% 100%; transform: scaleY(.25); }
+.v-funk .bars i:nth-child(2) { transform: scaleY(.5); } .v-funk .bars i:nth-child(3) { transform: scaleY(.75); } .v-funk .bars i:nth-child(4) { transform: none; }
+.v-funk .a.wait .bars i { animation: bar .7s ease-in-out infinite alternate; }
+.v-funk .a.wait .bars i:nth-child(2) { animation-delay: -.2s; } .v-funk .a.wait .bars i:nth-child(3) { animation-delay: -.43s; } .v-funk .a.wait .bars i:nth-child(4) { animation-delay: -.09s; }
+@keyframes bar { from { transform: scaleY(.2); } to { transform: scaleY(1); } }
+.v-funk .ans { font-size: 14px; line-height: 1.5; }
+.v-funk .flag { display: inline-block; margin-bottom: 6px; padding: 0 5px; border: 1px solid #6b6e67; font: 600 10.5px/1.6 var(--text); letter-spacing: .08em; text-transform: uppercase; color: #d6d6cf; }
+.v-funk .rows { margin-top: 11px; border-top: 1px solid #3a3d39; }
+.v-funk .rows button { display: grid; gap: 3px; width: 100%; padding: 8px 4px; border-bottom: 1px solid #3a3d39; color: #fff; transition: background .12s; }
+.v-funk .rows button:hover { background: #2c2f2b; }
+.v-funk .rows .h { display: flex; gap: 10px; align-items: baseline; }
+.v-funk .rows b { font: 700 12.5px var(--text); color: var(--yellow); font-variant-numeric: tabular-nums; }
+.v-funk .rows .f { font-size: 11.5px; color: #a9aca4; }
+.v-funk .rows .q2 { font-size: 13px; line-height: 1.4; color: #e6e6df; }
+.v-funk .tok { color: #a9aca4; border-color: #6b6e67; }
+.v-funk .foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; font-size: 11.5px; color: #a9aca4; }
+.v-funk .foot .btn { margin-left: auto; color: #fff; border-color: #6b6e67; }
+.v-funk .foot .btn:hover { color: var(--ink); border-color: var(--yellow); }
+.v-funk .chips { display: grid; gap: 6px; margin-top: 10px; }
+.v-funk .chips button { padding: 7px 10px; border: 1px solid #6b6e67; color: #fff; font-weight: 500; }
+.v-funk .chips button:hover { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+.v-funk .ask { flex: none; position: relative; display: flex; align-items: stretch; margin: 0 18px 16px; border: 2px solid var(--ink); background: #fff; }
+.v-funk .ask:focus-within { box-shadow: 0 0 0 3px var(--yellow); }
+.v-funk .ask textarea { flex: 1; min-width: 0; min-height: 40px; max-height: 120px; field-sizing: content; padding: 9px 12px; border: 0; outline: 0; resize: none; background: none; }
+.v-funk .ask button { flex: none; width: 44px; display: grid; place-items: center; background: var(--ink); color: var(--yellow); transition: background .12s, color .12s; }
+.v-funk .ask button:hover { background: var(--yellow); color: var(--ink); }
+.v-funk .perch { top: -70px; right: 10px; }
+
+/* =============== 3. BELEG: the marked sheet. The strip first, the answer footnoted, the LV text marked =============== */
+.v-beleg .log { padding: 0 20px; }
+.v-beleg .t { padding: 16px 0 14px; border-bottom: 2px solid var(--ink); }
+.v-beleg .t:last-child { border-bottom: 0; }
+.v-beleg .t h3 { margin-top: 4px; font: 600 22px/1.08 var(--display); letter-spacing: .04em; text-transform: uppercase; text-wrap: balance; }
+.v-beleg .where { margin-top: 12px; }
+.v-beleg .where .lab { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.v-beleg .ans { margin-top: 12px; font-size: 15px; line-height: 1.55; max-width: 58ch; }
+.v-beleg .ans mark { font-weight: 600; box-shadow: inset 0 -2px 0 var(--yellow); }
+.v-beleg .flag { display: inline-block; margin-top: 12px; padding: 0 5px; border: 1px solid var(--line-2); font: 600 10.5px/1.6 var(--text); letter-spacing: .08em; text-transform: uppercase; color: #3f433d; }
+.v-beleg .flag + .ans { margin-top: 6px; }
+.v-beleg .cuts { display: grid; gap: 6px; margin-top: 12px; }
+.v-beleg .cuts button { display: grid; grid-template-columns: 15px minmax(0, 1fr); gap: 4px 9px; width: 100%; padding: 8px 10px 9px 9px; background: var(--tint); border-left: 3px solid var(--yellow); box-shadow: inset 0 0 0 0 var(--ink); transition: background .12s, box-shadow .12s; }
+.v-beleg .cuts button:hover, .v-beleg .cuts button.lit { background: var(--hover); box-shadow: inset 0 0 0 1px var(--ink); }
+.v-beleg .cuts .fn { margin: 2px 0 0; vertical-align: 0; }
+.v-beleg .cuts .h { display: flex; gap: 10px; align-items: baseline; }
+.v-beleg .cuts b { font: 600 13.5px var(--text); font-variant-numeric: tabular-nums; }
+.v-beleg .cuts .f { margin-left: auto; font-size: 11.5px; color: var(--dim); white-space: nowrap; }
+.v-beleg .cuts .q { grid-column: 2; font-size: 13.5px; line-height: 1.45; }
+.v-beleg .cuts .q mark { background: var(--yellow); padding: 0 1px; }
+.v-beleg .foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 11.5px; color: var(--dim); }
+.v-beleg .foot .btn { margin-left: auto; color: var(--ink); }
+.v-beleg .wait { margin-top: 12px; }
+.v-beleg .wait .lab { display: block; margin-top: 7px; }
+.v-beleg .intro { padding: 18px 0; }
+.v-beleg .intro p { margin-top: 8px; color: var(--mute); }
+.v-beleg .intro ol { margin-top: 14px; border-top: 1px solid var(--ink); }
+.v-beleg .intro li button { display: flex; gap: 10px; width: 100%; padding: 9px 0; border-bottom: 1px solid var(--rule); font-weight: 500; }
+.v-beleg .intro li button:hover { background: var(--hover); }
+.v-beleg .ask { flex: none; position: relative; display: flex; align-items: flex-end; background: var(--ink); color: #fff; border-top: 9px solid; border-image: var(--stripe) 9; }
+.v-beleg .ask .pr { flex: none; padding: 13px 0 13px 18px; font: 700 20px/22px var(--display); color: var(--yellow); }
+.v-beleg .ask textarea { flex: 1; min-width: 0; min-height: 48px; max-height: 130px; field-sizing: content; padding: 13px 10px; border: 0; outline: 0; resize: none; background: none; color: #fff; caret-color: var(--yellow); line-height: 22px; font-size: 14.5px; }
+.v-beleg .ask textarea::placeholder { color: #a9aca4; }
+.v-beleg .ask button { flex: none; margin: 8px; }
+.v-beleg .ask button:hover { background: #fff; color: var(--ink); }
+.v-beleg .perch { top: -75px; right: 16px; }
+
+/* =============== 4. LEITSTAND: a desk docked along the foot, as the schedule is docked under the band =============== */
+.v-dock { position: absolute; left: 0; right: 0; bottom: 0; height: 404px; background: #fff; border-top: 2px solid var(--ink); grid-template-columns: 264px minmax(0, 1fr) 500px; grid-template-rows: minmax(0, 1fr) auto; }
+.v-dock .left { grid-row: 1 / 3; display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--rule); }
+.v-dock .me { flex: none; display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 8px 0 16px; background: var(--ink); color: #fff; }
+.v-dock .me svg.helmet { color: var(--yellow); }
+.v-dock .me .who { flex: 1; min-width: 0; display: grid; }
+.v-dock .me strong { font: 700 19px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.v-dock .me .who span { font-size: 11.5px; color: #d6d6cf; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v-dock .me .x { width: 30px; height: 30px; display: grid; place-items: center; }
+.v-dock .me .x:hover { background: var(--yellow); color: var(--ink); }
+.v-dock .left > .lab { padding: 10px 16px 5px; }
+.v-dock .asked { flex: 1; min-height: 0; overflow: auto; border-top: 1px solid var(--rule); }
+.v-dock .asked button { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 9px; align-items: start; width: 100%; padding: 8px 12px 8px 16px; border-bottom: 1px solid var(--rule); font-size: 13px; line-height: 1.3; font-weight: 500; transition: background .12s; }
+.v-dock .asked button:hover { background: var(--hover); }
+.v-dock .asked button[aria-current="true"] { background: var(--ink); color: #fff; }
+.v-dock .asked button span:last-child { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding-top: 3px; }
+.v-dock .mid { min-height: 0; overflow: auto; padding: 16px 28px 14px 24px; }
+.v-dock .mid h3 { margin-top: 4px; font: 600 22px/1.08 var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.v-dock .mid .ans { margin-top: 10px; font-size: 15px; line-height: 1.55; max-width: 62ch; }
+.v-dock .mid .ans mark { font-weight: 600; box-shadow: inset 0 -2px 0 var(--yellow); }
+.v-dock .mid .flag { display: inline-block; margin-top: 10px; padding: 0 5px; border: 1px solid var(--line-2); font: 600 10.5px/1.6 var(--text); letter-spacing: .08em; text-transform: uppercase; color: #3f433d; }
+.v-dock .mid .foot .btn { color: var(--ink); }
+.v-dock .mid .foot { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 11.5px; color: var(--dim); }
+.v-dock .mid .wait { margin-top: 14px; max-width: 420px; }
+.v-dock .mid .wait .lab { display: block; margin-top: 7px; }
+.v-dock .mid .ex { margin-top: 12px; max-width: 520px; border-top: 1px solid var(--ink); }
+.v-dock .mid .ex button { display: block; width: 100%; padding: 8px 0; border-bottom: 1px solid var(--rule); font-weight: 500; }
+.v-dock .mid .ex button:hover { background: var(--hover); }
+.v-dock .right { min-height: 0; overflow: auto; padding: 14px 20px 10px; border-left: 1px solid var(--rule); }
+.v-dock .right .lab.top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.v-dock .right .rows { margin-top: 10px; border-top: 1px solid var(--ink); }
+.v-dock .right .rows button { display: grid; grid-template-columns: 15px 92px minmax(0, 1fr); gap: 9px; align-items: start; width: 100%; padding: 8px 6px 8px 0; border-bottom: 1px solid var(--rule); transition: background .12s; }
+.v-dock .right .rows button:hover, .v-dock .right .rows button.lit { background: var(--hover); }
+.v-dock .right .rows .fn { margin: 3px 0 0; vertical-align: 0; }
+.v-dock .right .rows .oz { justify-self: start; }
+.v-dock .right .rows .q { font-size: 13px; line-height: 1.4; }
+.v-dock .right .rows .q mark { background: var(--yellow); padding: 0 1px; }
+.v-dock .right .rows .f { display: block; margin-top: 2px; font-size: 11.5px; color: var(--dim); }
+.v-dock .right .none { margin-top: 10px; padding: 10px 12px; background: var(--tint); color: var(--mute); font-size: 13px; }
+.v-dock .ask { grid-column: 2 / 4; display: flex; gap: 8px; align-items: flex-end; padding: 10px 20px 12px 24px; border-top: 2px solid var(--ink); }
+.v-dock .ask .lab { align-self: center; margin-right: 6px; white-space: nowrap; }
+.v-dock .ask textarea { flex: 1; min-width: 0; height: 32px; min-height: 32px; max-height: 90px; field-sizing: content; padding: 5px 9px; border: 1px solid var(--line-2); border-radius: 2px; resize: none; outline: 0; line-height: 20px; }
+.v-dock .ask textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 2px var(--yellow); }
+.v-dock .perch { top: -82px; right: 26px; width: 88px; }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="toolbar" aria-label="Design">
+  <b>Polier chat</b>
+  <button data-set="now">0 · Şimdiki</button>
+  <button data-set="register">1 · Register</button>
+  <button data-set="funk">2 · Funk</button>
+  <button data-set="beleg">3 · Beleg</button>
+  <button data-set="dock">4 · Leitstand</button>
+  <span class="gap"></span>
+  <button data-state="talk">Konuşma</button>
+  <button data-state="empty">Boş</button>
+  <span class="note" id="note"></span>
+</div>
+
+<div class="fit"><div class="board" id="board">
+  <img class="bg now" src="now.png" alt="" />
+  <img class="bg full" src="bg-full.png" alt="" />
+  <img class="bg side" src="bg-side.png" alt="" />
+
+  <!-- 1 -->
+  <section class="v side v-register" aria-label="Ask Polier">
+    <header class="head"><svg class="helmet" width="30" height="22" viewBox="4 12 58 38"><use href="#helmet" /></svg>
+      <div class="who"><strong>Polier</strong><span lang="de">Answers from the documents, with the passage</span></div>
+      <button class="x" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13" /></svg></button></header>
+    <div class="scope"><span class="lab">Asking about</span><button class="sel" lang="de">Wohnquartier Störwiesen <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3l4 4 4-4" /></svg></button><span class="lab n">2 documents</span></div>
+    <div class="log" data-log></div>
+    <form class="ask"><img class="perch" src="polier.png" alt="" />
+      <span class="lab">Ask Polier</span>
+      <div class="line"><textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea><button class="btn primary" type="submit">Ask</button></div>
+    </form>
+  </section>
+
+  <!-- 2 -->
+  <section class="v side v-funk" aria-label="Ask Polier">
+    <header class="head"><svg class="helmet" width="30" height="22" viewBox="4 12 58 38"><use href="#helmet" /></svg>
+      <div class="who"><strong>Polier</strong><span lang="de">OP-2614-LV1 Wohnquartier Störwiesen · 2 documents</span></div>
+      <button class="x" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13" /></svg></button></header>
+    <div class="log" data-log></div>
+    <form class="ask"><img class="perch" src="polier.png" alt="" />
+      <textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea>
+      <button type="submit" aria-label="Ask"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" /></svg></button>
+    </form>
+  </section>
+
+  <!-- 3 -->
+  <section class="v side v-beleg" aria-label="Ask Polier">
+    <header class="head"><svg class="helmet" width="30" height="22" viewBox="4 12 58 38"><use href="#helmet" /></svg>
+      <div class="who"><strong>Polier</strong><span lang="de">OP-2614-LV1 Wohnquartier Störwiesen · 2 documents</span></div>
+      <button class="x" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13" /></svg></button></header>
+    <div class="log" data-log></div>
+    <form class="ask"><img class="perch" src="polier.png" alt="" />
+      <span class="pr" aria-hidden="true">›</span>
+      <textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea>
+      <button class="btn primary" type="submit">Ask</button>
+    </form>
+  </section>
+
+  <!-- 4 -->
+  <section class="v v-dock" aria-label="Ask Polier">
+    <img class="perch" src="polier.png" alt="" />
+    <div class="left">
+      <div class="me"><svg class="helmet" width="26" height="19" viewBox="4 12 58 38"><use href="#helmet" /></svg>
+        <div class="who"><strong>Polier</strong><span>from 2 documents, with the passage</span></div>
+        <button class="x" aria-label="Close"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13" /></svg></button></div>
+      <span class="lab">Asked</span>
+      <div class="asked" data-asked></div>
+    </div>
+    <div class="mid" data-mid></div>
+    <div class="right" data-right></div>
+    <form class="ask"><span class="lab">Ask Polier</span>
+      <textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea><button class="btn primary" type="submit">Ask</button>
+    </form>
+  </section>
+</div></div>
+
+<svg width="0" height="0" style="position:absolute"><defs><g id="helmet">
+  <path d="M9 41 C9 25 18.5 14 31.5 14 C44 14 52 23.5 53 38 L53.5 41 Z" fill="currentColor" />
+  <path d="M5 40.5 H52 C56.5 40.5 60 41.8 61.5 44 C62.2 45.3 61.4 46.8 59.8 46.8 H7 C5 46.8 4 44.5 5 40.5 Z" fill="currentColor" />
+</g></defs></svg>
+
+<script>
+const NOTES = {
+  now: "Şimdiki hali: yumuşak köşeler, gölgeler, balon. Sayfanın dilinden kopuk.",
+  register: "Konuşma bir kayıt defteri: numaralı plaka, soru başlık, dayanaklar tablo satırı. En sakin, uygulamanın birebir dili.",
+  funk: "Telsiz trafiği: soru sarı plaka, Polier mürekkep plakada konuşur (köşedeki telsiz çağrısının dili). En karakterli, en gürültülü.",
+  beleg: "İşaretli sayfa: önce LV şeridi (dayanak kalemler ayağa kalkar), cevapta dipnot plakaları, alıntıda sarı işaret. Plakaya gel: şerit ve alıntı yanar.",
+  dock: "Alt masa: takvim bandın altına nasıl kenetliyse bu da sayfanın altına. Sol sorular, orta cevap, sağ dayanaklar. Sayfa daralmaz.",
+};
+const FILE = "Stoerwiesen_LV1_Erschliessung.x83";
+// {n}: footnote to passage n; <mark>: the words that carry the answer
+const SEED = [
+  { q: "Is dewatering paid as an item of its own?", at: "14:02", found: true,
+    a: "No. LV 1 has <mark>no item for dewatering</mark>. The remarks put keeping the trenches dry into the unit prices of the pipe trenches{1}, the trenches go down to 3.50 m{2}, and the soil report expects groundwater from 1.80 m{3}. Worth a bidder question before 01.12.",
+    c: [ { oz: "", at: 0, q: "Die <mark>Wasserhaltung</mark> ist <mark>in die Einheitspreise</mark> der Rohrgrabenpositionen <mark>einzurechnen</mark>." },
+         { oz: "01.03.0040", at: 14, q: "Rohrgraben ausheben, <mark>Tiefe bis 3,50 m</mark>, einschl. Verbau, Boden seitlich lagern" },
+         { oz: "01.03.0120", at: 21, q: "Rohrleitung PP DN 300 verlegen, <mark>Grundwasserstand</mark> lt. Baugrundgutachten <mark>ca. 1,80 m unter GOK</mark>" } ],
+    read: "Read the 14 passages a search found, from 2 of 2 documents", usd: "0.02 USD" },
+  { q: "Which work does this LV expect from others (bauseits)?", at: "14:05", found: true,
+    a: "Two things come from the client: <mark>site power</mark>{1} and the <mark>setting-out of the main axes</mark> by the client's surveyor{2}. Everything else, traffic safety included, is the contractor's.",
+    c: [ { oz: "01.01.0010", at: 1, q: "Baustelle einrichten, vorhalten und räumen. <mark>Baustrom wird bauseits gestellt</mark>." },
+         { oz: "01.01.0030", at: 3, q: "<mark>Absteckung der Hauptachsen erfolgt bauseits</mark> durch den Vermesser des AG, <span class='tok'>[FIRMA_044]</span>" } ],
+    read: "Read the 11 passages a search found, from 2 of 2 documents", usd: "0.02 USD" },
+];
+const CANNED = [
+  { found: false, a: "The documents do not say who carries the landfill fees. Item 01.02.0090 pays the haulage; a fee is named nowhere.", c: [],
+    read: "Read the 9 passages a search found, from 2 of 2 documents", usd: "0.01 USD" },
+  { found: true, a: "Yes. Clearing the site is <mark>part of the site-setup item</mark>{1} and is paid with it, as a lump sum. There is no item of its own.",
+    c: [ { oz: "01.01.0010", at: 1, q: "Baustelle einrichten, vorhalten und <mark>räumen</mark>, <mark>pauschal</mark>" } ],
+    read: "Read the 12 passages a search found, from 2 of 2 documents", usd: "0.02 USD" },
+];
+const EXAMPLES = ["Which work does this LV expect from others (bauseits)?", "Is clearing the site paid as an item of its own?", "Welche Leistungen sind in die Einheitspreise einzurechnen?"];
+const INTRO = "Ask about this project. The answer comes only from the project's documents and names the item and passage it rests on. What the documents do not say is not answered.";
+
+let turns = structuredClone(SEED), sel = 0, k = 0, fresh = -1;
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+const plain = (a) => a.replace(/\{\d\}/g, "");
+const noted = (a, n) => a.replace(/\{(\d)\}/g, (_, d) => `<span class="fn" data-fn="${n}-${d}">${d}</span>`);
+const name = (c) => c.oz || "Remarks";
+const strip = (t, n) => {
+  const on = new Map(t.c.map((c, i) => [c.at, i + 1]));
+  let h = "";
+  for (let i = 0; i < 50; i++) h += on.has(i) ? `<i class="on${[8, 22, 37].includes(i) ? " sec" : ""}" data-fn="${n}-${on.get(i)}">${on.get(i)}</i>` : `<i${[8, 22, 37].includes(i) ? ' class="sec"' : ""}></i>`;
+  return `<div class="strip">${h}</div>`;
+};
+const whole = `<button class="btn ghost" type="button" title="about 0.21 USD now, then 0.03 USD a question for an hour">Read every document</button>`;
+const tape = (label = "Reading the project documents") => `<div class="wait"><div class="tape"></div><span class="lab">${label}</span></div>`;
+const cls = (n) => (n === fresh ? " rise" : "");
+
+const draw = {
+  register(log) {
+    log.innerHTML = turns.length ? turns.map((t, n) => `<article class="e${cls(n)}">
+      <header><span class="plate">${n + 1}</span><h3>${esc(t.q)}</h3><time class="lab">${t.at}</time></header>
+      ${t.a === undefined ? tape() : `
+      ${t.found ? "" : `<span class="flag">Not in the project documents</span>`}
+      <p class="ans">${plain(t.a)}</p>
+      ${t.c.length ? `<div class="rest"><div class="lab">Rests on · ${t.c.length} ${t.c.length === 1 ? "passage" : "passages"}</div><ul class="rows">${t.c.map((c) => `<li><button><span class="oz">${name(c)}</span><span><span class="q" lang="de">„${c.q}“</span><span class="f">this LV</span></span><i class="go"></i></button></li>`).join("")}</ul></div>` : ""}
+      <footer><span>${t.read} · ${t.usd}</span>${n === turns.length - 1 ? whole : ""}</footer>`}
+    </article>`).join("") : `<div class="intro"><p>${INTRO}</p><span class="lab">Asked often</span>${EXAMPLES.map((q) => `<button data-ex>${esc(q)}<i class="go"></i></button>`).join("")}</div>`;
+  },
+  funk(log) {
+    const bars = `<span class="bars"><i></i><i></i><i></i><i></i></span>`;
+    log.innerHTML = turns.length ? turns.map((t, n) => `<div class="q${cls(n)}"><div class="call">You · ${t.at}</div><p>${esc(t.q)}</p></div>
+      ${t.a === undefined ? `<div class="a wait"><div class="call">${bars}Polier</div><p class="ans">Reading the project documents<span class="caret"></span></p></div>` : `<div class="a${cls(n)}">
+      <div class="call">${bars}Polier<time>${t.at}</time></div>
+      ${t.found ? "" : `<span class="flag">Not in the project documents</span>`}
+      <p class="ans">${plain(t.a)}</p>
+      ${t.c.length ? `<ul class="rows">${t.c.map((c) => `<li><button><span class="h"><b>${name(c)}</b><span class="f">this LV</span></span><span class="q2" lang="de">„${c.q}“</span></button></li>`).join("")}</ul>` : ""}
+      <div class="foot"><span>${t.read.replace("Read the ", "").replace(" a search found,", "")} · ${t.usd}</span>${n === turns.length - 1 ? whole : ""}</div></div>`}`).join("")
+      : `<div class="a"><div class="call">${bars}Polier</div><p class="ans">${INTRO}</p><div class="chips">${EXAMPLES.map((q) => `<button data-ex>${esc(q)}</button>`).join("")}</div></div>`;
+  },
+  beleg(log) {
+    log.innerHTML = turns.length ? turns.map((t, n) => `<article class="t${cls(n)}">
+      <span class="lab">Question ${n + 1} · ${t.at}</span><h3>${esc(t.q)}</h3>
+      ${t.a === undefined ? tape() : `
+      ${t.c.length ? `<div class="where"><span class="lab"><span>LV 1 · 50 items</span><span>${t.c.length} ${t.c.length === 1 ? "place" : "places"} in the answer</span></span>${strip(t, n)}</div>` : ""}
+      ${t.found ? "" : `<span class="flag">Not in the project documents</span>`}
+      <p class="ans">${noted(t.a, n)}</p>
+      ${t.c.length ? `<div class="cuts">${t.c.map((c, i) => `<button data-fn="${n}-${i + 1}"><span class="fn">${i + 1}</span><span class="h"><b>${name(c)}</b><span class="f">this LV</span></span><span class="q" lang="de">„${c.q}“</span></button>`).join("")}</div>` : ""}
+      <div class="foot"><span>${t.read} · ${t.usd}</span>${n === turns.length - 1 ? whole : ""}</div>`}
+    </article>`).join("") : `<div class="intro"><span class="lab">Nothing asked yet</span><p>${INTRO}</p><ol>${EXAMPLES.map((q, i) => `<li><button data-ex><span class="plate">${i + 1}</span>${esc(q)}</button></li>`).join("")}</ol></div>`;
+  },
+  dock(root) {
+    const t = turns[sel];
+    $("[data-asked]", root).innerHTML = turns.map((x, n) => `<button data-sel="${n}" aria-current="${n === sel}"><span class="plate">${n + 1}</span><span>${esc(x.q)}</span></button>`).join("");
+    $("[data-mid]", root).innerHTML = !t ? `<span class="lab">Nothing asked yet</span><p class="ans">${INTRO}</p><div class="ex">${EXAMPLES.map((q) => `<button data-ex>${esc(q)}</button>`).join("")}</div>`
+      : `<div class="${cls(sel).trim()}"><span class="lab">Question ${sel + 1} · ${t.at}</span><h3>${esc(t.q)}</h3>${t.a === undefined ? tape() : `
+        ${t.found ? "" : `<span class="flag">Not in the project documents</span>`}<p class="ans">${noted(t.a, sel)}</p>
+        <div class="foot"><span>${t.read} · ${t.usd}</span>${whole}</div>`}</div>`;
+    $("[data-right]", root).innerHTML = !t || t.a === undefined ? `<span class="lab top"><span>Rests on</span></span><div class="strip">${"<i></i>".repeat(50)}</div>`
+      : `<span class="lab top"><span>Rests on · LV 1 · 50 items</span><span>${t.c.length} ${t.c.length === 1 ? "passage" : "passages"}</span></span>${strip(t, sel)}
+        ${t.c.length ? `<ul class="rows">${t.c.map((c, i) => `<li><button data-fn="${sel}-${i + 1}"><span class="fn">${i + 1}</span><span class="oz">${name(c)}</span><span><span class="q" lang="de">„${c.q}“</span><span class="f">${FILE}</span></span></button></li>`).join("")}</ul>` : `<p class="none">No passage carries this answer: the documents do not say it.</p>`}`;
+  },
+};
+function render() {
+  for (const v of ["register", "funk", "beleg"]) { const log = $(`.v-${v} [data-log]`); draw[v](log); log.scrollTop = log.scrollHeight; }
+  draw.dock($(".v-dock"));
+  fresh = -1;
+}
+const time = () => new Date().toTimeString().slice(0, 5);
+function ask(q) {
+  q = q.trim();
+  if (!q || turns.some((t) => t.a === undefined)) return;
+  turns.push({ q, at: time() }); sel = fresh = turns.length - 1;
+  $$(".v").forEach((v) => v.classList.add("busy"));
+  render();
+  const n = sel;
+  setTimeout(() => { Object.assign(turns[n], CANNED[k++ % CANNED.length]); fresh = n; $$(".v").forEach((v) => v.classList.remove("busy")); render(); }, 1900);
+}
+$$("form").forEach((f) => {
+  const ta = $("textarea", f);
+  f.onsubmit = (e) => { e.preventDefault(); ask(ta.value); ta.value = ""; };
+  ta.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); f.requestSubmit(); } };
+});
+document.addEventListener("click", (e) => {
+  const ex = e.target.closest("[data-ex]"), s = e.target.closest("[data-sel]");
+  if (ex) ask(ex.textContent);
+  if (s) { sel = +s.dataset.sel; render(); }
+});
+// a footnote, its mark on the strip and its passage light up together
+document.addEventListener("mouseover", (e) => {
+  const el = e.target.closest("[data-fn]");
+  $$(".lit").forEach((x) => x.classList.remove("lit"));
+  if (el) $$(`[data-fn="${el.dataset.fn}"]`).forEach((x) => { x.classList.add("lit"); if (x.tagName === "BUTTON") $(".fn", x)?.classList.add("lit"); });
+});
+
+const board = $("#board"), order = ["now", "register", "funk", "beleg", "dock"];
+const set = (v) => {
+  board.dataset.v = v; $("#note").textContent = NOTES[v];
+  $$("[data-set]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === v));
+  history.replaceState(null, "", "#" + v); render();
+};
+const state = (s) => {
+  if (s === "empty") { turns = []; sel = 0; } else if (!turns.length) { turns = structuredClone(SEED); sel = 0; }
+  $$("[data-state]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.state === (turns.length ? "talk" : "empty")));
+  render();
+};
+$$("[data-set]").forEach((b) => (b.onclick = () => set(b.dataset.set)));
+$$("[data-state]").forEach((b) => (b.onclick = () => state(b.dataset.state)));
+addEventListener("keydown", (e) => { if (e.target.tagName !== "TEXTAREA" && order[+e.key]) set(order[+e.key]); });
+const fit = () => { const r = $(".fit").getBoundingClientRect(), s = Math.min(r.width / 1440, r.height / 860); board.style.transform = `translateX(${Math.max(0, (r.width - 1440 * s) / 2)}px) scale(${s})`; };
+addEventListener("resize", fit); fit();
+set(order.includes(location.hash.slice(1)) ? location.hash.slice(1) : "register"); state("talk");
+</script>
+</body>
+</html>

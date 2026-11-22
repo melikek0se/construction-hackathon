@@ -604,19 +604,19 @@ Further views (D-056) sit in the same switch, at its end: "Pages" in Tender and 
 "Between LVs" in Check for a tender of several LVs (the trade diagram and its findings), "Inquiries" in
 Prices, "What-if" in Bid. In the Check step the pipeline strip stands under the rail.
 
-### What Polier says (the site radio)
+### What Polier says
 At the left of the mascot's hard hat, when Polier did something by itself (a tender came in the mail, the
-client sent the LV again, an award came, a supplier answered): an ink plate with a 2px yellow line inside
-its edge, square corners, at most 390px wide, with a square-cut tail towards the mascot. Chosen by Atahan
-from three (a yellow sticker, a tape pulled out of the corner, the radio) after a plain white bubble read
-as boring. First line: four signal bars that move while the line is coming, "POLIER CALLING" in 12px
-capitals at 0.14em, "n more" for what waits, a cross. Then what Polier calls out in Barlow Condensed 700,
-24px, yellow ("NEW TENDER!", "THE LV CHANGED!", "YOU WON IT!"), then the sentence in white 14px, letter by
-letter behind a yellow caret, in the first person. "Open <project>" is a yellow button that comes once the
-line is through. A yellow line along the foot runs out in 14s and starts again when the pointer leaves.
-The plate comes in from the corner with a small overshoot (380ms); the mascot hops as it speaks, and for
-a contract won it cheers and square confetti (yellow, ink, white, 6 to 14px) flies out of the corner.
-Ink as a surface is used here as on the gate's plate and the open step: for the one thing that speaks.
+client sent the LV again, an award came, a supplier answered): the same black slab as the one that asks
+"Ask me." (see "Polier's slab and side panel", D-066), 400px wide at most, no frame and no tail. First line:
+four signal bars that move while the line is coming, "POLIER CALLING" in 10.5px capitals at 0.16em, "n more"
+for what waits; the cross is a 34px yellow square in the slab's top right corner. Then what Polier calls out
+in poster letters, Barlow Condensed 700, 52px on a line-height of 0.84, yellow ("NEW TENDER!", "THE LV
+CHANGED!", "YOU WON IT!"), then the sentence in white 14.5px, letter by letter behind a yellow caret, in the
+first person. "Open <project>" is a line at the foot over a hairline, condensed 17px capitals in white, that
+comes once the sentence is through; under the pointer it turns yellow and steps 8px to the right. A yellow
+line along the foot runs out in 14s and starts again when the pointer leaves. The slab comes in from the
+corner with a small overshoot (340ms); the mascot hops as it speaks, and for a contract won it cheers and
+square confetti (yellow, ink, white, 6 to 14px) flies out of the corner.
 
 ### Trade diagram (project view)
 The one three-dimensional drawing (D-018): each trade LV is a lettered slab, standing one storey above the last
@@ -627,27 +627,38 @@ is pointed at or picked, then only its arrows remain, solid and named on a yello
 lettering in Barlow Condensed, the view turns about 57 degrees to either side. A tint readout below explains
 how to read it.
 
-### Polier's ask box and side panel (D-060)
+### Polier's slab and side panel (D-066)
 
-Apart from the pages but calm: the one place with soft corners and a soft shadow, on warm paper `#f5f4ef`
-instead of white; Barlow throughout, Barlow Condensed only for an item number. No stripe, no mono, no texture.
-- **Ask box**: a click on Polier opens a small box beside his head (400px, 18px radius, a soft two-layer drop
-  shadow): the yellow helmet mark, "Polier", the project, and the composer. Nothing else.
-- **Side panel**: the first question grows the box into a full-height panel on the right (440px; its edges
-  travel there in 0.45s, exponential ease-out); the page makes room in one step once it has arrived, and Polier
-  moves into the panel, at 58% of his size, perched on the top edge of the composer at its right. A
-  conversation under way, and the list of projects, open as the panel. Header: helmet mark in a 32px yellow
-  disc, "Polier" 15px 600, below it the project in `#5f635c`, a button with a chevron where another project
-  can be picked; a drawn close icon.
-- **Log**: the question is an ink bubble on the right (16px radius, the corner toward the edge 4px); the
-  answer is plain 15px text on the paper, no bubble. Passages are white cards (12px radius, 1px `#e3e1d9`):
-  item number in condensed 16px, the file in 12px soft grey, the German quote in `ink-2`; a chevron comes
-  forward on hover. Waiting is three ink dots that rise in turn beside "Reading the project documents".
-  Flags are soft pills; the unverified warning is a `hover`-yellow note; errors a pale red note.
-- **Composer**: one white field (14px radius) with the send button inside it, a 34px yellow square with a
-  drawn arrow, grey while empty; focus draws an ink border and a soft yellow ring.
-- **Project list**: rows, not cards; "All projects" first on a white card; hover lifts a row onto white.
-Mockups of the directions considered first: `playground/chat-panel/`.
+The one place that does not follow the register of the pages, by the user's word: a poster. Black and yellow
+slabs, letters at poster size, nothing round, no shadow. The rules above about small type, hairlines and
+"nothing huge" do not hold here; they hold everywhere else. Polier keeps his corner and his full size in
+every state: nothing here moves or shrinks him.
+- **Slab** (nothing asked yet): a click on Polier opens a black slab at his left (400px, bottom-aligned with
+  him; it pops in from the corner, 340ms with an overshoot). No panel and no room taken from the page. Head:
+  "ASKING ABOUT" in 10.5px yellow capitals at 0.16em, the project (or "All projects", with a chevron where
+  another can be picked) in Barlow Condensed 700 17px white; a 34px yellow square with the cross in the top
+  right corner. Then "ASK ME." in Barlow Condensed 700, 64px on 0.8, yellow; what he answers from in white
+  14.5px; three questions to start with, each a line over a hairline `#44483f` in condensed 17px white
+  capitals (yellow and 8px to the right under the pointer); the field, white with a 3px ink border, and
+  "ASK" beside it on ink in condensed 22px.
+- **Side panel** (from the first question): 460px along the right edge, full height, white; it slides in
+  (0.45s) while the page makes room in the same time on the same curve, and slides out the same way on closing. Down its left edge a 16px hazard tape
+  that runs while Polier reads. Head: a black slab with the same label and the project in condensed 25px,
+  the close square 44px. There is no name in the head: Polier stands below.
+- **A question and its answer**: a numeral ("01", condensed 700 76px, yellow with a 2px ink outline) beside
+  the question as a headline (condensed 700 29px capitals on 0.98; 21px when the question is longer than 90
+  characters), "YOU ASKED" above it. The answer in Barlow 16.5px on 1.42. Passages are black bars 4px apart:
+  the item number in yellow condensed 19px, the German quote in white 13.5px, the file in small capitals;
+  under the pointer the bar turns yellow with ink text and steps 6px to the right. A foot line in 10.5px
+  capitals says what was read and what it cost. "Not in the documents" is a stamp: yellow condensed 17px
+  capitals on ink. An answer whose passages could not be confirmed carries a yellow note. Questions are
+  divided by a 6px ink rule. Waiting is "READING..." in condensed 44px, the dots in outlined yellow, blinking.
+- **Foot**: a yellow slab, 132px, with the field at its left; Polier stands on its right (150px are kept
+  free for him).
+- **Project list**: bars on `tint`, the name in 15px 600 over a line of small capitals; "All projects" first
+  on ink with yellow condensed 22px; under the pointer yellow and 6px to the right.
+Mockups: `playground/chat-native/` (`index.html` the three worlds this was chosen from, `concepts.html` where
+Polier stands, earlier rounds beside them); `playground/chat-panel/` the directions considered first.
 
 ## Do's and Don'ts
 

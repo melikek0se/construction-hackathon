@@ -25,12 +25,17 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   room" in the band. Checked against the running API: choose, read back at request time, a wrong model
   refused, back to the default. Not seen in a browser yet; no request was sent on Fable or Haiku.
 
-- Polier's chat (2026-11-22, D-060; `Agent.tsx`, `Chat.tsx`, `chat.css`, `styles.css`): a click on Polier opens
-  a small ask box beside him; the first question grows it into a full-height side panel on the right (440px),
-  the page makes room once it has arrived and Polier moves into it, perched on the composer. Calm look apart
-  from the pages: warm paper, soft corners, ink question bubble, white passage cards, drawn icons. Seen in Chrome on the projects page: box, project
-  list, a question growing the box, an answer with passages, a conversation about all projects. Not checked:
-  the tender page, inside an LV (a passage opening its item), under 900px wide.
+- Polier's chat (2026-11-22, D-066, replaces the look of D-060; `Agent.tsx`, `Chat.tsx`, `chat.css`, the
+  `.agent-*` rules of `styles.css`, `says.css`): a poster of its own, chosen by the user after four rounds of
+  mockups (`playground/chat-native/`). Polier keeps his corner and his size. Nothing asked: a black slab beside
+  him ("Ask me.", three questions, the field). First question: the side panel (460px, tape down its left edge
+  that runs while he reads, head with what is asked about, question as numeral and headline, passages as black
+  bars, yellow foot). What Polier says by himself is the same slab. Seen in headless Chrome on the projects
+  page: the slab, a question answered about all projects with its bars, a kept conversation on the tender page.
+  A notice was seen only as its markup put into the page by hand, not as a real event. Not checked: an answer
+  inside a project with item passages, "not in the documents", the project list, under 900px wide, the motion
+  itself. Open: on the tender page (`/projects/:id`) the panel asks about all projects, not that project
+  (`agentHere` is empty there; so before this change).
 
 - Tender page (2026-11-22, D-050; `src/boq/tender.py`, `GET /api/catalog/{id}/tender`, `web/src/Tender.tsx`,
   `tender.css`, routes in `router.ts`): a project opens on its tender, read from all the documents of the

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Polier in his corner: the panel</title>
+<link rel="icon" href="../chat-panel/favicon.svg" />
+<style>
+@font-face { font-family: Barlow; font-weight: 400; src: url(../tender/fonts/barlow-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 500; src: url(../tender/fonts/barlow-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 600; src: url(../tender/fonts/barlow-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 700; src: url(../tender/fonts/barlow-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url(../tender/fonts/barlow-condensed-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; src: url(../tender/fonts/barlow-condensed-latin-700-normal.woff2) format("woff2"); }
+
+:root {
+  --yellow: #ffc400; --ink: #121413; --ink-2: #3b403a; --red: #c4161c;
+  --rule: #e3e3dd; --line-2: #c4c4bc; --tint: #f6f6f2; --hover: #fff7cf; --mute: #5f635c; --dim: #8b8e87;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif; --text: "Barlow", system-ui, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1); --hop: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --stripe: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px);
+  --tape: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--yellow) 12px 24px);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font: 400 14px/1.45 var(--text); color: var(--ink); background: #2a2c2a; display: flex; flex-direction: column; overflow: hidden; }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+p, h3, ul, ol { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+::selection { background: var(--yellow); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ---------- the switcher (not part of the design) ---------- */
+.switcher { flex: none; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; padding: 7px 14px; background: #1d1f1e; color: #ddd; font-size: 12px; }
+.switcher b { color: #fff; margin: 0 4px 0 0; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+.switcher button, .switcher a { padding: 5px 10px; border: 1px solid #444; background: #2a2d2b; color: #ddd; text-decoration: none; }
+.switcher button[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); font-weight: 700; }
+.switcher .gap { width: 12px; }
+.switcher a { margin-left: auto; }
+.note { flex: none; padding: 6px 14px 7px; background: #262826; color: #c9c9c2; font-size: 12.5px; line-height: 1.35; border-top: 1px solid #333; }
+.note b { color: var(--yellow); font-weight: 600; }
+
+/* ---------- the artboard: the real tender page (a screenshot) at 1440 x 860, scaled to the window ---------- */
+.fit { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.board { position: absolute; left: 0; top: 0; width: 1440px; height: 860px; transform-origin: 0 0; background: #fff; overflow: hidden; }
+.bg { position: absolute; left: 0; top: 0; height: 860px; }
+.bg.side { width: 980px; visibility: hidden; }
+.bg.full { width: 1440px; }
+.board.room .bg.side { visibility: visible; }
+.board.room .bg.full { visibility: hidden; }
+
+/* ---------- pieces, as the app draws them ---------- */
+.lab { font: 600 11px/1.3 var(--text); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+.plate { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; background: var(--yellow); color: var(--ink); font: 600 16px/1 var(--display); }
+.btn { display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; border-radius: 2px; font: 700 12px var(--text); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; transition: background .12s var(--ease), color .12s var(--ease), border-color .12s var(--ease); }
+.btn.primary { background: var(--yellow); color: var(--ink); }
+.btn.primary:hover { background: var(--ink); color: var(--yellow); }
+.btn.ghost { height: 26px; padding: 0 9px; font-size: 10.5px; border: 1px solid var(--line-2); background: #fff; }
+.btn.ghost:hover { background: var(--yellow); border-color: var(--ink); }
+.fn { flex: none; display: inline-grid; place-items: center; width: 15px; height: 15px; margin: 0 1px 0 2px; background: var(--yellow); color: var(--ink); font: 700 11px/1 var(--display); vertical-align: 2px; cursor: pointer; transition: background .12s, color .12s; }
+.fn:hover, .fn.lit { background: var(--ink); color: var(--yellow); }
+.board:not(.notes) .fn { display: none; }
+.tag { display: inline-block; padding: 0 5px; border: 1px solid var(--line-2); font: 600 10.5px/1.6 var(--text); letter-spacing: .08em; text-transform: uppercase; color: #3f433d; }
+.tok { color: var(--mute); border-bottom: 1px dotted var(--dim); }
+mark { background: none; color: inherit; }
+.q mark { background: var(--yellow); color: var(--ink); padding: 0 1px; }
+.bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; }
+.bars i { width: 3px; height: 100%; background: var(--yellow); transform-origin: 50% 100%; transform: scaleY(.25); }
+.bars i:nth-child(2) { transform: scaleY(.5); } .bars i:nth-child(3) { transform: scaleY(.75); } .bars i:nth-child(4) { transform: none; }
+.live .bars i { animation: bar .7s ease-in-out infinite alternate; }
+.live .bars i:nth-child(2) { animation-delay: -.2s; } .live .bars i:nth-child(3) { animation-delay: -.43s; } .live .bars i:nth-child(4) { animation-delay: -.09s; }
+@keyframes bar { from { transform: scaleY(.2); } to { transform: scaleY(1); } }
+@keyframes run { to { background-position: 34px 0; } }
+.tape { height: 6px; background: var(--tape); background-size: 34px 100%; animation: run .7s linear infinite; }
+.rise { animation: rise .32s var(--ease) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.caret { display: inline-block; width: 7px; height: 14px; margin-left: 2px; vertical-align: -2px; background: var(--yellow); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+/* the LV as a strip of its items; the items an answer rests on stand up */
+.strip { display: flex; align-items: flex-end; gap: 2px; height: 20px; }
+.strip i { flex: 1 1 0; height: 12px; background: var(--rule); }
+.strip i.sec { margin-left: 5px; }
+.strip i.on { flex: 0 0 8px; height: 20px; background: var(--yellow); box-shadow: inset 0 0 0 1px var(--ink); font-size: 0; cursor: pointer; }
+.notes .strip i.on { flex: 0 0 16px; display: grid; place-items: center; font: 700 11px/1 var(--display); font-style: normal; }
+.strip i.on:hover, .strip i.on.lit { background: var(--ink); color: var(--yellow); }
+
+/* ---------- Polier: he keeps his corner and his size; the inner picture carries the pose ---------- */
+#pol { position: absolute; z-index: 30; left: 1290px; top: 712px; width: 134px; height: 128px; cursor: pointer; transition: left .5s var(--hop), top .5s var(--hop); }
+#pol img { display: block; width: 100%; transform-origin: 50% 96%; filter: drop-shadow(0 3px 1px rgba(0, 0, 0, .14)); animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-3px) rotate(1.2deg); } }
+[data-s="typing"] #pol img { animation: none; transform: rotate(-11deg) translateX(-7px); transition: transform .3s var(--hop); }
+[data-s="reading"] #pol img { animation: think .7s ease-in-out infinite; }
+@keyframes think { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-4px); } }
+[data-s="answer"] #pol img { animation: hop .55s var(--ease) 1, bob 3.2s ease-in-out .55s infinite; }
+@keyframes hop { 0% { transform: scale(1.08, .88); } 40% { transform: translateY(-22px) scale(.95, 1.06); } 75% { transform: scale(1.05, .93); } 100% { transform: none; } }
+[data-s="none"] #pol img { animation: none; transform: rotate(15deg) translateY(2px); transition: transform .35s var(--hop); }
+.talk #pol { left: 1298px; top: 727px; }
+
+/* ---------- Polier's call: the ink plate of his radio calls (says.css) ---------- */
+.call { position: relative; padding: 11px 14px 13px; background: var(--ink); color: #fff; border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--yellow); }
+.call .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font: 700 11.5px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--yellow); }
+.call .top time { margin-left: auto; color: #a9aca4; letter-spacing: .08em; }
+.call p { line-height: 1.5; }
+.call .tag { margin-bottom: 6px; border-color: #6b6e67; color: #d6d6cf; }
+.call .ex { margin-top: 10px; border-top: 1px solid #3a3d39; }
+.call .ex button { display: flex; gap: 10px; align-items: baseline; width: 100%; padding: 7px 4px; border-bottom: 1px solid #3a3d39; color: #fff; font-weight: 500; transition: background .12s, color .12s; }
+.call .ex button::before { content: "›"; color: var(--yellow); font: 700 15px/1 var(--display); }
+.call .ex button:hover { background: var(--yellow); color: var(--ink); }
+.call .ex button:hover::before { color: var(--ink); }
+.call.tail-r::after { content: ""; position: absolute; right: -16px; bottom: 14px; border: solid transparent; border-width: 10px 0 10px 15px; border-left-color: var(--ink); }
+.call .tok { color: #a9aca4; border-color: #6b6e67; }
+
+/* ---------- the ask plate: where you type; white, ink keyline, a tail towards Polier ---------- */
+.askp { position: relative; display: flex; align-items: flex-end; background: #fff; border: 2px solid var(--ink); }
+.askp::after { content: ""; position: absolute; right: -15px; bottom: 12px; border: solid transparent; border-width: 9px 0 9px 13px; border-left-color: var(--ink); }
+.askp:focus-within { box-shadow: 0 0 0 3px var(--yellow); }
+.askp textarea { flex: 1; min-width: 0; min-height: 44px; max-height: 110px; field-sizing: content; padding: 11px 12px; border: 0; outline: 0; resize: none; background: none; line-height: 20px; }
+.askp button { flex: none; margin: 5px; }
+
+/* ---------- no message yet: no panel. His greeting and your plate, beside him ---------- */
+.stack { position: absolute; z-index: 20; right: 166px; bottom: 26px; width: 404px; display: none; flex-direction: column; gap: 8px; transform-origin: 100% 100%; animation: pop .34s var(--hop) both; }
+@keyframes pop { from { opacity: 0; transform: translateX(26px) scale(.7); } }
+:is([data-s="invite"], [data-s="typing"]) .stack { display: flex; }
+
+/* =============== the panel =============== */
+.panel { position: absolute; z-index: 10; inset: 0 0 0 auto; width: 460px; display: none; flex-direction: column; background: #fff; border-left: 2px solid var(--ink); }
+.talk .panel { display: flex; animation: slide .45s var(--ease) both; }
+@keyframes slide { from { transform: translateX(100%); } }
+/* the band itself runs on across the panel: yellow, the same stripes, the title in the band's own letters */
+.head { flex: none; height: 70px; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 20px; background: var(--yellow); border-block: 9px solid; border-image: var(--stripe) 9; }
+.head strong { flex: 1; font: 700 24px/1 var(--display); letter-spacing: .025em; text-transform: uppercase; }
+.head .x { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-radius: 2px; font: 700 12px var(--text); letter-spacing: .08em; text-transform: uppercase; transition: background .12s, color .12s; }
+.head .x:hover { background: var(--ink); color: var(--yellow); }
+/* what he answers from: a rail under the band, as the steps of a tender stand under it */
+.about { flex: none; display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border-bottom: 2px solid var(--ink); }
+.about .sel { min-width: 0; display: inline-flex; align-items: center; gap: 8px; height: 26px; padding: 0 8px; border: 1px solid var(--line-2); border-radius: 2px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.about .sel:hover { border-color: var(--ink); }
+.about .lab { white-space: nowrap; }
+.about .lab:last-child { margin-left: auto; }
+.log { flex: 1; min-height: 0; overflow: hidden auto; scrollbar-width: thin; scrollbar-color: var(--ink) transparent; }
+.ans { font-size: 14.5px; line-height: 1.5; }
+.board.notes .ans mark { font-weight: 600; }
+
+/* the stand: Polier where he always is, your plate beside him, what he is doing above it.
+   The floor is a plain ink line; it turns into a running tape while he reads (tape = something is being read). */
+.stand { flex: none; position: relative; height: 146px; padding: 12px 150px 0 20px; border-top: 2px solid var(--ink); display: flex; flex-direction: column; justify-content: flex-end; }
+.stand::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--ink); }
+[data-s="reading"] .stand::after { height: 8px; background: var(--tape); background-size: 34px 100%; animation: run .7s linear infinite; }
+.stand .doing { display: flex; align-items: center; gap: 8px; min-height: 30px; margin-bottom: 8px; padding: 6px 10px; background: var(--tint); font-size: 12px; line-height: 1.3; color: var(--mute); }
+.stand .doing .bars i { background: var(--ink); }
+.stand .doing b { font: 600 11px var(--text); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+.stand .askp { margin-bottom: 20px; }
+
+/* rows of passages, as a table of the app: capitals over an ink rule, the item number bold, hairlines */
+.rows .rh { display: grid; grid-template-columns: var(--cols); gap: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--ink); }
+.rows button { display: grid; grid-template-columns: var(--cols); gap: 10px; align-items: start; width: 100%; padding: 8px 0; border-bottom: 1px solid var(--rule); transition: background .12s; }
+.rows button:hover, .rows button.lit { background: var(--hover); }
+.rows { --cols: 84px minmax(0, 1fr); }
+.notes .rows { --cols: 15px 76px minmax(0, 1fr); }
+.rows .fn { margin: 2px 0 0; vertical-align: 0; }
+.board:not(.notes) .rows .no { display: none; }
+.rows b { font: 600 13.5px/1.45 var(--text); font-variant-numeric: tabular-nums; }
+.rows .q { font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.where { display: flex; align-items: flex-end; gap: 12px; }
+.where .strip { flex: 1; }
+.where .lab { white-space: nowrap; line-height: 1; }
+.foot { display: flex; align-items: center; gap: 10px; font-size: 11.5px; line-height: 1.35; color: var(--dim); }
+.foot .btn { margin-left: auto; color: var(--ink); }
+
+/* ---------- A · KAYIT: a register. The question is a row on tint with its number, the answer plain on white ---------- */
+[data-p="a"] .xq { position: sticky; top: 0; z-index: 1; display: flex; gap: 10px; align-items: flex-start; padding: 9px 20px; background: var(--tint); border-bottom: 1px solid var(--rule); }
+[data-p="a"] .x + .x .xq { border-top: 1px solid var(--rule); }
+[data-p="a"] .xq h3 { flex: 1; padding-top: 2px; font: 600 15px/1.3 var(--text); }
+[data-p="a"] .xq time { padding-top: 5px; }
+[data-p="a"] .xb { padding: 14px 20px 18px; }
+[data-p="a"] .xb .tag { margin-bottom: 6px; }
+[data-p="a"] .where { margin-top: 16px; }
+[data-p="a"] .rows { margin-top: 10px; }
+[data-p="a"] .foot { margin-top: 10px; }
+[data-p="a"] .xb .tape { margin: 2px 0 8px; }
+
+/* ---------- B · TELSIZ: plates. Yours white with a keyline, his in ink as in the greeting; the last one points at him ---------- */
+[data-p="b"] .log { padding: 16px 20px 22px; }
+[data-p="b"] .xq { display: grid; justify-items: end; gap: 4px; margin: 0 0 10px 56px; }
+[data-p="b"] .x + .x .xq { margin-top: 18px; }
+[data-p="b"] .xq .plate { display: none; }
+[data-p="b"] .xq h3 { order: 2; padding: 8px 12px; background: #fff; border: 2px solid var(--ink); font: 500 14px/1.4 var(--text); }
+[data-p="b"] .xq time::before { content: "You · "; }
+[data-p="b"] .xb { position: relative; padding: 11px 14px 13px; background: var(--ink); color: #fff; border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--yellow); }
+[data-p="b"] .x:last-child .xb::after { content: ""; position: absolute; right: 44px; bottom: -16px; border: solid transparent; border-width: 14px 0 0 16px; border-top-color: var(--ink); }
+[data-p="b"] .xb::before { content: "POLIER"; display: block; margin-bottom: 6px; font: 700 11.5px var(--text); letter-spacing: .14em; color: var(--yellow); }
+[data-p="b"] .xb .tag { margin-bottom: 6px; border-color: #6b6e67; color: #d6d6cf; }
+[data-p="b"] .where { margin-top: 14px; }
+[data-p="b"] .where .lab, [data-p="b"] .rows .rh .lab { color: #a9aca4; }
+[data-p="b"] .strip i:not(.on) { background: #3a3d39; }
+[data-p="b"] .strip i.on { box-shadow: none; }
+[data-p="b"] .strip i.on:hover, [data-p="b"] .strip i.on.lit { background: #fff; color: var(--ink); }
+[data-p="b"] .rows { margin-top: 10px; }
+[data-p="b"] .rows .rh { border-color: #6b6e67; }
+[data-p="b"] .rows button { border-color: #3a3d39; color: #fff; }
+[data-p="b"] .rows button:hover, [data-p="b"] .rows button.lit { background: #2c2f2b; }
+[data-p="b"] .rows b { color: var(--yellow); }
+[data-p="b"] .rows .q { color: #e3e3dc; }
+[data-p="b"] .tok { color: #a9aca4; border-color: #6b6e67; }
+[data-p="b"] .foot { margin-top: 10px; color: #a9aca4; }
+[data-p="b"] .foot .btn { background: none; color: #fff; border-color: #6b6e67; }
+[data-p="b"] .foot .btn:hover { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+[data-p="b"] .fn:hover, [data-p="b"] .fn.lit { background: #fff; color: var(--ink); }
+[data-p="b"] .xb .tape { display: none; }
+[data-p="b"] .xb .wait { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- C · KART: each question a card of the board: outline, head on tint, a foot with what it cost ---------- */
+[data-p="c"] .log { padding: 14px 16px 16px; background: #fff; }
+[data-p="c"] .x { border: 1px solid var(--line-2); }
+[data-p="c"] .x + .x { margin-top: 12px; }
+[data-p="c"] .x:last-child { border-color: var(--ink); }
+[data-p="c"] .xq { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--tint); }
+[data-p="c"] .x:last-child .xq { background: var(--hover); }
+[data-p="c"] .xq h3 { flex: 1; padding-top: 2px; font: 600 15px/1.3 var(--text); }
+[data-p="c"] .xq time { padding-top: 5px; }
+[data-p="c"] .xb { padding: 12px 12px 0; }
+[data-p="c"] .xb .tag { margin-bottom: 6px; }
+[data-p="c"] .where { margin-top: 14px; }
+[data-p="c"] .rows { margin-top: 10px; }
+[data-p="c"] .rows li:last-child button { border-bottom: 0; }
+[data-p="c"] .foot { margin: 0 -12px; padding: 8px 12px; border-top: 1px solid var(--rule); }
+[data-p="c"] .xb > .ans:last-of-type + .foot, [data-p="c"] .xb > .foot:nth-child(2), [data-p="c"] .xb > .foot:nth-child(3) { margin-top: 12px; }
+[data-p="c"] .xb .wait { padding-bottom: 12px; }
+[data-p="c"] .xb .tape { margin: 0 -12px 10px; }
+.wait .lab { color: var(--ink); }
+[data-p="b"] .wait .lab { color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="switcher" role="toolbar" aria-label="Design">
+  <b>Panel</b>
+  <button data-set="a">A · Kayıt</button>
+  <button data-set="b">B · Telsiz</button>
+  <button data-set="c">C · Kart</button>
+  <span class="gap"></span>
+  <button data-notes>Dipnotlar</button>
+  <span class="gap"></span>
+  <b>Durum</b>
+  <button data-state="closed">Kapalı</button>
+  <button data-state="invite">Davet</button>
+  <button data-state="typing">Yazarken</button>
+  <button data-state="reading">Okuyor</button>
+  <button data-state="answer">Cevap</button>
+  <button data-state="none">Bulamadı</button>
+  <a href="index.html">← yeni: panel dünyaları</a>
+</div>
+<div class="note" id="note"></div>
+
+<div class="fit"><div class="board" id="board">
+  <img class="bg full" src="bg-full.png" alt="" />
+  <img class="bg side" src="bg-side.png" alt="" />
+
+  <section class="panel" aria-label="Ask Polier">
+    <header class="head"><strong>Ask Polier</strong>
+      <button class="x" data-close>Close <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" /></svg></button></header>
+    <div class="about"><span class="lab">About</span><button class="sel" lang="de">Wohnquartier Störwiesen <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3l4 4 4-4" /></svg></button><span class="lab">2 documents · 87 items</span></div>
+    <div class="log" data-log></div>
+    <div class="stand">
+      <div class="doing" data-doing></div>
+      <form class="askp"><textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea><button class="btn primary" type="submit">Ask</button></form>
+    </div>
+  </section>
+
+  <div class="stack">
+    <div data-stack></div>
+    <form class="askp"><textarea rows="1" placeholder="Ask about the project…" aria-label="Question"></textarea><button class="btn primary" type="submit">Ask</button></form>
+  </div>
+
+  <div id="pol" role="button" aria-label="Polier"><img src="polier.png" alt="" /></div>
+</div></div>
+
+<script>
+const NOTES = {
+  a: "<b>A · Kayıt.</b> Panel, Check sayfasındaki Findings sütunu gibi bir kayıt: soru numarasıyla gri satırda (kaydırınca üstte kalır), cevap düz beyazda, dayanaklar uygulamanın tablo diliyle. En sakin olan; siyah yalnızca çizgilerde. ",
+  b: "<b>B · Telsiz.</b> Davetteki iki plaka devam eder: senin sorun beyaz plaka, Polier'in cevabı mürekkep plaka, sonuncusunun kuyruğu ona iner. En çok 'Polier konuşuyor' hissi veren; uzun konuşmada siyah ağırlaşır. ",
+  c: "<b>C · Kart.</b> Her soru, proje panosundaki kartların dilinde bir kart: başlık gri, sonuncusu sarı ve mürekkep çerçeveli, altta ne okuduğu. Sorular birbirinden en net ayrılan. ",
+  closed: "Kapalı: Polier köşesinde.",
+  invite: "Mesaj yokken panel yok: selam plakası, örnek sorular ve senin plakan.",
+  typing: "Yazarken plakana eğilir.",
+  reading: "Okurken: sallanır, sahnenin zemini akan şeride döner, ne yaptığı plakanın üstünde yazar.",
+  answer: "Cevap: zıplar. Bir satırın üstüne gel: LV şeridindeki yeri yanar. 'Dipnotlar' cevaptaki cümleyi alıntıya bağlar (chat.py değişikliği ister).",
+  none: "Belgede yoksa: başını eğer, cevap etiketle gelir, dayanak tablosu yoktur.",
+};
+const SEED = [
+  { q: "Which work does this LV expect from others (bauseits)?", at: "13:58", found: true,
+    a: "Two things come from the client: <mark>site power</mark>{1} and the <mark>setting-out of the main axes</mark> by the client's surveyor{2}. Everything else, traffic safety included, is the contractor's.",
+    c: [ { oz: "01.01.0010", at: 1, q: "Baustelle einrichten, vorhalten und räumen. <mark>Baustrom wird bauseits gestellt</mark>." },
+         { oz: "01.01.0030", at: 3, q: "<mark>Absteckung der Hauptachsen erfolgt bauseits</mark> durch den Vermesser des AG, <span class='tok'>[FIRMA_044]</span>" } ],
+    read: "11 passages from 2 of 2 documents", usd: "0.02 USD" },
+  { q: "Is dewatering paid as an item of its own?", at: "14:02", found: true,
+    a: "No. LV 1 has <mark>no item for dewatering</mark>. The trenches go down to 3.50 m{1}, the soil report expects groundwater from 1.80 m{2}, and the remarks put keeping them dry into the unit prices{3}. Worth a bidder question before 01.12.",
+    c: [ { oz: "01.03.0040", at: 26, q: "Rohrgraben ausheben, <mark>Tiefe bis 3,50 m</mark>, einschl. Verbau, Boden seitlich lagern" },
+         { oz: "01.03.0120", at: 41, q: "Rohrleitung PP DN 300 verlegen, <mark>Grundwasserstand</mark> lt. Baugrundgutachten <mark>ca. 1,80 m unter GOK</mark>" },
+         { oz: "", at: 0, q: "Die <mark>Wasserhaltung</mark> ist <mark>in die Einheitspreise</mark> der Rohrgrabenpositionen <mark>einzurechnen</mark>." } ],
+    read: "14 passages from 2 of 2 documents", usd: "0.02 USD" },
+];
+const CANNED = [
+  { found: false, a: "The documents do not say who carries the landfill fees. Item 01.02.0090 pays the haulage; a fee is named nowhere.", c: [], read: "9 passages from 2 of 2 documents", usd: "0.01 USD" },
+  { found: true, a: "Yes. Clearing the site is <mark>part of the site-setup item</mark>{1} and is paid with it, as a lump sum.",
+    c: [ { oz: "01.01.0010", at: 1, q: "Baustelle einrichten, vorhalten und <mark>räumen</mark>, <mark>pauschal</mark>" } ], read: "12 passages from 2 of 2 documents", usd: "0.02 USD" },
+];
+const Q3 = "Who pays the landfill fees?";
+const EXAMPLES = ["Which work does this LV expect from others (bauseits)?", "Is clearing the site paid as an item of its own?", "Welche Leistungen sind in die Einheitspreise einzurechnen?"];
+const HELLO = "Ask me about this project. I answer only from its 2 documents and show you the item and the passage. What they do not say, I do not answer.";
+
+let p = "a", s = "invite", notes = false, turns = [], k = 0, timer = 0, fresh = false;
+const $ = (q, r = document) => r.querySelector(q), $$ = (q, r = document) => [...r.querySelectorAll(q)];
+const board = $("#board");
+const esc = (t) => t.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+const noted = (a, n) => a.replace(/\{(\d)\}/g, (_, d) => `<span class="fn" data-fn="${n}-${d}">${d}</span>`);
+const name = (c) => c.oz || "Remarks";
+const bars = `<span class="bars"><i></i><i></i><i></i><i></i></span>`;
+const SEC = [8, 22, 37];
+const strip = (t, n) => {
+  const on = new Map(t.c.map((c, i) => [c.at, i + 1]));
+  let h = "";
+  for (let i = 0; i < 50; i++) h += on.has(i) ? `<i class="on${SEC.includes(i) ? " sec" : ""}" data-fn="${n}-${on.get(i)}">${on.get(i)}</i>` : `<i${SEC.includes(i) ? ' class="sec"' : ""}></i>`;
+  return `<div class="strip">${h}</div>`;
+};
+const last = () => turns[turns.length - 1];
+const whole = `<button class="btn ghost" type="button" title="about 0.21 USD now, then 0.03 USD a question for an hour">Read every document</button>`;
+
+function article(t, n) {
+  const end = n === turns.length - 1;
+  return `<article class="x${fresh && end ? " rise" : ""}">
+    <header class="xq"><span class="plate">${n + 1}</span><h3>${esc(t.q)}</h3><time class="lab">${t.at}</time></header>
+    <div class="xb">${t.a === undefined
+      ? `<div class="wait live"><div class="tape"></div>${p === "b" ? bars : ""}<span class="lab">Reading the project documents</span>${p === "b" ? `<span class="caret"></span>` : ""}</div>`
+      : `${t.found ? "" : `<span class="tag">Not in the project documents</span>`}
+      <p class="ans">${noted(t.a, n)}</p>
+      ${t.c.length ? `<div class="where">${strip(t, n)}<span class="lab">${t.c.length} of 50 items · LV 1</span></div>
+      <ul class="rows"><li class="rh"><span class="lab no"></span><span class="lab">Item</span><span class="lab">Passage it rests on</span></li>${t.c.map((c, i) => `<li><button data-fn="${n}-${i + 1}"><span class="fn no">${i + 1}</span><b>${name(c)}</b><span class="q" lang="de">„${c.q}“</span></button></li>`).join("")}</ul>` : ""}
+      <div class="foot"><span>Read ${t.read} · ${t.usd}</span>${end ? whole : ""}</div>`}</div></article>`;
+}
+
+function render() {
+  const talk = ["reading", "answer", "none"].includes(s);
+  board.dataset.p = p; board.dataset.s = s;
+  board.classList.toggle("room", talk); board.classList.toggle("talk", talk); board.classList.toggle("notes", notes);
+  const log = $("[data-log]"); log.innerHTML = turns.map(article).join(""); log.scrollTop = log.scrollHeight;
+  $("[data-doing]").innerHTML = s === "reading" ? `<span class="bars live" style="display:inline-flex">${bars}</span><b>Reading</b><span>2 documents, 87 items</span>`
+    : `<b>Polier</b><span>answers from the 2 documents only</span>`;
+  $("[data-doing]").classList.toggle("live", s === "reading");
+  $("[data-stack]").innerHTML = `<div class="call tail-r"><div class="top">${bars}Polier</div><p>${HELLO}</p><div class="ex">${EXAMPLES.map((q) => `<button data-ex>${esc(q)}</button>`).join("")}</div></div>`;
+  $$("[data-set]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === p));
+  $$("[data-state]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.state === s));
+  $("[data-notes]").setAttribute("aria-pressed", notes);
+  $("#note").innerHTML = NOTES[p] + NOTES[s];
+  history.replaceState(null, "", `#${p}/${s}${notes ? "/notes" : ""}`);
+  fresh = false; fit();
+}
+function state(to) {
+  clearTimeout(timer); s = to; k = 0;
+  const [one, two] = structuredClone(SEED);
+  turns = to === "reading" ? [one, { q: two.q, at: two.at }] : to === "answer" ? [one, two] : to === "none" ? [one, two, { q: Q3, at: "14:06", ...CANNED[0] }] : [];
+  if (to === "none") k = 1;
+  $$("textarea").forEach((ta) => (ta.value = to === "typing" ? SEED[1].q.slice(0, 24) : ""));
+  render();
+}
+const time = () => new Date().toTimeString().slice(0, 5);
+function ask(q) {
+  q = q.trim();
+  if (!q || s === "reading") return;
+  $$("textarea").forEach((ta) => (ta.value = ""));
+  const first = turns.length === 0;
+  turns.push({ q, at: time() }); s = "reading"; fresh = true; render();
+  timer = setTimeout(() => {
+    const a = first ? SEED[1] : CANNED[k++ % CANNED.length];
+    Object.assign(last(), structuredClone({ ...a, q: last().q, at: last().at }));
+    s = a.found ? "answer" : "none"; fresh = true; render();
+  }, 2400);
+}
+$$("form").forEach((f) => {
+  const ta = $("textarea", f);
+  f.onsubmit = (e) => { e.preventDefault(); ask(ta.value); };
+  ta.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); f.requestSubmit(); } };
+  ta.oninput = () => { if (s === "invite" || s === "typing") { s = ta.value ? "typing" : "invite"; board.dataset.s = s; $$("[data-state]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.state === s)); } };
+});
+$("#pol").onclick = () => state(s === "closed" ? "invite" : "closed");
+document.addEventListener("click", (e) => {
+  const ex = e.target.closest("[data-ex]");
+  if (ex) ask(ex.textContent);
+  if (e.target.closest("[data-close]")) state("closed");
+});
+document.addEventListener("mouseover", (e) => {
+  const el = e.target.closest("[data-fn]");
+  $$(".lit").forEach((x) => x.classList.remove("lit"));
+  if (!el) return;
+  $$(`[data-fn="${el.dataset.fn}"]`).forEach((x) => { x.classList.add("lit"); if (x.tagName === "BUTTON") $(".fn", x)?.classList.add("lit"); });
+});
+$$("[data-set]").forEach((b) => (b.onclick = () => { p = b.dataset.set; render(); }));
+$$("[data-state]").forEach((b) => (b.onclick = () => state(b.dataset.state)));
+$("[data-notes]").onclick = () => { notes = !notes; render(); };
+const ORDER = ["closed", "invite", "typing", "reading", "answer", "none"], PS = ["a", "b", "c"];
+addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA") return;
+  if (PS.includes(e.key.toLowerCase())) { p = e.key.toLowerCase(); render(); }
+  if (e.key.toLowerCase() === "d") { notes = !notes; render(); }
+  if (e.key === "ArrowRight") state(ORDER[Math.min(ORDER.indexOf(s) + 1, 5)]);
+  if (e.key === "ArrowLeft") state(ORDER[Math.max(ORDER.indexOf(s) - 1, 0)]);
+});
+function fit() { const r = $(".fit").getBoundingClientRect(), z = Math.min(r.width / 1440, r.height / 860); board.style.transform = `translateX(${Math.max(0, (r.width - 1440 * z) / 2)}px) scale(${z})`; }
+addEventListener("resize", fit);
+const [hp, hs, hn] = location.hash.slice(1).split("/");
+if (PS.includes(hp)) p = hp;
+notes = hn === "notes";
+state(ORDER.includes(hs) ? hs : "answer");
+</script>
+</body>
+</html>

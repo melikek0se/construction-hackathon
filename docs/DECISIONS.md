@@ -1167,3 +1167,17 @@ Check by itself"). Changes D-042 in one point: files dropped by the estimator no
   any more. Files added to a project still in the intake start nothing; added to one taken on they start
   the checks again, as before.
 - Not touched: the seeded dataset projects, and a mail whose LV joins a project that is known already.
+
+## D-066 — Polier's chat is a poster of its own; Polier keeps his corner; his notices look the same
+
+2026-11-22. Replaces the look of D-060 (warm paper, soft corners), which the user rejected, and three rounds
+of proposals in the pages' own register, which he rejected too: "in this chat panel we do not have to follow
+the design patterns the app follows". Chosen by the user from three worlds in `playground/chat-native/`
+(crane, receipt printer, poster): the poster. Black and yellow slabs, numerals and headlines at poster size,
+passages as black bars; no picture of anything. Decided with it:
+- Polier keeps his corner and his full size in every state ("Yerinde", chosen from three places: corner, band,
+  out on the page at the cited item). The panel's yellow foot keeps 150px free for him.
+- With nothing asked there is no panel: a black slab beside him ("Ask me.", questions to start with, the field).
+- No name in the panel's head (the user: no need for a giant "Polier" there); the head says what is asked about.
+- What Polier says by himself after doing something (`Says.tsx`) is the same black slab (the user's word).
+The pages keep their register (D-020); this is the one exception. Described in DESIGN.md.

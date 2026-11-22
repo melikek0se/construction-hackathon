@@ -3630,40 +3630,31 @@ button.flow-plate:hover {
   color: #fff;
 }
 
-/* A click on Polier opens the conversation (Agent.tsx): first a small box beside his head, only to type a
-   question; the first question grows it into a side panel along the right edge, full height. Then the page
-   makes room for it, and Polier moves into it, onto the composer. Apart from the pages but calm: warm paper, soft
-   corners, a soft shadow, Barlow only (D-060). */
+/* A click on Polier opens the conversation (Agent.tsx). Polier keeps his corner and his size throughout.
+   With nothing asked yet there is no panel: a black slab beside him, "Ask me." in poster letters, questions
+   to start with, and the field to type into. The first question opens the side panel along the right edge
+   (the page makes room): a poster of its own, not the register of the pages (D-066): black and yellow
+   slabs, numerals and headlines at poster size, a tape down its left edge that runs while he reads. */
 :root {
-  --agent-w: min(440px, 100vw);
-  --agent-move: 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  --agent-w: min(460px, 100vw);
 }
 .agent-dock {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   pointer-events: none; /* the dock's box covers page behind the head's row; only its parts take the pointer */
-  transform-origin: 100% 100%;
-  transition:
-    translate var(--agent-move),
-    scale var(--agent-move);
 }
-/* The page makes room in one step, once the panel has arrived over it (not frame by frame: a page of a
-   thousand marks would be laid out again on every frame); on closing it takes the room back at once. */
-.app:has(> .agent-chat.full) {
+/* The page makes room while the panel slides in, and takes it back while the panel slides out: the same
+   time and the same curve for both, so the edge of the page and the edge of the panel travel together. */
+.app {
+  transition: padding-right 0.45s var(--ease);
+}
+.app:has(> .agent-chat.full:not(.closing)) {
   padding-right: var(--agent-w);
-  animation: agent-room 0.45s step-end;
 }
-@keyframes agent-room {
-  from {
-    padding-right: 0;
-  }
-}
-/* with the panel open Polier moves into it: smaller, perched on the top edge of the composer, at its right */
-.app:has(> .agent-chat.full) .agent-dock {
+/* he stands in front of the panel, on its yellow foot */
+.app:has(> .agent-chat) .agent-dock {
   z-index: 61;
-  translate: -10px -44px;
-  scale: 0.58;
 }
 .agent-button {
   pointer-events: auto;
@@ -3677,54 +3668,32 @@ button.flow-plate:hover {
   outline-offset: 2px;
 }
 .agent-chat {
-  --a-paper: #f5f4ef;
-  --a-card: #fff;
-  --a-sunk: #ebe9e2;
-  --a-line: #e3e1d9;
-  --a-line-2: #cdcbc2;
-  --a-soft: #5f635c;
   position: fixed;
   z-index: 60;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  background: var(--a-paper);
   color: var(--ink);
-  border: 1px solid var(--a-line);
   view-transition-name: agent-side; /* stays put when the page slides (swapPage) */
-  /* every edge is a length, so the box can travel from beside Polier to the full height of the window */
-  transition:
-    top var(--agent-move),
-    right var(--agent-move),
-    bottom var(--agent-move),
-    width var(--agent-move),
-    border-radius var(--agent-move),
-    box-shadow var(--agent-move);
 }
 .agent-chat ::selection {
-  background: var(--yellow);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--yellow);
 }
-/* small: a box to the left of Polier's head */
+/* nothing asked yet: the slab at the left of Polier */
 .agent-chat.compact {
-  --agent-h: 118px;
-  top: calc(100% - 28px - var(--agent-h));
-  right: 158px;
-  bottom: 28px;
-  width: min(400px, calc(100vw - 176px));
-  border-radius: 18px;
-  box-shadow:
-    0 2px 6px rgba(18, 20, 19, 0.06),
-    0 18px 44px -14px rgba(18, 20, 19, 0.32);
-  animation: agent-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.agent-chat.compact:has(.chat-error) {
-  --agent-h: 178px;
+  right: 168px;
+  bottom: 26px;
+  width: min(400px, calc(100vw - 186px));
+  max-height: calc(100% - 52px);
+  background: var(--ink);
+  color: #fff;
+  transform-origin: 100% 100%;
+  animation: agent-pop 0.34s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 @keyframes agent-pop {
   from {
     opacity: 0;
-    transform: translateX(14px) scale(0.97);
+    transform: translateX(26px) scale(0.7);
   }
 }
 .agent-chat.full {
@@ -3732,73 +3701,98 @@ button.flow-plate:hover {
   right: 0;
   bottom: 0;
   width: var(--agent-w);
-  border-width: 0 0 0 1px;
-  border-radius: 0;
-  box-shadow: -10px 0 30px -18px rgba(18, 20, 19, 0.28);
+  padding-left: 16px;
+  background: #fff;
+  animation: agent-slide 0.45s var(--ease) both;
 }
-.agent-chat.full .chat-turns {
-  padding-bottom: 76px; /* the last lines stay clear of Polier on the composer */
+@keyframes agent-slide {
+  from {
+    transform: translateX(100%);
+  }
 }
-.agent-chat.compact .chat-empty {
-  display: none;
+.agent-chat.full.closing {
+  animation: agent-slide-out 0.45s var(--ease) both;
 }
-.agent-chat.compact .chat-turns {
-  flex: none;
-  padding: 0 14px;
+@keyframes agent-slide-out {
+  to {
+    transform: translateX(100%);
+  }
 }
-.agent-chat.compact .chat-form {
-  margin: 4px 10px 10px;
+.agent-chat.compact.closing {
+  animation: agent-pop-out 0.18s ease-in both;
 }
+@keyframes agent-pop-out {
+  to {
+    opacity: 0;
+    transform: translateX(26px) scale(0.7);
+  }
+}
+.agent-chat.closing {
+  pointer-events: none;
+}
+.agent-chat.full::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  background: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--yellow) 12px 24px);
+  background-size: 34px 34px;
+}
+.agent-chat.full:has(.chat-wait)::before {
+  animation: agent-tape 0.7s linear infinite;
+}
+@keyframes agent-tape {
+  to {
+    background-position: 0 34px;
+  }
+}
+/* the head: what is asked about, on black; no name in it, Polier stands below */
 .agent-head {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 12px 12px 16px;
+  position: relative;
+  background: var(--ink);
+  color: #fff;
 }
 .agent-chat.full .agent-head {
-  padding: 16px 14px 14px 20px;
-  border-bottom: 1px solid var(--a-line);
+  padding: 12px 58px 13px 18px;
 }
 .agent-chat.compact .agent-head {
-  padding: 10px 8px 4px 12px;
-}
-.agent-mark {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--yellow);
-  color: var(--ink);
+  padding: 11px 46px 0 16px;
 }
 .agent-who {
-  flex: 1;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
   justify-items: start;
 }
-.agent-who strong {
-  font: 600 15px/1.2 var(--text);
+.agent-label {
+  font: 700 10.5px var(--text);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--yellow);
 }
 .agent-scope {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
   max-width: 100%;
-  margin: 0 0 0 -5px;
-  padding: 1px 5px;
+  padding: 0;
   border: 0;
-  border-radius: 6px;
   background: none;
-  color: var(--a-soft);
-  font: 12.5px/1.35 var(--text);
+  color: #fff;
+  font: 700 25px/1.05 var(--display);
+  letter-spacing: 0.01em;
   text-align: left;
+}
+.agent-chat.compact .agent-scope {
+  font-size: 17px;
 }
 .agent-scope span,
 span.agent-scope {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3810,85 +3804,111 @@ button.agent-scope svg {
   flex: none;
 }
 button.agent-scope:hover {
-  background: var(--a-sunk);
-  color: var(--ink);
+  color: var(--yellow);
 }
 .agent-close {
-  flex: none;
+  position: absolute;
+  right: 0;
+  top: 0;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: 0;
-  border-radius: 8px;
-  background: none;
-  color: var(--a-soft);
+  background: var(--yellow);
+  color: var(--ink);
   cursor: pointer;
 }
+.agent-chat.compact .agent-close {
+  width: 34px;
+  height: 34px;
+}
 .agent-close:hover {
-  background: var(--a-sunk);
-  color: var(--ink);
+  background: #fff;
 }
 .agent-close:focus-visible,
-.agent-scope:focus-visible,
+.agent-scope:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
 .agent-proj:focus-visible {
   outline: 2px solid var(--ink);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 .agent-chat > .panel {
   flex: 1;
   min-height: 0;
   height: auto;
 }
+/* which project to ask about: bars to pick from */
 .agent-pick {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 18px 12px 18px;
-  scrollbar-color: var(--a-line-2) transparent;
+  padding: 18px 20px 160px 18px; /* the last bars stay clear of Polier */
+  scrollbar-width: none;
 }
 .agent-pick > p {
-  margin: 0 8px 12px;
-  color: var(--a-soft);
-  line-height: 1.5;
+  margin: 0 0 16px;
+  font-size: 16.5px;
+  line-height: 1.42;
 }
 .agent-pick ul {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 .agent-proj {
   display: grid;
-  gap: 1px;
+  gap: 3px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 9px 12px 10px;
   border: 0;
-  border-radius: 10px;
-  background: none;
+  background: var(--tint);
   color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background 0.12s;
+  transition:
+    background 0.1s,
+    transform 0.15s var(--ease);
 }
 .agent-proj:hover {
-  background: var(--a-card);
-  box-shadow: 0 1px 3px rgba(18, 20, 19, 0.08);
+  background: var(--yellow);
+  transform: translateX(6px);
 }
 .agent-proj b {
-  font-weight: 600;
-  line-height: 1.3;
+  font: 600 15px/1.25 var(--text);
 }
 .agent-proj span {
-  font-size: 12.5px;
-  color: var(--a-soft);
+  font: 700 10.5px var(--text);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mute);
 }
 .agent-proj.all {
   margin-bottom: 8px;
-  background: var(--a-card);
-  border: 1px solid var(--a-line);
+  background: var(--ink);
+  color: #fff;
+}
+.agent-proj.all b {
+  font: 700 22px/1 var(--display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+.agent-proj.all span {
+  color: #d6d6cf;
+}
+.agent-proj.all:hover {
+  background: var(--yellow);
+}
+.agent-proj.all:hover b,
+.agent-proj.all:hover span,
+.agent-proj:hover span {
+  color: var(--ink);
 }
 
 /* a supplier's earlier price for the material, under the unit price it is not (components.tsx, PriceBlock) */
