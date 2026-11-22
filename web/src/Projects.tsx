@@ -53,7 +53,8 @@ export function outcomeOf(p: CatalogProject): Outcome | null {
 
 export function stageOf(p: CatalogProject): Stage {
   if (outcomeOf(p)) return "result";
-  if (p.files.some((f) => stepOf(f.role) === "bid")) return "submitted";
+  // a bid among the files, or the day it went out (an LV that is no GAEB XML has no X84 to keep; D-079)
+  if (p.files.some((f) => stepOf(f.role) === "bid") || p.plan.sent) return "submitted";
   const stage = p.plan.stage ?? "pricing";
   return stage === "check" ? "pricing" : stage; // the checks are part of the intake (D-074)
 }
@@ -1411,7 +1412,6 @@ export function ProjectsPage({
   onCancel,
   onChange,
   onNew,
-  mail,
 }: {
   projects: CatalogProject[];
   summaries: Record<string, ProjectSummary | "failed">;
@@ -1428,7 +1428,6 @@ export function ProjectsPage({
   onCancel: () => void;
   onChange: (project: CatalogProject, change: Change) => void;
   onNew: (() => void) | null; // null: not now (something is loading, or the dialog is open)
-  mail: { busy: boolean; onCheck: () => void; title: string } | null; // a mailbox is watched: look into it now
 }) {
   const [focus, setFocus] = useState<Focus>(null);
   /* The card pointed at. Leaving a card lets go of it a moment later, so the pointer can cross to the
@@ -1479,11 +1478,6 @@ export function ProjectsPage({
           <h1>Projects</h1>
           {/* a new project, top right of the board */}
           <div className="register-new">
-            {mail && (
-              <button className="btn plain" disabled={mail.busy} onClick={mail.onCheck} title={mail.title}>
-                {mail.busy ? "Reading mail…" : "Check mail"}
-              </button>
-            )}
             <div className="register-drop">
               <button className="btn" disabled={onNew === null} onClick={() => onNew?.()}>
                 <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>

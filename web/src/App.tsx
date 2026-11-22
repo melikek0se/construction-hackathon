@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import { flushSync } from "react-dom";
-import { catalogSummary, changeProject, createProject, intakeFiles, listRuns, changeRun, startRun, listCatalog, loadPrices, openCatalogFile, openTender, askDifference, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
+import { submitBid, withdrawBid, catalogSummary, changeProject, createProject, intakeFiles, listRuns, changeRun, startRun, listCatalog, loadPrices, openCatalogFile, openTender, askDifference, renameProject, deleteProject, removeProjectFile, setFileStep, runLlmReview, getQuestions, getInbox, scanInbox, sortMessages, warmPartners, type MailSorted } from "./api";
 import { HardHatIcon, Opening, ProjectsPage, datesOf, outcomeOf, stageOf } from "./Projects";
 import { ProjectSettings } from "./Settings";
 import { PipelinePage, RunsSwitch } from "./Runs";
@@ -640,10 +640,8 @@ export default function App() {
   const [said, say, unsay] = useSaid((kinds) => {
     if (kinds.some((k) => k === "tender" || k === "run")) refreshNow.current();
   });
-  const [mailBusy, setMailBusy] = useState(false);
   const sorted = useCallback(
     async (job: () => Promise<MailSorted>, quiet = false) => {
-      setMailBusy(true);
       try {
         const got = await job();
         // what was found is said by Polier itself, from the server's record; here only that nothing was
@@ -652,8 +650,6 @@ export default function App() {
           say({ id: -Date.now(), kind: "note", project_id: null, project: "", text: got.looked === 0 ? "Nothing new in your mail." : `I looked at ${got.looked} new message${got.looked === 1 ? "" : "s"}: no invitation to bid among them${got.passed[0] ? ` (${got.passed[0].why})` : ""}.` });
       } catch (e) {
         if (!quiet) setError(e instanceof Error ? e.message : String(e));
-      } finally {
-        setMailBusy(false);
       }
     },
     [refreshCatalog], // eslint-disable-line react-hooks/exhaustive-deps
@@ -1117,6 +1113,21 @@ export default function App() {
             ) : null
           }
           whatif={analysis && checkKey && checked.current === checkKey ? <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} onBid={() => setTender({ ...tender, view: "items" })} /> : null}
+          onSubmit={analysis && checkKey && checked.current === checkKey ? async () => {
+            // the bid went out: the X84 is kept with the project, which then stands at Bid; its files are read again
+            const p = await submitBid(analysis.id);
+            asked.current.delete(p.id);
+            setSummaries(({ [p.id]: _old, ...rest }) => rest);
+            void refreshCatalog();
+            setCurrent({ project: p, file: 0 });
+          } : null}
+          onWithdraw={async () => {
+            const p = await withdrawBid(current.project.id);
+            asked.current.delete(p.id);
+            setSummaries(({ [p.id]: _old, ...rest }) => rest);
+            void refreshCatalog();
+            setCurrent({ project: p, file: 0 });
+          }}
           intake={intakeOpen ? { onTake: () => void changePlan(current.project, { stage: "pricing" }), onPass: () => void changePlan(current.project, { outcome: "passed" }) } : null}
           outcome={outcomeOf(current.project)}
           onOutcome={(outcome) => void changePlan(current.project, { outcome })}
@@ -1235,11 +1246,6 @@ export default function App() {
           onRemoveFile={dropPendingFile}
           onCancel={() => (setPending(null), setError(null))}
           onNew={busy !== null || pending !== null ? null : () => setPending({ files: [], info: null, target: null })}
-          mail={
-            mailbox
-              ? { busy: mailBusy, onCheck: () => void sorted(scanInbox), title: `Polier looks into ${mailbox} for tenders: messages of the last two weeks with an LV attached` }
-              : null
-          }
         />
       )}
       <Says

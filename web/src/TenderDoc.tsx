@@ -53,6 +53,85 @@ export interface DocPrices {
   set: ((oz: string, text: string) => void) | null;
   priced: number;
   net: number;
+  // a supplier's price for the material of an item, where one is at hand: what a unit price is built on
+  material?: (oz: string) => { unit_price: number; supplier: string } | null;
+  file?: string; // the LV file: what was put into a built price is kept in this browser under it
+  why?: string; // why nothing can be typed, where `set` is null
+}
+
+/** A number as typed: "12,50", "1.250,5", "12.5". Nothing or nonsense is 0. */
+const typedNumber = (text: string) => {
+  const x = parseFloat(text.includes(",") ? text.replace(/\./g, "").replace(",", ".") : text);
+  return Number.isFinite(x) ? x : 0;
+};
+
+/** A unit price built on a supplier's price (D-078): the supplier prices the material only, so the
+ *  estimator adds what the item costs besides. (material + waste + labour + equipment) × (1 + surcharge).
+ *  Waste goes onto the material, never onto the LV's quantity. The parts are kept in this browser; the
+ *  result goes into the field as the estimator's own price. */
+function Build({ store, material, unit, onPut, onClose }: { store: string; material: { unit_price: number; supplier: string }; unit: string; onPut: (text: string) => void; onClose: () => void }) {
+  const kept = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem(store) ?? "null") as Record<string, string> | null;
+    } catch {
+      return null;
+    }
+  }, [store]);
+  const [v, setV] = useState<Record<string, string>>({
+    material: priceText(material.unit_price), waste: kept?.waste ?? "0", labour: kept?.labour ?? "", equipment: kept?.equipment ?? "",
+    surcharge: kept?.surcharge ?? localStorage.getItem("lvcheck.build.surcharge") ?? "15",
+  });
+  const cost = typedNumber(v.material) * (1 + typedNumber(v.waste) / 100) + typedNumber(v.labour) + typedNumber(v.equipment);
+  const result = cost * (1 + typedNumber(v.surcharge) / 100);
+  const field = (key: string, label: string, hint: string) => (
+    <label>
+      <span>{label}</span>
+      <input type="text" inputMode="decimal" value={v[key]} placeholder="0" onChange={(e) => setV({ ...v, [key]: e.target.value })} />
+      <small>{hint}</small>
+    </label>
+  );
+  return (
+    <div className="td-build">
+      <b>Build the unit price<small lang="de">on {material.supplier || "the supplier's price"}</small></b>
+      <div className="td-buildrow">
+        {field("material", "Material", `€/${unit}, as quoted`)}
+        <i>+</i>
+        {field("waste", "Waste", "% on the material")}
+        <i>+</i>
+        {field("labour", "Labour", `€/${unit}`)}
+        <i>+</i>
+        {field("equipment", "Equipment", `€/${unit}`)}
+        <i>×</i>
+        {field("surcharge", "Surcharge", "% overheads, risk, profit")}
+        <i>=</i>
+        <span className="td-buildsum"><b>{priceText(result)}</b><small>€/{unit}</small></span>
+      </div>
+      <div className="tn-askrow">
+        <button className="tn-btn ink sm" disabled={result <= 0} onClick={() => {
+          localStorage.setItem(store, JSON.stringify(v));
+          localStorage.setItem("lvcheck.build.surcharge", v.surcharge);
+          onPut(priceText(result));
+          onClose();
+        }}>Put it in as the unit price</button>
+        <button className="tn-btn plain sm" onClick={onClose}>Close</button>
+        {typedNumber(v.labour) === 0 && typedNumber(v.equipment) === 0 && <span className="td-buildnote">No labour and no equipment yet: this is the material with the surcharge on it.</span>}
+      </div>
+    </div>
+  );
+}
+
+/** A row of the board on the cover sheet (D-081): how one station of the tender stands, and at its end the
+ *  action that goes on with it. The row that is next carries the ink button; `open` says its panel is open. */
+export interface BoardRow {
+  key: string;
+  n: number | string; // the figure on the plate
+  name: string;
+  says: ReactNode;
+  sub?: ReactNode;
+  share?: number | null; // how far it is, 0 to 1: a bar
+  act?: { label: string; count?: number; title?: string; onClick: () => void } | null;
+  next?: boolean;
+  open?: boolean;
 }
 
 const SOURCE_SAYS: Record<string, string> = { own: "yours", quote: "quote", file: "in the file" };
@@ -62,7 +141,9 @@ const priceText = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigi
  *  the field and is set in the quieter face; one the estimator typed is ink. The field is small: an empty
  *  one says what goes into it ("€/m"), a filled one stands beside its quantity's unit and its total in
  *  euros; what the columns are is said once, on the section's head. */
-function PriceCells({ row, unit, onSet }: { row: BidRow | undefined; unit: string; onSet: ((text: string) => void) | null }) {
+function PriceCells({ row, unit, onSet, material, store, why }: { why?: string; row: BidRow | undefined; unit: string; onSet: ((text: string) => void) | null; material: { unit_price: number; supplier: string } | null; store: string }) {
+  const [building, setBuilding] = useState(false);
+  const built = !!material && row?.source === "own" && localStorage.getItem(store) !== null;
   const kept = row?.unit_price != null ? priceText(row.unit_price) : "";
   const [typed, setTyped] = useState(kept);
   const [busy, setBusy] = useState(false); // typing: what the server says meanwhile does not write over it
@@ -73,9 +154,9 @@ function PriceCells({ row, unit, onSet }: { row: BidRow | undefined; unit: strin
   const fixed = !onSet || row?.source === "file";
   return (
     <>
-      <label className={`ep${row?.source && row.source !== "own" ? " auto" : ""}`}>
+      <label className={`ep${row?.source && row.source !== "own" ? " auto" : ""}${priceState(row) ? ` p-${priceState(row)}` : ""}`}>
         <input type="text" inputMode="decimal" value={typed} disabled={fixed} placeholder={onSet ? `€/${unit}` : "–"} aria-label={`Unit price in euros per ${unit}`}
-          title={!onSet ? "Take the tender on to price it" : row?.material ? `Material alone: ${priceText(row.material.unit_price)} (${row.material.supplier})` : undefined}
+          title={!onSet ? why ?? "Take the tender on to price it" : row?.material ? `Material alone: ${priceText(row.material.unit_price)} (${row.material.supplier})` : undefined}
           onFocus={() => setBusy(true)}
           onChange={(e) => setTyped(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
@@ -83,9 +164,15 @@ function PriceCells({ row, unit, onSet }: { row: BidRow | undefined; unit: strin
             setBusy(false);
             if (typed.trim() !== kept && onSet) onSet(typed.trim());
           }} />
-        {from && <small>{`${from}${row?.allowance_percent ? ` · +${row.allowance_percent} %` : ""}`}</small>}
+        {from && <small>{`${built ? "built on material" : from}${row?.allowance_percent ? ` · +${row.allowance_percent} %` : ""}`}</small>}
+        {material && onSet && row?.source !== "file" && (
+          <button type="button" className="ep-build" title={`${material.supplier}: ${priceText(material.unit_price)} €/${unit} for the material alone. Add labour, equipment and your surcharge to make it a unit price.`} onClick={() => setBuilding(!building)}>
+            {built ? "change the parts" : `material ${priceText(material.unit_price)}: build`}
+          </button>
+        )}
       </label>
       <span className="gp">{row?.total != null ? eur(row.total) : "–"}</span>
+      {building && material && onSet && <Build store={store} material={material} unit={unit} onPut={onSet} onClose={() => setBuilding(false)} />}
     </>
   );
 }
@@ -129,9 +216,14 @@ function build(tender: Tender): Lv[] {
   });
 }
 
-/** The strip of a section: an item with a finding stands up in its severity colour; else what the item is,
- *  what the new issue changed in it, where the documents differ. */
-const Strip = memo(function Strip({ lvId, rows, ranks, onGo, over, ask }: { lvId: number; rows: Row[]; ranks: Map<string, number> | null; onGo: (id: string) => void; over?: StepLayer["mark"]; ask?: AskLayer["mark"] }) {
+/** How the price of an item stands, as the foot of its mark and of its number say it: "set" a price that
+ *  holds (typed, a quote, in the file), "auto" one Polier put there and nobody confirmed, "" none. */
+const priceState = (row: BidRow | undefined) => (row?.unit_price == null ? "" : row.source === "suggestion" ? "auto" : "set");
+
+/** The strip of a section. An item can be in several states at once, so its mark has a place for each
+ *  (D-077): the body is what the checks found (severity colour) with the letter of what the item is or of
+ *  what changed in it, the round beside it is the question to the client, the foot is the price. */
+const Strip = memo(function Strip({ lvId, rows, ranks, onGo, over, ask, prices }: { lvId: number; rows: Row[]; ranks: Map<string, number> | null; onGo: (id: string) => void; over?: StepLayer["mark"]; ask?: AskLayer["mark"]; prices?: Map<string, BidRow> | null }) {
   return (
     <div className="tn-strip td-strip">
       {rows.map(({ it, gone, mark, up }) => {
@@ -139,10 +231,11 @@ const Strip = memo(function Strip({ lvId, rows, ranks, onGo, over, ask }: { lvId
         const m = over && !gone ? over(it.oz) : null;
         if (over) return <button key={it.oz} className={m ? m.cls : "tn-tick"} title={`${it.oz} ${it.short}`} aria-label={`Item ${it.oz}`} data-it={`td-${lvId}-${it.oz}`} onClick={() => onGo(`td-${lvId}-${it.oz}`)}>{m?.text}</button>;
         const q = ask && !gone ? ask(it.oz) : null;
-        if (q) return <button key={it.oz} className={q.cls} title={`${it.oz} ${it.short}`} aria-label={`Item ${it.oz}`} data-it={`td-${lvId}-${it.oz}`} onClick={() => onGo(`td-${lvId}-${it.oz}`)}>{q.text}</button>;
+        const price = prices && !gone ? priceState(prices.get(it.oz)) : "";
         return (
-          <button key={it.oz} className={sev ? `tn-flag ${sev}` : mark ? `tn-blk${gone ? " is-dropped" : up ? " diff" : ""}` : "tn-tick"} title={`${it.oz} ${it.short}`} aria-label={`Item ${it.oz}`} data-it={`td-${lvId}-${it.oz}`} onClick={() => onGo(`td-${lvId}-${it.oz}`)}>
-            {mark}
+          <button key={it.oz} className={`td-m${price ? ` p-${price}` : ""}`} title={`${it.oz} ${it.short}`} aria-label={`Item ${it.oz}`} data-it={`td-${lvId}-${it.oz}`} onClick={() => onGo(`td-${lvId}-${it.oz}`)}>
+            <i className={sev ? `tn-flag ${sev}` : mark ? `tn-blk${gone ? " is-dropped" : up ? " diff" : ""}` : "tn-tick"}>{mark}</i>
+            {q && <i className={q.cls}>{q.text}</i>}
           </button>
         );
       })}
@@ -151,38 +244,60 @@ const Strip = memo(function Strip({ lvId, rows, ranks, onGo, over, ask }: { lvId
 });
 
 /** What the marks of the map stand for, above its first piece: only the marks this tender has. */
-function Legend({ model, ask }: { model: Lv[]; ask: boolean }) {
+function Legend({ model, ask, priced }: { model: Lv[]; ask: boolean; priced: boolean }) {
   const rows = model.flatMap((x) => x.secs.flatMap((sec) => sec.rows));
   const has = (m: string) => rows.some((r) => r.mark === m);
   const kinds = (Object.keys(LETTER) as ItemKind[]).filter((k) => LETTER[k] && has(LETTER[k]));
+  const e = (mark: ReactNode, says: string) => <div key={says}><dt>{mark}</dt><dd>{says}</dd></div>;
+  // Always open, two marks to a line with a word each: with a place per state (D-077) one to a line is too long.
   return (
     <div className="td-legend" aria-label="What the marks mean">
       <span className="tn-label">What the marks mean</span>
+      <span className="tn-label td-lg-part">Map</span>
       <dl>
-        <div><dt><i className="td-lg-no lv">1</i></dt><dd>An LV</dd></div>
-        <div><dt><i className="td-lg-no">01</i></dt><dd>A section of it</dd></div>
-        {model.some((x) => x.gapBefore.length > 0) && <div><dt><i className="td-lg-no hole">2</i></dt><dd>An LV that did not come</dd></div>}
-        <div><dt><i className="tn-tick" /></dt><dd>An item, nothing found</dd></div>
-        {SEVERITIES.map((sev) => (
-          <div key={sev}><dt><i className={`tn-flag ${sev}`} /></dt><dd>{SEVERITY_LABEL[sev]}: a finding on the item</dd></div>
-        ))}
-        {kinds.map((k) => (
-          <div key={k}><dt><i className="tn-blk">{LETTER[k]}</i></dt><dd>{KIND_LABEL[k]}</dd></div>
-        ))}
-        {has("+") && <div><dt><i className="tn-blk diff">+</i></dt><dd>New in this issue</dd></div>}
-        {has("Δ") && <div><dt><i className="tn-blk diff">Δ</i></dt><dd>Changed since the last issue</dd></div>}
-        {has("≠") && <div><dt><i className="tn-blk diff">≠</i></dt><dd>The documents differ</dd></div>}
-        {has("–") && <div><dt><i className="tn-blk is-dropped">–</i></dt><dd>Dropped in this issue</dd></div>}
-        {/* the Questions step: an item with a question carries the question's mark in place of its own */}
-        {ask && (
-          <>
-            <div><dt><i className="tn-flag high td-qm">?</i></dt><dd>A question to ask, on its finding's colour</dd></div>
-            <div><dt><i className="tn-flag high td-qm on">?</i></dt><dd>Ticked for the next message</dd></div>
-            <div><dt><i className="tn-blk td-qm">→</i></dt><dd>Asked: with the client</dd></div>
-            <div><dt><i className="tn-blk diff td-qm">✓</i></dt><dd>Answered by the client</dd></div>
-          </>
-        )}
+        {e(<i className="td-lg-no lv">1</i>, "LV")}
+        {e(<i className="td-lg-no">01</i>, "Section")}
+        {model.some((x) => x.gapBefore.length > 0) && e(<i className="td-lg-no hole">2</i>, "LV not sent")}
       </dl>
+      <span className="tn-label td-lg-part">Colour · found</span>
+      <dl>
+        {e(<i className="tn-tick" />, "Nothing")}
+        {SEVERITIES.map((sev) => e(<i className={`tn-flag ${sev}`} />, SEVERITY_LABEL[sev]))}
+      </dl>
+      {(kinds.length > 0 || ["+", "Δ", "≠", "–"].some(has)) && (
+        <>
+          <span className="tn-label td-lg-part">Letter · the item</span>
+          <dl>
+            {kinds.map((k) => e(<i className="tn-blk">{LETTER[k]}</i>, KIND_LABEL[k]))}
+            {has("+") && e(<i className="tn-blk diff">+</i>, "New")}
+            {has("Δ") && e(<i className="tn-blk diff">Δ</i>, "Changed")}
+            {has("≠") && e(<i className="tn-blk diff">≠</i>, "Files differ")}
+            {has("–") && e(<i className="tn-blk is-dropped">–</i>, "Dropped")}
+          </dl>
+        </>
+      )}
+      {ask && (
+        <>
+          <span className="tn-label td-lg-part">Round · the question</span>
+          <dl>
+            {e(<i className="td-q is-new">?</i>, "To ask")}
+            {e(<i className="td-q is-new on">?</i>, "Ticked")}
+            {e(<i className="td-q is-draft">→</i>, "Not sent")}
+            {e(<i className="td-q is-out">→</i>, "Sent")}
+            {e(<i className="td-q is-done">✓</i>, "Answered")}
+          </dl>
+        </>
+      )}
+      {priced && (
+        <>
+          <span className="tn-label td-lg-part">Foot · the price</span>
+          <dl>
+            {e(<i className="td-m p-set"><i className="tn-tick" /></i>, "Priced")}
+            {e(<i className="td-m p-auto"><i className="tn-tick" /></i>, "Polier’s")}
+            {e(<i className="td-m"><i className="tn-tick" /></i>, "None")}
+          </dl>
+        </>
+      )}
     </div>
   );
 }
@@ -290,7 +405,7 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
               <span className="tn-ix">{lv.no ?? lv.id + 1}</span>
               <div>
                 <b lang="de"><LvText text={lv.label} /></b>
-                <small>{count(lv.items.length, "item")} in {count(secs.length, "section")}{issue > 1 && ` · issue ${issue} of ${issue}`}{prices && prices.priced > 0 && ` · ${prices.priced} priced · ${eur(prices.net)} net`}</small>
+                <small>{count(lv.items.length, "item")} in {count(secs.length, "section")}{issue > 1 && ` · issue ${issue} of ${issue}`}{prices && prices.priced > 0 && ` · ${prices.priced} of ${lv.items.length} priced · ${eur(prices.net)} net`}</small>
               </div>
               <span className="td-files">
                 {docs.map((d) => (
@@ -364,7 +479,7 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
         return (
           <div key={k} className="td-s" id={`td-s-${lv.id}-${k}`} data-s={`${lv.id}-${k}`}>
             <Piece no={s.no} title={s.name} sub={`${count(s.rows.length, "item")}${up ? ` · ${up} stand up` : ""}`}>
-              <Strip lvId={lv.id} rows={s.rows} ranks={ranks} onGo={onGo} ask={ask?.mark} />
+              <Strip lvId={lv.id} rows={s.rows} ranks={ranks} onGo={onGo} ask={ask?.mark} prices={prices?.rows} />
             </Piece>
             <div className="td-bod">
               <R><h3 className={`td-sech${prices ? " priced" : ""}`} lang="de"><i>{s.no}</i><LvText text={s.name} />{prices && <span className="td-cols" lang="en"><em>Quantity</em><em>Unit price</em><em>Total</em></span>}</h3></R>
@@ -411,19 +526,26 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
                   <div className="td-kn"><i className="tn-blk">{LETTER[it.kind]}</i>{KIND_LABEL[it.kind]}</div>
                 ) : null;
                 const mine = layer && !gone ? layer.mark(it.oz) : null;
+                const qm = !layer && !gone ? ask?.mark(it.oz) ?? null : null;
+                const price = prices && !gone ? priceState(prices.rows.get(it.oz)) : "";
                 const more = gone ? null : ask?.extra?.(it.oz) ?? null;
                 const side = layer ? (gone ? null : layer.item(it.oz)) : only ? <>{found}{more}</> : found.length || rest || more ? <>{found}{more}{rest}</> : null;
                 return (
                   <R key={it.oz} id={`td-${lv.id}-${it.oz}`} cls={k === secs.length - 1 && j === s.rows.length - 1 ? "last" : undefined} side={side}>
                     <div className={`td-it${gone ? " gone" : ""}${prices ? " priced" : ""}`}>
                       {/* the item's number carries the colour of its worst finding, as its mark in the map and its card do */}
-                      <b className={`oz${layer ? (mine?.oz ? ` ${mine.oz}` : "") : !gone && ranks.get(it.oz) ? ` is-${BY_RANK[ranks.get(it.oz)!]}` : ""}`}>{it.oz}</b>
+                      <span className={`ozc${price ? ` p-${price}` : ""}`}>
+                        <b className={`oz${layer ? (mine?.oz ? ` ${mine.oz}` : "") : !gone && ranks.get(it.oz) ? ` is-${BY_RANK[ranks.get(it.oz)!]}` : ""}`}>{it.oz}</b>
+                        {qm && <i className={qm.cls} title="The question to the client on this item">{qm.text}</i>}
+                      </span>
                       <div className="tx">
                         <b lang="de"><LvText text={it.short} /></b>
                         {it.long && it.long.trim() !== it.short.trim() && <p lang="de"><LvText text={it.long} /></p>}
                       </div>
-                      <span className="q">{it.qty === null ? "–" : qty(it.qty)} <small lang="de">{it.unit}</small>{page ? <i>PDF page {page}</i> : null}</span>
-                      {prices && (gone ? <><span /><span /></> : <PriceCells row={prices.rows.get(it.oz)} unit={it.unit} onSet={prices.set && ((text) => prices.set!(it.oz, text))} />)}
+                      <span className="q">{it.qty === null ? "–" : qty(it.qty)} <small lang="de">{it.unit}</small>{page ? <i>PDF page {page}</i> : null}
+                        {/* the client corrected the quantity in an answer: said here, the file's quantity stays the bid's */}
+                        {!gone && prices?.rows.get(it.oz)?.qty_answered != null && <em className="qa" title="The client gave this quantity in an answer. The bid keeps the quantity of the file until a corrected LV comes.">client: {prices.rows.get(it.oz)!.qty_answered!.toLocaleString("de-DE")}</em>}</span>
+                      {prices && (gone ? <><span /><span /></> : <PriceCells row={prices.rows.get(it.oz)} unit={it.unit} onSet={prices.set && ((text) => prices.set!(it.oz, text))} why={prices.why} material={prices.material?.(it.oz) ?? null} store={`lvcheck.build.${prices.file ?? ""}.${it.oz}`} />)}
                     </div>
                   </R>
                 );
@@ -436,11 +558,14 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
   );
 });
 
-export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDrawer, summary, findings, general, findingsLv, selected, onOpenLv, layer = null, ask = null, acts = null, prices = null }: { prices?: DocPrices | null; acts?: ReactNode; ask?: AskLayer | null; layer?: StepLayer | null; tender: Tender; plan: Plan; place: TenderPlace; views: ReactNode; onAsk: (lv: number, oz: string, ask: boolean) => void; onDates: () => void; onDrawer: () => void; summary: ProjectSummary | null; findings: Map<string, Finding[]> | null; general: Finding[] | null; findingsLv: number | null; selected: string | null; onOpenLv: (lv: number) => void }) {
+export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDrawer, summary, findings, general, findingsLv, selected, onOpenLv, layer = null, ask = null, board = null, intake = null, back = null, prices = null }: { prices?: DocPrices | null; board?: BoardRow[] | null; intake?: { onTake: () => void; onPass: () => void } | null; back?: (() => void) | null; ask?: AskLayer | null; layer?: StepLayer | null; tender: Tender; plan: Plan; place: TenderPlace; views: ReactNode; onAsk: (lv: number, oz: string, ask: boolean) => void; onDates: () => void; onDrawer: () => void; summary: ProjectSummary | null; findings: Map<string, Finding[]> | null; general: Finding[] | null; findingsLv: number | null; selected: string | null; onOpenLv: (lv: number) => void }) {
   const model = useMemo(() => build(tender), [tender]);
   const asked = useMemo(() => new Set(tender.asked.map((a) => `${a.lv}:${a.oz}`)), [tender.asked]);
   const single = tender.lvs.length === 1;
   const [points, setPoints] = useState(0);
+  const barred = !layer && (!!board?.length || !!intake);
+  const boardEl = useRef<HTMLDivElement>(null);
+  const [docked, setDocked] = useState(false); // the board has left the screen upwards: its strip takes over
   const [pointAt, setPointAt] = useState(0); // how many of the rows to look at the reading has reached
   // A tender of several LVs: what they expect of each other and what is tendered twice (the pipeline's
   // "compare" station). Read for the cover sheet, so that the comparison shows also when it found nothing.
@@ -471,6 +596,9 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
     // it sticks below the page's own top padding
     return r && h ? h.offsetHeight + (parseFloat(getComputedStyle(h).top) || 0) + (parseFloat(getComputedStyle(r).paddingTop) || 0) : 0;
   };
+  /** How far under the page's top the line stands that says which part is being read: under the head of an
+   *  LV, and under the strip of actions where the page has one (a part led to stands below both). */
+  const readAt = () => 120 + (page.current?.querySelector<HTMLElement>(".td-dock")?.offsetHeight ?? 0);
   /** The rows a card waits beside for the estimator, in reading order, each once. */
   const pointRows = () => {
     const r = page.current;
@@ -495,7 +623,7 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
       setPointAt(r.scrollTop + r.clientHeight >= r.scrollHeight - 2 && r.scrollTop > 0 ? rows.length : rows.filter((x) => topOf(x) <= line).length);
     }
     if (!r || !box || !list) return;
-    const line = r.getBoundingClientRect().top + 120;
+    const line = r.getBoundingClientRect().top + readAt();
     const pieces = [...list.querySelectorAll<HTMLElement>(".td-mp")];
     const tops = pieces.map((p) => document.getElementById(p.dataset.for!)?.getBoundingClientRect().top ?? Infinity);
     let at = 0;
@@ -518,8 +646,8 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
     const through = next && isFinite(tops[at + 1]) ? Math.min(1, Math.max(0, (line - tops[at]) / Math.max(1, tops[at + 1] - tops[at]))) : 0;
     // the last part has no piece after it: its own goes on up by AFTER while the text runs to its end
     const pageTop = r.getBoundingClientRect().top;
-    const start = tops[at] - pageTop + r.scrollTop, end = r.scrollHeight - r.clientHeight + 120;
-    const toEnd = next ? 0 : Math.min(1, Math.max(0, (r.scrollTop + 120 - start) / Math.max(1, end - start)));
+    const start = tops[at] - pageTop + r.scrollTop, end = r.scrollHeight - r.clientHeight + readAt();
+    const toEnd = next ? 0 : Math.min(1, Math.max(0, (r.scrollTop + readAt() - start) / Math.max(1, end - start)));
     const y = mid(pieces[at]) + (next ? through * (mid(next) - mid(pieces[at])) : toEnd * AFTER);
     mapAt.current = y;
     list.style.transform = `translateY(${(box.clientHeight / 2 - y).toFixed(1)}px)`;
@@ -623,8 +751,8 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
       };
       const next = pieces[at + 1];
       const through = (y - mid(pieces[at])) / (next ? Math.max(1, mid(next) - mid(pieces[at])) : AFTER);
-      const until = next ? top(next) : r.scrollHeight - r.clientHeight + 120; // after the last part: the end of the text
-      r.scrollTop = Math.max(0, top(pieces[at]) + through * (until - top(pieces[at])) - 120);
+      const until = next ? top(next) : r.scrollHeight - r.clientHeight + readAt(); // after the last part: the end of the text
+      r.scrollTop = Math.max(0, top(pieces[at]) + through * (until - top(pieces[at])) - readAt());
       mapAt.current = turning.current = y;
       spy();
       window.clearTimeout(rest);
@@ -642,8 +770,20 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
   }, [selected, place.lv, tender.id, findings !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const found = plan.found;
+  useEffect(() => {
+    const el = boardEl.current, root = page.current;
+    if (!el || !root) return void setDocked(false);
+    const seen = new IntersectionObserver(([e]) => setDocked(!e.isIntersecting && e.boundingClientRect.bottom < (e.rootBounds?.top ?? 0) + 60), { root, rootMargin: "-48px 0px 0px 0px" });
+    seen.observe(el);
+    return () => seen.disconnect();
+  }, [barred, tender.id]);
   const mine = tender.documents.filter((d) => d.lv !== null);
   const later = tender.documents.filter((d) => d.lv === null);
+  const dueIn = (() => {
+    if (!plan.due) return null;
+    const [y, m, d] = plan.due.split("-").map(Number), now = new Date();
+    return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+  })();
   const noGaeb = tender.lvs.filter((l) => l.back.form === null).length;
   const reissued = tender.lvs.filter((l) => l.issues.length > 1).length;
   // where the findings are: per section of a single LV once its findings are read, per LV of a building
@@ -667,15 +807,13 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
 
   return (
     <>
-      <div className={`td-flow${ask?.panel ? " composing" : ""}${ask?.panel && ask.wide ? " wide" : ""}${acts ? " acted" : ""}`}>
-        {/* what the estimator does next with the tender, above the map: ask the client, ask for prices */}
-        {acts && <div className="td-acts">{acts}</div>}
+      <div className={`td-flow${ask?.panel ? " composing" : ""}${ask?.panel && ask.wide ? " wide" : ""}`}>
         {ask?.panel && <aside className="td-compose" aria-label="Message to the client">{ask.panel((oz) => go(`td-${findingsLv ?? tender.lvs[0].id}-${oz}`))}</aside>}
         {/* the map, all of it at once: what was read stands above, what comes below, the part being read
             in the middle; it moves with the reading (see `spy`) */}
         <aside className="td-map" ref={mapBox} aria-label="Map of the tender">
           <div className="td-maplist" ref={mapList}>
-            {!layer && <Legend model={model} ask={!!ask} />}
+            {!layer && <Legend model={model} ask={!!ask} priced={!!prices} />}
             <button className="td-mp" data-for="td-top" onClick={() => go("td-top", false)}>
               <span className="hd"><i>↑</i><b>{layer?.title ?? "Cover sheet"}</b><small>{layer ? "" : count(mine.length, "document")}</small></span>
             </button>
@@ -694,7 +832,7 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
                 {x.secs.map((sec, k) => (
                   <div key={k} className="td-mp" data-for={`td-s-${x.lv.id}-${k}`}>
                     <button className="hd" onClick={() => go(`td-s-${x.lv.id}-${k}`, false)}><i>{sec.no}</i><b lang="de"><LvText text={sec.name} /></b><small>{sec.rows.length}</small></button>
-                    <Strip lvId={x.lv.id} rows={sec.rows} ranks={ranksBy.get(x.lv.id) ?? null} onGo={go} over={layer ? (x.lv.id === findingsLv || single ? layer.mark : () => null) : undefined} ask={ask && (x.lv.id === findingsLv || single) ? ask.mark : undefined} />
+                    <Strip lvId={x.lv.id} rows={sec.rows} ranks={ranksBy.get(x.lv.id) ?? null} onGo={go} over={layer ? (x.lv.id === findingsLv || single ? layer.mark : () => null) : undefined} ask={ask && (x.lv.id === findingsLv || single) ? ask.mark : undefined} prices={x.lv.id === findingsLv || single ? prices?.rows : null} />
                   </div>
                 ))}
               </div>
@@ -716,7 +854,23 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
             {views}
           </div>
         )}
-        <main className="td-page" ref={page} onScroll={spy} onWheel={() => (turning.current = null)} onPointerDown={() => (turning.current = null)}>
+        <main className={`td-page${barred ? " barred" : ""}${ask?.panel ? " paneled" : ""}`} ref={page} onScroll={spy} onWheel={() => (turning.current = null)} onPointerDown={() => (turning.current = null)}>
+          {/* the board of the cover sheet, once it has left the screen: a slim strip with the same actions that
+              stays over the whole document (D-081). It takes no room of its own while the cover sheet is read. */}
+          {barred && (
+            <div className={`td-s td-actbar${docked || ask?.panel ? " on" : ""}`}>
+              <div className="td-lft" />
+              <div className="td-bod"><R><div className="td-dock">
+                <span className="td-dockname"><b lang="de"><LvText text={tender.name} /></b>{plan.due && <small>bid due {daysLeft(plan.due)}{intake ? " · not taken on yet" : ""}</small>}</span>
+                {back && <button className="td-chip" onClick={back} title="The whole tender again, with its map">Back to the tender</button>}
+                {!back && points > 0 && <button className="td-chip" onClick={() => step(1)} title="The next finding that waits for you">Checks<i>{points}</i></button>}
+                {(board ?? []).filter((r) => r.act).map((r) => (
+                  <button key={r.key} className={`td-chip${r.open || (r.next && !back) ? " ink" : ""}`} aria-pressed={r.open || undefined} onClick={r.act!.onClick} title={r.act!.title}>{r.name}{r.act!.count ? <i>{r.act!.count}</i> : null}</button>
+                ))}
+                {intake && <><button className="td-chip ink" onClick={intake.onTake}>Take it on</button><button className="td-chip" onClick={intake.onPass}>Pass</button></>}
+              </div></R></div>
+            </div>
+          )}
           {/* the first page of the document is the tender's cover sheet: what it is, its dates, how and in
               which files it came, what the bid goes back as */}
           {layer ? (
@@ -757,14 +911,75 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
                 </>
               }>
                 <div className="td-cv">
-                  <header>
-                    <span className="tn-label">Tender{tender.number && ` · ${tender.number}`}</span>
-                    <h2 lang="de"><LvText text={tender.name} /></h2>
-                    <p className="client" lang="de">{tender.client ? <LvText text={tender.client} /> : "The files do not name the client."}</p>
-                    <p className="size">
-                      {single ? "1 LV" : `${tender.lvs.length} LVs`} · {count(tender.items, "item")} · {count(mine.length, "document")}
-                    </p>
+                  <header className="td-title">
+                    <div>
+                      <span className="tn-label">Tender{tender.number && ` · ${tender.number}`}</span>
+                      <h2 lang="de"><LvText text={tender.name} /></h2>
+                      <p className="client" lang="de">{tender.client ? <LvText text={tender.client} /> : "The files do not name the client."}</p>
+                      <p className="size">
+                        {single ? "1 LV" : `${tender.lvs.length} LVs`} · {count(tender.items, "item")} · {count(mine.length, "document")}
+                      </p>
+                    </div>
+                    {/* the one date everything on this page runs towards */}
+                    {plan.due && (
+                      <div className="td-due">
+                        {dueIn !== null && dueIn >= 0 ? <span className="n">{dueIn}<small>{dueIn === 1 ? "day" : "days"}</small></span> : <span className="n over">due</span>}
+                        <p>bid due <b>{dayText(plan.due)}</b>{dueIn !== null && dueIn < 0 ? `, ${daysLeft(plan.due)}` : ""}</p>
+                        {plan.questions_due && <p>questions until {dayText(plan.questions_due)}</p>}
+                      </div>
+                    )}
                   </header>
+                  {/* in the intake: the decision, beside what it rests on */}
+                  {intake && (
+                    <div className="td-decide">
+                      <div>
+                        {found?.why ? (
+                          <p className="read"><span className={`tn-tag${found.fit === "yes" ? " td-fit" : ""}`}>{found.fit === "yes" ? "Fits your work" : found.fit === "no" ? "Not your trade" : "Fits in part"}</span> {found.why}</p>
+                        ) : (
+                          <p className="read">Checked as it arrived. Nothing is drafted for the client and nobody is asked for a price before you take it on.</p>
+                        )}
+                        <p className="facts">
+                          {plan.due && <span><b>{daysLeft(plan.due)}</b> the bid is due</span>}
+                          <span><b>{tender.items.toLocaleString("en")}</b> {tender.items === 1 ? "item" : "items"} in {single ? "1 LV" : `${tender.lvs.length} LVs`}</span>
+                          {summary && summary.checked !== false && <span><b>{summary.counts.high}</b> {summary.counts.high === 1 ? "stop" : "stops"} · <b>{summary.counts.warn}</b> {summary.counts.warn === 1 ? "caution" : "cautions"}</span>}
+                        </p>
+                      </div>
+                      <div className="btns">
+                        <button className="td-actbtn on" title="It goes on to the questions and the prices" onClick={intake.onTake}>Take it on</button>
+                        <button className="td-actbtn plain" title="No bid: it goes to Award as passed" onClick={intake.onPass}>Pass</button>
+                      </div>
+                    </div>
+                  )}
+                  {/* the board (D-081): how the tender stands, a row per station in the pipeline's order, and
+                      at the end of each row the action that goes on with it */}
+                  {(barred || (summary && summary.checked !== false)) && (
+                    <div className={`td-board${intake ? " under" : ""}`} ref={boardEl}>
+                      {summary && summary.checked !== false && (
+                        <div className="td-brow">
+                          <span className="plate">{SEVERITIES.reduce((n, sev) => n + summary.counts[sev], 0)}</span>
+                          <span className="name">Checks</span>
+                          <span className="td-bsays">
+                            {SEVERITIES.some((sev) => summary.counts[sev] > 0) ? SEVERITIES.filter((sev) => summary.counts[sev] > 0).map((sev, n) => <span key={sev}>{n > 0 && " · "}{sev === "high" ? <b>{countLabel(summary.counts[sev], sev)}</b> : countLabel(summary.counts[sev], sev)}</span>) : <b>No finding</b>}
+                            <small>{points > 0 ? `${points} to look at` : "every item in LV order; one with a finding stands up"}</small>
+                          </span>
+                          <span className="card-lv td-fp"><Fingerprint marks={strip.join("")} cuts={cuts} /></span>
+                          {points > 0 ? <button className="td-actbtn plain" onClick={() => step(1)}>Next to look at</button> : <span />}
+                        </div>
+                      )}
+                      {(board ?? []).map((r) => (
+                        <div key={r.key} className={`td-brow${r.next ? " next" : ""}`}>
+                          <span className="plate">{r.n}</span>
+                          <span className="name">{r.name}</span>
+                          <span className="td-bsays">{r.says}{r.sub && <small>{r.sub}</small>}</span>
+                          {r.share != null ? <span className="td-bbar" aria-hidden><i style={{ width: `${Math.round(100 * Math.min(1, Math.max(0, r.share)))}%` }} /></span> : <span />}
+                          {r.act ? <button className={`td-actbtn ${r.next ? "on" : "plain"}`} onClick={r.act.onClick} title={r.act.title}>{r.act.label}{r.act.count ? <b>{r.act.count}</b> : null}</button> : <span />}
+                        </div>
+                      ))}
+                      {intake && ([["Client", "Questions are drafted once you take it on"], ["Prices", "Nobody is asked for a price before that"], ["Bid", `${count(tender.items, "item")} to price`]] as const).map(([name, says]) => (
+                        <div key={name} className="td-brow held"><span className="plate">–</span><span className="name">{name}</span><span className="td-bsays">{says}</span><span /><span /></div>
+                      ))}
+                    </div>
+                  )}
                   <div className="td-cvgrid">
                     {(
                       <section className="wide">
@@ -773,19 +988,6 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
                       </section>
                     )}
                     {ask?.cover}
-                    {summary && summary.checked !== false && (
-                      <section className="wide">
-                        <h3>Where the findings are<span>every item in LV order; one with a finding stands up</span></h3>
-                        <div className="card-lv td-fp">
-                          <Fingerprint marks={strip.join("")} cuts={cuts} />
-                          <span className="doc-counts">
-                            {SEVERITIES.map((sev) => (
-                              <span key={sev} className={summary.counts[sev] === 0 ? "zero" : ""}><Sign severity={sev} size={13} />{summary.counts[sev]}</span>
-                            ))}
-                          </span>
-                        </div>
-                      </section>
-                    )}
                     {!single && (
                       <section className="wide">
                         <h3>Between the LVs<span>what one LV expects of another, and work tendered twice</span></h3>

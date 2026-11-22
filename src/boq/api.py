@@ -1536,7 +1536,8 @@ def _autofill(analysis_id: str) -> int:
     Returns how many prices were set or changed."""
     project_id = _project_id(analysis_id)
     project = catalog.find(project_id) if project_id else None
-    if not AUTOFILL or project is None or project["plan"].get("stage") == "intake":
+    # not in the intake, and not once the bid went out: what was submitted stays as it was submitted
+    if not AUTOFILL or project is None or project["plan"].get("stage") == "intake" or project["plan"].get("sent"):
         return 0
     boq, _ = _analysis(analysis_id)
     if any(i.total is not None for i in boq.items):  # a file that carries its prices (a bid, an award)
@@ -1589,6 +1590,15 @@ def bid_risk(analysis_id: str):
                        ((catalog.find(project_id) if project_id else None) or {}).get("plan", {}).get("binding_until"))
 
 
+def _bid_open(analysis_id: str) -> None:
+    """The prices of a bid that went out are not changed (D-080): it is taken back first."""
+    project_id = _project_id(analysis_id)
+    sent = ((catalog.find(project_id) if project_id else None) or {}).get("plan", {}).get("sent")
+    if sent:
+        raise HTTPException(409, f"The bid went out on {date.fromisoformat(sent):%d.%m.%Y}. Take it back (Bid: It did not go out) "
+                                 f"to change a price.")
+
+
 class BidPrices(BaseModel):
     prices: dict[str, str | None] = {}  # item number -> unit price as typed; empty or null clears it
     take_suggestions: bool = False  # put the suggested price into every item that has none
@@ -1597,6 +1607,7 @@ class BidPrices(BaseModel):
 @app.put("/api/analyses/{analysis_id}/bid")
 def set_bid_prices(analysis_id: str, body: BidPrices):
     boq, _ = _analysis(analysis_id)
+    _bid_open(analysis_id)
     known = {i.oz for i in boq.items}
     changes: dict[str, tuple] = {}
     for oz, text in body.prices.items():
@@ -1636,6 +1647,47 @@ def bid_x84(analysis_id: str):
     name = mail.file_name(f"Angebot {Path(boq.file).stem}", db.now().isoformat())[:-4] + ".x84"
     return Response(data, media_type="application/xml",
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+@app.post("/api/analyses/{analysis_id}/bid/submit")
+def submit_bid(analysis_id: str):
+    """The bid went out (D-079). The X84 as it stands is kept among the project's files as the submitted
+    bid, where the LV came as GAEB XML, and the day is noted; from then on the project stands at Bid. No
+    check is started on the file: it is the tender with the estimator's own prices. Returns the project."""
+    boq, _ = _analysis(analysis_id)
+    project_id = _project_id(analysis_id)
+    if project_id is None:
+        raise HTTPException(422, "A bid is submitted for a tender kept as a project.")
+    project = _catalog(project_id)
+    sheet, source, name = _bid(analysis_id), _source_bytes(analysis_id), None
+    if source is not None and boq.format == "gaeb_xml":
+        try:
+            data = bid.as_x84(source, sheet)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        name = mail.file_name(f"Angebot {Path(boq.file).stem}", db.now().isoformat())[:-4] + ".x84"
+        if hashlib.sha256(data).hexdigest() not in catalog.hashes(project_id):  # the same bid is kept once
+            catalog.add_files(project_id, [(name, data, "submitted bid")], project["kind"])
+    catalog.set_plan(project_id, {"sent": date.today().isoformat()})
+    events.record(project_id, "bid",
+                  f"The bid went out: {sum(1 for r in sheet['rows'] if r['price'] is not None)} of {sheet['items']} items priced, {sheet['net']:,.2f} EUR net"
+                  + (f", kept as {name}." if name else ". No GAEB XML came, so no X84 is kept."), "client")
+    return _catalog(project_id)
+
+
+@app.post("/api/catalog/{project_id}/bid/withdraw")
+def withdraw_bid(project_id: str):
+    """The bid did not go out after all: the X84 kept by `submit_bid` is taken out of the project's files and
+    the day is cleared, so the project stands on its tender again. A bid file the client's side or the
+    estimator brought in (any other bid among the files) is not touched. Returns the project."""
+    project = _catalog(project_id)
+    for f in project["files"]:
+        if f["role"] == "submitted bid" and f["name"].startswith("Angebot_") and f["name"].lower().endswith(".x84"):
+            catalog.remove_file(project_id, f["id"])
+    catalog.set_plan(project_id, {"sent": None})
+    _TENDERS.pop(project_id, None)
+    events.record(project_id, "bid", "The bid was taken back: it stands on its tender again.", "you")
+    return _catalog(project_id)
 
 
 # ---------------------------------------------------------------- price inquiries (boq.supply)
@@ -2093,6 +2145,7 @@ def quotes_to_bid(analysis_id: str):
     subcontractors' prices with the firm's surcharge. A supplier's price is the material part only and is
     not a unit price; those stay beside the bid for the estimator to build on."""
     boq, _ = _analysis(analysis_id)
+    _bid_open(analysis_id)
     state = _supply_state(analysis_id)
     kinds = {row["oz"]: p["kind"] for p in state["packages"] for row in p["items"]}
     have = bid.entered(_project_id(analysis_id), boq.file)

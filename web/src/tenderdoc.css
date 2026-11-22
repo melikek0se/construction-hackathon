@@ -2404,3 +2404,830 @@
   text-transform: uppercase;
   color: var(--dim);
 }
+/* the quantity the client gave in an answer, under the file's */
+.td-it .q .qa {
+  display: block;
+  margin-top: 2px;
+  font: 600 11.5px var(--text);
+  font-style: normal;
+  color: var(--ink);
+  background: var(--yellow);
+  padding: 0 4px;
+  justify-self: end;
+  width: fit-content;
+  margin-left: auto;
+}
+
+/* The mark of an item, compound (D-077). An item can be in several states at once, so each has its own
+   place and its own means, and none stands in for another:
+     body   colour   what the checks found (red, yellow, blue; a grey tick: nothing)
+     body   letter   what the item is, what the new issue changed in it
+     round  sign     the question to the client (to ask, ticked, not sent, with the client, answered)
+     foot   green    the unit price (a block: holds; a line: Polier's, not confirmed; none: no price)
+   Green is "taken into what goes out": a question ticked for the message, a price that goes into the bid. */
+.tn .td-m {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  padding: 0 0 7px;
+  background: none;
+  border: 0;
+  font-style: normal;
+}
+.tn .td-m > i {
+  display: block;
+  font-style: normal;
+}
+.tn .td-m::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+}
+.tn .td-m.p-set::after {
+  background: var(--go);
+}
+.tn .td-m.p-auto::after {
+  height: 2px;
+  bottom: 3px;
+  background: var(--go);
+}
+.tn .td-strip .td-m > .tn-tick {
+  width: 5px;
+}
+.tn button.td-m:hover > :is(.tn-blk, .tn-flag) {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.tn button.td-m:hover > .tn-tick {
+  background: var(--ink);
+}
+/* the items on the screen */
+.tn .td-strip .td-m.td-vis > .tn-tick {
+  background: var(--ink);
+}
+.tn .td-strip .td-m.td-vis > :is(.tn-blk, .tn-flag) {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+/* the question: a round, so it is never taken for a finding's square */
+.tn .td-q {
+  display: block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  font: 700 10.5px/13px var(--text);
+  font-style: normal;
+  text-align: center;
+  color: var(--ink);
+}
+.tn .td-m > .td-q {
+  margin-left: 1px;
+}
+.tn .td-q.is-new.on {
+  border-color: var(--go);
+  background: var(--go);
+  color: #fff;
+}
+.tn .td-q.is-draft {
+  border-style: dashed;
+}
+.tn .td-q.is-done {
+  background: var(--ink);
+  color: #fff;
+}
+/* the legend, by place */
+.td-legend .td-lg-part {
+  display: block;
+  margin-top: 12px;
+}
+.tn .td-legend .td-m > .tn-tick {
+  width: 5px;
+}
+
+/* the same in the document: the item's number stands on its finding's colour, the question's round under
+   it, the price's foot under the number and under the price itself */
+.td-it .ozc {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 5px;
+}
+.td-it .ozc .oz {
+  border-bottom: 3px solid transparent;
+}
+.td-it .ozc.p-set .oz {
+  border-bottom-color: var(--go);
+}
+.td-it .ozc.p-auto .oz {
+  border-bottom: 1px solid var(--go);
+  padding-bottom: 2px;
+}
+.td-it .ep.p-set input {
+  border-color: var(--go);
+  box-shadow: inset 0 -3px 0 var(--go);
+  font-weight: 700;
+}
+.td-it .ep.p-auto input {
+  border-bottom-color: var(--go);
+}
+.td-it .ep.p-set + .gp {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* what is left until the bid can go out (D-078), on the cover sheet */
+.td-leftrow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 22px;
+  margin-top: 10px;
+}
+.td-leftrow > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: start;
+  align-content: start;
+  padding-top: 8px;
+  border-top: 2px solid var(--ink);
+}
+.td-leftrow > div > b {
+  min-width: 40px;
+  padding: 3px 6px 1px;
+  background: var(--yellow);
+  font: 600 26px/1 var(--display);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.td-leftrow > div.done > b {
+  background: var(--ink);
+  color: #fff;
+}
+.td-leftrow > div > span {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.td-leftrow small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--mute);
+}
+.td-leftrow .tn-btn {
+  grid-column: 2;
+  justify-self: start;
+}
+.td-left .tn-askrow {
+  margin-top: 14px;
+  align-items: center;
+}
+.td-leftsays {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.td-left.ready .td-leftsays {
+  font-weight: 600;
+  color: var(--ink);
+}
+/* a unit price built on a supplier's price for the material: the link under the field, the parts under the item */
+.tn .ep-build {
+  display: block;
+  width: 100%;
+  font: 600 11px var(--text);
+  text-align: right;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-decoration-color: var(--line-2);
+  text-underline-offset: 2px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.tn .ep-build:hover {
+  text-decoration-color: var(--ink);
+}
+.td-build {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding: 10px 12px 12px;
+  background: var(--tint);
+  border-top: 2px solid var(--ink);
+}
+.td-build > b {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font: 700 11px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.td-build > b small {
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mute);
+}
+.td-buildrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+  margin: 8px 0 10px;
+}
+.td-buildrow label {
+  display: grid;
+  gap: 2px;
+  width: 104px;
+}
+.td-buildrow label span {
+  font: 700 10.5px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.td-buildrow input {
+  height: 28px;
+  padding: 0 7px;
+  background: #fff;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  font: 600 13.5px var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.td-buildrow input:focus {
+  outline: 2px solid var(--yellow);
+  outline-offset: 0;
+}
+.td-buildrow label small,
+.td-buildsum small {
+  font-size: 11px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.td-buildrow > i {
+  font: 600 18px var(--display);
+  font-style: normal;
+  color: var(--mute);
+}
+.td-buildsum {
+  display: grid;
+  gap: 2px;
+  padding: 0 4px;
+}
+.td-buildsum b {
+  font: 600 22px/28px var(--display);
+  font-variant-numeric: tabular-nums;
+}
+.td-buildnote {
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-buildrow input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  color: var(--ink);
+}
+.td-buildrow label {
+  width: 96px;
+  flex: none;
+}
+.td-buildrow {
+  align-items: start;
+}
+.td-buildrow > i {
+  margin-top: 16px;
+}
+.td-buildsum {
+  margin-top: 14px;
+}
+.td-buildrow label:last-of-type {
+  width: 150px; /* its hint is the longest */
+}
+
+/* the legend: two marks to a line, a word each; with a place per state it is too long otherwise */
+.td-legend .td-lg-part {
+  margin-top: 9px;
+}
+.td-legend dl {
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+  margin-top: 5px;
+}
+.td-legend dl > div {
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 6px;
+}
+.td-legend dd {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The cover sheet as the board of the tender (D-081, Atahan, 2026-11-22). Its head names the tender and,
+   at the right, the one date the page runs towards. Under it a row per station in the pipeline's order
+   (checks, client, prices, bid): a plate with the figure, how it stands, how far it is, and at the end of
+   the row the action that goes on with it. One row is next: pale yellow, ink plate, ink button. */
+.td-cv .td-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 40px;
+  align-items: end;
+}
+.td-due {
+  text-align: right;
+}
+.td-due .n {
+  display: block;
+  font: 600 44px/0.95 var(--display);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.td-due .n small {
+  margin-left: 4px;
+  font: 600 18px var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-due .n.over {
+  font-size: 30px;
+  text-transform: uppercase;
+  color: var(--red);
+}
+.td-due p {
+  margin-top: 5px;
+  font-size: 13px;
+}
+.td-due p b {
+  font-weight: 600;
+}
+.td-due p + p {
+  margin-top: 0;
+  color: var(--mute);
+}
+.td-board {
+  margin-top: 24px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+}
+.td-board.under {
+  margin-top: 0;
+  border-top: 1px solid var(--line-2);
+}
+.td-brow {
+  display: grid;
+  grid-template-columns: 44px 70px minmax(0, 1fr) 132px minmax(150px, auto);
+  gap: 0 14px;
+  align-items: center;
+  min-height: 54px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+.td-brow:first-child {
+  border-top: 0;
+}
+.td-brow .plate {
+  justify-self: start;
+  min-width: 38px;
+  height: 32px;
+  padding: 0 7px;
+  background: var(--yellow);
+  font: 600 20px/32px var(--display);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.td-brow .name {
+  font: 700 12px var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.td-brow .td-bsays {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.td-brow .td-bsays b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.td-brow .td-bsays small {
+  display: block;
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-brow > .td-actbtn {
+  justify-self: end;
+}
+.td-brow .td-fp {
+  display: block;
+  height: 20px;
+}
+.td-brow .td-fp .fingerprint {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.td-bbar {
+  position: relative;
+  height: 6px;
+  background: var(--rule);
+}
+.td-bbar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ink);
+}
+.td-brow.next {
+  margin: 0 -40px;
+  padding-left: 40px;
+  padding-right: 40px;
+  background: var(--hover);
+}
+.td-brow.next .plate {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.td-brow.held .plate {
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--dim);
+}
+.td-brow.held .name,
+.td-brow.held .td-bsays {
+  color: var(--dim);
+}
+.td-actbtn.plain {
+  background: #fff;
+}
+.td-actbtn.on b {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.td-actbtn.on:hover {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.td-actbtn.on:hover b {
+  background: var(--ink);
+  color: var(--yellow);
+}
+/* the intake: the decision in place of the board's top line, beside what it rests on */
+.td-decide {
+  margin-top: 24px;
+  padding: 16px 0 18px;
+  border-top: 2px solid var(--ink);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 40px;
+  align-items: center;
+}
+.td-decide .read {
+  max-width: 62ch;
+  font-size: 14.5px;
+}
+.td-decide .read .tn-tag {
+  margin-right: 4px;
+}
+.td-decide .read .td-fit {
+  background: var(--yellow);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.td-decide .facts {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  font-size: 13px;
+  color: var(--mute);
+}
+.td-decide .facts b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.td-decide .btns {
+  display: flex;
+  gap: 8px;
+}
+.td-decide .td-actbtn {
+  height: 38px;
+  padding: 0 18px;
+  font-size: 12.5px;
+}
+
+/* Once the board has left the screen its strip takes over: 38px with the tender's name, the days to the
+   bid and the same actions, over the whole document; the head of an LV sticks under it. The strip lies
+   over the page and takes no room of its own, so nothing jumps when it comes; only where a panel stands
+   beside the document (the cover sheet is not drawn then) it has its room from the start. */
+.td-actbar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  height: 0;
+  pointer-events: none;
+}
+.td-actbar .td-mid {
+  border: 0;
+  background: none;
+}
+.td-dock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 39px;
+  padding: 0 12px 0 16px;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-bottom: 2px solid var(--ink);
+  box-shadow: 0 -17px 0 var(--tint); /* the page's top padding above it: nothing reads through */
+  visibility: hidden;
+  transform: translateY(-100%);
+  transition: transform 260ms var(--ease), visibility 0s 260ms;
+}
+.td-actbar.on .td-dock {
+  pointer-events: auto;
+  visibility: visible;
+  transform: none;
+  transition: transform 260ms var(--ease);
+}
+.td-dockname {
+  margin-right: auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.td-dockname b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font: 600 16px var(--display);
+  letter-spacing: 0.02em;
+}
+.td-dockname small {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+.td-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  font: 700 10.5px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  transition: background-color 120ms var(--ease), color 120ms var(--ease), border-color 120ms var(--ease);
+}
+.td-chip i {
+  min-width: 16px;
+  padding: 0 4px;
+  background: var(--yellow);
+  font: 700 10.5px/16px var(--text);
+  font-style: normal;
+  text-align: center;
+  color: var(--ink);
+}
+.td-chip.ink {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.td-chip:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--yellow);
+}
+.td-chip.ink:hover {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.td-chip.ink:hover i {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.td-page.barred {
+  --td-actbar: 39px;
+}
+.td-page.barred .td-lvh {
+  top: var(--td-actbar);
+}
+.td-page.barred.paneled > .td-s.td-actbar {
+  display: grid;
+  height: 39px;
+  margin-bottom: 12px;
+}
+@media (max-width: 1100px) {
+  .td-brow {
+    grid-template-columns: 44px 70px minmax(0, 1fr) auto;
+  }
+  .td-brow > .td-fp,
+  .td-brow > .td-bbar {
+    display: none;
+  }
+  .td-brow > span:empty {
+    display: none;
+  }
+}
+
+/* finishing the bid (D-079): the panel that leads to the document that goes out */
+.td-fpanel .td-sech {
+  margin: 0;
+}
+.td-chk {
+  list-style: none;
+  margin: 0;
+  padding: 4px 16px 10px;
+}
+.td-chk li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.td-chk li:last-child {
+  border-bottom: 0;
+}
+.td-chk li > i {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 26px;
+  padding: 0 4px;
+  background: var(--yellow);
+  font: 600 17px/1 var(--display);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.td-chk li.ok > i {
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+}
+.td-chk li.ok {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.td-chk small {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--mute);
+}
+.td-fsum {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 24px;
+}
+.td-fsum > div {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+}
+.td-fsum b {
+  font: 600 26px/1.1 var(--display);
+  font-variant-numeric: tabular-nums;
+}
+.td-fsum small {
+  font-size: 12px;
+  color: var(--mute);
+}
+.td-ftop {
+  display: grid;
+  gap: 0;
+}
+.td-ftop .tn-label {
+  margin-bottom: 4px;
+}
+.tn .td-ftop button {
+  display: grid;
+  grid-template-columns: 5.5em minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 5px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.tn .td-ftop button:hover {
+  background: var(--hover);
+}
+.td-ftop button span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.td-ftop button em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: var(--mute);
+}
+.td-fwhat summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.td-fpanel .td-pbody p {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.td-fpanel .td-pbody p b {
+  color: var(--ink);
+}
+
+/* the bid that went out: one line above the Bid step */
+.tn-sent {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 9px 20px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13.5px;
+}
+.tn-sent > b {
+  padding: 2px 8px 1px;
+  background: var(--go);
+  font: 600 16px/1.2 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tn-sent > span i {
+  font-style: normal;
+  color: rgb(255 255 255 / 0.75);
+}
+.tn-sentacts {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tn-sent .tn-label {
+  color: rgb(255 255 255 / 0.7);
+}
+.tn .tn-sent .tn-btn.ink {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--ink);
+}
+.tn .tn-sent .tn-btn.out,
+.tn .tn-sent .tn-btn.plain {
+  border-color: rgb(255 255 255 / 0.5);
+  color: #fff;
+}
+.tn .tn-sent .tn-btn.out,
+.tn .tn-sent .tn-btn.plain {
+  background: transparent;
+}
+.tn .tn-sent .tn-btn.out:hover,
+.tn .tn-sent .tn-btn.plain:hover {
+  background: #fff;
+  color: var(--ink);
+}
+.tn-sentdocs {
+  display: flex;
+  gap: 12px;
+}
+.tn-sentdocs a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgb(255 255 255 / 0.5);
+  text-underline-offset: 3px;
+}
+.tn-sentdocs a:hover {
+  text-decoration-color: var(--yellow);
+  color: var(--yellow);
+}
+.tn-sentout {
+  padding: 2px 8px 1px;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 15px/1.2 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

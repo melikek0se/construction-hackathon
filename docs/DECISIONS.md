@@ -1390,3 +1390,109 @@ walks findings must not expect an item (`tests/test_report.py`, `tests/test_cata
 that). Which items a remark holds for is `item.path` starting with `remark.path`.
 Revisit if: findings get a scope of their own (a title, a set of items) — then the map and the section
 counts can show them, and the value of the covered items can be the money at stake.
+
+## D-077 — The mark of an item is compound: one place per thing that can be true of it
+Status: decided · 2026-11-22
+
+An item is in several states at once (a stop finding, a question with the client, a price), like the marking
+of a Petri net, and one mark that showed only the strongest of them hid the rest (Atahan). On the map of the
+tender's document and on the item's number in the text each state has its own place and its own means, and
+none stands in for another:
+- body, colour: what the checks found (red, yellow, blue; a grey tick: nothing);
+- body, letter: what the item is (P, H, B, W, Z) or what the new issue changed (+, Δ, ≠, –);
+- a round beside it: the question to the client — "?" to ask, "?" on green ticked for the next message,
+  "→" dashed in a message not sent yet, "→" sent, "✓" on ink answered. Round, so it is never taken for a
+  finding's square;
+- foot, green: the unit price — a block: a price that holds (typed, a quote, in the file); a line: put there
+  by Polier, not confirmed; nothing: no price. Green stays "taken into what goes out" (a ticked question,
+  a price in the bid).
+In the text the number keeps its finding's colour, carries the same foot, and the round stands under it; a
+price that holds has a green field and a bold total. The legend is grouped by place. Code: `Strip`,
+`Legend`, `priceState` in `TenderDoc.tsx`, `mark` in `Questions.tsx`, `.td-m`, `.td-q` in `tenderdoc.css`.
+A new state gets a place of its own or a new sign in the place it belongs to; it does not replace a mark.
+Revisit if: a fifth thing has to be shown (inquiry out, quote in): the foot can carry it (dashed green).
+
+## D-078 — The cover sheet says what is left for the bid; a unit price is built on a supplier's price
+
+**Decided** 2026-11-22 (Atahan: "as the mails come in and the prices fill, what is left?" — "go ahead").
+
+- "What is left for the bid" on the cover sheet, once the tender is taken on: the items without a price
+  (with "Next one"), the changes from the client's answers to decide, the packages without a quote, the
+  days to the deadline; "Write the X84" (the price sheet where no GAEB XML came) stands there and is the
+  ink button once every item has a price and nothing waits for a decision. The LV's head says "n of m
+  priced" and the net.
+- A supplier's price is the material part only and is never put in as a unit price (D-075). Where one
+  is at hand (the quote for this tender, else the price book), a link under the field opens the parts:
+  (material + waste % + labour + equipment) × (1 + surcharge %). Waste goes onto the material, never
+  onto the LV's quantity. The result goes in as the estimator's own price ("built on material"); the
+  parts are kept in this browser only (`lvcheck.build.<file>.<oz>`), the last surcharge is the next default.
+- Not built: parts kept on the server, labour from hours and a wage, a surcharge of the firm's own.
+
+## D-079 — The Bid step is the bid that went out; before that the bid is finished on the tender's page
+
+**Decided** 2026-11-22 (Atahan: "how can I go from Tender to Bid in the header before I have submitted?";
+"the step that makes the document ready to submit has to be perfect").
+
+- Bid and Award in the band's list are closed until the bid went out (a bid among the files, the day it
+  was sent, or how the tender ended). Before that, `/projects/:id/bid` is the tender's page with the bid
+  being finished: the third button beside "Ask the client" and "Ask for prices" is "Finish the bid".
+- "Finish the bid" puts a panel at the right, like the other two: (1) what is left, as a list that ticks
+  off: items without a price, Polier's prices not confirmed, changes from the answers to decide,
+  questions without an answer, packages without a quote, quantities the client corrected, quotes valid
+  for less than the binding period; (2) the price: net total, what it may cost (boq.risk), where it is
+  least firm, what-if; (3) the document: the X84 (the price sheet where no GAEB XML came); (4) send it:
+  "The bid went out", asked a second time while a point is open. The page keeps the items that still
+  need a price or a look, each with a card that says why and what to do (type it, build it on the
+  material, take Polier's price as it stands).
+- "The bid went out" (`POST /api/analyses/{id}/bid/submit`) keeps the X84 as it stands among the
+  project's files as the submitted bid and notes the day; the project then stands at Bid (`stageOf`: a
+  bid file, or `plan.sent` for an LV that is no GAEB XML). No check is started on the file.
+- On the Bid step a line says when the bid went out, with how much, how long it binds and the file kept;
+  "Won" / "Lost" lead on to Award, "It did not go out" takes the kept X84 out again
+  (`POST /api/catalog/{id}/bid/withdraw`) and the tender is open again.
+- Not done: the prices are not frozen once the bid went out; the Bid step's own views are as before.
+
+## D-080 — A bid that went out is closed: its prices stay, its page is the document as submitted
+
+**Decided** 2026-11-22 (Atahan: "make it flawless"), completing D-079.
+
+- Once the bid went out, no unit price is changed: the fields on the document are closed, the server
+  refuses (`_bid_open`, 409) and Polier puts nothing in (`_autofill`). "It did not go out" opens it again.
+- The Bid step of a bid submitted from here is the tender's document with the prices it went out with
+  and what the checks found beside the items; the views of before (map, bid sheet, what-if) remain for a
+  project whose bid came as a file.
+- The line above it carries the X84, the price sheet and the hand-over sheet. "Won" and "Lost" lead to
+  Award; with an ending the line says it and offers "To the award" and "Open again".
+- "Priced" is counted the same everywhere: an item with a price; an item without a quantity is not one.
+
+## D-081 — The cover sheet is the board of the tender; its actions end the rows, and dock as a strip
+
+**Decided** 2026-11-22 (Atahan, after a strip of buttons above the title read as belonging to nothing, and a
+mock of three options served on a port: "option 1").
+
+- The cover sheet's head names the tender and, at the right, the days to the bid as its one large figure,
+  with the bid's day and the last day for questions under it.
+- Under the head stands the board: a row per station in the pipeline's order (Checks, Client, Prices, Bid).
+  A row is a plate with the figure, how the station stands in one line and a second quieter one, how far
+  it is (the LV's fingerprint for the checks, a bar for the others), and at its end the action that goes
+  on with it ("Next to look at", "Ask the client", "Ask for prices", "Finish the bid"). Exactly one row is
+  next and carries the page's only ink button: questions that can still be asked, else packages not sent,
+  else the bid.
+- In the intake the decision stands in place of the board's top line: Polier's read of the fit, the days,
+  the size and the findings, beside "Take it on" and "Pass"; Client, Prices and Bid are held rows that say
+  what starts once the tender is taken on.
+- Once the board has left the screen a 39px strip takes over, over the whole document: the tender's name,
+  the days to the bid and the same actions as small buttons; the head of an LV sticks under it. Where a
+  panel stands beside the document the strip is there from the start and leads with "Back to the tender".
+- The board replaces "What is left for the bid" (D-078), the two lines of "Questions and prices" and
+  "Where the findings are" on the cover sheet; "Where the prices come from" keeps the sources. No action
+  on the tender stands in the band (it keeps "Run the checks", "Stop", "Close the questions").
+- Why: an action is read with the state it changes (SAP Fiori action placement: object actions stay
+  visible while scrolling, one primary action per page; ServiceNow and Salesforce show recommended
+  actions as a list with their state); a header may shrink and stay (Wix page header, NN/g on sticky
+  headers); the bid/no-bid decision rests on fit, risk and the deadline, so those stand beside it.
+- Code: `BoardRow`, `board`, `intake`, `back` of `TenderDocView` and the dock in `TenderDoc.tsx`; the rows
+  in `layout` of `Tender.tsx`; `.td-board`, `.td-brow`, `.td-decide`, `.td-dock`, `.td-chip` in
+  `tenderdoc.css`. The mock: not kept.
+- Not built: "Next one" for the items without a price on the cover sheet (it is in "Finish the bid");
+  a tender of several LVs with none open has the Checks row only.

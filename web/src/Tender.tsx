@@ -5,14 +5,14 @@
 import { cloneElement, isValidElement, memo, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { Sign } from "./components";
-import { getBid, getSupply, openCatalogProject, setBidPrices } from "./api";
+import { getBid, getBidRisk, getSupply, openCatalogProject, setBidPrices } from "./api";
 import { ProjectView } from "./ProjectView";
-import { TenderDocView, type AskLayer, type DocPrices } from "./TenderDoc";
+import { TenderDocView, type AskLayer, type BoardRow, type DocPrices } from "./TenderDoc";
 import type { QuestionsLayer } from "./Questions";
 import { LvText, eur, qty, quotedFragments } from "./format";
 import { PLANNED, dmy } from "./Projects";
 import { viewsOf, type TenderPlace, type TenderStep, type TenderView } from "./router";
-import { KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type Bid, type BidRow, type Finding, type ItemKind, type Plan, type PriceSuggestion, type Project, type ProjectSummary, type QuestionsState, type Run, type Severity, type SupplyState, type Tender, type TenderAward, type TenderDoc, type TenderItem, type TenderLv } from "./types";
+import { KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type Bid, type BidRisk, type BidRow, type Finding, type ItemKind, type Plan, type PriceSuggestion, type Project, type ProjectSummary, type QuestionsState, type Run, type Severity, type SupplyState, type Tender, type TenderAward, type TenderDoc, type TenderItem, type TenderLv } from "./types";
 import "./tender.css";
 
 const LETTER: Record<ItemKind, string> = { normal: "", lump_sum: "P", hourly: "H", contingency: "B", alternative: "W", surcharge: "Z" };
@@ -551,13 +551,17 @@ function movePanel(change: () => void) {
     .finally(() => delete root.dataset.panel);
 }
 
-export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments, check, questions, prices, bid, onAsk, outcome, onOutcome, run, starting, onRun, onMove, pages, whatif, intake }: { bandSlot: HTMLElement | null; intake: { onTake: () => void; onPass: () => void } | null; tender: Tender; plan: Plan; place: TenderPlace; onPlace: (p: TenderPlace) => void; onDocuments: () => void; check: Check; prices: Pricing; bid: { analysisId: string | null; sheet: ReactNode }; outcome: Outcome | null; onOutcome: (o: Outcome | null) => void; run: Run | null; starting: boolean; onRun: () => void; onMove: (what: "go-on" | "cancel") => void; pages: ReactNode; whatif: ReactNode; questions: { state: QuestionsState | null; view: ReactNode }; onAsk: (lv: number, oz: string, ask: boolean) => void }) {
+export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments, check, questions, prices, bid, onAsk, outcome, onOutcome, run, starting, onRun, onMove, pages, whatif, intake, onSubmit, onWithdraw }: { onWithdraw: () => Promise<void>; onSubmit: (() => Promise<void>) | null; bandSlot: HTMLElement | null; intake: { onTake: () => void; onPass: () => void } | null; tender: Tender; plan: Plan; place: TenderPlace; onPlace: (p: TenderPlace) => void; onDocuments: () => void; check: Check; prices: Pricing; bid: { analysisId: string | null; sheet: ReactNode }; outcome: Outcome | null; onOutcome: (o: Outcome | null) => void; run: Run | null; starting: boolean; onRun: () => void; onMove: (what: "go-on" | "cancel") => void; pages: ReactNode; whatif: ReactNode; questions: { state: QuestionsState | null; view: ReactNode }; onAsk: (lv: number, oz: string, ask: boolean) => void }) {
   const checking = place.step === "check";
   const asking = place.step === "questions";
   const pricing = place.step === "prices";
-  const bidding = place.step === "bid";
+  // The Bid step is the bid that went out (D-079): a bid among the files, the day it was sent, or how the
+  // tender ended. Before that, "bid" in the address is the tender's page with the bid being finished.
+  const submitted = !!plan.sent || !!outcome || tender.documents.some((d) => d.step === "bid" || d.step === "award");
+  const finishing = place.step === "bid" && !submitted && !intake;
+  const bidding = place.step === "bid" && !finishing;
   const awarding = place.step === "award";
-  const picking = checking || pricing || bidding; // the open item is App's selection: the item sheet is the same in all three
+  const picking = checking || pricing || bidding || finishing; // the open item is App's selection: the item sheet is the same in all three
   // the bid as it stands: the unit price per item; read again on the way back from the bid sheet
   const [offer, setOffer] = useState<Bid | null>(null);
   useEffect(() => {
@@ -572,11 +576,6 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
     return () => (window.clearInterval(again), void (stale = true));
   }, [bid.analysisId, bidding && place.view === "items"]); // eslint-disable-line react-hooks/exhaustive-deps
   const rowBy = useMemo(() => new Map<string, BidRow>((offer?.rows ?? []).map((r) => [r.item_oz, r])), [offer]);
-  // the unit prices on the document: shown from the start, typed only once the tender is taken on
-  const docPrices = useMemo<DocPrices | null>(() => (offer && bid.analysisId ? {
-    rows: rowBy, priced: offer.priced, net: offer.net,
-    set: intake ? null : (oz, text) => void setBidPrices(bid.analysisId!, { [oz]: text }).then(setOffer, () => undefined),
-  } : null), [offer, rowBy, bid.analysisId, !intake]); // eslint-disable-line react-hooks/exhaustive-deps
   /** How an item stands in the bid: a price of the estimator's own, a suggestion taken as it stands, none. */
   const bidOf = (oz: string): "own" | "taken" | "open" => {
     const r = rowBy.get(oz);
@@ -586,14 +585,38 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
   const [supply, setSupply] = useState<SupplyState | null>(null);
   useEffect(() => {
     setSupply(null);
-    if (intake || !(checking || asking || pricing) || !prices.analysisId || place.view === "inquiries") return;
+    if (intake || !(checking || asking || pricing || finishing) || !prices.analysisId || place.view === "inquiries") return;
     let stale = false;
     const read = () => getSupply(prices.analysisId!).then((s) => !stale && setSupply(s), () => undefined);
     void read();
     // the inquiries on the cover page change what stands beside the items (sent, answered, taken): read again
     const again = window.setInterval(read, 8000);
     return () => (window.clearInterval(again), void (stale = true));
-  }, [intake, checking || asking || pricing, prices.analysisId, place.view]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [intake, checking || asking || pricing || finishing, prices.analysisId, place.view]); // eslint-disable-line react-hooks/exhaustive-deps
+  // the unit prices on the document: shown from the start, typed only once the tender is taken on
+  const docPrices = useMemo<DocPrices | null>(() => (offer && bid.analysisId ? {
+    rows: rowBy, priced: offer.rows.filter((r) => r.price !== null).length, net: offer.net, // an item without a quantity is no priced item
+    // typed once the tender is taken on, and no more once the bid went out (D-080)
+    set: intake || plan.sent ? null : (oz, text) => void setBidPrices(bid.analysisId!, { [oz]: text }).then(setOffer, () => undefined),
+    why: plan.sent ? "The bid went out: take it back to change a price" : undefined,
+    file: offer.file,
+    // a supplier's price for the material: the quote for this tender, else the price book's
+    material: (oz) => {
+      const s = supply?.prices[oz], m = rowBy.get(oz)?.material;
+      if (s?.unit_price !== undefined && s.part === "material" && (s.status === "quoted" || s.status === "at_hand")) return { unit_price: s.unit_price, supplier: s.source ?? "" };
+      return m ? { unit_price: m.unit_price, supplier: m.supplier } : null;
+    },
+  } : null), [offer, rowBy, bid.analysisId, !intake, supply, plan.sent]); // eslint-disable-line react-hooks/exhaustive-deps
+  // while the bid is finished: how sure its prices are (boq.risk), read again when a price changes
+  const [risk, setRisk] = useState<BidRisk | null>(null);
+  const [sending, setSending] = useState<"armed" | "busy" | null>(null); // "The bid went out": asked once more where something is open
+  const [sendError, setSendError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!finishing || !bid.analysisId) return void setRisk(null);
+    let stale = false;
+    getBidRisk(bid.analysisId).then((r) => !stale && setRisk(r), () => undefined);
+    return () => void (stale = true);
+  }, [finishing, bid.analysisId, offer?.net, offer?.priced]); // eslint-disable-line react-hooks/exhaustive-deps
   const isAsked = (l: TenderLv, oz: string) => tender.asked.some((a) => a.lv === l.id && a.oz === oz);
   const single = tender.lvs.length === 1;
   const lv = single ? tender.lvs[0] : tender.lvs.find((l) => l.id === place.lv) ?? null;
@@ -603,7 +626,6 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
   const [drawer, setDrawer] = useState(false);
   // where the band holds the two things to do next (ask the client, ask for prices): the page's document
   // knows their counts and puts the buttons there
-  const [actSlot, setActSlot] = useState<HTMLElement | null>(null);
   const [stageMenu, setStageMenu] = useState(false);
   const stageBox = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -1051,8 +1073,8 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
   const stopped = !!run && (run.status === "failed" || run.status === "interrupted" || run.status === "cancelled");
   const lockedWhy = intake ? "In the intake: take the tender on to go on" : undefined;
   const stageCells: { step: "check" | "bid" | "award"; n: number; name: string; on: boolean; busy?: boolean; off?: boolean; line: ReactNode }[] = [
-    { step: "check", n: 1, name: "Tender", on: checking || asking || pricing, busy: !!(atTender || atQuestions || atPrices || queued), line: <>{atTender ? `${atTender.title} · ${atTender.line || "running"}` : atQuestions ? atQuestions.line || "Polier drafts the questions" : atPrices ? atPrices.line || "Polier looks up prices" : queued ? "Polier is about to check it" : stopped ? `the checks stopped (${run!.status}) · ` : ""}{atTender || atQuestions || atPrices || queued ? "" : <>{single ? "1 LV" : `${tender.lvs.length} LVs`} · {count(tender.items, "item")} · {found ? (SEVERITIES.some((sev) => found[sev] > 0) ? SEVERITIES.filter((sev) => found[sev] > 0).map((sev) => countLabel(found[sev], sev)).join(" · ") : "no finding") : "being read"}{!intake && qs && qs.length > 0 && ` · ${count(qs.length, "question")}`}</>}</> },
-    { step: "bid", n: 2, name: "Bid", on: bidding, line: <>{bidding && offer ? `${offer.priced} of ${offer.items} priced · ${eur(offer.net)} net` : bids ? `${count(bids, "bid file")} came` : "unit prices on the LV"}</> },
+    { step: "check", n: 1, name: "Tender", on: checking || asking || pricing || finishing, busy: !!(atTender || atQuestions || atPrices || queued), line: <>{atTender ? `${atTender.title} · ${atTender.line || "running"}` : atQuestions ? atQuestions.line || "Polier drafts the questions" : atPrices ? atPrices.line || "Polier looks up prices" : queued ? "Polier is about to check it" : stopped ? `the checks stopped (${run!.status}) · ` : ""}{atTender || atQuestions || atPrices || queued ? "" : <>{single ? "1 LV" : `${tender.lvs.length} LVs`} · {count(tender.items, "item")} · {found ? (SEVERITIES.some((sev) => found[sev] > 0) ? SEVERITIES.filter((sev) => found[sev] > 0).map((sev) => countLabel(found[sev], sev)).join(" · ") : "no finding") : "being read"}{!intake && qs && qs.length > 0 && ` · ${count(qs.length, "question")}`}</>}</> },
+    { step: "bid", n: 2, name: "Bid", on: bidding, off: !submitted, line: <>{!submitted ? "once the bid has gone out" : plan.sent && offer ? `sent ${dayText(plan.sent)} · ${eur(offer.net)} net` : bidding && offer ? `${offer.rows.filter((r) => r.price !== null).length} of ${offer.items} priced · ${eur(offer.net)} net` : bids ? `${count(bids, "bid file")} came` : "unit prices on the LV"}</> },
     { step: "award", n: 3, name: "Award", on: awarding, off: !(tender.awards.length || outcome || awarding), line: <>{tender.awards.length ? `${eur(tender.awards.reduce((n, a) => n + a.net, 0))} net` : outcome ? OUTCOMES.find(([o]) => o === outcome)![1].toLowerCase() : "not yet"}</> },
   ];
   const here = stageCells.find((c) => c.on) ?? stageCells[0];
@@ -1072,7 +1094,7 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
           {stageMenu && (
             <div className="tn-stagemenu" role="menu">
               {stageCells.map((c) => (
-                <button key={c.step} role="menuitem" className={`tn-stage${c.on ? " on" : ""}${c.busy ? " busy" : ""}${c.off ? " off" : ""}${c.step !== "check" ? locked : ""}`} disabled={c.step !== "check" && !!intake} title={c.step !== "check" ? lockedWhy : undefined} aria-current={c.on ? "step" : undefined} onClick={() => (setStageMenu(false), toStep(c.step))}>
+                <button key={c.step} role="menuitem" className={`tn-stage${c.on ? " on" : ""}${c.busy ? " busy" : ""}${c.off ? " off" : ""}${c.step !== "check" ? locked : ""}`} disabled={c.step !== "check" && (!!intake || !submitted)} title={c.step !== "check" && !submitted && !intake ? "The bid has not gone out yet: finish it on the tender's page (Finish the bid)" : c.step !== "check" ? lockedWhy : undefined} aria-current={c.on ? "step" : undefined} onClick={() => (setStageMenu(false), toStep(c.step))}>
                   <b><i>{c.n}</i>{c.name}</b>
                   <span>{c.line}</span>
                 </button>
@@ -1090,21 +1112,54 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
             <button className="btn-ghost" disabled={run.stopping} title="It stops after the step it is on" onClick={() => onMove("cancel")}>{run.stopping ? "Stopping" : "Stop"}</button>
           </span>
         )}
-        {(checking || asking || pricing) && !intake && lv && <span className="tn-decide tn-acts" ref={setActSlot} />}
         {(checking || asking || pricing) && !intake && run?.status === "waiting" && (
           <span className="tn-decide">
             <button className="btn-ghost" title="Do not wait for the client's answers: what stays open is priced as a risk" onClick={() => onMove("go-on")}>Close the questions</button>
           </span>
         )}
-        {intake && (
-          <span className="tn-decide">
-            <button className="btn-new" title="It goes on to the questions and the prices" onClick={intake.onTake}>Take it on</button>
-            <button className="btn-ghost" title="No bid: it goes to Award as passed" onClick={intake.onPass}>Pass</button>
-          </span>
-        )}
       </nav>,
       bandSlot)}
-      {!intake && lv && isValidElement(questions.view) && (asking || pricing || (checking && place.view === "map")) ? (
+      {/* the bid that went out (D-079): when, what, how long it binds; how it ended leads on to Award, and a bid
+          that did not go out after all is taken back to its tender */}
+      {bidding && !!plan.sent && (
+        <div className="tn-sent">
+          <b>The bid went out</b>
+          <span>{dayText(plan.sent)}{offer ? ` · ${offer.rows.filter((r) => r.price !== null).length} of ${offer.items} items priced · ${eur(offer.net)} net` : ""}{plan.binding_until ? ` · bound until ${dayText(plan.binding_until)}` : ""}{(() => { const kept = tender.documents.find((d) => d.step === "bid"); return kept ? <> · kept as <i lang="de">{kept.name}</i></> : null; })()}</span>
+          {bid.analysisId && (
+            <span className="tn-sentdocs">
+              {offer?.x84 && <a href={`/api/analyses/${bid.analysisId}/bid.x84`} download title="The bid as it went out">X84</a>}
+              <a href={`/api/analyses/${bid.analysisId}/bid.csv`} download title="The prices as a sheet">Price sheet</a>
+              <a href={`/api/analyses/${bid.analysisId}/handover.html`} target="_blank" rel="noreferrer" title="For the site: where a change order can arise, what the client was asked and answered, the prices that rest on an assumption">Hand-over sheet</a>
+            </span>
+          )}
+          {outcome ? (
+            // it ended: said here, the rest is the Award step's; "Open again" takes the ending back
+            <span className="tn-sentacts">
+              <span className="tn-label">How it ended</span>
+              <b className="tn-sentout">{OUTCOMES.find(([o]) => o === outcome)?.[1] ?? outcome}</b>
+              <button className="tn-btn out sm" onClick={() => toStep("award")}>To the award</button>
+              <button className="tn-btn plain sm" onClick={() => onOutcome(null)}>Open again</button>
+            </span>
+          ) : (
+            <span className="tn-sentacts">
+              <span className="tn-label">How it ended</span>
+              <button className="tn-btn ink sm" onClick={() => (onOutcome("won"), onPlace({ ...place, step: "award", view: "map", item: null }))}>Won</button>
+              <button className="tn-btn out sm" onClick={() => (onOutcome("lost"), onPlace({ ...place, step: "award", view: "map", item: null }))}>Lost</button>
+              <button className="tn-btn plain sm" disabled={sending === "busy"} title="The kept X84 is taken out and the tender is open again" onClick={() => {
+                if (sending !== "armed") return setSending("armed");
+                setSending("busy");
+                onWithdraw().then(() => (setSending(null), onPlace({ ...place, step: "bid", view: "map" })), () => setSending(null));
+              }}>{sending === "armed" ? "Yes, take the bid back" : "It did not go out"}</button>
+            </span>
+          )}
+        </div>
+      )}
+      {bidding && !!plan.sent && lv ? (
+        // the bid that went out (D-080): the tender's document with the unit prices it was submitted with,
+        // nothing to type; what the checks found stays beside the items, for the hand-over
+        <TenderDocView prices={docPrices} tender={tender} plan={plan} place={place} views={null} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
+          summary={check.summary} findings={check.findingsByOz} findingsLv={lv.id} selected={check.selected} onOpenLv={(id) => onPlace({ ...place, lv: id, item: null })} />
+      ) : !intake && lv && isValidElement(questions.view) && (asking || pricing || finishing || (checking && place.view === "map")) ? (
         // tender, questions and prices on one document (D-071): the Tender step's page, with the question
         // under its finding and the price beside its item; the two buttons above the map open the message
         // to the client or the price inquiries where the map was
@@ -1112,22 +1167,55 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
           composing: asking,
           onCompose: () => toStep("questions"),
           layout: (q: QuestionsLayer) => {
-            const sent = supply ? supply.packages.filter((x) => x.ask.some((a) => a.mail?.sent_at)).length : 0;
+            // What is left until the bid can go out (D-078): the items without a price, what waits for a
+            // decision, what is still with the client and the firms, the days to the deadline.
+            const rows = offer?.rows ?? [];
+            const unpriced = rows.filter((r) => r.price === null && r.qty !== null);
+            const onMaterial = unpriced.filter((r) => docPrices?.material?.(r.item_oz)).length;
+            const notAsked = qs?.filter((x) => x.status === "new" || x.status === "drafted").length ?? 0;
+            const withClient = qs?.filter((x) => x.status === "sent" || x.status === "partly").length ?? 0;
+            const toSend = supply ? supply.packages.filter((x) => !x.ask.some((a) => a.mail?.sent_at)).length : 0;
+            const waiting = supply ? supply.packages.filter((x) => x.ask.some((a) => a.mail?.sent_at) && !x.ask.some((a) => a.status === "answered")).length : 0;
+            const ready = offer !== null && unpriced.length === 0 && q.toDecide === 0;
+            const nextUnpriced = () => {
+              const at = unpriced.findIndex((r) => r.item_oz === check.selected);
+              check.onPick(unpriced[(at + 1) % unpriced.length].item_oz);
+            };
+            // The board of the cover sheet (D-081): the client, the prices, the bid, each a row that says how
+            // it stands with its action at the end. One row is next: questions that can still be asked, else
+            // packages not sent, else the bid itself.
+            const toAsk = qs?.filter((x) => x.status === "new").length ?? 0;
+            const answered = qs?.filter((x) => x.status === "partly" || x.status === "answered").length ?? 0;
+            const closed = !!plan.questions_due && /ago$|^yesterday$/.test(daysLeft(plan.questions_due)); // the last day for questions is over
+            const askable = toAsk > 0 && !closed;
+            const nextRow = askable ? "client" : toSend > 0 ? "prices" : "bid";
+            const toGoBy = lv.items.filter((i) => priced(i.oz).unit !== null).length;
+            const board: BoardRow[] = [
+              {
+                key: "client", n: qs ? qs.length : "…", name: "Client", next: nextRow === "client", open: asking,
+                says: qs ? (qs.length ? <><b>{toAsk ? `${toAsk} to ask` : "Nothing to ask"}</b> · {notAsked - toAsk > 0 ? `${notAsked - toAsk} in a message not sent · ` : ""}{withClient} with the client · {answered} answered</> : <b>No finding needs the client</b>) : "Reading the questions",
+                sub: [q.toDecide ? `${count(q.toDecide, "change")} from the answers to decide` : "", plan.questions_due ? `questions close ${daysLeft(plan.questions_due)}` : ""].filter(Boolean).join(" · ") || undefined,
+                share: qs && qs.length ? (qs.length - toAsk) / qs.length : null,
+                act: { label: "Ask the client", count: q.count || toAsk, title: "The questions to the client as one message: tick, reword, send", onClick: () => toStep(asking ? "check" : "questions") },
+              },
+              {
+                key: "prices", n: supply ? toSend + waiting : "…", name: "Prices", next: nextRow === "prices", open: pricing,
+                says: supply ? (supply.packages.length ? <><b>{count(toSend, "package")} to send</b> · {waiting} sent, no answer yet</> : <b>No package to ask for</b>) : "Reading the prices",
+                sub: supply ? `${toGoBy} of ${lv.items.length} items have a price to go by` : undefined,
+                share: supply ? toGoBy / Math.max(1, lv.items.length) : null,
+                act: { label: "Ask for prices", count: toSend, title: "The price inquiries to suppliers and subcontractors, package by package", onClick: () => toStep(pricing ? "check" : "prices") },
+              },
+              {
+                key: "bid", n: offer ? unpriced.length : "…", name: "Bid", next: nextRow === "bid" && !submitted, open: finishing,
+                says: submitted ? <b>The bid went out</b> : offer ? <><b>{count(unpriced.length, "item")} without a price</b> · {q.toDecide ? `${q.toDecide} to decide` : "nothing to decide"}</> : "Reading the bid",
+                sub: offer ? <>{rows.length - unpriced.length} of {rows.length} priced · {eur(offer.net)} net{onMaterial > 0 && ` · ${onMaterial} have a supplier's price to build on`}{ready && " · the bid can go out"}</> : undefined,
+                share: offer && rows.length ? (rows.length - unpriced.length) / rows.length : null,
+                act: submitted ? null : { label: "Finish the bid", count: unpriced.length, title: "What is left, the price, the X84, and saying that the bid went out", onClick: () => toStep(finishing ? "check" : "bid") },
+              },
+            ];
             const cover = (
-              <section className="wide td-after">
-                <h3>Questions and prices<span>what Polier prepared since you took the tender on</span></h3>
-                <div className="td-after2">
-                  <div>
-                    <b>To the client</b>
-                    <p>{qs ? (qs.length ? `${count(qs.length, "question")}: ${qs.filter((x) => x.status === "new").length} not asked, ${qs.filter((x) => x.status === "drafted" || x.status === "sent").length} with the client, ${qs.filter((x) => x.status === "partly" || x.status === "answered").length} answered.` : "No finding needs the client so far.") : "Reading the questions."}</p>
-                    <button className="tn-btn ink sm" onClick={() => toStep("questions")}>Ask the client</button>
-                  </div>
-                  <div>
-                    <b>To suppliers and subcontractors</b>
-                    <p>{supply ? `${lv.items.filter((i) => priced(i.oz).unit !== null).length} of ${lv.items.length} items have a price to go by. ${count(supply.packages.length, "package")} to ask for, ${sent} sent.` : "Reading the prices."}</p>
-                    <button className="tn-btn ink sm" onClick={() => toStep("prices")}>Ask for prices</button>
-                  </div>
-                </div>
+              <><section className="wide td-after">
+                <h3>Where the prices come from<span>the items of this LV, by what there is to go by</span></h3>
                 {supply && (
                   <div className="td-srcs">
                     {SOURCES.map(([src, title, says]) => {
@@ -1142,9 +1230,128 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
                     })}
                   </div>
                 )}
-              </section>
+              </section></>
             );
-            const layer: AskLayer = pricing
+            // Finishing the bid (D-079): the panel is the way to the document that goes out; the page keeps
+            // the items that still need a price or a look, each with why.
+            const de2 = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const unconfirmed = rows.filter((r) => r.source === "suggestion");
+            const corrected = rows.filter((r) => r.qty_answered !== null);
+            const needs = new Set([...unpriced, ...unconfirmed, ...corrected].map((r) => r.item_oz));
+            const soft = risk?.by_basis.find((b) => b.basis === "quote_soft")?.items ?? 0;
+            const finishCard = (oz: string) => {
+              const r = rowBy.get(oz);
+              if (!r) return null;
+              const m = docPrices?.material?.(oz) ?? null;
+              const src = priced(oz).source;
+              return (
+                <>
+                  {r.price === null && r.qty !== null && (
+                    <div className="td-cd pr pt">
+                      <h4><i className="tn-tick" />No price<span className="td-id">to do</span></h4>
+                      <p>{m ? `${m.supplier} quoted ${de2(m.unit_price)} € for the material alone. Build the unit price on it: the link under the field.`
+                        : src === "held" ? "It waits for the client's answer. Price it on an assumption, or close the questions and add a risk allowance."
+                        : src === "asked" ? "In a price inquiry, no quote yet. Type a price of your own, or wait for the quote: it goes in by itself."
+                        : "Nothing to go by: no quote, no earlier price, no similar item in past bids. Type the unit price in the field."}</p>
+                    </div>
+                  )}
+                  {r.source === "suggestion" && r.unit_price !== null && (
+                    <div className="td-cd pr pt">
+                      <h4><i className={`tn-src is-${r.suggestion?.basis === "partners" ? "book" : "past"}`} />Polier's price<span className="td-id">not confirmed</span></h4>
+                      <p>{r.suggestion?.basis === "partners" ? "From the price book: what a partner quoted for the same thing in another tender." : `From ${r.suggestion?.sources ?? "similar"} similar items of past bids, ${r.suggestion?.confidence ?? "low"} confidence${r.suggestion?.low != null && r.suggestion.high != null ? `, between ${de2(r.suggestion.low)} and ${de2(r.suggestion.high)} €` : ""}.`} Change it in the field, or take it.</p>
+                      <div className="tn-askrow"><button className="tn-btn ink sm" onClick={() => docPrices?.set?.(oz, de2(r.unit_price!))}>Take {de2(r.unit_price)} € as it stands</button></div>
+                    </div>
+                  )}
+                  {r.qty_answered !== null && (
+                    <div className="td-cd pr">
+                      <h4><i className="tn-blk diff">Δ</i>The client corrected the quantity</h4>
+                      <p>The answer says <b>{r.qty_answered.toLocaleString("de-DE")} {r.unit}</b>; the file, and so the bid, has <b>{r.qty?.toLocaleString("de-DE")} {r.unit}</b>. A bid has to match the LV the client sent: ask for the corrected LV before the bid goes out.</p>
+                    </div>
+                  )}
+                </>
+              );
+            };
+            const checks: { ok: boolean; n?: number; text: string; sub?: string; act?: [string, () => void] }[] = offer ? [
+              { ok: unpriced.length === 0, n: unpriced.length, text: unpriced.length ? `${count(unpriced.length, "item")} without a price` : "Every item has a price", sub: unpriced.length ? `An item without a price goes out empty.${onMaterial ? ` ${onMaterial} have a supplier's price to build on.` : ""}` : undefined, act: unpriced.length ? ["Next one", nextUnpriced] : undefined },
+              { ok: unconfirmed.length === 0, n: unconfirmed.length, text: unconfirmed.length ? `${count(unconfirmed.length, "price")} of Polier's not confirmed` : "No price is a suggestion only", sub: unconfirmed.length ? "From the price book or past bids. Take or change each: beside its item." : undefined },
+              { ok: q.toDecide === 0, n: q.toDecide, text: q.toDecide ? `${count(q.toDecide, "change")} from the client's answers to decide` : "Nothing from the client's answers waits", act: q.toDecide ? ["Open", () => toStep("questions")] : undefined },
+              { ok: notAsked + withClient === 0, n: notAsked + withClient, text: notAsked + withClient ? `${count(notAsked + withClient, "question")} without the client's answer` : "No question is open", sub: notAsked + withClient ? `${notAsked} not asked, ${withClient} with the client. What stays open is your risk: price it in.` : undefined, act: notAsked + withClient ? ["Open", () => toStep("questions")] : undefined },
+              { ok: toSend + waiting === 0, n: toSend + waiting, text: toSend + waiting ? `${count(toSend + waiting, "package")} without a quote` : "Every package has its quote", sub: toSend + waiting ? `${toSend} to send, ${waiting} sent without an answer.` : undefined, act: toSend + waiting ? ["Open", () => toStep("prices")] : undefined },
+              { ok: corrected.length === 0, n: corrected.length, text: corrected.length ? `${count(corrected.length, "quantity", "quantities")} the client corrected` : "No quantity was corrected in an answer", sub: corrected.length ? "The X84 keeps the file's quantities: ask for the corrected LV." : undefined },
+              ...(soft ? [{ ok: false, n: soft, text: `${count(soft, "quote")} valid for less than the binding period`, sub: plan.binding_until ? `You are bound until ${dayText(plan.binding_until)}; ask the firm to hold its price that long.` : undefined }] : []),
+            ] : [];
+            const open = checks.filter((c) => !c.ok).length;
+            const send = () => {
+              if (!onSubmit) return;
+              if (open > 0 && sending !== "armed") return setSending("armed");
+              setSending("busy");
+              setSendError(null);
+              onSubmit().then(() => setSending(null), (e) => (setSending(null), setSendError(e instanceof Error ? e.message : String(e))));
+            };
+            const finishPanel = offer && (
+              <div className="td-fpanel td-sheet">
+                <header className="td-phead">
+                  <span className="tn-ix">{open}</span>
+                  <div><b>Finish the bid</b><small>{rows.length - unpriced.length} of {rows.length} priced · {eur(offer.net)} net{plan.due ? ` · due ${dayText(plan.due)}, ${daysLeft(plan.due)}` : ""}</small></div>
+                </header>
+                <h3 className="td-sech"><i>1</i>What is left</h3>
+                <ul className="td-chk">
+                  {checks.map((c, n) => (
+                    <li key={n} className={c.ok ? "ok" : "open"}>
+                      <i>{c.ok ? "✓" : c.n}</i>
+                      <span>{c.text}{c.sub && <small>{c.sub}</small>}</span>
+                      {c.act && <button className="tn-btn out sm" onClick={c.act[1]}>{c.act[0]}</button>}
+                    </li>
+                  ))}
+                </ul>
+                <h3 className="td-sech"><i>2</i>The price</h3>
+                <div className="td-pbody">
+                  <div className="td-fsum">
+                    <div><span className="tn-label">Bid total, net</span><b>{eur(offer.net)}</b><small>{rows.length - unpriced.length} of {rows.length} items{offer.allowances > 0 ? ` · ${eur(offer.allowances)} of it risk allowance from open points` : ""}</small></div>
+                    {risk && risk.priced > 0 && (
+                      <div><span className="tn-label">What it may cost</span><b>{eur(risk.p50)} to {eur(risk.p80)}</b><small>the middle case and four cases out of five, from how firm each price is. Covered by {eur(risk.allowance)} ({risk.allowance_percent.toLocaleString("de-DE")} %) on top.</small></div>
+                    )}
+                  </div>
+                  {risk && risk.top.length > 0 && (
+                    <div className="td-ftop">
+                      <span className="tn-label">Where the price is least firm</span>
+                      {risk.top.slice(0, 4).map((t) => (
+                        <button key={t.oz} onClick={() => check.onPick(t.oz)} title={t.why}><b>{t.oz}</b><span lang="de">{t.label}</span><em>± {eur(t.exposure)}</em></button>
+                      ))}
+                    </div>
+                  )}
+                  {whatif && <details className="td-fwhat"><summary>What if a price, a quantity or a rate changes</summary>{whatif}</details>}
+                </div>
+                <h3 className="td-sech"><i>3</i>The document</h3>
+                <div className="td-pbody">
+                  {offer.x84 ? (
+                    <p>The bid goes back as <b>GAEB DA XML, phase 84</b>: the client's own file <span lang="de">{offer.file}</span> with your unit price and total in every priced item. Texts and quantities are the client's and are not touched.</p>
+                  ) : (
+                    <p>No GAEB XML came for this LV, so no X84 can be written. The price sheet (item, quantity, unit price, total) is what you carry into the client's form or platform.</p>
+                  )}
+                  <div className="tn-askrow">
+                    {offer.x84 && <a className={`tn-btn sm ${open ? "out" : "ink"}`} href={`/api/analyses/${bid.analysisId}/bid.x84`} download>Write the X84</a>}
+                    <a className={`tn-btn sm ${offer.x84 || open ? "out" : "ink"}`} href={`/api/analyses/${bid.analysisId}/bid.csv`} download>Price sheet (CSV)</a>
+                  </div>
+                </div>
+                <h3 className="td-sech"><i>4</i>Send it</h3>
+                <div className="td-pbody">
+                  <p>Upload the file on the client's platform or send it as the tender says. Then say so here: {offer.x84 ? "the X84 as it stands is kept with the project as the bid you submitted, and " : ""}the tender goes on to <b>Bid</b>.</p>
+                  {sendError && <p className="q-error" role="alert">{sendError}</p>}
+                  <div className="tn-askrow">
+                    <button className={`tn-btn sm ${open && sending !== "armed" ? "out" : "ink"}`} disabled={!onSubmit || sending === "busy"} onClick={send}>
+                      {sending === "busy" ? "Keeping the bid" : sending === "armed" ? `Yes, it went out with ${count(open, "point")} open` : "The bid went out"}
+                    </button>
+                    {sending === "armed" && <button className="tn-btn plain sm" onClick={() => setSending(null)}>Not yet</button>}
+                    {open > 0 && sending !== "armed" && <span className="td-leftsays">{count(open, "point")} above still open.</span>}
+                  </div>
+                </div>
+              </div>
+            );
+            const layer: AskLayer = finishing
+              ? { card: q.card, mark: q.mark, keep: () => false, extra: finishCard, only: needs.size ? (oz: string) => needs.has(oz) : null, wide: true, head: { title: "To finish", note: "to price or check" },
+                  panel: () => finishPanel || <p className="tn-wait">Reading the bid.</p> }
+              : pricing
               ? { card: q.card, mark: q.mark, keep: () => false, extra: priceCard, only: toPrice, wide: true, head: { title: "Prices", note: "in a package" },
                   panel: () => (
                     <div className="td-ipanel td-sheet">
@@ -1158,24 +1365,15 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
                     </div>
                   ) }
               : asking ? q : { ...q, extra: priceLine, cover };
-            const acts = (
-              <>
-                <button className={`td-actbtn${asking ? " on" : ""}`} onClick={() => toStep(asking ? "check" : "questions")} title={asking ? "The whole tender again, with its map" : "The questions to the client as one message: tick, reword, send"}>
-                  {asking ? "Back to the tender" : <>Ask the client{q.count > 0 ? <b>{q.count}</b> : q.toDecide > 0 ? <i>{q.toDecide} to decide</i> : null}</>}
-                </button>
-                <button className={`td-actbtn${pricing ? " on" : ""}`} onClick={() => toStep(pricing ? "check" : "prices")} title={pricing ? "The whole tender again, with its map" : "The price inquiries to suppliers and subcontractors, package by package"}>
-                  {pricing ? "Back to the tender" : <>Ask for prices{supply && supply.packages.length - sent > 0 ? <b>{supply.packages.length - sent}</b> : null}</>}
-                </button>
-              </>
-            );
             return (
-              <>{actSlot && createPortal(acts, actSlot)}<TenderDocView prices={docPrices} ask={layer} tender={tender} plan={plan} place={place} views={null} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
+              <><TenderDocView board={board} back={asking || pricing || finishing ? () => toStep("check") : null} prices={docPrices} ask={layer} tender={tender} plan={plan} place={place} views={null} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
                 summary={check.summary} findings={check.findingsByOz} findingsLv={lv.id} selected={check.selected} onOpenLv={(id) => onPlace({ ...place, lv: id, item: null })} /></>
             );
           },
         })
       ) : checking && place.view === "map" ? (
-        <TenderDocView prices={lv ? docPrices : null} tender={tender} plan={plan} place={place} views={views.length > 1 ? viewSwitch : null} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
+        <TenderDocView prices={lv ? docPrices : null} tender={tender}
+          intake={intake} plan={plan} place={place} views={views.length > 1 ? viewSwitch : null} general={check.general} onAsk={onAsk} onDates={onDocuments} onDrawer={() => setDrawer(true)}
           summary={check.summary} findings={check.findingsByOz} findingsLv={lv?.id ?? null} selected={check.selected}
           onOpenLv={(id) => onPlace({ ...place, lv: id, item: null })} />
       ) : (

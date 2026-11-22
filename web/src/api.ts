@@ -290,6 +290,17 @@ export async function setBidPrices(id: string, prices: Record<string, string>, t
   return read(await fetch(`/api/analyses/${id}/bid`, json("PUT", { prices, take_suggestions: takeSuggestions })));
 }
 
+/** The bid went out: the X84 as it stands is kept with the project as the submitted bid (where the LV is GAEB
+ *  XML) and the day is noted. Returns the project as it stands then. */
+export async function submitBid(id: string): Promise<CatalogProject> {
+  return read(await fetch(`/api/analyses/${id}/bid/submit`, { method: "POST" }));
+}
+
+/** The bid did not go out after all: the kept X84 is taken out and the project stands on its tender again. */
+export async function withdrawBid(projectId: string): Promise<CatalogProject> {
+  return read(await fetch(`/api/catalog/${projectId}/bid/withdraw`, { method: "POST" }));
+}
+
 /* ------------------------------------------------------------------ price inquiries */
 
 const send = (method: string, body: unknown): RequestInit => ({ method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

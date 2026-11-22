@@ -14,18 +14,19 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
-- The actions on the tender left the band (2026-11-22, Atahan): "Take it on", "Pass", "Ask the client" and
-  "Ask for prices" are a strip at the head of the cover sheet, as wide as the document, that stays at the
-  top of the page once the cover sheet is scrolled; the head of an LV sticks under it (`.td-actbar`, `acts`
-  of `TenderDocView`; `.td-lvh` moves down by `--td-actbar`; the line that says which part is being read,
-  `readAt`, stands lower by the strip's height, or the map names the section before the one led to). The
-  band keeps "Run the checks", "Stop" and "Close the questions". The two buttons under "Questions and
-  prices" on the cover sheet are gone (the strip is the same). In the message and the inquiries the strip
-  carries "Back to the tender". The class is not `.td-bar`: that one is the old drawer bar's and gave the
-  strip 16px of padding. Checked: type-check; in Chrome on TBA-2026-114 the strip at rest, scrolled over
-  an LV's head, a section opened from the map (the map names it), the inquiries; on two tenders in the
-  intake "Take it on" and "Pass" at rest and scrolled. Not checked: the two pressed; a tender of several
-  LVs with none open and not in the intake has no strip, as it had no buttons in the band.
+- The cover sheet is the board of the tender (D-081, 2026-11-22, Atahan chose it from a mock of three
+  options): the head carries the days to the bid; under it a row each for Checks, Client, Prices and Bid
+  with how it stands and its action at the end ("Next to look at", "Ask the client", "Ask for prices",
+  "Finish the bid"), the next one on pale yellow with the ink button; in the intake the decision ("Take it
+  on", "Pass") with Polier's read stands above it and the three later rows are held. Scrolled past, a 39px
+  strip with the tender's name, the days and the same actions lies over the document (`.td-actbar`,
+  `.td-dock`; it takes no room, so nothing jumps); with a panel open it leads with "Back to the tender".
+  No action on the tender is in the band. Gone from the cover sheet: "What is left for the bid", the two
+  lines of "Questions and prices", "Where the findings are" (the fingerprint is the Checks row's).
+  Checked: type-check; in Chrome on TBA-2026-114 the board, the strip over the cover sheet and over the
+  LV's head, "Ask for prices" from the board, the strip in the inquiries; a tender in the intake at rest
+  and scrolled. Not checked: "Take it on", "Pass", "Ask the client" and "Finish the bid" pressed; a past
+  questions day; a submitted bid; a tender of several LVs; a narrow window.
 
 - The price inquiries speak the same correspondence (2026-11-22, Atahan, after the message panel;
   `Package`, `FirmLine`, `Composer`, `Reader` in `Inquiries.tsx`, `.sup-firm` and after at the end of

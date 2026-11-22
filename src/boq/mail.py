@@ -13,6 +13,7 @@ suppliers are meant to be the second kind, with their own `compose` and their ow
 """
 import email
 import email.policy
+import hashlib
 import html
 import imaplib
 import json
@@ -210,8 +211,32 @@ def set_sent(mail_id: str, sent: bool) -> None:
         conn.execute(update(db.mails).where(db.mails.c.id == mail_id).values(sent_at=db.now() if sent else None))
 
 
+_GONE = "replies_gone"  # in `settings`: the replies of messages taken out of the list, as fingerprints
+_GONE_KEPT = 500
+
+
+def _print_of(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:32]
+
+
+def replies_gone() -> set[str]:
+    """Fingerprints of the replies that were read into a message which was then taken out of the list.
+    The reply itself still lies in the inbox; it must not be read again into another message that waits
+    under the same subject (seen 2026-11-22: a message deleted with its reply, and at the next look into
+    the inbox the same reply stood on the other waiting message to that client)."""
+    with db.engine().connect() as conn:
+        kept = conn.execute(select(db.settings.c.value).where(db.settings.c.key == _GONE)).scalar()
+    return set(kept or [])
+
+
 def discard(mail_id: str) -> None:
     with db.engine().begin() as conn:
+        reply = conn.execute(select(db.mails.c.reply).where(db.mails.c.id == mail_id)).scalar()
+        if reply:
+            kept = conn.execute(select(db.settings.c.value).where(db.settings.c.key == _GONE)).scalar() or []
+            mark = _print_of(reply)
+            conn.execute(delete(db.settings).where(db.settings.c.key == _GONE))
+            conn.execute(insert(db.settings).values(key=_GONE, value=([k for k in kept if k != mark] + [mark])[-_GONE_KEPT:]))
         conn.execute(delete(db.mails).where(db.mails.c.id == mail_id))
 
 
@@ -349,6 +374,16 @@ def find_replies(mails: list[dict]) -> list[tuple[dict, str]]:
         return []
     since = min(datetime.fromisoformat(m["created"]) for m in waiting) - timedelta(days=1)
     found: dict[str, str] = {}
+    # A reply is read once. One that names a message of ours which is not waiting here answers that message
+    # (it has its reply already, or is another LV's), and one whose text is kept as a reply already was
+    # read: neither may fall to another waiting message that only shares the subject (seen 2026-11-22: the
+    # client's reply to a sent message was read into an unsent draft of the same subject as well).
+    with db.engine().connect() as conn:
+        rows = conn.execute(select(db.mails.c.message_id, db.mails.c.reply)).all()
+    waiting_ids = {m["message_id"] for m in waiting if m.get("message_id")}
+    elsewhere = {r.message_id for r in rows if r.message_id} - waiting_ids
+    read_already = {r.reply for r in rows if r.reply}
+    gone = replies_gone()  # read into a message that was taken out of the list since: not read again
     try:
         server = open_inbox(box)
         try:
@@ -361,13 +396,16 @@ def find_replies(mails: list[dict]) -> list[tuple[dict, str]]:
                 if raw is None:
                     continue
                 headers = email.message_from_bytes(raw, policy=email.policy.default)
+                names = f"{headers.get('In-Reply-To') or ''} {headers.get('References') or ''}"
+                if any(mid in names for mid in elsewhere):
+                    continue
                 m = answered_by([m for m in waiting if m["id"] not in found], headers)
                 if m is None:
                     continue
                 _, got = server.uid("FETCH", uid, "(BODY.PEEK[])")
                 whole = next((part[1] for part in got if isinstance(part, tuple)), None)
                 text = reply_text(email.message_from_bytes(whole, policy=email.policy.default)) if whole else ""
-                if text:
+                if text and text not in read_already and text not in found.values() and _print_of(text) not in gone:
                     found[m["id"]] = text
         finally:
             try:
