@@ -2074,6 +2074,45 @@
   border-bottom: 0;
 }
 
+/* The lane of a card pointed at is lower than the line of all tenders. That line stays in the dock, unseen
+   and see-through, with the lane laid over it: the dock keeps its height to the pixel, so the board does not
+   move at the top of the page, and once it is scrolled the cards show where the line was. */
+.register .sched.dock.single {
+  border-bottom-color: transparent;
+  background: none;
+  pointer-events: none;
+}
+
+.sched.dock.single .sched-head {
+  background: #fff;
+  pointer-events: auto;
+}
+
+.sched.dock.single .sched-body {
+  border-bottom-color: transparent;
+}
+
+.sched.dock.single .sched-rail,
+.sched.dock.single .sched-empty {
+  visibility: hidden;
+}
+
+.sched.dock.single .sched-row {
+  position: absolute;
+  inset: 0 0 auto;
+  border-bottom: 2px solid var(--ink);
+  pointer-events: auto;
+}
+
+.sched.dock.single .sched-row:not(:hover) {
+  background: #fff;
+}
+
+.sched.dock.single .today-wrap {
+  bottom: auto;
+  height: 68px;
+}
+
 .sched.dock .sched-empty {
   max-width: none;
   padding: 24px 20px;
@@ -2326,11 +2365,11 @@
 }
 
 /* a tender that did not become a contract stands back */
-.card.kc.back {
+.card.kc.stood-back {
   color: var(--mute);
 }
 
-.card.kc.back .plate {
+.card.kc.stood-back .plate {
   background: var(--rule);
 }
 
@@ -2494,20 +2533,20 @@
 }
 
 .card.kc.is-submitted > header,
-.card.kc.is-result.back > header {
+.card.kc.is-result.stood-back > header {
   background: var(--tint);
 }
 
-.card.kc.is-result:not(.back) > header {
+.card.kc.is-result:not(.stood-back) > header {
   background: var(--ink);
   color: #fff;
 }
 
-.card.kc.is-result:not(.back) > header .card-name small {
+.card.kc.is-result:not(.stood-back) > header .card-name small {
   color: #c9ccc4;
 }
 
-.card.kc.is-result:not(.back) > header .kc-days span {
+.card.kc.is-result:not(.stood-back) > header .kc-days span {
   border-color: #6d726a;
   color: #fff;
 }
@@ -2679,7 +2718,7 @@
   position: relative;
 }
 
-/* the head of the board: the new project at its right end, in a dashed frame that says files go anywhere */
+/* the head of the board: the new project at its right end, with the note that files go anywhere */
 .register-body .board-head {
   align-items: center;
 }
@@ -2694,7 +2733,6 @@
   gap: 12px;
   height: 46px;
   padding: 0 7px 0 16px;
-  border: 2px dashed var(--ink);
   background: #fff;
   font-size: 13px;
   color: var(--mute);

@@ -470,9 +470,13 @@ function Schedule({
     return from && to && x(to) > x(from) ? [{ p, from, to }] : [];
   });
   const atHome = start.getTime() === homeStart().getTime();
+  /* The lane of a card pointed at lies over the line of all tenders, which stays in the page unseen: the dock
+     is exactly as high as before, so the board does not move. Dates held open take the room they need. */
+  const single = !!one && !focus;
+  const railHeight = Math.max(68, 12 + Math.max(1, railTiers.length) * 22, 14 + works.length * 8);
 
   return (
-    <section id="schedule" className="sched dock" aria-label="Schedule of the running tenders" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+    <section id="schedule" className={`sched dock${single ? " single" : ""}`} aria-label="Schedule of the running tenders" onMouseEnter={onEnter} onMouseLeave={onLeave}>
       <div className="sched-head">
         <div className="sched-title">
           <div className="sched-nav" role="group" aria-label="Move the schedule">
@@ -510,11 +514,12 @@ function Schedule({
           )}
         </div>
       </div>
-      <div className="sched-body">
-        {!one && running.length > 0 && (
+      {/* the height of the line of all tenders: the lane of a card pointed at keeps that room (empty) under it, so the board does not move */}
+      <div className="sched-body" style={running.length > 0 ? ({ "--rail-h": `${railHeight}px` } as CSSProperties) : undefined}>
+        {(!one || single) && running.length > 0 && (
           <div className="sched-rail">
             <div className="rail-label">All tenders</div>
-            <div className="rail-lane" style={{ height: Math.max(12 + Math.max(1, railTiers.length) * 22, 14 + works.length * 8) }}>
+            <div className="rail-lane" style={{ height: railHeight }}>
               {ground}
               {works.map(({ p, from, to }, i) => (
                 <i key={p.id} className="rail-work" style={{ left: `${x(from)}%`, width: `${x(to) - x(from)}%`, top: 7 + i * 8 }} title={`${p.name}: work ${dmY(from)} – ${dmY(to)}`} />
@@ -660,7 +665,7 @@ function Schedule({
             </div>
           );
         })}
-        {!one && running.length === 0 && <p className="sched-empty">Nothing is running. A tender appears here as soon as its files are dropped, and stays until it is awarded.</p>}
+        {(!one || single) && running.length === 0 && <p className="sched-empty">Nothing is running. A tender appears here as soon as its files are dropped, and stays until it is awarded.</p>}
         {seen(today) && (
           <div className="today-wrap" aria-hidden>
             <i className="today" style={{ left: `${x(today)}%` }} />
@@ -994,7 +999,7 @@ function Card({
   }, [run?.active]);
   return (
     <article
-      className={`card kc is-${stage}${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}${pinned ? " pinned" : ""}${stage === "result" && outcomeOf(p) !== "won" ? " back" : ""}${who === "you" ? " mine" : ""}${ended ? " just-done" : ""}`}
+      className={`card kc is-${stage}${!ready ? " taped" : taped.current ? " untape" : ""}${over ? " over" : ""}${pinned ? " pinned" : ""}${stage === "result" && outcomeOf(p) !== "won" ? " stood-back" : ""}${who === "you" ? " mine" : ""}${ended ? " just-done" : ""}`}
       tabIndex={0}
       aria-disabled={busy}
       onClick={() => !busy && onOpen(p)}
