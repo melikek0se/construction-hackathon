@@ -56,6 +56,42 @@
         ],
         "createdAt": "2026-11-22T00:44:45.607Z",
         "reason": "agent triage: the tight boxes are DESIGN.md's own components (tag: padding 0 5px; index plate; strip marks 2px apart), reused unchanged in the mock-up"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "playground/chat-panel/index.html"
+        ],
+        "createdAt": "2026-11-22T03:10:13.818Z",
+        "reason": "user confirmed: picked the night-shift mockup (yellow-edged cards, LIVE dot, 11.5px mono labels) to apply to the real panel, D-060; file is a throwaway proposal page"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "playground/chat-panel/index.html"
+        ],
+        "createdAt": "2026-11-22T03:10:13.842Z",
+        "reason": "user confirmed: picked the night-shift mockup (yellow-edged cards, LIVE dot, 11.5px mono labels) to apply to the real panel, D-060; file is a throwaway proposal page"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          "playground/chat-panel/index.html"
+        ],
+        "createdAt": "2026-11-22T03:10:13.863Z",
+        "reason": "user confirmed: picked the night-shift mockup (yellow-edged cards, LIVE dot, 11.5px mono labels) to apply to the real panel, D-060; file is a throwaway proposal page"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "web/src/styles.css"
+        ],
+        "createdAt": "2026-11-22T03:14:58.379Z",
+        "reason": "user confirmed 2026-11-22: the LIVE dot of Polier's side panel (.agent-live) keeps pulsing, D-060"
       }
     ]
   }

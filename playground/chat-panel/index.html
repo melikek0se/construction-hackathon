@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Polier: chat panel proposals</title>
+<style>
+@font-face { font-family: Barlow; font-weight: 400; src: url(../tender/fonts/barlow-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 500; src: url(../tender/fonts/barlow-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 600; src: url(../tender/fonts/barlow-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 700; src: url(../tender/fonts/barlow-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url(../tender/fonts/barlow-condensed-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; src: url(../tender/fonts/barlow-condensed-latin-700-normal.woff2) format("woff2"); }
+
+:root {
+  --yellow: #ffc400; --yellow-ink: #3a2c00; --ink: #121413; --ink-2: #3b403a; --red: #c4161c; --blue: #0a5aa8;
+  --rule: #e3e3dd; --line-2: #c4c4bc; --tint: #f6f6f2; --hover: #fff7cf; --mute: #5f635c; --dim: #8b8e87;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif; --text: "Barlow", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --w: 420px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font-family: var(--text); font-size: 14px; color: var(--ink); background: #fff; display: flex; flex-direction: column; overflow: hidden; }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+
+/* ---------- the switcher (not part of the design) ---------- */
+.switcher { flex: none; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 20px; background: #1d1f1e; color: #ddd; font-size: 12px; }
+.switcher b { color: #fff; margin-right: 8px; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+.switcher button { padding: 5px 11px; border: 1px solid #444; background: #2a2d2b; color: #ddd; }
+.switcher button[aria-pressed="true"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); font-weight: 700; }
+.switcher .note { margin-left: auto; color: #9a9d97; }
+
+/* ---------- the page behind (a quiet stand-in for the projects page) ---------- */
+.screen { flex: 1; min-height: 0; display: flex; }
+.app { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
+.band { flex: none; height: 70px; display: flex; align-items: center; gap: 12px; padding: 0 20px; background: var(--yellow);
+  border-block: 9px solid; border-image: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) 9;
+  font: 700 24px var(--display); letter-spacing: .03em; text-transform: uppercase; }
+.band img { width: 30px; }
+.board { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 22px; align-content: start; }
+.board h4 { margin: 0 0 4px; font: 600 12px var(--text); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); grid-column: span 1; }
+.card { height: 150px; border: 1.5px solid var(--ink); padding: 10px; display: grid; align-content: start; gap: 8px; }
+.card i { display: block; height: 9px; background: var(--rule); }
+.card i:first-child { width: 40%; height: 16px; background: var(--yellow); }
+.card i:nth-child(3) { width: 70%; }
+.card.tall { height: 230px; }
+.corner { position: absolute; right: 16px; bottom: 14px; width: 74px; filter: drop-shadow(0 4px 2px rgba(0,0,0,.15)); }
+
+/* ---------- the panel: structure shared by every design ---------- */
+.panel { flex: none; width: var(--w); display: flex; flex-direction: column; min-height: 0; position: relative; overflow: hidden; }
+.head { flex: none; display: flex; align-items: center; gap: 10px; }
+.head .title { flex: 1; min-width: 0; display: grid; }
+.head .title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.head .x { width: 30px; height: 30px; font-size: 22px; line-height: 1; }
+.log { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 18px; }
+.turn p { margin: 0; }
+.meta { display: block; }
+.cites { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.cites button { display: grid; gap: 3px; width: 100%; text-align: left; }
+.ch { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.ch b { font-family: var(--display); font-size: 17px; font-weight: 600; }
+.ch span { font-size: 11.5px; }
+.cq { font-size: 13px; line-height: 1.4; }
+.read { margin-top: 10px !important; font-size: 11.5px; }
+.ask { flex: none; display: flex; gap: 8px; align-items: stretch; }
+.ask textarea { flex: 1; resize: none; border: 0; outline: 0; background: transparent; min-height: 44px; }
+.ask button { flex: none; }
+.chips { flex: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { font-size: 12px; }
+.extra, .stage, .stamp, .tb, .cursor, .scan { display: none; }
+.thinking .dots::after { content: "…"; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.turn.new { animation: rise .35s var(--ease) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+/* =============== 0. NOW: what the app has today =============== */
+[data-v="now"] .panel { border-left: 2px solid var(--ink); background: #fff; }
+[data-v="now"] .head { padding: 8px 8px 8px 14px; background: var(--yellow); border-bottom: 2px solid var(--ink); }
+[data-v="now"] .head strong { font: 700 13px var(--display); letter-spacing: .08em; text-transform: uppercase; }
+[data-v="now"] .head .title span { font-size: 12px; color: var(--yellow-ink); }
+[data-v="now"] .log { padding: 16px; }
+[data-v="now"] .meta { display: none; }
+[data-v="now"] .turn.q p { margin-left: auto; width: fit-content; max-width: 85%; padding: 8px 12px; background: var(--tint); border: 1px solid var(--rule); }
+[data-v="now"] .cites button { padding: 8px 10px; border: 1.5px solid var(--ink); background: #fff; }
+[data-v="now"] .cites button:hover { background: var(--hover); }
+[data-v="now"] .ch span, [data-v="now"] .read { color: var(--mute); }
+[data-v="now"] .chips { padding: 0 16px 10px; }
+[data-v="now"] .chips button { padding: 5px 9px; border: 1px solid var(--line-2); }
+[data-v="now"] .ask { padding: 10px; border-top: 2px solid var(--ink); }
+[data-v="now"] .ask button { padding: 0 16px; background: var(--ink); color: #fff; font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+
+/* =============== 1. NIGHT SHIFT: the site radio, dark =============== */
+[data-v="radio"] .panel { background: #121413; color: #e8e8e2; border-left: 2px solid var(--ink);
+  background-image: radial-gradient(120% 60% at 100% 0%, rgba(255,196,0,.07), transparent 60%); }
+[data-v="radio"] .scan { display: block; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 3px); }
+[data-v="radio"] .head { padding: 14px 10px 12px 16px; border-bottom: 1px solid #2c2f2d; position: relative; }
+[data-v="radio"] .head::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px;
+  background: repeating-linear-gradient(-45deg, var(--yellow) 0 6px, #121413 6px 12px); }
+[data-v="radio"] .head strong { font: 700 15px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--yellow); }
+[data-v="radio"] .head strong::before { content: "CH 1 · "; color: #8b8e87; }
+[data-v="radio"] .head .title span { font-size: 12px; color: #9a9d97; }
+[data-v="radio"] .extra.live { display: inline-flex; align-items: center; gap: 6px; font: 600 11px var(--mono); color: var(--yellow); letter-spacing: .08em; }
+[data-v="radio"] .extra.live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+[data-v="radio"] .x { color: #9a9d97; }
+[data-v="radio"] .log { padding: 18px 16px; gap: 22px; }
+[data-v="radio"] .meta { font: 500 11.5px var(--mono); letter-spacing: .08em; color: #8b8e87; margin-bottom: 5px; text-transform: uppercase; }
+[data-v="radio"] .turn.q p { font: 500 14px var(--mono); color: #fff; }
+[data-v="radio"] .turn.q p::before { content: "› "; color: var(--yellow); }
+[data-v="radio"] .turn.a { padding-left: 12px; border-left: 2px solid var(--yellow); }
+[data-v="radio"] .turn.a .meta { color: var(--yellow); }
+[data-v="radio"] .turn.a > p:first-of-type { font-size: 15px; line-height: 1.5; color: #f4f4ef; }
+[data-v="radio"] .cursor { display: inline-block; width: 8px; height: 15px; margin-left: 3px; vertical-align: -2px; background: var(--yellow); animation: blink 1s steps(2) infinite; }
+[data-v="radio"] .turn.a:not(:last-child) .cursor { display: none; }
+[data-v="radio"] .cites button { padding: 9px 11px; background: #1c1f1d; border: 1px solid #2f3330; border-left: 4px solid var(--yellow); }
+[data-v="radio"] .cites button:hover { background: #262a27; border-color: var(--yellow); }
+[data-v="radio"] .ch b { color: var(--yellow); }
+[data-v="radio"] .ch span { font-family: var(--mono); font-size: 11.5px; color: #8b8e87; }
+[data-v="radio"] .cq { color: #c9c9c2; }
+[data-v="radio"] .read { font-family: var(--mono); font-size: 11.5px; color: #8b8e87; }
+[data-v="radio"] .chips { padding: 0 16px 12px; }
+[data-v="radio"] .chips button { padding: 5px 10px; border: 1px solid #3a3e3b; color: #c9c9c2; font-family: var(--mono); font-size: 11px; }
+[data-v="radio"] .chips button:hover { border-color: var(--yellow); color: var(--yellow); }
+[data-v="radio"] .ask { margin: 0 12px 14px; padding: 6px 6px 6px 12px; background: #1c1f1d; border: 1px solid #3a3e3b; }
+[data-v="radio"] .ask:focus-within { border-color: var(--yellow); }
+[data-v="radio"] .ask textarea { color: #fff; font-family: var(--mono); font-size: 13px; padding-top: 6px; }
+[data-v="radio"] .ask textarea::placeholder { color: #8b8e87; }
+[data-v="radio"] .ask button { padding: 0 14px; background: var(--yellow); color: var(--ink); font: 700 13px var(--display); letter-spacing: .12em; text-transform: uppercase; }
+[data-v="radio"] .ask button::after { content: " ⏎"; }
+
+[data-v="radio"] mark { background: none; color: var(--yellow); font-weight: 600; }
+[data-v="now"] mark { background: var(--hover); color: inherit; }
+/* =============== 2. SITE DIARY: squared paper, slips stapled in =============== */
+[data-v="diary"] .panel { background-color: #fbfaf4; border-left: 2px solid var(--ink);
+  background-image: linear-gradient(rgba(10,90,168,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(10,90,168,.09) 1px, transparent 1px);
+  background-size: 18px 18px; box-shadow: inset 6px 0 0 #2c2f2d, inset 8px 0 0 #fbfaf4, inset 10px 0 0 rgba(196,22,28,.35); }
+[data-v="diary"] .head { padding: 14px 12px 12px 26px; border-bottom: 2px solid var(--ink); background: #fbfaf4; }
+[data-v="diary"] .head strong { font: 700 22px var(--display); letter-spacing: .02em; }
+[data-v="diary"] .head strong::after { content: "'s site diary"; font-weight: 600; color: var(--mute); }
+[data-v="diary"] .head .title span { font-size: 12px; color: var(--mute); }
+[data-v="diary"] .stamp { display: inline-block; padding: 3px 8px; border: 2px solid var(--red); color: var(--red); font: 700 13px var(--display); letter-spacing: .08em; transform: rotate(-4deg); opacity: .85; }
+[data-v="diary"] .log { padding: 18px 18px 18px 30px; gap: 20px; }
+[data-v="diary"] .meta { font: 600 11px var(--text); letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 3px; }
+[data-v="diary"] .turn.q p { font-style: italic; color: var(--ink-2); font-size: 15px; }
+[data-v="diary"] .turn.q p::before { content: "Q  "; font: 700 15px var(--display); font-style: normal; color: var(--blue); }
+[data-v="diary"] .turn.a > p:first-of-type { font-size: 15px; line-height: 1.55; }
+[data-v="diary"] .turn.a > p:first-of-type mark { background: linear-gradient(transparent 55%, rgba(255,196,0,.7) 55%); }
+[data-v="diary"] .cites { gap: 14px; margin-top: 14px; }
+[data-v="diary"] .cites li { position: relative; }
+[data-v="diary"] .cites li:nth-child(odd) button { transform: rotate(-.7deg); }
+[data-v="diary"] .cites li:nth-child(even) button { transform: rotate(.6deg); }
+[data-v="diary"] .cites button { padding: 12px 12px 10px; background: #fff; border: 1px solid #d9d6cb; box-shadow: 0 1px 0 #d9d6cb, 2px 4px 8px rgba(0,0,0,.08); transition: transform .2s var(--ease); }
+[data-v="diary"] .cites button:hover { transform: rotate(0) translateY(-2px); }
+[data-v="diary"] .cites li::before { content: ""; position: absolute; z-index: 1; top: -4px; left: 22px; width: 26px; height: 6px; border: 2px solid #8b8e87; border-bottom: 0; }
+[data-v="diary"] .ch span, [data-v="diary"] .read { color: var(--mute); }
+[data-v="diary"] .cq { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+[data-v="diary"] .read { font-style: italic; }
+[data-v="diary"] .chips { padding: 0 18px 10px 30px; }
+[data-v="diary"] .chips button { padding: 4px 9px; background: #fff7cf; border: 1px solid #e6d27a; box-shadow: 1px 2px 0 rgba(0,0,0,.06); }
+[data-v="diary"] .ask { padding: 10px 14px 14px 30px; background: #fbfaf4; border-top: 2px solid var(--ink); }
+[data-v="diary"] .ask textarea { font-size: 15px; font-style: italic; background: linear-gradient(transparent 26px, var(--line-2) 26px 27px, transparent 27px); }
+[data-v="diary"] .ask button { padding: 0 14px; border: 2px solid var(--ink); font: 700 14px var(--display); letter-spacing: .08em; text-transform: uppercase; }
+[data-v="diary"] .ask button:hover { background: var(--yellow); }
+
+/* =============== 3. BLUEPRINT: the drawing sheet =============== */
+[data-v="plan"] .panel { background-color: #0e3f75; color: #eaf1fa; border-left: 2px solid var(--ink);
+  background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 60px 60px, 60px 60px, 12px 12px, 12px 12px; }
+[data-v="plan"] .panel::after { content: ""; position: absolute; inset: 10px; border: 1.5px solid rgba(255,255,255,.55); pointer-events: none; }
+[data-v="plan"] .head { margin: 10px 10px 0; padding: 0; border-bottom: 1.5px solid rgba(255,255,255,.55); align-items: stretch; gap: 0; }
+[data-v="plan"] .head .title { padding: 10px 12px; }
+[data-v="plan"] .head strong { font: 700 18px var(--display); letter-spacing: .16em; text-transform: uppercase; }
+[data-v="plan"] .head .title span { font: 600 11px var(--display); letter-spacing: .12em; text-transform: uppercase; color: #a9c3e2; }
+[data-v="plan"] .tb { display: grid; place-content: center; padding: 0 12px; border-left: 1.5px solid rgba(255,255,255,.55); font: 600 10px var(--display); letter-spacing: .14em; text-transform: uppercase; color: #a9c3e2; text-align: center; }
+[data-v="plan"] .tb b { display: block; font-size: 16px; color: #fff; letter-spacing: .06em; }
+[data-v="plan"] .x { align-self: center; margin: 0 6px; color: #a9c3e2; }
+[data-v="plan"] .log { padding: 20px 26px; gap: 24px; }
+[data-v="plan"] .meta { font: 600 11px var(--display); letter-spacing: .18em; text-transform: uppercase; color: #a9c3e2; margin-bottom: 4px; }
+[data-v="plan"] .turn.q p { font: 600 16px var(--display); letter-spacing: .04em; text-transform: uppercase; }
+[data-v="plan"] .turn.a > p:first-of-type { font-size: 14.5px; line-height: 1.55; }
+[data-v="plan"] .cites { counter-reset: d; gap: 12px; }
+[data-v="plan"] .cites li { counter-increment: d; }
+[data-v="plan"] .cites button { position: relative; padding: 18px 12px 10px; border: 1.5px dashed rgba(255,255,255,.6); }
+[data-v="plan"] .cites button::before { content: "DETAIL " counter(d); position: absolute; top: -9px; left: 10px; padding: 0 6px; background: #0e3f75; font: 700 11px var(--display); letter-spacing: .16em; color: var(--yellow); }
+[data-v="plan"] .cites button:hover { border-style: solid; background: rgba(255,255,255,.06); }
+[data-v="plan"] .ch b { position: relative; padding: 0 12px; color: #fff; }
+[data-v="plan"] .ch b::before, [data-v="plan"] .ch b::after { content: ""; position: absolute; top: 50%; width: 8px; border-top: 1.5px solid #a9c3e2; }
+[data-v="plan"] .ch b::before { left: 0; } [data-v="plan"] .ch b::after { right: 0; }
+[data-v="plan"] .ch span, [data-v="plan"] .read { color: #a9c3e2; }
+[data-v="plan"] .cq { color: #d4e2f3; }
+[data-v="plan"] .read { font: 600 11px var(--display); letter-spacing: .1em; text-transform: uppercase; }
+[data-v="plan"] .chips { padding: 0 26px 10px; }
+[data-v="plan"] .chips button { padding: 4px 9px; border: 1px solid rgba(255,255,255,.4); font: 600 12px var(--display); letter-spacing: .08em; text-transform: uppercase; color: #d4e2f3; }
+[data-v="plan"] .ask { margin: 0 10px 10px; padding: 8px 8px 8px 14px; border-top: 1.5px solid rgba(255,255,255,.55); }
+[data-v="plan"] .ask textarea { color: #fff; }
+[data-v="plan"] .ask textarea::placeholder { color: #a9c3e2; }
+[data-v="plan"] .ask button { padding: 0 16px; background: #fff; color: #0e3f75; font: 700 13px var(--display); letter-spacing: .14em; text-transform: uppercase; }
+
+[data-v="plan"] mark { background: none; color: #fff; font-weight: 600; border-bottom: 1.5px dashed var(--yellow); }
+/* =============== 4. POLIER'S STAGE: the character in front =============== */
+[data-v="stage"] .panel { background: #fff; border-left: 2px solid var(--ink); }
+[data-v="stage"] .head { position: absolute; top: 0; left: 0; right: 0; z-index: 2; padding: 10px 10px 0 16px; }
+[data-v="stage"] .head strong { font: 700 13px var(--display); letter-spacing: .1em; text-transform: uppercase; }
+[data-v="stage"] .head .title span { font-size: 12px; color: var(--yellow-ink); }
+[data-v="stage"] .stage { display: block; flex: none; position: relative; height: 200px; background: var(--yellow);
+  border-bottom: 9px solid; border-image: repeating-linear-gradient(-45deg, var(--ink) 0 8px, var(--yellow) 8px 16px) 9; overflow: hidden; }
+[data-v="stage"] .stage svg { position: absolute; left: 50%; bottom: -14px; width: 150px; translate: -50% 0; transform-origin: 50% 100%; animation: bob 2.6s ease-in-out infinite; }
+[data-v="stage"] .panel.busy .stage svg { animation: think .7s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-5px) rotate(1.5deg); } }
+@keyframes think { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-3px); } }
+[data-v="stage"] .stage .say { position: absolute; right: 18px; top: 58px; padding: 6px 10px; background: #fff; border: 2px solid var(--ink); font: 600 13px var(--text); }
+[data-v="stage"] .stage .say::after { content: ""; position: absolute; left: -9px; bottom: 6px; border: 8px solid transparent; border-right-color: var(--ink); border-left: 0; }
+[data-v="stage"] .log { padding: 18px 16px; gap: 16px; background: var(--tint); }
+[data-v="stage"] .meta { display: none; }
+[data-v="stage"] .turn.q p { margin-left: auto; width: fit-content; max-width: 80%; padding: 9px 13px; background: var(--ink); color: #fff; border-radius: 16px 16px 4px 16px; }
+[data-v="stage"] .turn.a { position: relative; max-width: 94%; padding: 12px 14px; background: #fff; border: 2px solid var(--ink); border-radius: 4px 16px 16px 16px; }
+[data-v="stage"] .turn.a::before { content: ""; position: absolute; left: -2px; top: -12px; border: 6px solid transparent; border-left: 8px solid var(--ink); border-bottom-color: var(--ink); }
+[data-v="stage"] .turn.a > p:first-of-type { font-size: 14.5px; line-height: 1.5; }
+[data-v="stage"] .cites button { padding: 8px 10px; background: var(--hover); border-radius: 8px; }
+[data-v="stage"] .cites button:hover { background: var(--yellow); }
+[data-v="stage"] .ch span, [data-v="stage"] .read { color: var(--mute); }
+[data-v="stage"] .chips { padding: 10px 16px 6px; background: var(--tint); }
+[data-v="stage"] .chips button { padding: 6px 11px; background: #fff; border: 1.5px solid var(--ink); border-radius: 999px; }
+[data-v="stage"] .chips button:hover { background: var(--yellow); }
+[data-v="stage"] .ask { padding: 10px; background: var(--tint); }
+[data-v="stage"] .ask textarea { padding: 10px 14px; background: #fff; border: 2px solid var(--ink); border-radius: 22px; min-height: 44px; }
+[data-v="stage"] .ask button { width: 44px; height: 44px; align-self: end; border-radius: 50%; background: var(--yellow); border: 2px solid var(--ink); font-size: 0; }
+[data-v="stage"] .ask button::after { content: "↑"; font-size: 20px; font-weight: 700; }
+[data-v="stage"] .corner { display: none; }
+[data-v="stage"] mark { background: var(--hover); color: inherit; }
+</style>
+</head>
+<body data-v="radio">
+
+<div class="switcher" role="toolbar" aria-label="Design">
+  <b>Chat panel</b>
+  <button data-set="now">0 · Now</button>
+  <button data-set="radio">1 · Night shift</button>
+  <button data-set="diary">2 · Site diary</button>
+  <button data-set="plan">3 · Blueprint</button>
+  <button data-set="stage">4 · Polier's stage</button>
+  <span class="note">Keys 0–4 switch · type a question, it answers (canned)</span>
+</div>
+
+<div class="screen">
+  <div class="app">
+    <div class="band"><svg width="34" height="34" viewBox="0 0 120 120" aria-hidden="true"><use href="#polier" /></svg>Polier</div>
+    <div class="board">
+      <h4>Intake</h4><h4>Check</h4><h4>Pricing</h4><h4>Submitted</h4>
+      <div class="card tall"><i></i><i></i><i></i><i></i></div>
+      <div class="card"><i></i><i></i><i></i></div>
+      <div class="card tall"><i></i><i></i><i></i><i></i></div>
+      <div class="card"><i></i><i></i><i></i></div>
+      <div class="card"><i></i><i></i><i></i></div>
+      <div class="card tall"><i></i><i></i><i></i></div>
+      <div class="card"><i></i><i></i><i></i></div>
+      <div class="card"><i></i><i></i><i></i></div>
+    </div>
+    <svg class="corner" viewBox="0 0 120 120" aria-hidden="true"><use href="#polier" /></svg>
+  </div>
+
+  <aside class="panel" aria-label="Ask Polier">
+    <div class="scan"></div>
+    <div class="stage">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#polier" /></svg>
+      <span class="say">Ask me about the LV.</span>
+    </div>
+    <header class="head">
+      <div class="title"><strong>Polier</strong><span lang="de">TBA-2026-114 Kanalsanierung Birkenweg</span></div>
+      <span class="extra live">LIVE</span>
+      <span class="stamp">22.11.2026</span>
+      <div class="tb">Sheet<b>A-01</b></div>
+      <button class="x" aria-label="Close">×</button>
+    </header>
+    <div class="log" id="log">
+      <div class="turn q"><span class="meta">14:02 · You</span><p>Which items carry quantity risk?</p></div>
+      <div class="turn a">
+        <span class="meta">14:02 · Polier</span>
+        <p>Two items are paid on a quantity the client only estimated: <mark>01.02.0030 excavation</mark> and <mark>01.04.0110 disposal</mark>. If the soil class turns out worse, about <b>48,200 €</b> are at stake.<span class="cursor"></span></p>
+        <ul class="cites">
+          <li><button><span class="ch"><b>01.02.0030</b><span>LV_Kanal.X83 · p. 4</span></span><span class="cq" lang="de">„Bodenaushub BK 3–5, Menge geschätzt, Abrechnung nach Aufmaß“</span></button></li>
+          <li><button><span class="ch"><b>01.04.0110</b><span>LV_Kanal.X83 · p. 7</span></span><span class="cq" lang="de">„Entsorgung Boden Z1.2, Menge nach Wiegescheinen“</span></button></li>
+        </ul>
+        <p class="read">Read 12 passages from 3 of 5 documents · 0.03 USD</p>
+      </div>
+    </div>
+    <div class="chips">
+      <button>When is the deadline?</button>
+      <button>What is not in the LV?</button>
+      <button>Questions for the client</button>
+    </div>
+    <form class="ask" id="ask">
+      <textarea rows="2" placeholder="Ask about the project…" aria-label="Question"></textarea>
+      <button type="submit">Ask</button>
+    </form>
+  </aside>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="polier">
+      <ellipse cx="60" cy="74" rx="34" ry="38" fill="#fff" stroke="#121413" stroke-width="3" />
+      <path d="M24 60 C24 34 40 20 60 20 C80 20 96 34 96 60 Z" fill="#ffc400" stroke="#121413" stroke-width="3" />
+      <path d="M16 60 H104 C108 60 108 68 104 68 H16 C12 68 12 60 16 60 Z" fill="#ffc400" stroke="#121413" stroke-width="3" />
+      <path d="M48 58 C48 42 52 32 58 26" fill="none" stroke="#121413" stroke-width="2.5" stroke-linecap="round" />
+      <path d="M64 58 C64 42 68 32 74 27" fill="none" stroke="#121413" stroke-width="2.5" stroke-linecap="round" />
+      <ellipse cx="48" cy="82" rx="4.5" ry="6" fill="#121413" />
+      <ellipse cx="72" cy="82" rx="4.5" ry="6" fill="#121413" />
+      <circle cx="49.5" cy="80" r="1.5" fill="#fff" /><circle cx="73.5" cy="80" r="1.5" fill="#fff" />
+      <path d="M52 98 Q60 104 68 98" fill="none" stroke="#121413" stroke-width="2.5" stroke-linecap="round" />
+    </g>
+  </defs>
+</svg>
+
+<script>
+const body = document.body, panel = document.querySelector(".panel"), log = document.getElementById("log");
+const set = (v) => {
+  body.dataset.v = v;
+  document.querySelectorAll("[data-set]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === v));
+  history.replaceState(null, "", "#" + v);
+};
+document.querySelectorAll("[data-set]").forEach((b) => b.onclick = () => set(b.dataset.set));
+const order = ["now", "radio", "diary", "plan", "stage"];
+addEventListener("keydown", (e) => { if (e.target.tagName !== "TEXTAREA" && order[+e.key]) set(order[+e.key]); });
+set(order.includes(location.hash.slice(1)) ? location.hash.slice(1) : "radio");
+
+const canned = [
+  { t: "The offer is due on <b>9 December 2026, 10:00</b>, in a sealed envelope to the Tiefbauamt. Bids stay binding until 7 February 2027.",
+    c: [["Vorbemerkungen", "Aufforderung.pdf · p. 1", "„Angebotsfrist: 09.12.2026, 10:00 Uhr“"], ["Vorbemerkungen", "Aufforderung.pdf · p. 2", "„Bindefrist: 07.02.2027“"]] },
+  { t: "The LV has no item for <mark>dewatering</mark> although the soil report expects groundwater at 1.8 m. That belongs in a bidder question.",
+    c: [["01.02.0010", "LV_Kanal.X83 · p. 3", "„Grabenverbau, Tiefe bis 3,00 m“"]] },
+];
+let k = 0;
+const time = () => new Date().toTimeString().slice(0, 5);
+const ask = (q) => {
+  if (!q.trim()) return;
+  log.insertAdjacentHTML("beforeend", `<div class="turn q new"><span class="meta">${time()} · You</span><p></p></div>`);
+  log.lastElementChild.querySelector("p").textContent = q;
+  log.insertAdjacentHTML("beforeend", `<div class="turn a new thinking"><span class="meta">${time()} · Polier</span><p>Reading the documents<span class="dots"></span></p></div>`);
+  log.scrollTop = log.scrollHeight; panel.classList.add("busy");
+  const a = canned[k++ % canned.length], el = log.lastElementChild;
+  setTimeout(() => {
+    el.classList.remove("thinking"); panel.classList.remove("busy");
+    el.innerHTML = `<span class="meta">${time()} · Polier</span><p>${a.t}<span class="cursor"></span></p>
+      <ul class="cites">${a.c.map(([oz, f, q]) => `<li><button><span class="ch"><b>${oz}</b><span>${f}</span></span><span class="cq" lang="de">${q}</span></button></li>`).join("")}</ul>
+      <p class="read">Read 9 passages from 2 of 5 documents · 0.02 USD</p>`;
+    log.scrollTop = log.scrollHeight;
+  }, 1500);
+};
+const form = document.getElementById("ask"), ta = form.querySelector("textarea");
+form.onsubmit = (e) => { e.preventDefault(); ask(ta.value); ta.value = ""; };
+ta.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } };
+document.querySelectorAll(".chips button").forEach((b) => b.onclick = () => ask(b.textContent));
+</script>
+</body>
+</html>

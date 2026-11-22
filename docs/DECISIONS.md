@@ -894,3 +894,11 @@ mail must outlive restarts and the whole thing must run in the deployed demo, no
   in `.env` works as before; `IMAP_TLS=0` (plain IMAP, `mail.open_inbox`) is for the demo server only.
 - Two mail servers must not share one database: the `app` service of compose uses `boq_mail_prod`.
 - Not done: accounts and mail for the demo (the mailboxes are empty but for the firm's).
+
+## D-060 — Polier's chat is a dark side panel ("night shift")
+
+2026-11-22. The conversation opens as a full-height side panel on the right (the page makes room), not as a
+floating window. It is the one dark surface of the app (ink ground, yellow accents, mono speaker labels, a
+site-radio header), so the AI part stands apart from the white, yellow-banded pages. Chosen by the user from
+four mockups in `playground/chat-panel/` (night shift, site diary, blueprint, Polier's stage). Styles in
+`web/src/chat.css` and the `.agent-*` rules of `styles.css`; described in DESIGN.md.

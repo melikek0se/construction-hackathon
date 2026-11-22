@@ -573,6 +573,18 @@ is pointed at or picked, then only its arrows remain, solid and named on a yello
 lettering in Barlow Condensed, the view turns about 57 degrees to either side. A tint readout below explains
 how to read it.
 
+### Polier's side panel (night shift, D-060)
+
+The one dark place of the app, so the conversation with Polier reads as its own room: a full-height panel on
+the right edge (420px), the page making room for it, Polier standing to its left. Ground `#121413` with a faint
+yellow glow in the top-right corner and scan lines; a 5px hazard stripe along the top; "CH 1 · POLIER" in
+condensed yellow capitals and a pulsing yellow LIVE dot, like the site radio. The log: who spoke in small mono
+capitals (`ui-monospace`, 11.5px; the only place mono is used), the question in white mono, Polier's answer at
+15px Barlow on a 2px yellow rule with a blinking yellow block cursor after the newest one. Passages are cards on
+`#1c1f1d` with a 4px yellow left edge, the item number in condensed yellow; the read line in mono `#8b8e87`.
+The input is a dark field that turns its border yellow on focus, with a yellow "ASK ⏎" button. Mockups of the
+other directions considered: `playground/chat-panel/`.
+
 ## Do's and Don'ts
 
 ### Do:

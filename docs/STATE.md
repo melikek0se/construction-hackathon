@@ -1029,6 +1029,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## In progress
 
+- Polier's chat as a dark side panel (2026-11-22, D-060; `Agent.tsx`, `chat.css`, `styles.css`): a click on
+  Polier opens the conversation as a full-height panel on the right edge (420px), the page makes room for it
+  and Polier steps to its left; "night shift" look (dark, yellow, mono speaker labels). Mockups of the four
+  directions in `playground/chat-panel/`. Seen in Chrome on the projects page with an answer about all
+  projects; not checked inside a project (LV citations, "Read every document"), on the tender page, or under
+  900px wide.
 - LLM findings on project C (`Leistungsverzeichnis.pdf`, 36 findings, cached run of 2026-11-20) checked against
   the LV text, quantities and remarks by reading, not by an engineer:
   - 24 hold up on the facts they state (e.g. 3.2.540 lump sum "in Regie gemäß Pos. 6.1.10", which is the survey

@@ -1,7 +1,7 @@
 // Polier in the corner, and the conversation a click on it opens: questions about a project (Chat.tsx)
-// in a panel above the head, the only place they are asked. Inside a project or an LV it is that
-// project's conversation; on the list of projects it is about all projects at once (answered from their
-// overview), or about one that is picked there.
+// in a side panel along the right edge of the window (the page makes room for it), the only place they
+// are asked. Inside a project or an LV it is that project's conversation; on the list of projects it is
+// about all projects at once (answered from their overview), or about one that is picked there.
 import { useEffect, useRef, useState } from "react";
 import { openCatalogFile } from "./api";
 import { Chat } from "./Chat";
@@ -65,7 +65,7 @@ export function Agent({
         : null);
 
   return (
-    <div className="agent-dock">
+    <>
       {open && (
         <section
           className="agent-chat"
@@ -74,9 +74,10 @@ export function Agent({
         >
           <header className="agent-head">
             <div>
-              <strong>Ask Polier</strong>
+              <strong>Polier</strong>
               <span lang="de">{target?.label ?? project?.name ?? "Pick a project"}</span>
             </div>
+            <span className="agent-live">Live</span>
             {!here && picked !== null && projects.length > 0 && (
               <button className="agent-link" onClick={() => setPicked(null)}>
                 {picked === ALL ? "One project" : "Other project"}
@@ -141,14 +142,16 @@ export function Agent({
           )}
         </section>
       )}
-      <button
-        className="agent-button"
-        aria-expanded={open}
-        aria-label={open ? "Close the conversation with Polier" : "Ask Polier"}
-        onClick={() => onOpen(!open)}
-      >
-        <Mascot size={134} free title={open ? "Close" : "Ask Polier"} />
-      </button>
-    </div>
+      <div className="agent-dock">
+        <button
+          className="agent-button"
+          aria-expanded={open}
+          aria-label={open ? "Close the conversation with Polier" : "Ask Polier"}
+          onClick={() => onOpen(!open)}
+        >
+          <Mascot size={134} free title={open ? "Close" : "Ask Polier"} />
+        </button>
+      </div>
+    </>
   );
 }
