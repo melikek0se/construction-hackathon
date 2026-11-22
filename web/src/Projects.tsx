@@ -1481,9 +1481,7 @@ export function ProjectsPage({
                 {mail.busy ? "Reading mail…" : "Check mail"}
               </button>
             )}
-            {/* the page takes the files anywhere (App.tsx); the frame says so where one looks for it */}
             <div className="register-drop">
-              <span>Drop the files of a tender here, or</span>
               <button className="btn" disabled={onNew === null} onClick={() => onNew?.()}>
                 <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden>
                   <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" />

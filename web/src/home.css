@@ -2732,14 +2732,6 @@
   align-items: center;
   gap: 12px;
   height: 46px;
-  padding: 0 7px 0 16px;
-  background: #fff;
-  font-size: 13px;
-  color: var(--mute);
-}
-
-.app.dragging .register-drop {
-  background: var(--hover);
 }
 
 .register-drop .btn {
