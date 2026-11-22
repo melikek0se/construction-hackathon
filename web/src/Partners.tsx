@@ -7,11 +7,12 @@
    it writes. Beside the directory: what waits across all tenders, the price book (every firm's price for a
    thing on one line), what the web search found, and the firm's own particulars. Server side:
    src/boq/partners.py. */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   composeFollowUp,
   decideCandidate,
   discoverPartners,
+  findFollowUp,
   fetchCallRecord,
   getPartner,
   getPartners,
@@ -33,6 +34,8 @@ import { Select } from "./controls";
 import type { PartnerTab, PartnersPlace } from "./router";
 import type { AnswerPoint, Company, PartnerCard, PartnerEvent, PartnerNeed, PartnerPrice, PartnerProfile, PartnerRow, PartnerSearch, PartnerThread, PartnersOverview, Supplier, SupplierMore } from "./types";
 import "./partners.css";
+
+const CallPanel = lazy(() => import("./Call")); // the voice agent, as in the price inquiries
 
 const say = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const words = (text: string) => text.split(/[,;\n]/).map((w) => w.trim()).filter(Boolean);
@@ -114,24 +117,28 @@ function Holds({ c }: { c: PartnerCard }) {
   );
 }
 
-/** Where a firm's prices stand against the lowest: over everything another firm priced too, prices that hold only. */
-function priceLevel(book: PartnersOverview["book"], id: string): { pct: number; n: number } | null {
+/** Where a firm's prices stand: of the things another firm priced too (prices that hold only), on how many it is
+    the lowest, and by how much it lies over the lowest on the others. */
+function priceLevel(book: PartnersOverview["book"], id: string): { low: number; n: number; pct: number } | null {
   let sum = 0;
   let n = 0;
+  let low = 0;
   for (const b of book) {
     const fresh = b.offers.filter((o) => o.fresh && o.net > 0);
     if (new Set(fresh.map((o) => o.supplier_id)).size < 2) continue;
     const own = fresh.filter((o) => o.supplier_id === id);
     if (own.length === 0) continue;
-    const low = Math.min(...fresh.map((o) => o.net));
-    sum += ((Math.min(...own.map((o) => o.net)) - low) / low) * 100;
+    const lowest = Math.min(...fresh.map((o) => o.net));
+    const mine = Math.min(...own.map((o) => o.net));
+    if (mine <= lowest) low += 1;
+    else sum += ((mine - lowest) / lowest) * 100;
     n += 1;
   }
-  return n ? { pct: sum / n, n } : null;
+  return n ? { low, n, pct: n > low ? sum / (n - low) : 0 } : null;
 }
 
 type Filter = "all" | "supplier" | "subcontractor" | "preferred" | "open" | "papers";
-type Sort = "open" | "name" | "answers" | "speed" | "prices" | "contact";
+type Sort = "open" | "name" | "answers" | "speed" | "prices" | "level" | "contact";
 
 export function PartnersPage({
   place,
@@ -196,16 +203,21 @@ export function PartnersPage({
     const rate = (p: PartnerRow) => p.card.answer_rate ?? -1;
     const last = (p: PartnerRow) => p.card.last_contact ?? "";
     const move = (p: PartnerRow) => (p.card.open.some(yours) ? 2 : p.card.open.length ? 1 : 0);
+    const share = (p: PartnerRow) => {
+      const l = priceLevel(data?.book ?? [], p.id);
+      return l ? l.low / l.n : -1;
+    };
     const by: Record<Sort, (a: PartnerRow, b: PartnerRow) => number> = {
       open: (a, b) => move(b) - move(a) || last(b).localeCompare(last(a)),
       name: (a, b) => a.name.localeCompare(b.name),
       answers: (a, b) => rate(b) - rate(a) || b.card.asked - a.card.asked,
       speed: (a, b) => (a.card.reply_hours ?? Infinity) - (b.card.reply_hours ?? Infinity),
       prices: (a, b) => b.card.prices - b.card.stale - (a.card.prices - a.card.stale),
+      level: (a, b) => share(b) - share(a),
       contact: (a, b) => last(b).localeCompare(last(a)),
     };
     return [...list].sort(by[sort]);
-  }, [all, query, filter, sort]);
+  }, [all, query, filter, sort, data]);
 
   const count = (tab: PartnerTab) =>
     !data
@@ -260,7 +272,7 @@ export function PartnersPage({
         <p className="pt-empty quiet">Reading the directory…</p>
       ) : directory ? (
         <>
-          <Today data={data} onTab={(tab) => onPlace({ tab, partner: null })} onPapers={() => (setFilter("papers"), onPlace({ tab: "suppliers", partner: null }))} />
+          {!place.partner && <Today data={data} onTab={(tab) => onPlace({ tab, partner: null })} onPapers={() => (setFilter("papers"), onPlace({ tab: "suppliers", partner: null }))} />}
           {place.partner ? (
             <div className="pt-two">
               <nav className="pt-list" aria-label="Firms">
@@ -287,6 +299,7 @@ export function PartnersPage({
                 book={data.book}
                 typical={typical}
                 firms={all.filter((p) => p.card.reply_hours !== null).length}
+                onBack={() => onPlace({ tab: "suppliers", partner: null })}
                 onChanged={changed}
                 onGone={() => (onPlace({ tab: "suppliers", partner: null }), void changed())}
                 onOpenTender={onOpenTender}
@@ -297,6 +310,8 @@ export function PartnersPage({
             <Register
               rows={rows}
               all={all}
+              book={data.book}
+              onChanged={changed}
               filter={filter}
               onFilter={setFilter}
               sort={sort}
@@ -319,6 +334,8 @@ export function PartnersPage({
           searching={searching}
           onOpen={openPartner}
           onOpenTender={onOpenTender}
+          onChanged={changed}
+          onError={setError}
           onFound={() => onPlace({ tab: "discovered", partner: null })}
           onSearch={(n) => {
             setSearching(n.package);
@@ -328,7 +345,7 @@ export function PartnersPage({
           }}
         />
       ) : place.tab === "waiting" ? (
-        <Waiting rows={data.waiting} partners={all} onOpen={openPartner} onOpenTender={onOpenTender} onChanged={changed} onError={setError} />
+        <Waiting rows={data.waiting} partners={all} voice={data.voice} onOpen={openPartner} onOpenTender={onOpenTender} onChanged={changed} onError={setError} />
       ) : place.tab === "prices" ? (
         <PriceBook book={data.book} onOpen={openPartner} />
       ) : place.tab === "discovered" ? (
@@ -347,15 +364,16 @@ function Today({ data, onTab, onPapers }: { data: PartnersOverview; onTab: (tab:
   const they = data.waiting.filter((w) => !yours(w));
   const longest = Math.max(0, ...they.map((w) => w.days ?? 0));
   const papers = data.partners.reduce((n, p) => n + papersDue(p).length, 0);
-  const prices = data.partners.reduce((n, p) => n + p.card.prices, 0);
-  const stale = data.partners.reduce((n, p) => n + p.card.stale, 0);
+  // prices that still hold and run out within a week: the ones to use or ask again while they stand
+  const stale = data.book.reduce((n, b) => n + b.offers.filter((o) => o.fresh && o.valid_until && daysTo(o.valid_until) <= 7).length, 0);
+  const unsigned = !data.company.name.trim() || !data.company.email.trim();
   const gaps = data.needs.filter((n) => n.active && !n.firms.some((f) => data.partners.some((p) => p.id === f.id))).length;
   if (data.partners.length === 0) return null;
-  const quiet = !you && they.length === 0 && !papers && !stale && !gaps;
+  const quiet = !you && they.length === 0 && !papers && !stale && !gaps && !unsigned;
   return (
     <div className="pt-today">
       <b>Today</b>
-      {quiet && <span className="quiet">Nothing waits, no paper runs out, every price holds.</span>}
+      {quiet && <span className="quiet">Nothing waits, no paper runs out, no price runs out this week.</span>}
       {you > 0 && (
         <button onClick={() => onTab("waiting")}>
           <Mark you />
@@ -380,7 +398,12 @@ function Today({ data, onTab, onPapers }: { data: PartnersOverview; onTab: (tab:
       )}
       {stale > 0 && (
         <button onClick={() => onTab("prices")}>
-          <b className="num">{stale}</b> of {prices} prices out of date
+          <b className="num">{stale}</b> {stale === 1 ? "price runs" : "prices run"} out within 7 days
+        </button>
+      )}
+      {unsigned && (
+        <button onClick={() => onTab("firm")} title="An inquiry says who is asking: a supplier gives an unknown sender the list price, or nothing">
+          <b className="pt-up">Your firm's name and e-mail are not entered</b>
         </button>
       )}
     </div>
@@ -392,6 +415,8 @@ function Today({ data, onTab, onPapers }: { data: PartnersOverview; onTab: (tab:
 function Register({
   rows,
   all,
+  book,
+  onChanged,
   filter,
   onFilter,
   sort,
@@ -407,6 +432,8 @@ function Register({
 }: {
   rows: PartnerRow[];
   all: PartnerRow[];
+  book: PartnersOverview["book"];
+  onChanged: () => void;
   filter: Filter;
   onFilter: (f: Filter) => void;
   sort: Sort;
@@ -437,6 +464,22 @@ function Register({
     ["papers", "Papers running out"],
   ];
   const examples = all.filter((p) => p.more.example).length;
+  // firms with something on record that Polier has not summed up yet
+  const unread = all.filter((p) => !p.more.read && (p.card.asked > 0 || p.card.prices > 0));
+  const [reading, setReading] = useState<number | null>(null);
+  const readAll = async () => {
+    for (let i = 0; i < unread.length; i += 1) {
+      setReading(unread.length - i);
+      try {
+        await readPartnerFirm(unread[i].id);
+      } catch (e) {
+        onError(say(e));
+        break;
+      }
+    }
+    setReading(null);
+    onChanged();
+  };
   const head = (key: Sort, label: string, title?: string) => (
     <th aria-sort={sort === key ? "descending" : undefined}>
       <button className={sort === key ? "is-on" : ""} onClick={() => onSort(sort === key ? "open" : key)} title={title}>
@@ -501,6 +544,7 @@ function Register({
               {head("answers", "Replies", "One mark per inquiry: answered, declined, still open, never answered")}
               {head("speed", "First reply", "Median time to the first reply")}
               {head("prices", "Prices that hold")}
+              {head("level", "Lowest on", "Of the things another firm priced too, on how many this firm is the lowest (prices that hold, net as quoted)")}
               {head("contact", "Last contact")}
               {head("open", "Open")}
             </tr>
@@ -509,6 +553,7 @@ function Register({
             {rows.map((p) => {
               const c = p.card;
               const due = papersDue(p)[0];
+              const level = priceLevel(book, p.id);
               return (
                 <tr key={p.id} className={p.more.blocked ? "is-blocked" : ""} onClick={() => onOpen(p.id)}>
                   <td>
@@ -522,6 +567,7 @@ function Register({
                       <span lang="de">{[KIND[p.kind], p.place].filter(Boolean).join(" · ")}</span>
                       {due && <span className="pt-up" lang="de"> · {paperSays(due)}</span>}
                     </small>
+                    {p.gist && <small className="pt-gist" title="The first sentence of Polier's read of this firm">{p.gist}</small>}
                   </td>
                   <td lang="de">{p.groups.slice(0, 4).join(", ") || <span className="quiet" lang="en">nothing entered</span>}</td>
                   <td>
@@ -531,6 +577,7 @@ function Register({
                   <td>
                     <Holds c={c} />
                   </td>
+                  <td className="num">{level ? `${level.low} of ${level.n}` : <span className="quiet">–</span>}</td>
                   <td className="num">{c.last_contact ? day(c.last_contact) : <span className="quiet">–</span>}</td>
                   <td>
                     {c.open.length > 0 ? (
@@ -556,6 +603,11 @@ function Register({
           <span className="pt-strip"><i className="is-declined" /></span> declined
           <span className="pt-strip"><i className="is-waiting" /></span> still open
           <span className="pt-strip"><i className="is-silent" /></span> never answered
+          {unread.length > 0 && (
+            <button className="text-link" disabled={reading !== null} onClick={() => void readAll()} title="Polier sums up each firm from its record, every sentence on its source. Asks Claude: a few seconds and a few cents per firm">
+              {reading !== null ? `Polier is reading: ${reading} to go…` : `Let Polier read the ${unread.length === 1 ? "one firm" : `${unread.length} firms`} it has not read`}
+            </button>
+          )}
           <button className="text-link" onClick={onWeb}>
             Find more firms on the web
           </button>
@@ -569,12 +621,17 @@ function Register({
 
 type Sheet = "prices" | "talk" | "terms" | "style";
 
+/** The conversation a message belongs to: a package of a tender; older inquiries without a package stand alone;
+    mail that is part of no inquiry is one group (""). */
+const threadKey = (e: PartnerEvent) => (!e.mail_id ? "" : e.package ? `${e.project_id ?? e.project}|${e.package}` : e.mail_id);
+
 function Profile({
   id,
   voice,
   book,
   typical,
   firms,
+  onBack,
   onChanged,
   onGone,
   onOpenTender,
@@ -586,13 +643,14 @@ function Profile({
   /** Median time to the first reply over the whole directory, and how many firms it is of. */
   typical: number | null;
   firms: number;
+  onBack: () => void;
   onChanged: () => void;
   onGone: () => void;
   onOpenTender: (projectId: string, file: number) => void;
   onError: (e: string) => void;
 }) {
   const [p, setP] = useState<PartnerProfile | null>(null);
-  const [sheet, setSheet] = useState<Sheet>("prices");
+  const [sheet, setSheet] = useState<Sheet | null>(null);
   const [reading, setReading] = useState(false);
   const [summing, setSumming] = useState(false);
   const [point, setPoint] = useState<number | null>(null);
@@ -635,12 +693,13 @@ function Profile({
       .finally(() => setSumming(false));
   };
   const bare = c.asked === 0 && p.timeline.length === 0 && p.prices.length === 0;
+  const at: Sheet = sheet ?? (p.prices.length ? "prices" : p.timeline.length ? "talk" : "terms");
   const holds = c.prices - c.stale;
   // the next day a price that still holds runs out, and how many go with it
   const ends = p.prices.filter((r) => r.fresh && r.valid_until).map((r) => r.valid_until!).sort();
   const nextEnd = ends[0];
   const due = papersDue(p);
-  const threads = new Set(p.timeline.map((e) => e.mail_id ?? "")).size;
+  const threads = new Set(p.timeline.map(threadKey)).size;
   const facts = [p.contact, p.email, p.phone, p.place, p.more.customer_no && `customer no. ${p.more.customer_no}`].filter(Boolean);
   const SHEETS: [Sheet, string, number | null][] = [
     ["prices", "Prices", p.prices.length],
@@ -658,16 +717,28 @@ function Profile({
     >
       <header className="pt-head">
         <div>
+          <button className="text-link pt-back" onClick={onBack}>
+            All firms
+          </button>
           <h2>
             {p.name}
             <em className="tag">{KIND[p.kind]}</em>
             {p.more.preferred && <em className="tag pt-pref">preferred</em>}
             {p.more.blocked && <em className="tag">not asked</em>}
             {p.more.no_call && <em className="tag">not phoned</em>}
-            {(p.more.example || p.source !== "user") && <em className="tag">{p.more.example ? "example" : SOURCE[p.source]}</em>}
+            {(p.more.example || p.source !== "user") && (
+              <em className="tag" title={p.more.example ? "An example: this firm, its older mail and its older prices are made up, to show the page with a history." : undefined}>
+                {p.more.example ? "example" : SOURCE[p.source]}
+              </em>
+            )}
           </h2>
           <p className="pt-head-sub">
-            {facts.length > 0 ? facts.map((f, i) => <span key={i}>{f}</span>) : <span>no contact entered yet</span>}
+            {facts.length === 0 && <span>no contact entered yet</span>}
+            {p.contact && <span>{p.contact}</span>}
+            {p.email && <a href={`mailto:${p.email}`}>{p.email}</a>}
+            {p.phone && <a href={`tel:${p.phone.replace(/[^+\d]/g, "")}`}>{p.phone}</a>}
+            {p.place && <span>{p.place}</span>}
+            {p.more.customer_no && <span>customer no. {p.more.customer_no}</span>}
             {p.more.website && (
               <a href={/^https?:/.test(p.more.website) ? p.more.website : `https://${p.more.website}`} target="_blank" rel="noreferrer">
                 {p.more.website.replace(/^https?:\/\//, "")}
@@ -689,7 +760,6 @@ function Profile({
           {due.map(paperSays).join(" · ")}
         </p>
       )}
-      {p.more.example && <p className="pt-note">An example: this firm, its mail and its prices are made up, to show the page with a history. They never price a real item.</p>}
       {p.more.found && (
         <p className="pt-note">
           Found on the web on {day(p.more.found.at)} while looking for <span lang="de">„{p.more.found.what}“</span>:{" "}
@@ -722,6 +792,7 @@ function Profile({
         </ul>
       )}
 
+      <div className="pt-top">
       {(sum || !bare) && (
         <div className="pt-pread">
           <header>
@@ -740,14 +811,15 @@ function Profile({
           ) : sum.points.length === 0 ? (
             <p className="quiet">Nothing Polier wrote stood against the record, so nothing is shown.</p>
           ) : (
-            <p className="pt-points">
+            <ol className="pt-points">
               {sum.points.map((pt, i) => (
-                <button key={i} className={point === i ? "is-on" : ""} aria-expanded={point === i} onClick={() => setPoint(point === i ? null : i)} title="What this rests on">
-                  {pt.text}
-                  <sup>{i + 1}</sup>
-                </button>
+                <li key={i}>
+                  <button className={point === i ? "is-on" : ""} aria-expanded={point === i} onClick={() => setPoint(point === i ? null : i)} title="What this rests on">
+                    {pt.text}
+                  </button>
+                </li>
               ))}
-            </p>
+            </ol>
           )}
           {sum && point !== null && sum.points[point] && (
             <ul className="pt-point-src">
@@ -769,6 +841,7 @@ function Profile({
               )}
             </ul>
           )}
+          {sum && Math.min(30, p.timeline.filter((e) => e.text && !e.draft).length) !== sum.basis.messages && <small>The record has changed since this was written: read again.</small>}
           {sum && sum.dropped > 0 && <small>{plural(sum.dropped, "sentence")} left out: its source, passage or a figure did not stand in the record.</small>}
         </div>
       )}
@@ -788,12 +861,18 @@ function Profile({
         <div>
           <dt>First reply, median</dt>
           <dd className="num">{took(c.reply_hours)}</dd>
-          <small>{c.reply_hours === null ? "has not answered yet" : typical !== null && firms > 1 ? `the middle of ${firms} firms that answered: ${took(typical)}` : "the only firm that has answered"}</small>
+          <small>{c.reply_hours === null ? "has not answered yet" : typical !== null && firms > 1 ? `the directory's median, over ${firms} firms: ${took(typical)}` : "the only firm that has answered"}</small>
         </div>
         <div title="Net prices as quoted, prices that still hold only. Terms differ between firms (ex works or free to site) and are not evened out.">
-          <dt>Price level</dt>
-          <dd className={`num${level && level.pct > 0.05 ? "" : ""}`}>{level ? (level.pct < 0.05 ? "lowest" : `+${pct.format(level.pct)} %`) : "–"}</dd>
-          <small>{level ? `${level.pct < 0.05 ? "on" : "over the lowest, on"} ${plural(level.n, "thing")} another firm priced too` : "nothing yet that another firm priced too"}</small>
+          <dt>Lowest price on</dt>
+          <dd className="num">{level ? `${level.low} of ${level.n}` : "–"}</dd>
+          <small>
+            {!level
+              ? "nothing yet that another firm priced too"
+              : level.low === level.n
+                ? "things another firm priced too"
+                : `things another firm priced too; on the others ${level.pct < 0.1 ? "under 0,1" : pct.format(level.pct)} % over the lowest`}
+          </small>
         </div>
         <div>
           <dt>Prices that hold</dt>
@@ -803,24 +882,25 @@ function Profile({
           <small>{c.prices === 0 ? "no price from this firm yet" : nextEnd ? `${ends.filter((e) => e === nextEnd).length} run out on ${day(nextEnd)}` : holds ? "none with a last day stated" : `the latest is of ${day(c.latest_price)}`}</small>
         </div>
       </dl>
+      </div>
 
       <div className="views pt-sheets" role="tablist" aria-label={p.name}>
         {SHEETS.map(([key, label, n]) => (
-          <button key={key} role="tab" aria-selected={sheet === key} onClick={() => setSheet(key)}>
+          <button key={key} role="tab" aria-selected={at === key} onClick={() => setSheet(key)}>
             {label}
             {n !== null && <span className="pt-count">{n}</span>}
           </button>
         ))}
       </div>
 
-      {sheet === "prices" &&
+      {at === "prices" &&
         (p.prices.length === 0 ? (
           <p className="quiet">No price from this firm yet. A quote read in the price inquiries of a tender lands here with its day and validity.</p>
         ) : (
           <PriceLines rows={p.prices} usual={p.usual} sub={p.kind === "subcontractor"} />
         ))}
 
-      {sheet === "talk" && (
+      {at === "talk" && (
         <div>
           {p.timeline.length === 0 ? (
             <p className="quiet">Nothing yet. Inquiries, replies and calls from the tenders show here; older mail comes in as .eml files dropped on this page.</p>
@@ -831,7 +911,7 @@ function Profile({
         </div>
       )}
 
-      {sheet === "terms" && (
+      {at === "terms" && (
         <div className="pt-cols">
           <div className="pt-block">
             <h3>Particulars</h3>
@@ -936,7 +1016,7 @@ function Profile({
         </div>
       )}
 
-      {sheet === "style" && (
+      {at === "style" && (
         <div className="pt-block pt-style">
           <h3>
             How they write
@@ -1136,7 +1216,7 @@ function PriceLines({ rows, usual, sub }: { rows: PartnerPrice[]; usual: Partner
 function Threads({ events, open, voice, onRecord, onError }: { events: PartnerEvent[]; open: PartnerThread[]; voice: boolean; onRecord: () => void; onError: (e: string) => void }) {
   const threads = useMemo(() => {
     const by = new Map<string, PartnerEvent[]>();
-    for (const e of events) by.set(e.mail_id ?? "", [...(by.get(e.mail_id ?? "") ?? []), e]);
+    for (const e of events) by.set(threadKey(e), [...(by.get(threadKey(e)) ?? []), e]);
     return [...by.entries()]
       .map(([key, list]) => ({ key, list: [...list].sort((a, b) => a.at.localeCompare(b.at)) }))
       .sort((a, b) => Number(a.key === "") - Number(b.key === "") || b.list[b.list.length - 1].at.localeCompare(a.list[a.list.length - 1].at));
@@ -1348,6 +1428,8 @@ function Coverage({
   onOpenTender,
   onFound,
   onSearch,
+  onChanged,
+  onError,
 }: {
   data: PartnersOverview;
   searches: PartnerSearch[];
@@ -1357,7 +1439,26 @@ function Coverage({
   onOpenTender: (projectId: string, file: number) => void;
   onFound: () => void;
   onSearch: (need: PartnerNeed) => void;
+  onChanged: () => void;
+  onError: (e: string) => void;
 }) {
+  const [draft, setDraft] = useState<(Message & { key: string; pkg: string; supplier_id: string }) | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const write = (n: PartnerNeed, supplier_id: string) => {
+    const key = `${n.project_id}|${n.file_name}|${n.package_id}|${supplier_id}`;
+    setBusy(key);
+    composeFollowUp({ project_id: n.project_id!, file: n.file_name, package: n.package_id, supplier_id }, "inquiry")
+      .then((d) => setDraft({ key, pkg: n.package_id, supplier_id, kind: "inquiry", analysis_id: d.analysis_id, to: d.to, subject: d.subject, body: d.body, points: [] }), (e) => onError(say(e)))
+      .finally(() => setBusy(null));
+  };
+  const send = (via: "smtp" | "draft") => {
+    if (!draft) return;
+    setSending(true);
+    mailInquiry(draft.analysis_id, { package: draft.pkg, supplier_id: draft.supplier_id, to: draft.to, subject: draft.subject, body: draft.body, via, kind: "inquiry" })
+      .then(() => (setDraft(null), onChanged()), (e) => onError(say(e)))
+      .finally(() => setSending(false));
+  };
   const inWork = data.needs.filter((n) => n.active);
   const [every, setEvery] = useState(inWork.length === 0);
   const names = useMemo(() => new Map(data.partners.map((p) => [p.id, p.name])), [data.partners]);
@@ -1468,10 +1569,29 @@ function Coverage({
                         </b>
                       ) : firms.every((f) => f.status === "unasked") ? (
                         <span className="quiet">not asked yet</span>
+                      ) : firms.some((f) => f.status === "unasked") ? (
+                        <>waiting, {plural(firms.filter((f) => f.status === "unasked").length, "firm")} not asked</>
                       ) : (
                         <>waiting for {firms.length === 1 ? "the firm" : "the firms"}</>
                       )}
                     </span>
+                    {n.project_id &&
+                      firms
+                        .filter((f) => f.status === "unasked")
+                        .map((f) => {
+                          const key = `${n.project_id}|${n.file_name}|${n.package_id}|${f.id}`;
+                          return draft?.key === key ? (
+                            <div key={f.id} className="pt-cov-ask">
+                              <DraftPanel draft={draft} sending={sending} onChange={setDraft} onSend={send} onDiscard={() => setDraft(null)} />
+                            </div>
+                          ) : (
+                            <div key={f.id} className="pt-cov-ask">
+                              <button className="btn-ghost small" disabled={busy !== null || draft !== null} onClick={() => write(n, f.id)} title="Polier writes the inquiry with the items of this package; you read it before it goes out">
+                                {busy === key ? "Writing…" : `Write the inquiry to ${names.get(f.id)}`}
+                              </button>
+                            </div>
+                          );
+                        })}
                   </li>
                 );
               })}
@@ -1485,7 +1605,57 @@ function Coverage({
 
 /* ------------------------------------------------------------------ what waits, across all tenders */
 
-type FollowDraft = { n: number; kind: "reminder" | "answer"; analysis_id: string; to: string; subject: string; body: string; points: AnswerPoint[] };
+type Message = { kind: "reminder" | "answer" | "inquiry"; analysis_id: string; to: string; subject: string; body: string; points: AnswerPoint[] };
+type FollowDraft = Message & { n: number };
+
+const DRAFT: Record<Message["kind"], string> = { answer: "Polier's answer, for you to read", reminder: "The reminder, for you to read", inquiry: "The inquiry, for you to read" };
+
+/** A message Polier wrote, to read and change before it goes out: to, subject, text, and for an answer what
+    each part of it rests on. Nothing is sent without the press on "Send". */
+function DraftPanel<T extends Message>({ draft, sending, onChange, onSend, onDiscard }: { draft: T; sending: boolean; onChange: (d: T) => void; onSend: (via: "smtp" | "draft") => void; onDiscard: () => void }) {
+  return (
+    <div className="pt-follow-draft">
+      <b>{DRAFT[draft.kind]}</b>
+      <label>
+        <span>To</span>
+        <input type="text" value={draft.to} onChange={(e) => onChange({ ...draft, to: e.target.value })} />
+      </label>
+      <label>
+        <span>Subject</span>
+        <input type="text" lang="de" value={draft.subject} onChange={(e) => onChange({ ...draft, subject: e.target.value })} />
+      </label>
+      <textarea lang="de" rows={Math.min(18, Math.max(8, draft.body.split("\n").length + 1))} value={draft.body} onChange={(e) => onChange({ ...draft, body: e.target.value })} aria-label="Text of the message" />
+      {draft.kind === "inquiry" && <small>The items go with it as an Excel sheet for the firm to fill in.</small>}
+      {draft.points.length > 0 && (
+        <ul className="pt-follow-points">
+          {draft.points.map((pt, i) => (
+            <li key={i} className={pt.settled ? "" : "is-open"}>
+              <span lang="de">{pt.question}</span>
+              {pt.settled ? (
+                <small>
+                  rests on {pt.pos && <b className="num">{pt.pos}</b>} <q lang="de">{pt.lv_quote}</q>
+                </small>
+              ) : (
+                <small className="pt-up">the LV does not settle this: check the answer before it goes out</small>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="pt-acts">
+        <button className="btn-new" disabled={sending || !draft.to.includes("@") || !draft.body.trim()} onClick={() => onSend("smtp")}>
+          {sending ? "Sending…" : `Send to ${draft.to}`}
+        </button>
+        <button className="btn-ghost" disabled={sending} onClick={() => onSend("draft")} title="Kept in the conversation as written and not sent">
+          Keep unsent
+        </button>
+        <button className="text-link" disabled={sending} onClick={onDiscard}>
+          Discard
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /** What the record says about how this firm answers, set against how long this conversation has waited. */
 function habit(t: PartnerThread, c: PartnerCard | undefined): string {
@@ -1504,6 +1674,7 @@ function habit(t: PartnerThread, c: PartnerCard | undefined): string {
 function Waiting({
   rows,
   partners,
+  voice,
   onOpen,
   onOpenTender,
   onChanged,
@@ -1511,12 +1682,15 @@ function Waiting({
 }: {
   rows: PartnerThread[];
   partners: PartnerRow[];
+  /** The voice agent is set up: a firm can be phoned from here. */
+  voice: boolean;
   onOpen: (id: string) => void;
   onOpenTender: (projectId: string, file: number) => void;
   onChanged: () => void;
   onError: (e: string) => void;
 }) {
   const [draft, setDraft] = useState<FollowDraft | null>(null);
+  const [calling, setCalling] = useState<{ n: number; analysis_id: string } | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   // your moves first, then what the earliest submission day presses, then what has waited longest
@@ -1531,6 +1705,12 @@ function Waiting({
     setBusy(n);
     composeFollowUp({ project_id: t.project_id!, file: t.file_name!, package: t.package_id!, supplier_id: t.supplier_id }, kind)
       .then((d) => setDraft({ n, kind, analysis_id: d.analysis_id, to: d.to, subject: d.subject, body: d.body, points: d.points ?? [] }), (e) => onError(say(e)))
+      .finally(() => setBusy(null));
+  };
+  const phone = (n: number, t: PartnerThread) => {
+    setBusy(n);
+    findFollowUp({ project_id: t.project_id!, file: t.file_name!, package: t.package_id!, supplier_id: t.supplier_id })
+      .then((d) => (setDraft(null), setCalling({ n, analysis_id: d.analysis_id })), (e) => onError(say(e)))
       .finally(() => setBusy(null));
   };
   const send = (t: PartnerThread, via: "smtp" | "draft") => {
@@ -1554,7 +1734,8 @@ function Waiting({
         {order.map((t, n) => {
           const can = Boolean(t.project_id && t.package_id && t.file_name) && !t.example;
           const left = t.due ? daysTo(t.due) : null;
-          const says = habit(t, partners.find((p) => p.id === t.supplier_id)?.card);
+          const firm = partners.find((p) => p.id === t.supplier_id);
+          const says = habit(t, firm?.card);
           const mine = draft?.n === n ? draft : null;
           return (
             <li key={n} className={`${yours(t) ? "is-you" : ""}${mine ? " is-writing" : ""}`}>
@@ -1596,53 +1777,28 @@ function Waiting({
                       {busy === n ? "Writing…" : "Write a reminder"}
                     </button>
                   )}
+                  {can && voice && t.status !== "drafted" && !firm?.more.no_call && (
+                    <button className="btn-ghost small" disabled={busy !== null || calling?.n === n} onClick={() => phone(n, t)} title="The voice agent phones the firm from this browser, says it is an AI and for whom it calls, and asks for the prices">
+                      Let Polier phone
+                    </button>
+                  )}
                   {t.project_id && t.file !== null && (
-                    <button className="text-link" onClick={() => onOpenTender(t.project_id!, t.file!)} title="The price inquiries of this tender: the whole conversation, the call by Polier, the quote">
+                    <button className="text-link" onClick={() => onOpenTender(t.project_id!, t.file!)} title="The price inquiries of this tender: the whole conversation, the quote">
                       {t.status === "drafted" ? "Open the draft" : "Open the inquiry"}
                     </button>
                   )}
                   {t.example && <span className="quiet">an example: nothing to send</span>}
                 </span>
               </div>
-              {mine && (
-                <div className="pt-follow-draft">
-                  <b>{mine.kind === "answer" ? "Polier's answer, for you to read" : "The reminder, for you to read"}</b>
-                  <label>
-                    <span>To</span>
-                    <input type="text" value={mine.to} onChange={(e) => setDraft({ ...mine, to: e.target.value })} />
-                  </label>
-                  <label>
-                    <span>Subject</span>
-                    <input type="text" lang="de" value={mine.subject} onChange={(e) => setDraft({ ...mine, subject: e.target.value })} />
-                  </label>
-                  <textarea lang="de" rows={Math.min(18, Math.max(8, mine.body.split("\n").length + 1))} value={mine.body} onChange={(e) => setDraft({ ...mine, body: e.target.value })} aria-label="Text of the message" />
-                  {mine.points.length > 0 && (
-                    <ul className="pt-follow-points">
-                      {mine.points.map((pt, i) => (
-                        <li key={i} className={pt.settled ? "" : "is-open"}>
-                          <span lang="de">{pt.question}</span>
-                          {pt.settled ? (
-                            <small>
-                              rests on {pt.pos && <b className="num">{pt.pos}</b>} <q lang="de">{pt.lv_quote}</q>
-                            </small>
-                          ) : (
-                            <small className="pt-up">the LV does not settle this: check the answer before it goes out</small>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <div className="pt-acts">
-                    <button className="btn-new" disabled={sending || !mine.to.includes("@") || !mine.body.trim()} onClick={() => send(t, "smtp")}>
-                      {sending ? "Sending…" : `Send to ${mine.to}`}
-                    </button>
-                    <button className="btn-ghost" disabled={sending} onClick={() => send(t, "draft")} title="Kept in the conversation as written and not sent">
-                      Keep unsent
-                    </button>
-                    <button className="text-link" disabled={sending} onClick={() => setDraft(null)}>
-                      Discard
-                    </button>
-                  </div>
+              {mine && <DraftPanel draft={mine} sending={sending} onChange={setDraft} onSend={(via) => send(t, via)} onDiscard={() => setDraft(null)} />}
+              {calling?.n === n && (
+                <div className="pt-follow-draft pt-follow-call">
+                  <Suspense fallback={<p className="quiet">Getting the voice agent…</p>}>
+                    <CallPanel analysisId={calling.analysis_id} pkg={t.package_id!} supplier={t.supplier_id} supplierName={t.supplier ?? ""} onDone={() => (setCalling(null), onChanged())} />
+                  </Suspense>
+                  <button className="text-link" onClick={() => setCalling(null)}>
+                    Close
+                  </button>
                 </div>
               )}
             </li>

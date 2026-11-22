@@ -259,7 +259,10 @@ def overview() -> dict:
     partners = []
     for s in directory:
         mine = [p for p in prices if p["supplier_id"] == s["id"]]
-        partners.append({**s, "more": {**s["more"], "style": bool(s["more"].get("style")), "read": bool(s["more"].get("read"))},
+        read = s["more"].get("read") or {}
+        partners.append({**s, "more": {**s["more"], "style": bool(s["more"].get("style")), "read": bool(read)},
+                         # the first sentence of Polier's read, for the register
+                         "gist": next((p["text"] for p in read.get("points") or []), ""),
                          "card": _card(rec, s, mine)})
     waiting = sorted((t | {"supplier": names.get(t["supplier_id"], "(removed)")} for p in partners for t in p["card"]["open"]),
                      key=lambda t: (t["status"] not in ("question", "drafted"), t["due"] or "9999", -(t["days"] or 0)))
@@ -324,7 +327,7 @@ def needs(rec: dict | None = None) -> list[dict]:
                 key = (sid, project_id, file, p["id"])
                 ms = rec["threads"].get(key)
                 firms.append({"id": sid, "status": _thread(rec, key, ms)["status"] if ms else "unasked"})
-            out.append({**_where(rec, project_id, file, p["id"]), "package_id": p["id"],
+            out.append({**_where(rec, project_id, file, p["id"]), "package_id": p["id"], "file_name": file,
                         "kind": "subcontractor" if p["kind"] == "subcontract" else "supplier",
                         "why": p.get("why") or "", "items": len(p["items"]), "active": active, "firms": firms,
                         "chosen": bool((plan["chosen"] or {}).get(p["id"]))})

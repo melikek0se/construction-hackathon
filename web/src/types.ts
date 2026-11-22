@@ -757,6 +757,7 @@ export interface PartnerEvent extends PartnerWhere {
 
 export interface PartnerRow extends Omit<Supplier, "more"> {
   more: Omit<SupplierMore, "style" | "read"> & { style: boolean; read: boolean };
+  gist: string; // the first sentence of Polier's read, if there is one
   card: PartnerCard;
 }
 
@@ -786,6 +787,7 @@ export interface PartnerNeed {
   file: number | null;
   package: string;
   package_id: string;
+  file_name: string;
   kind: Supplier["kind"];
   why: string;
   items: number;

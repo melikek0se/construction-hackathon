@@ -2117,7 +2117,9 @@ class FollowUp(BaseModel):
     file: str  # the file's name, as the conversation carries it
     package: str
     supplier_id: str
-    kind: str = "reminder"  # or "answer": what the firm asked back, answered from the LV (asks Claude)
+    # "reminder"; "answer": what the firm asked back, answered from the LV (asks Claude); "inquiry": the first
+    # message to a firm on the package; "call": nothing is written, only the analysis is found (the voice agent)
+    kind: str = "reminder"
 
 
 @app.post("/api/partners/follow-up")
@@ -2126,14 +2128,17 @@ async def partner_follow_up(body: FollowUp):
     to what the firm asked back. It is the message the price inquiries of the tender would write
     (`compose_inquiry`); with it comes the analysis it belongs to, which is where it is sent from. Nothing
     goes out here: the estimator reads the text first."""
-    if body.kind not in ("reminder", "answer"):
-        raise HTTPException(422, "kind is reminder or answer.")
+    if body.kind not in ("reminder", "answer", "inquiry", "call"):
+        raise HTTPException(422, "kind is reminder, answer, inquiry or call.")
     with db.engine().connect() as conn:
         kept = [r.id for r in conn.execute(select(db.analyses.c.id).where(db.analyses.c.project_id == body.project_id)
                                            .order_by(db.analyses.c.created.desc()))]
     analysis_id = next((a for a in kept if _analysis(a)[0].file == body.file), None)
     if analysis_id is None:
         raise HTTPException(404, "The analysis of this tender's file is no longer kept. Open the file once.")
+    if body.kind == "call":
+        _package(analysis_id, body.package)
+        return {"analysis_id": analysis_id}
     draft = await compose_inquiry(analysis_id, InquiryDraft(package=body.package, supplier_id=body.supplier_id,
                                                             remind=body.kind == "reminder", answer=body.kind == "answer"))
     return {**draft, "analysis_id": analysis_id}

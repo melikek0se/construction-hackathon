@@ -2065,3 +2065,129 @@
     text-align: left;
   }
 }
+
+/* 2026-11-22, second pass */
+.pt-back {
+  display: none;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+}
+
+.pt-back::before {
+  content: "‹ ";
+}
+
+.pt-head-sub a:hover {
+  text-decoration: underline;
+}
+
+.pt-top {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (min-width: 1500px) {
+  .pt-top:has(.pt-pread) {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  }
+
+  .pt-top:has(.pt-pread) .pt-score > div {
+    flex-basis: 45%;
+    border-top: 1px solid var(--rule);
+    margin-top: -1px;
+  }
+}
+
+ol.pt-points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: point;
+  max-width: 100ch;
+}
+
+ol.pt-points li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  counter-increment: point;
+  padding: 1px 0;
+}
+
+ol.pt-points li::before {
+  content: counter(point);
+  padding-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+ol.pt-points button + button {
+  margin-left: 0;
+}
+
+ol.pt-points button {
+  display: block;
+}
+
+.pt-gist {
+  margin-top: 2px;
+  max-width: 62ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+.pt-key .text-link + .text-link {
+  margin-left: 16px;
+}
+
+.pt-follow-call .text-link {
+  justify-self: start;
+}
+
+.pt-cov-ask {
+  grid-column: 1 / -1;
+}
+
+.pt-cov-ask .pt-follow-draft {
+  margin: 4px 0 6px;
+}
+
+/* a narrow window: the firm alone, the way back above its name; the page's own rules for 1000px come before
+   the second build's rules in this file, so the layout is said again here */
+@media (max-width: 1000px) {
+  .pt-two {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-y: auto;
+  }
+
+  .pt-two > .pt-list {
+    display: none;
+  }
+
+  .pt-back {
+    display: inline-block;
+  }
+
+  .pt-profile {
+    padding: 14px 14px 120px;
+  }
+
+  .pt-open li {
+    grid-template-columns: 10px auto minmax(0, 1fr);
+  }
+
+  .pt-open li > button {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  .pt-lines th:nth-child(2),
+  .pt-lines td:nth-child(2),
+  .pt-lines th:nth-child(5),
+  .pt-lines td:nth-child(5) {
+    display: none;
+  }
+}

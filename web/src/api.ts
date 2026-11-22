@@ -328,9 +328,14 @@ export async function composeInquiry(id: string, pkg: string, supplierId: string
  *  what the firm asked back (asks Claude). Comes with the analysis it is sent from; nothing goes out yet. */
 export async function composeFollowUp(
   thread: { project_id: string; file: string; package: string; supplier_id: string },
-  kind: "reminder" | "answer",
+  kind: "reminder" | "answer" | "inquiry",
 ): Promise<{ analysis_id: string; subject: string; body: string; to: string; points?: AnswerPoint[] }> {
   return read(await fetch("/api/partners/follow-up", send("POST", { ...thread, kind })));
+}
+
+/** The analysis a conversation belongs to, for the voice agent's call from the partners page. */
+export async function findFollowUp(thread: { project_id: string; file: string; package: string; supplier_id: string }): Promise<{ analysis_id: string }> {
+  return read(await fetch("/api/partners/follow-up", send("POST", { ...thread, kind: "call" })));
 }
 
 export async function mailInquiry(

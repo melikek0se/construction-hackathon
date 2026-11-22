@@ -92,9 +92,25 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   a real Claude call (five sentences, none dropped) and its sources opened. **Not run**: "Search the web" from
   the coverage view (it calls the same search as the "Found on the web" tab), a read of a firm with a thin
   record, a test of `read_firm`'s three checks with a made-up answer.
-  **Not built of the proposal**: grouping the price book by material group, asking for a price from the firm
-  page, comparing firms, distance to site. The countdown to the submission day shows only where the tender
-  has one. "Found on the web" is still its own tab beside Coverage.
+  **Second pass (2026-11-22)**, after going over the pages again. Faults put right: "price level" called a
+  firm the lowest when it was not (now a count: lowest on 5 of 6 things another firm priced too, and how far
+  over on the others); a package's conversation showed as two threads (grouped by package now, not by
+  message); a firm without prices opened on an empty sheet; e-mail and phone are links; Polier's read is a
+  numbered list; below 1000 px the firm stands alone with "All firms" above its name (the button no longer
+  runs off the page). Added: "Let Polier phone" in the follow-ups (the call panel of the price inquiries,
+  `Call.tsx`); in Coverage "Write the inquiry to …" for a firm on a package that was not asked (same panel
+  to read and send as the follow-ups; `POST /api/partners/follow-up` takes `inquiry` and `call` too); in the
+  register a column "Lowest on", Polier's first sentence under the firm, and "Let Polier read the N firms it
+  has not read"; the "Today" line stands on the register only, says prices that run out within 7 days (was:
+  all that are out of date) and that the firm's own name and e-mail are not entered; the read and the four
+  measures stand side by side from 1500 px; a read says when the record has changed since.
+  Checked: full pytest, build, and in headless Chrome at 1500, 1920 and 900 wide without a console error:
+  each fault above, the inquiry written from Coverage (not sent), the call panel opened (no call started).
+  **Not run**: a call from the follow-ups, sending from Coverage, "read all" in the register.
+  **Not built**: grouping the price book by material group, "ask again" on a price that is out of date,
+  comparing firms, distance to site, the open sheet of a firm in the address. The countdown to the submission
+  day shows only where the tender has one. "Found on the web" is still its own tab beside Coverage. Prices
+  are compared net as quoted: ex works and free to site are not evened out.
 
   on a timer (`keep_looking`: same code as the button, the loop itself was not waited for); `.eml` dropped
   on the page in a browser (the API path is tested); "Take into the directory" clicked in a browser.
