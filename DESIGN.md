@@ -226,7 +226,7 @@ Yellow and white with near-black ink; red and blue appear only as severity.
 
 ### Primary
 - **Signal Yellow** (`signal-yellow`): the band; the one primary action of a view (New project, Run AI review);
-  index plates (project letter, section number); Caution blocks in the LV map and the Caution triangle;
+  index plates (tender number, section number); Caution blocks in the LV map and the Caution triangle;
   `mark` highlight on quoted text; text selection; the intake panel's header.
 - **Yellow Ink** (`yellow-ink`): secondary text on yellow (the file line in the band, the intake header).
 - **Strip Yellow** (`strip-yellow`): the Caution mark in the fingerprint strip. Slightly deeper than the band

@@ -208,8 +208,8 @@ export function CraneIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-/* The project's own letter (A..Z, then AA..), given by the server when the project is kept: no two share one. */
-const plateOf = (p: CatalogProject) => p.plate || "+";
+/* How wide a deadline's plate on the line of all tenders is, in px: the tender's number in it, or a bare square. */
+const railWidth = (p: CatalogProject) => (p.number ? Math.min(96, 10 + p.number.length * 6.6) : 14);
 /* The name on a card whose plate already says the number: without the number it begins with. */
 const nameBeside = (p: CatalogProject) =>
   (p.number && p.name.startsWith(p.number) && p.name.slice(p.number.length).replace(/^[\s\-–:,_]+/, "")) || p.name;
@@ -455,9 +455,12 @@ function Schedule({
     })
     .sort((a, b) => a.at - b.at || (a.kind === "due" ? -1 : 1))
     .map((m) => {
-      let tier = railTiers.findIndex((last) => m.at - last >= 2.4);
-      if (tier < 0) tier = railTiers.push(m.at) - 1;
-      else railTiers[tier] = m.at;
+      // a plate is as wide as its number: it takes the first tier whose last plate has ended (the lane
+      // taken for 900px wide, which errs on the side of one tier more)
+      const end = m.at + (railWidth(m.p) + 6) / 9;
+      let tier = railTiers.findIndex((last) => m.at >= last);
+      if (tier < 0) tier = railTiers.push(end) - 1;
+      else railTiers[tier] = end;
       return { ...m, tier };
     });
   const sameDay = new Map<number, typeof rail>();
@@ -519,17 +522,17 @@ function Schedule({
               {rail.map((m) => (
                 <i
                   key={m.p.id + m.kind}
-                  className={`rail-plate${m.kind === "q" ? " q" : ""}${m.days < 0 ? " gone" : ""}`}
+                  className={`rail-plate${m.p.number ? "" : " bare"}${m.kind === "q" ? " q" : ""}${m.days < 0 ? " gone" : ""}`}
                   style={{ left: `${m.at}%`, top: 6 + m.tier * 22 }}
                   title={`${m.p.name}: ${m.kind === "q" ? "questions close" : "submission"} ${wd(m.day)}`}
                 >
-                  {plateOf(m.p)}
+                  {m.p.number}
                 </i>
               ))}
               {[...sameDay.values()]
                 .filter((l) => l.length > 1)
                 .map((l) => (
-                  <span key={l[0].day.getTime()} className="rail-clash" style={{ left: `calc(${l[0].at}% + 25px)` }}>
+                  <span key={l[0].day.getTime()} className="rail-clash" style={{ left: `calc(${l[0].at}% + ${Math.round(Math.max(...l.map((m) => railWidth(m.p)))) + 6}px)` }}>
                     {l.length} submissions {wd(l[0].day)}
                   </span>
                 ))}
@@ -601,9 +604,11 @@ function Schedule({
               onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && !busy && onOpen(p)}
             >
               <div className="sched-left">
-                <span className="plate">{plateOf(p)}</span>
                 <div>
-                  <b lang="de">{p.name}</b>
+                  <b lang="de" title={p.name}>
+                    {p.number && <span className="plate no" title={`Tender number ${p.number}`}>{p.number}</span>}
+                    {nameBeside(p)}
+                  </b>
                   <small className="sched-next">{STAGE_LABEL[stage]}</small>
                 </div>
                 {/* the days left to the next hard date: the first thing read on a row */}
