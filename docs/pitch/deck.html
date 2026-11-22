@@ -99,135 +99,112 @@
   .sticker { background: var(--y); border: 3px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); padding: 18px 26px; font: 700 34px/1.1 var(--display); display: inline-block; }
 </style>
 
+<style>
+  .huge { font: 700 190px/0.88 var(--display); letter-spacing: .01em; }
+  .mid { font: 700 90px/0.95 var(--display); }
+  .row8 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .t8 { border: 3px solid var(--ink); padding: 26px 24px; min-height: 230px; display: flex; flex-direction: column; justify-content: space-between; }
+  .t8 .e { font-size: 72px; line-height: 1; }
+  .t8 .w { font: 700 48px/0.95 var(--display); text-transform: uppercase; }
+  .t8.you { background: var(--ink); color: var(--y); }
+  .t8.boom { background: var(--red); color: #fff; border-color: var(--red); }
+  .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 30px; padding-bottom: 60px; }
+  .bla { font: 700 120px/1 var(--display); color: var(--red); transform: rotate(-4deg); display: inline-block; }
+  .strike { text-decoration: line-through; text-decoration-thickness: 3px; color: var(--dim); }
+  .sticker { background: var(--y); border: 3px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); padding: 18px 26px; font: 700 40px/1.1 var(--display); display: inline-block; }
+</style>
+</head>
 <body>
-<!-- 1 -->
 <section class="slide title">
   <div class="stripe"></div>
   <div class="in">
-    <div class="col" style="flex: 0 0 820px">
-      <h1>POLIER</h1>
-      <div class="sub">An agent that does the estimator's job before the estimator has had their coffee.</div>
-      <div class="meta">Challenge A · AI BoQ analysis and bidding assistant</div>
+    <div class="col" style="flex: 1">
+      <h1 style="font-size: 280px">POLIER</h1>
+      <div class="sub" style="font-size: 64px">Your estimator's new<br>favourite colleague.</div>
+      <div class="meta">Challenge A · AI BoQ analysis</div>
     </div>
-    <div class="shot" style="width: 860px; height: 520px; box-shadow: 18px 18px 0 var(--ink);"><img src="img/home.png" alt=""></div>
+    <img src="img/twerk.png" alt="" style="width: 640px; mix-blend-mode: multiply">
   </div>
   <div class="stripe"></div>
 </section>
 
-<!-- 2 -->
 <section class="slide">
-  <div class="band"><span class="no">1</span><h2>The problem</h2><span class="tag">Problem</span></div>
-  <div class="body" style="flex-direction: column; gap: 40px; justify-content: center; padding-bottom: 90px">
-    <p class="lead" style="font-size: 40px; max-width: 1500px">A German bill of quantities (LV) has thousands of items, several cost groups and dependencies
-      between trades. Typos, calculation errors, missing items and hidden change-order potential cost real money,
-      because <span class="strike">under VOB/B the unit price binds and the estimator has two weeks and</span></p>
-    <div><span class="bla">bla bla bla bla bla.</span></div>
-    <div><span class="sticker">Upload the LV, an LLM lists the problems. Everyone builds that.</span></div>
+  <div class="band"><span class="no">1</span><h2>The problem</h2></div>
+  <div class="center">
+    <div class="mid">1,000s of items. 2 weeks.<br>1 tired estimator.</div>
+    <p style="font-size: 30px" class="strike">Typos, calculation errors, missing items, change-order potential, binding unit prices under VOB/B, cross-trade dependencies, and</p>
+    <div class="bla" style="font-size: 170px">bla bla bla.</div>
+    <span class="sticker">Everyone builds "upload → LLM → list of problems".</span>
   </div>
-  <div class="foot"><span>Polier · Challenge A</span><span>2 / 7</span></div>
+  <div class="foot"><span>Polier</span><span>2 / 7</span></div>
 </section>
 
-<!-- 3 -->
-<section class="slide" style="background: #fff">
-  <div class="band"><span class="no">2</span><h2>So what did we build on top of it?</h2><span class="tag">Solution</span></div>
-  <div class="body" style="align-items: center; justify-content: center; gap: 80px">
-    <div class="shot" style="width: 760px; height: 760px; border: 0"><img src="img/twerk.gif" alt="Polier twerking" style="object-fit: contain; object-position: center"></div>
+<section class="slide">
+  <div class="band"><span class="no">2</span><h2>So what did we build?</h2></div>
+  <div class="body" style="align-items: center; justify-content: center; gap: 40px">
+    <img src="img/twerk.gif" alt="" style="width: 640px; mix-blend-mode: multiply">
     <div class="col" style="gap: 30px">
-      <div class="big">An agent<br>that twerks.</div>
-      <div style="font: 600 44px/1 var(--display); color: var(--mute)">…just kidding. (It does, though.)</div>
+      <div class="huge">An agent<br>that twerks.</div>
+      <div style="font: 700 60px/1 var(--display); color: var(--red)">jk. (it does though)</div>
     </div>
   </div>
-  <div class="foot"><span>Polier · Challenge A</span><span>3 / 7</span></div>
+  <div class="foot"><span>Polier</span><span>3 / 7</span></div>
 </section>
 
-<!-- 4 -->
 <section class="slide">
-  <div class="band"><span class="no">3</span><h2>The whole pipeline, agentic</h2><span class="tag">Solution</span></div>
-  <div class="body" style="flex-direction: column; gap: 28px; padding-top: 40px">
-    <p class="lead" style="font-size: 36px">You press two buttons. Polier does the rest.</p>
-    <div class="flow">
-      <div class="step"><div class="k">01</div><div class="t">A tender hits the inbox</div><p>Polier sees it before you do and has already parsed it: errors, contradictions, open points.</p></div>
-      <div class="step"><div class="k">02</div><div class="t">Partners, already known</div><p>From past projects and mails: their prices, products, how often they answer and how fast.</p></div>
-      <div class="step you"><div class="k">YOU</div><div class="t">Green light</div><p>One click: we bid on this one.</p></div>
-      <div class="step"><div class="k">03</div><div class="t">Mails go out</div><p>Questions to the client. Price requests to several partners. Temporary prices on every item without an open question.</p></div>
-      <div class="step"><div class="k">04</div><div class="t">Replies come in</div><p>Client answers and quotes are caught in the mailbox and filled in on the items.</p></div>
-      <div class="step"><div class="k">05</div><div class="t">Cheapest wins</div><p>Quotes from several partners are compared, and the best one replaces the temporary price.</p></div>
-      <div class="step you"><div class="k">YOU</div><div class="t">Confirm</div><p>You check what changed and say yes.</p></div>
-      <div class="step boom"><div class="k">06</div><div class="t">Boom. Bid sent.</div><p>By mail, by the agent.</p></div>
+  <div class="band"><span class="no">3</span><h2>The real thing: an agentic pipeline</h2></div>
+  <div class="body" style="flex-direction: column; gap: 34px; justify-content: center; padding-bottom: 80px">
+    <div class="mid" style="font-size: 76px">You click twice. Polier does the rest.</div>
+    <div class="row8">
+      <div class="t8"><span class="e">📩</span><span class="w">Tender lands in your mail</span></div>
+      <div class="t8"><span class="e">🔍</span><span class="w">Already parsed &amp; checked</span></div>
+      <div class="t8"><span class="e">🤝</span><span class="w">Partners &amp; prices already known</span></div>
+      <div class="t8 you"><span class="e">🟢</span><span class="w">You:<br>go!</span></div>
+      <div class="t8"><span class="e">✉️</span><span class="w">Questions &amp; price mails out</span></div>
+      <div class="t8"><span class="e">📥</span><span class="w">Replies caught, fields filled</span></div>
+      <div class="t8 you"><span class="e">👍</span><span class="w">You:<br>ok!</span></div>
+      <div class="t8 boom"><span class="e">💥</span><span class="w">Bid sent. By the agent.</span></div>
     </div>
   </div>
-  <div class="foot"><span>Polier · Challenge A</span><span>4 / 7</span></div>
+  <div class="foot"><span>Polier</span><span>4 / 7</span></div>
 </section>
 
-<!-- 5 -->
 <section class="slide">
-  <div class="band"><span class="no">4</span><h2>Oh, and also</h2><span class="tag">Solution</span></div>
-  <div class="body" style="gap: 48px">
-    <div class="col" style="flex: 0 0 640px; gap: 26px; justify-content: center">
-      <ul class="dash" style="font-size: 30px">
-        <li style="font-size: 30px"><b>Links between LVs</b>: interfaces and dependencies across trades</li>
-        <li style="font-size: 30px"><b>Versions</b>: what changed from issue 1 to issue 2</li>
-        <li style="font-size: 30px"><b>Timelines</b>: deadlines, binding period and start of works, read from the files</li>
-        <li style="font-size: 30px"><b>Conflicts between documents</b>, shown where they are</li>
-      </ul>
-      <p style="font-size: 24px; color: var(--mute)">Talking to the agent? Obviously. We're not even mentioning it.</p>
-    </div>
-    <div class="col" style="flex: 1; gap: 20px; justify-content: center">
-      <div class="shot" style="height: 390px"><img src="img/tender.png" alt="" style="width: 1500px; max-width: none; height: auto; margin-left: -300px; margin-top: -175px"></div>
-      <div class="shot" style="height: 330px"><img src="img/questions.png" alt="" style="width: 1500px; max-width: none; height: auto; margin-left: -560px; margin-top: -290px"></div>
-    </div>
+  <div class="band"><span class="no">4</span><h2>Oh, and</h2></div>
+  <div class="center">
+    <div class="huge" style="font-size: 150px">LV links. Versions.<br>Timelines. Conflicts.</div>
+    <div style="font: 700 56px/1 var(--display); color: var(--mute)">Every finding with evidence. Every price with a source.</div>
+    <span class="sticker">Chat with the agent? Duh.</span>
   </div>
-  <div class="foot"><span>Polier · Challenge A</span><span>5 / 7</span></div>
+  <div class="foot"><span>Polier</span><span>5 / 7</span></div>
 </section>
 
-<!-- 6 -->
 <section class="slide">
-  <div class="band"><span class="no">5</span><h2>Tech stack and architecture</h2><span class="tag">Tech</span></div>
-  <div class="body" style="flex-direction: column; gap: 34px; justify-content: center; padding-bottom: 90px">
-    <div class="arch">
-      <div class="col" style="gap: 14px">
-        <div class="box t"><h4>Mailbox</h4><p>IMAP / SMTP (Stalwart in the demo)</p></div>
-        <div class="box t"><h4>Files</h4><p>GAEB XML · GAEB 90 · PDF · Excel</p></div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="col" style="gap: 14px">
-        <div class="box y"><h4>Agentic pipeline, in the background</h4>
-          <div class="stations"><span>Read</span><span>Rules</span><span class="ai">AI review</span><span>Compare</span><span class="ai">Questions</span><span class="ai">Prices</span></div>
-          <p style="color: var(--yi)">It starts on its own when mail arrives and waits for your green light.</p></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
-          <div class="box"><h4>Deterministic rules</h4><p>Arithmetic, units, quantities, missing items</p></div>
-          <div class="box"><h4>Claude API</h4><p>Opus 5.5 / Haiku 5.5 per task, with a cache and a cost log</p></div>
-        </div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="col" style="gap: 14px">
-        <div class="box t"><h4>Out</h4><p>Questions · price mails · bid (GAEB X84)</p></div>
-        <div class="box t"><h4>Memory</h4><p>Partners, prices and mails across all tenders</p></div>
-      </div>
+  <div class="band"><span class="no">5</span><h2>Tech stack and architecture</h2></div>
+  <div class="center" style="gap: 50px">
+    <div style="display: flex; align-items: center; gap: 24px">
+      <div class="box t" style="font: 700 44px/1.1 var(--display)">📩 Mail<br>📄 GAEB · PDF · Excel</div>
+      <div class="arrow" style="font-size: 70px">→</div>
+      <div class="box y" style="font: 700 44px/1.1 var(--display)">Agentic pipeline<br><span style="font-size: 32px">rules + Claude (Opus / Haiku)</span></div>
+      <div class="arrow" style="font-size: 70px">→</div>
+      <div class="box t" style="font: 700 44px/1.1 var(--display)">Questions · Price mails<br>Bid (GAEB X84)</div>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; border-top: 4px solid var(--ink); padding-top: 22px">
-      <div><h3 style="font-size: 26px">Backend</h3><p style="font-size: 22px">Python · FastAPI · SQLAlchemy</p></div>
-      <div><h3 style="font-size: 26px">Frontend</h3><p style="font-size: 22px">React · TypeScript · Vite · three.js</p></div>
-      <div><h3 style="font-size: 26px">Data</h3><p style="font-size: 22px">Postgres</p></div>
-      <div><h3 style="font-size: 26px">Run</h3><p style="font-size: 22px">Docker · Render · Neon</p></div>
-    </div>
+    <div style="font: 600 40px/1.3 var(--display); color: var(--ink2)">Python · FastAPI · Postgres · React · TypeScript · three.js · Docker · Render</div>
   </div>
-  <div class="foot"><span>Polier · Challenge A</span><span>6 / 7</span></div>
+  <div class="foot"><span>Polier</span><span>6 / 7</span></div>
 </section>
 
-<!-- 7 -->
 <section class="slide title">
   <div class="stripe"></div>
-  <div class="in" style="justify-content: space-between">
-    <div class="col">
-      <h1 style="font-size: 200px">POLIER</h1>
-      <div class="sub" style="max-width: 1000px">It reads the mail, so you can build.</div>
-      <div class="meta">29 of 30 planted faults found · 4 file formats · 225 tests<br>github.com/melikek0se/construction-hackathon</div>
+  <div class="in">
+    <div class="col" style="flex: 1">
+      <h1 style="font-size: 240px">It reads<br>the mail.</h1>
+      <div class="sub" style="font-size: 80px">You build.</div>
+      <div class="meta">github.com/melikek0se/construction-hackathon</div>
     </div>
-    <img src="img/twerk.png" alt="" style="width: 520px; mix-blend-mode: multiply">
+    <img src="img/twerk.gif" alt="" style="width: 640px; mix-blend-mode: multiply">
   </div>
   <div class="stripe"></div>
 </section>
-
 </body>
 </html>
