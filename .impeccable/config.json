@@ -11,6 +11,51 @@
         ],
         "createdAt": "2026-11-20T20:11:06.665Z",
         "reason": "agent triage: .right border-left is the full-height divider between the plan pane and the findings pane, not an accent on a card; no card or list item in this file carries a side border"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "data/processed/partners-proposal/index.html"
+        ],
+        "createdAt": "2026-11-22T00:35:45.578Z",
+        "reason": "mockup mirrors the product's existing thread rail and red gap mark (partners.css)"
+      },
+      {
+        "rule": "repeating-stripes-gradient",
+        "value": "*",
+        "files": [
+          "data/processed/partners-proposal/index.html"
+        ],
+        "createdAt": "2026-11-22T00:35:45.602Z",
+        "reason": "hazard stripe of the band is the brand device in DESIGN.md"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "data/processed/partners-proposal/index.html"
+        ],
+        "createdAt": "2026-11-22T00:35:45.626Z",
+        "reason": "tags and chips use DESIGN.md's own padding (0 5px, 0 8px)"
+      },
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "data/processed/partners-proposal/index.html"
+        ],
+        "createdAt": "2026-11-22T00:36:00.458Z",
+        "reason": "false positive: short capital section heads whose sentence-case sub-line (small, text-transform none) is counted with them"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "playground/tender/index.html"
+        ],
+        "createdAt": "2026-11-22T00:44:45.607Z",
+        "reason": "agent triage: the tight boxes are DESIGN.md's own components (tag: padding 0 5px; index plate; strip marks 2px apart), reused unchanged in the mock-up"
       }
     ]
   }

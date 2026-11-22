@@ -2112,6 +2112,33 @@ def remove_examples():
 def partner_profile(supplier_id: str):
     """One partner: its prices with their dates, its usual terms, how it behaves, and every message and call."""
     found = partners.profile(supplier_id)
+class FollowUp(BaseModel):
+    project_id: str
+    file: str  # the file's name, as the conversation carries it
+    package: str
+    supplier_id: str
+    kind: str = "reminder"  # or "answer": what the firm asked back, answered from the LV (asks Claude)
+
+
+@app.post("/api/partners/follow-up")
+async def partner_follow_up(body: FollowUp):
+    """The next message in an open conversation, written from the partners page: a reminder, or the answer
+    to what the firm asked back. It is the message the price inquiries of the tender would write
+    (`compose_inquiry`); with it comes the analysis it belongs to, which is where it is sent from. Nothing
+    goes out here: the estimator reads the text first."""
+    if body.kind not in ("reminder", "answer"):
+        raise HTTPException(422, "kind is reminder or answer.")
+    with db.engine().connect() as conn:
+        kept = [r.id for r in conn.execute(select(db.analyses.c.id).where(db.analyses.c.project_id == body.project_id)
+                                           .order_by(db.analyses.c.created.desc()))]
+    analysis_id = next((a for a in kept if _analysis(a)[0].file == body.file), None)
+    if analysis_id is None:
+        raise HTTPException(404, "The analysis of this tender's file is no longer kept. Open the file once.")
+    draft = await compose_inquiry(analysis_id, InquiryDraft(package=body.package, supplier_id=body.supplier_id,
+                                                            remind=body.kind == "reminder", answer=body.kind == "answer"))
+    return {**draft, "analysis_id": analysis_id}
+
+
     if found is None:
         raise HTTPException(404, "This partner is no longer in the directory.")
     return found
@@ -2161,6 +2188,24 @@ def call_record(mail_id: str):
     if kept["transcript"]:
         mail.keep_reply(mail_id, kept["transcript"][:60000], {**(found["answers"] or {"kind": "other", "asks": [], "unmatched": [], "summary": ""})}, "phone")
     return kept
+@app.post("/api/partners/{supplier_id}/read")
+async def partner_read(supplier_id: str):
+    """What an estimator should know about a partner in a few sentences (asks Claude), kept with it. Every
+    sentence names the facts of the record or the passage of a message it rests on; one that does not is
+    dropped."""
+    if supply.supplier(supplier_id) is None:
+        raise HTTPException(404, "This partner is no longer in the directory.")
+    try:
+        with spend.scope():
+            return await partners.read_firm(supplier_id)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(502, f"Reading the record failed: {exc}") from exc
+
+
 
 
 # ---------------------------------------------------------------- tenders found in the mailbox (boq.inbox)

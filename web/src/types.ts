@@ -647,6 +647,7 @@ export interface SupplierMore {
   documents: { name: string; valid_until: string }[]; // a subcontractor's papers with their expiry
   found: { search: string; url: string; title: string; why: string; at: string; what: string } | null; // where a web search found it
   style: PartnerStyle | null;
+  read: PartnerRead | null; // Polier's read of the firm: a few sentences, each on its sources
   example: boolean | "made";
 }
 
@@ -692,6 +693,8 @@ export interface PartnerThread extends PartnerWhere {
   asks: number;
   due: string | null;
   example: boolean;
+  package_id: string | null; // with file_name: what a follow-up from the partners page is written by
+  file_name: string | null;
 }
 
 export interface PartnerCard {
@@ -753,7 +756,7 @@ export interface PartnerEvent extends PartnerWhere {
 }
 
 export interface PartnerRow extends Omit<Supplier, "more"> {
-  more: Omit<SupplierMore, "style"> & { style: boolean };
+  more: Omit<SupplierMore, "style" | "read"> & { style: boolean; read: boolean };
   card: PartnerCard;
 }
 
@@ -762,6 +765,33 @@ export interface PartnerProfile extends Supplier {
   prices: PartnerPrice[];
   usual: { quotes: number; basis: string | null; discount_pct: number | null; freight: number | null; skonto: string | null; valid_days: number | null; binding: string | null } | null;
   timeline: PartnerEvent[];
+}
+
+/** What an estimator should know about a partner, each sentence resting on facts of the record or a passage. */
+export interface PartnerRead {
+  points: {
+    text: string;
+    quote: string; // the passage of their message, where the sentence rests on one
+    sources: ({ id: string; kind: "fact"; text: string } | { id: string; kind: "message"; event: string; at: string; who: "them" | "us"; text: string })[];
+  }[];
+  dropped: number; // sentences left out: a source, passage or figure did not stand
+  at: string;
+  basis: { inquiries: number; quotes: number; messages: number };
+}
+
+/** One package of a tender's plan and who can be asked for it. */
+export interface PartnerNeed {
+  project_id: string | null;
+  project: string;
+  file: number | null;
+  package: string;
+  package_id: string;
+  kind: Supplier["kind"];
+  why: string;
+  items: number;
+  active: boolean; // an inquiry has gone out for this tender
+  chosen: boolean;
+  firms: { id: string; status: PartnerThread["status"] | "unasked" }[];
 }
 
 export interface PartnerGap {
@@ -778,6 +808,7 @@ export interface PartnersOverview {
   book: { label: string; unit: string; low: number | null; latest: string; suppliers: number; offers: PartnerPrice[] }[];
   coverage: { group: string; kind: Supplier["kind"]; partners: { id: string; name: string }[] }[];
   gaps: PartnerGap[];
+  needs: PartnerNeed[];
   voice: boolean;
   inbox: string | null;
   discovery: { auto: boolean; every_days: number; region: string };

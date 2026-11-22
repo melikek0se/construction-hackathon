@@ -1,4 +1,4 @@
-import type { PartnerProfile, PartnerSearch, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
+import type { PartnerProfile, PartnerSearch, PartnerRead, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -324,6 +324,15 @@ export async function composeInquiry(id: string, pkg: string, supplierId: string
   return read(await fetch(`/api/analyses/${id}/supply/compose`, send("POST", { package: pkg, supplier_id: supplierId, remind: kind === "reminder", answer: kind === "answer" })));
 }
 
+/** The next message of an open conversation, from the partners page: a reminder (a template) or the answer to
+ *  what the firm asked back (asks Claude). Comes with the analysis it is sent from; nothing goes out yet. */
+export async function composeFollowUp(
+  thread: { project_id: string; file: string; package: string; supplier_id: string },
+  kind: "reminder" | "answer",
+): Promise<{ analysis_id: string; subject: string; body: string; to: string; points?: AnswerPoint[] }> {
+  return read(await fetch("/api/partners/follow-up", send("POST", { ...thread, kind })));
+}
+
 export async function mailInquiry(
   id: string,
   message: { package: string; supplier_id: string; to: string; subject: string; body: string; via: "draft" | "smtp"; kind?: "inquiry" | "reminder" | "answer" },
@@ -410,6 +419,11 @@ export async function getPartner(id: string): Promise<PartnerProfile> {
 /** Read how a partner writes from its messages. Asks Claude: seconds, a few cents. */
 export async function readPartnerStyle(id: string): Promise<PartnerStyle> {
   return read(await fetch(`/api/partners/${id}/style`, { method: "POST" }));
+}
+
+/** Polier's read of a partner: a few sentences, each on its sources. Asks Claude: seconds, a few cents. */
+export async function readPartnerFirm(id: string): Promise<PartnerRead> {
+  return read(await fetch(`/api/partners/${id}/read`, { method: "POST" }));
 }
 
 export async function listPartnerSearches(): Promise<PartnerSearch[]> {

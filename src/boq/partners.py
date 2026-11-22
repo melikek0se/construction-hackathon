@@ -106,7 +106,9 @@ def _thread(rec: dict, key: tuple, ms: list[dict]) -> dict:
             "reminders": sum(1 for m in ms if (m["meta"] or {}).get("kind") == "reminder"),
             "calls": sum(1 for m in ms if (m["meta"] or {}).get("kind") == "call"),
             "first_sent": sent and sent["sent_at"], "summary": (said or {}).get("summary") or "",
-            "asks": len((said or {}).get("asks") or []), "example": bool((ms[0]["meta"] or {}).get("example"))}
+            "asks": len((said or {}).get("asks") or []), "example": bool((ms[0]["meta"] or {}).get("example")),
+            # what the follow-up from the partners page needs to find the conversation again
+            "package_id": key[3], "file_name": key[2]}
 
 
 def _via(m: dict | None) -> str:
@@ -257,7 +259,8 @@ def overview() -> dict:
     partners = []
     for s in directory:
         mine = [p for p in prices if p["supplier_id"] == s["id"]]
-        partners.append({**s, "more": {**s["more"], "style": bool(s["more"].get("style"))}, "card": _card(rec, s, mine)})
+        partners.append({**s, "more": {**s["more"], "style": bool(s["more"].get("style")), "read": bool(s["more"].get("read"))},
+                         "card": _card(rec, s, mine)})
     waiting = sorted((t | {"supplier": names.get(t["supplier_id"], "(removed)")} for p in partners for t in p["card"]["open"]),
                      key=lambda t: (t["status"] not in ("question", "drafted"), t["due"] or "9999", -(t["days"] or 0)))
     book: dict[tuple, dict] = {}
@@ -278,7 +281,7 @@ def overview() -> dict:
             entry["partners"].append({"id": s["id"], "name": s["name"]})
     return {"partners": partners, "waiting": waiting, "book": rows,
             "coverage": sorted(cover.values(), key=lambda c: (len(c["partners"]), c["group"].lower())),
-            "gaps": gaps(rec), "voice": voice.available(), "inbox": (mail.inbox() or {}).get("user") or None,
+            "gaps": gaps(rec), "needs": needs(rec), "voice": voice.available(), "inbox": (mail.inbox() or {}).get("user") or None,
             "discovery": discovery(), "company": supply.company()}
 
 
@@ -306,6 +309,27 @@ def gaps(rec: dict | None = None) -> list[dict]:
             out.append({"what": p["name"], "kind": "subcontractor" if p["kind"] == "subcontract" else "supplier",
                         "project_id": where["project_id"], "project": where["project"], "items": len(p["items"])})
     return out
+
+def needs(rec: dict | None = None) -> list[dict]:
+    """What the tenders need bought or subcontracted, package by package, and who can be asked for each:
+    every firm on the package with where the conversation with it stands ("unasked" before the first
+    message). `active` marks the tenders an inquiry has gone out for."""
+    rec = rec or _records()
+    out = []
+    for (project_id, file), plan in rec["plans"].items():
+        active = any(k[1] == project_id and k[2] == file for k in rec["threads"])
+        for p in plan["plan"]["packages"]:
+            firms = []
+            for sid in p["ask"]:
+                key = (sid, project_id, file, p["id"])
+                ms = rec["threads"].get(key)
+                firms.append({"id": sid, "status": _thread(rec, key, ms)["status"] if ms else "unasked"})
+            out.append({**_where(rec, project_id, file, p["id"]), "package_id": p["id"],
+                        "kind": "subcontractor" if p["kind"] == "subcontract" else "supplier",
+                        "why": p.get("why") or "", "items": len(p["items"]), "active": active, "firms": firms,
+                        "chosen": bool((plan["chosen"] or {}).get(p["id"]))})
+    return out
+
 
 
 # ------------------------------------------------------------------ Claude
@@ -388,6 +412,109 @@ address them, how long, what to put first. Only what the messages support.
 
 The messages may be anonymised: tokens such as [FIRMA_044] replace names; use them as they stand.
 """
+
+# ------------------------------------------------------------------ Polier's read of a partner
+
+READ_SCHEMA = {
+    "type": "object",
+    "properties": {"points": {"type": "array", "items": {
+        "type": "object",
+        "properties": {"text": {"type": "string"}, "sources": {"type": "array", "items": {"type": "string"}},
+                       "quote": {"type": "string"}},
+        "required": ["text", "sources", "quote"], "additionalProperties": False}}},
+    "required": ["points"], "additionalProperties": False,
+}
+READ_SYSTEM = """\
+You work for the estimator of a German construction contractor. You are given what is on record about one \
+supplier or subcontractor: facts counted from the record (<fact id="F1">) and the messages exchanged with it \
+(<message id="M1" from="them" or "us">). Write what the estimator should know about this firm before asking \
+it for a price or reading its quote: how reliably and how fast it answers, what it asks back before it \
+quotes, on which terms it prices, whether it offers other products than specified, how its prices have moved.
+
+Rules:
+- Three to five points, each one plain English sentence of at most 30 words. The most useful first.
+- Every point names its sources: the ids of the facts and messages it rests on. A point without a source is \
+not written. Do not use what is usual in the trade; only what stands in the facts and messages.
+- A point that rests on a message carries in quote the passage of that message that shows it, copied \
+character for character, at most 200 characters. A point that rests only on facts has an empty quote.
+- Every figure in a point must stand in one of its sources as written there (a count, a percentage, a price, \
+a number of days). Do not convert or round figures yourself.
+- Say nothing about what the record does not show. If the record is thin, write fewer points.
+
+The record may be anonymised: tokens such as [FIRMA_044] replace names; use them as they stand.
+"""
+_FIGURE = re.compile(r"\d+(?:[.,]\d+)*")
+
+
+def _figures(text: str) -> set[str]:
+    """The figures of a text worth checking (two digits or more, or with a decimal), written one way."""
+    return {f.replace(".", "").replace(",", ".").rstrip("0").rstrip(".") if ("," in f or "." in f) else f
+            for f in _FIGURE.findall(text) if len(f) > 1}
+
+
+async def read_firm(supplier_id: str, client: anthropic.AsyncAnthropic | None = None) -> dict:
+    """What an estimator should know about a partner, in a few sentences, each resting on facts of the record
+    or passages of its messages, and kept with it. A sentence whose source, passage or figure does not stand
+    is dropped. Raises ValueError when nothing is on record."""
+    p = profile(supplier_id)
+    if p is None:
+        raise ValueError("This partner is no longer in the directory.")
+    c, usual, facts = p["card"], p["usual"], {}
+
+    def fact(text: str) -> None:
+        facts[f"F{len(facts) + 1}"] = text
+
+    if c["asked"]:
+        fact(f"Inquiries sent to this firm: {c['asked']}. Answered: {c['answered']} ({c['answer_rate']} %). "
+             f"Declined: {c['declined']}. Quotes received: {c['quotes']}. Reminders that had to be sent: {c['reminders']}. "
+             f"Calls: {c['calls']}. Times its quote was taken into a bid: {c['taken']}.")
+    if c["reply_hours"] is not None:
+        h = c["reply_hours"]
+        fact(f"Median time to its first reply: {h:.0f} hours" + (f" (about {h / 24:.0f} days)." if h >= 36 else "."))
+    if usual:
+        fact(f"Usual terms over its {usual['quotes']} quotes: prices {(usual['basis'] or 'not stated').replace('_', ' ')}"
+             + (f", freight about {usual['freight']:.0f} EUR on top" if usual["freight"] is not None else "")
+             + (f"; discount {usual['discount_pct']:g} % on all items" if usual["discount_pct"] is not None else "")
+             + (f"; payment: {usual['skonto']}" if usual["skonto"] else "")
+             + (f"; valid for about {usual['valid_days']} days" if usual["valid_days"] is not None else "")
+             + f"; {(usual['binding'] or 'not stated').replace('_', ' ')}.")
+    if c["prices"]:
+        fact(f"Prices on record: {c['prices']}, of which out of date: {c['stale']}; the latest is of {c['latest_price']}. "
+             f"Lines where it offered another product than the one specified: {c['alternatives']}.")
+    for r in [r for r in p["prices"] if r["before"] and r["before"]["change_pct"] is not None][:8]:
+        fact(f"Its price for {r['label']}: {r['before']['net']:.2f} EUR per {r['unit']} on {r['before']['date']}, "
+             f"{r['net']:.2f} EUR on {r['date']}: {r['before']['change_pct']:+.1f} %.")
+    for t in c["open"]:
+        fact(f"Open now: {t['status']} for {t['days']} days, about {t['package'] or t['subject']}"
+             + (f", reminded {t['reminders']} times" if t["reminders"] else "") + ".")
+    talk = sorted((e for e in p["timeline"] if e["text"] and not e["draft"]), key=lambda e: e["at"] or "")[-30:]
+    messages = {f"M{n}": e for n, e in enumerate(talk, 1)}
+    if not facts and not messages:
+        raise ValueError("Nothing is on record about this partner yet: no inquiry, no quote, no message.")
+    listed = "\n".join(f'<fact id="{k}">{v}</fact>' for k, v in facts.items()) + "\n\n" + "\n\n".join(
+        f'<message id="{k}" from="{"them" if e["direction"] == "in" else "us"}" date="{(e["at"] or "")[:10]}">\n{e["text"][:2500]}\n</message>'
+        for k, e in messages.items())
+    raw = (await _json("partner read", READ_SYSTEM, f"<record>\n{listed}\n</record>", READ_SCHEMA, client))["data"]
+    points = []
+    for point in raw["points"][:6]:
+        ids = [i for i in dict.fromkeys(point["sources"]) if i in facts or i in messages]
+        said = [messages[i] for i in ids if i in messages]
+        quote = _squash(point["quote"]).strip("…\"„“' ")
+        if not ids or (said and not (len(quote) >= 8 and any(quote in _squash(m["text"]) for m in said))):
+            continue
+        ground = " ".join([facts[i] for i in ids if i in facts] + [m["text"] for m in said])
+        if not _figures(point["text"]) <= _figures(ground):
+            continue
+        points.append({"text": str(point["text"]).strip()[:300], "quote": quote[:240] if said else "",
+                       "sources": [{"id": i, "kind": "fact", "text": facts[i]} if i in facts else
+                                   {"id": i, "kind": "message", "event": messages[i]["id"], "at": messages[i]["at"],
+                                    "who": "them" if messages[i]["direction"] == "in" else "us",
+                                    "text": messages[i]["subject"] or ""} for i in ids]})
+    read = {"points": points[:5], "dropped": len(raw["points"]) - len(points), "at": _iso(db.now()),
+            "basis": {"inquiries": c["asked"], "quotes": c["quotes"], "messages": len(messages)}}
+    supply.save_supplier({"more": {"read": read}}, supplier_id)
+    return read
+
 
 
 def _talk(supplier_id: str, rec: dict | None = None, limit: int = 40) -> list[dict]:

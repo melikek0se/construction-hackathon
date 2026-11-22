@@ -48,6 +48,54 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   the way there from the projects page and back, Waiting → "Open the inquiry" → a firm's name → back to the LV.
   **Not run**: the mailbox history over IMAP and the call record and recording from ElevenLabs (no
   account in `.env`; the API shapes are from the docs, as for the rest of `voice.py`); Polier's own search
+- Partners page rebuilt (2026-11-22, D-051; `web/src/Partners.tsx`, `partners.css`, `POST
+  /api/partners/follow-up`; the user found the first build poor, the proposal with its drawings is in
+  `data/processed/partners-proposal/`, git-ignored). Built, in the order proposed:
+  1. **The firm page**: name, contact and what it sells as text ("edit" leads to the form), what is open with
+     it and the way to answer, four measures set against the directory (answers with a mark per inquiry,
+     median first reply against the directory's, price level over the lowest on what another firm priced too,
+     prices that hold and when the next run out), then four sheets: Prices (one row per thing, the course of
+     the price as steps, days left of the validity, the earlier quotes behind a press), Conversations (one
+     thread per inquiry, open ones unfolded), Terms and particulars (form, usual terms, papers, how Polier
+     treats the firm, remove), How they write. A subcontractor's paper running out within 45 days is said in
+     red under the name.
+  2. **The register**: suppliers and subcontractors in one table (was two tabs with a list), filtered by
+     chips, sorted by a press on a column head; a "Today" line above it (waits for you, waits for the firm,
+     papers running out, prices out of date). With a firm open the others stand in a narrow list beside it.
+     `/partners/subcontractors` leads to the directory. "Your firm" is a button at the right, "example" is said
+     once above the table instead of on every row.
+  3. **The price book**: per thing a line with a mark per quote (lowest that holds yellow, out of date hollow),
+     the distance from the lowest in per cent on one scale for the whole book, the other firms' surcharge in
+     words; chips for "a price holds", "two firms or more", "nothing holds".
+  4. **Follow-ups** (was Waiting): your moves first; per row what the firm's record says ("usually answers
+     within 5 days: 1 day over"), and "Write the answer" / "Write a reminder": the message is written by the
+     same code as in the price inquiries, shown to read and change with what each answer rests on, then sent
+     or kept unsent.
+  Checked: type-check of the partners files, `tests/test_partners.py`, full pytest 214 passed; in headless
+  Chrome at 1500 wide, no console error: register (filter, sort, add form), a supplier and a subcontractor
+  with every sheet, price book, follow-ups, the old addresses, and "Write the answer" once with a real Claude
+  call (11 s, four points, three marked as not settled by the LV). **Not run**: "Send" and "Keep unsent" of a
+  follow-up (same endpoint as in the price inquiries), "Write a reminder" in the browser (the endpoint
+  answers; the only real conversation open is a question back), below 1000 px wide.
+  5. **Polier's read** (`partners.read_firm`, `POST /api/partners/{id}/read`, kept in `suppliers.more.read`):
+     on the firm page, three to five sentences on what to know before asking the firm, written by Claude from
+     the facts counted from the record and the messages. A sentence is kept only if its sources exist, the
+     passage it quotes stands in the message it names, and every figure in it stands in its sources; a press
+     on a sentence shows what it rests on. Asked for by a press, not on opening the page.
+  6. **Coverage** (tab; `partners.needs`): per tender its packages with every firm on each and where the
+     conversation stands (quote in, asked, your move, not asked, declined), "taken into the bid", "only one
+     firm"; a package with nobody to ask stands red with "Search the web" or "Look at the N found on the web".
+     Tenders an inquiry has gone out for first; "Every plan" shows all. The count of such gaps is on the tab
+     and in the "Today" line.
+  Checked for 5 and 6: full pytest and `npm run build`; in headless Chrome at 1500 wide, no console error:
+  the coverage of project D (6 packages; "Every plan": 59 in 28 tenders), a read of one example supplier with
+  a real Claude call (five sentences, none dropped) and its sources opened. **Not run**: "Search the web" from
+  the coverage view (it calls the same search as the "Found on the web" tab), a read of a firm with a thin
+  record, a test of `read_firm`'s three checks with a made-up answer.
+  **Not built of the proposal**: grouping the price book by material group, asking for a price from the firm
+  page, comparing firms, distance to site. The countdown to the submission day shows only where the tender
+  has one. "Found on the web" is still its own tab beside Coverage.
+
   on a timer (`keep_looking`: same code as the button, the loop itself was not waited for); `.eml` dropped
   on the page in a browser (the API path is tested); "Take into the directory" clicked in a browser.
   Nothing of the page is fetched while the app opens (2026-11-22): its code is its own piece of the build

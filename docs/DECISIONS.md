@@ -836,3 +836,30 @@ Changes D-044 in one point.
 
 Revisit if: the unit price gets its labour / material / equipment split — then a supplier's price enters
 the unit price and this order holds for the material part too.
+
+## D-051 — The partners page is one register; a firm is read before it is edited
+
+2026-11-22. The user found the first partners page poor: a form where a profile was expected, six raw
+counters, every section of the same weight, the open work on the third tab.
+
+- **One directory** of suppliers and subcontractors, as a table that sets the firms side by side; the kind
+  is a filter, not a tab. Tabs: Directory, Follow-ups, Price book, Found on the web; "Your firm" is a button.
+- **A firm shows what is known before what can be entered**: open work, four measures each set against the
+  directory, then sheets. The form is one of the sheets.
+- **A count is shown with what it is of or against** (5 of 6, the directory's median beside the firm's). A
+  measure that cannot be computed says so ("nothing yet that another firm priced too") instead of a zero.
+- **One mark per inquiry** (answered, declined, still open, never answered) is the reply record everywhere,
+  in the language of the LV strip. The marks stand by outcome, not in order of time.
+- **Price level and the price book compare net prices as quoted**; ex works and free to site are not evened
+  out, and the page says so where it compares.
+- **The next message is written where the waiting is seen**, by the code of the price inquiries, and goes out
+  only after it was read (D-047 stands: the app writes to nobody on its own).
+
+- **What Polier says about a firm is held to the record** (the finding rule, applied to firms): each sentence
+  names the counted fact or the message it rests on, a quoted passage must stand in that message, a figure must
+  stand in a source; what fails is dropped and counted. It is written on request, not on every visit.
+- **Coverage is read from the tenders' plans**, not from the directory's word lists: a need is a package of
+  an LV, a gap is a package nobody is on.
+
+Revisit if: the directory grows past what one table holds on a screen (then search and paging), or freight
+is known per quote (then the comparison can be free to site).

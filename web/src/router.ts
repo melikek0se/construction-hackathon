@@ -24,8 +24,8 @@ export interface LvPlace {
   fpage: number; // of the findings list, from 1
 }
 
-export type PartnerTab = "suppliers" | "subcontractors" | "waiting" | "prices" | "discovered" | "firm";
-const PARTNER_TABS: readonly string[] = ["suppliers", "subcontractors", "waiting", "prices", "discovered", "firm"];
+export type PartnerTab = "suppliers" | "subcontractors" | "coverage" | "waiting" | "prices" | "discovered" | "firm";
+const PARTNER_TABS: readonly string[] = ["suppliers", "subcontractors", "coverage", "waiting", "prices", "discovered", "firm"];
 /** The partners page: which tab, and the firm that is open (directory tabs only). */
 export interface PartnersPlace {
   tab: PartnerTab;
