@@ -25,14 +25,20 @@ services:
   # here; every password is "demo". The app makes the mailbox of whoever it writes to; others by hand:
   #   docker compose exec mail boq-mail bauherr@client.test
   # Webmail, to be any of them: http://localhost:8025/webmail/ (also under /webmail/ of the app).
-  # Mail is kept in Postgres (database boq_mail, volume pgdata) and so outlives restarts.
+  # Mail is kept in Postgres (database boq_mail, volume pgdata) and so outlives restarts. At every start the
+  # mock world of mock/mail/ is put in where it is missing (tenders, history with every partner); the app then
+  # finds the tenders of the last days in its inbox and reads them, which asks Claude. DEMO_MAIL_FILL=0: not.
   mail:
     build: {context: ., target: mail}
     depends_on:
       db: {condition: service_healthy}
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
+      DEMO_MAIL_FILL: ${DEMO_MAIL_FILL:-1}
       DEMO_MAIL_URL: http://127.0.0.1:8090  # for `docker compose exec mail boq-mail …`
+    volumes:
+      - ./src:/app/src        # boq-mail and the mock world as they are in the working folder
+      - ./mock:/app/mock:ro
     ports: ["8025:8081", "3025:3025", "3143:3143"]  # webmail; SMTP and IMAP for a mail program or a script
     healthcheck:
       test: ["CMD-SHELL", "curl -sf -o /dev/null http://127.0.0.1:8090/healthz/live"]
@@ -65,6 +71,7 @@ services:
       - ./src:/app/src
       - ./tests:/app/tests
       - ./dataset:/app/dataset:ro
+      - ./mock:/app/mock:ro  # the mock mail: docker compose exec api boq-mail --fill
       - ./data:/app/data  # pages drawn for the PDF view; data/cache/llm for boq-seed
     ports: ["${API_PORT:-8000}:8000"]
     develop:  # code reloads through the mounts above; a new dependency rebuilds the image

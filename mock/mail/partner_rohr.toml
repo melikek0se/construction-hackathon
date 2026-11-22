@@ -1,0 +1,513 @@
+# Nordrohr Handel GmbH (rohr): Jan Brodersen (du, schnell, füllt die Tabelle aus, immer frei Baustelle, 2 % Skonto,
+# Hausmarke als Alternative bei Schächten) und Selin Yıldız (Innendienst, Sie, Bestätigungen und Liefertermine).
+# Jobs: P1 Mühlenstraße (geliefert), P2 Hauptstraße Brande (geliefert), P3 Gewerbegebiet Süd (verloren),
+# P4 Pumpwerk Deichstraße (geliefert), P7 Marschhof (offen).
+
+# ------------------------------------------------------------------ P1 Mühlenstraße
+
+[[sheet]]
+key = "p1"
+file = "Preisanfrage_Kanalrohre_Schachtteile_Muehlenstrasse.xlsx"
+items = """
+3.1.10 | 612 m | PP-Kanalrohr DN 300 SN 10 verlegen | 38,60 | NordPipe PP SN 10, Vollwand, 6-m-Längen | nein | ab Lager Hamburg, 3 Werktage
+3.1.20 | 248 m | PP-Kanalrohr DN 400 SN 10 verlegen | 71,90 | NordPipe PP SN 10, Vollwand, 6-m-Längen | nein | Lieferzeit 2 Wochen
+3.1.30 | 186 m | Anschlussleitung PP DN 150 verlegen | 11,40 | NordPipe PP SN 10, 3-m-Längen | nein | ab Lager
+3.1.40 | 42 St | Abzweig DN 300/150 einbauen | 64,00 | NordPipe Abzweig 45 Grad | nein | ab Lager
+3.1.50 | 14 St | Abzweig DN 400/150 einbauen | 118,00 | NordPipe Abzweig 45 Grad | nein | Lieferzeit 2 Wochen
+3.2.10 | 19 St | Schachtunterteil DN 1000 setzen | 372,00 | Hausmarke NordSchacht PP DN 1000 | ja | Kunststoff statt Beton, Gerinne nach Angabe, 3 Wochen
+3.2.40 | 19 St | Schachtabdeckung Klasse D 400 | 198,00 | Guss/Beton rund, LW 625, mit Dämpfungseinlage | nein | ab Lager
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 10 Tage, 30 Tage netto", valid_until = "{-470}" }
+
+[[mail]]
+id = "p1_anfrage"
+day = -516
+time = "08:12"
+from = "us"
+to = "rohr"
+subject = "Preisanfrage – Kanalrohre und Schachtteile – Kanalerneuerung Mühlenstraße"
+body = """Moin Jan,
+
+wir rechnen gerade die Mühlenstraße in Norderbek (Stadt Norderbek, TBA-SE-0318), Abgabe ist am {-500}. Rund 860 m Schmutzwasserkanal in PP, offen verlegt. Ich brauche von dir Preise für:
+
+Pos. 3.1.10 – 612 m – PP-Kanalrohr DN 300 SN 10
+Pos. 3.1.20 – 248 m – PP-Kanalrohr DN 400 SN 10
+Pos. 3.1.30 – 186 m – Anschlussleitung PP DN 150 SN 10
+Pos. 3.1.40 – 42 St – Abzweig 45 Grad DN 300/150
+Pos. 3.1.50 – 14 St – Abzweig 45 Grad DN 400/150
+Pos. 3.2.10 – 19 St – Schachtunterteil DN 1000 (ausgeschrieben Beton nach DIN EN 1917)
+Pos. 3.2.40 – 19 St – Schachtabdeckung D 400, LW 625
+
+Bitte wie immer frei Baustelle, mit Fabrikat und Lieferzeit. Mengen sind LV-Mengen ohne Verschnitt. Die Tabelle hängt an, trag es einfach dort ein. Wir sind bis {-470} an unser Angebot gebunden, so lange müssten die Preise halten.
+
+Ich brauche es bis {-505}.
+
+Gruß John"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_angebot"
+day = -516
+time = "15:40"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – Kanalrohre und Schachtteile – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Moin John,
+
+Tabelle anbei, alles frei Baustelle Norderbek, 2 % Skonto, Preise halte ich bis {-470}.
+
+DN 300 und DN 150 liegen bei uns am Lager, DN 400 und die 400er Abzweige brauchen zwei Wochen. Abladen müsst ihr selbst, die 6-m-Bunde kommen mit dem Planenzug ohne Kran.
+
+Schachtunterteile: Beton haben wir nur über Dritte, da bin ich nicht besser als das Betonwerk direkt. Ich hab dir stattdessen unsere Hausmarke NordSchacht in PP reingeschrieben, 372 das Stück, steckfertig mit Gerinne. Ist als Alternative gekennzeichnet, musst du mit der Stadt klären ob die das nehmen.
+
+Wenn was fehlt ruf durch."""
+attach = ["sheet:p1"]
+
+[[mail]]
+id = "p1_nachfrage"
+day = -512
+time = "09:05"
+from = "us"
+to = "rohr"
+subject = "AW: Preisanfrage – Kanalrohre und Schachtteile – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_angebot"
+body = """Moin Jan,
+
+danke, das ging fix. Zwei Sachen:
+
+Kannst du bei DN 300 noch etwas machen? Das sind 612 m, und ich habe für das Rohr ein Vergleichsangebot mit 37,80. Bei DN 400 und den Formteilen passt es.
+
+Die Schächte rechne ich in Beton, die Stadt will im LV ausdrücklich Beton, und Nebenangebote sind nicht zugelassen. Die Hausmarke merke ich mir für private Auftraggeber.
+
+Gruß John"""
+
+[[mail]]
+id = "p1_neu"
+day = -512
+time = "11:22"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – Kanalrohre und Schachtteile – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_nachfrage"
+body = """Moin John,
+
+37,90 für DN 300, wenn ihr die ganze Menge bei uns nehmt und in höchstens drei Abrufen. Tiefer geht nicht, das Granulat ist gerade wieder teurer geworden. Rest bleibt wie in der Tabelle.
+
+Schächte in Beton verstanden. Sag Bescheid wenn ihr den Auftrag habt."""
+
+[[mail]]
+id = "p1_bestellung"
+day = -474
+time = "08:30"
+from = "us"
+to = "rohr"
+cc = ["rohr.yildiz", "us.albers"]
+subject = "Bestellung Mühlenstraße Norderbek – Kanalrohre PP, dein Angebot vom {-516}"
+body = """Moin Jan,
+
+wir haben die Mühlenstraße bekommen. Ich bestelle hiermit zu deinem Angebot vom {-516} mit dem Nachlass vom {-512}:
+
+612 m PP DN 300 SN 10 zu 37,90
+248 m PP DN 400 SN 10 zu 71,90
+186 m PP DN 150 SN 10 zu 11,40
+42 Abzweige DN 300/150 zu 64,00
+14 Abzweige DN 400/150 zu 118,00
+19 Schachtabdeckungen D 400 zu 198,00
+
+Frei Baustelle, 2 % Skonto. Die Schachtunterteile kommen wie besprochen vom Betonwerk.
+
+Baubeginn ist am {-455} am Bahnübergang, dort liegt DN 400. Abruf in drei Teilen macht Jonas Albers (in Kopie), er ist unser Bauleiter dort. Die Stadt will vorab Datenblätter und Prüfzeugnisse für die Rohre, kann Frau Yıldız mir die bis {-471} schicken?
+
+Gruß John"""
+
+[[mail]]
+id = "p1_ab"
+day = -473
+time = "09:48"
+from = "rohr.yildiz"
+to = "us"
+cc = ["us.albers", "rohr"]
+subject = "Auftragsbestätigung 61-20884 – Mühlenstraße Norderbek"
+reply_to = "p1_bestellung"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihre Bestellung, die ich unter der Nummer 61-20884 angelegt habe. Kundennummer K-20417, Lieferanschrift Baustelle Mühlenstraße, 25499 Norderbek, Lagerplatz Festplatz.
+
+Bestätigte Liefertermine:
+1. Abruf: PP DN 400 (248 m) mit 14 Abzweigen DN 400/150, Anlieferung am {-457}, vormittags
+2. Abruf: PP DN 300 (erste 300 m), DN 150 und Abzweige DN 300/150 nach Abruf durch Herrn Albers, Vorlauf 3 Werktage
+3. Abruf: Restmenge DN 300 und die 19 Schachtabdeckungen, Vorlauf 3 Werktage
+
+Datenblätter, Leistungserklärungen und die Prüfzeugnisse des Herstellers für DN 150 bis DN 400 erhalten Sie heute noch in einer zweiten E-Mail als Sammel-PDF.
+
+Bitte beachten Sie: Anlieferung ohne Kran, Entladung durch Sie mit Gabel oder Bagger mit Traverse."""
+
+[[mail]]
+id = "p1_falsch"
+day = -441
+time = "07:20"
+from = "us.albers"
+to = "rohr.yildiz"
+cc = ["us"]
+subject = "Mühlenstraße, Auftrag 61-20884 – falsche Rohre geliefert (DN 400 SN 8 statt SN 10)"
+body = """Guten Morgen Frau Yıldız,
+
+gestern Nachmittag kam der zweite Teil DN 400, zwei Bunde, 12 Stangen. Auf dem Lieferschein steht SN 10, auf den Rohren steht SN 8. Die Stadt nimmt mir das nicht ab, im LV steht SN 10 und Herr Hartwig schaut sich jede Signierung an.
+
+Ich habe die zwei Bunde nicht angerührt, sie liegen am Festplatz. Ich brauche bis übermorgen 72 m DN 400 SN 10, sonst steht die Kolonne ab Station 0+180.
+
+Bitte kurze Rückmeldung, wann getauscht wird.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p1_falsch_aw"
+day = -441
+time = "08:55"
+from = "rohr.yildiz"
+to = "us.albers"
+cc = ["us", "rohr"]
+subject = "AW: Mühlenstraße, Auftrag 61-20884 – falsche Rohre geliefert (DN 400 SN 8 statt SN 10)"
+reply_to = "p1_falsch"
+body = """Guten Morgen Herr Albers,
+
+das tut mir leid, der Fehler liegt bei uns: Im Lager wurden zwei Bunde aus dem falschen Fach verladen. Ich habe es geprüft, SN 10 ist in ausreichender Menge da.
+
+Der Tausch ist disponiert: Morgen bis 9:00 Uhr kommen 12 Stangen DN 400 SN 10 (72 m), derselbe Lkw nimmt die zwei Bunde SN 8 wieder mit. Kosten entstehen Ihnen keine. Bitte lassen Sie die Bunde verschnürt, dann geht das Aufladen schnell.
+
+Herr Brodersen ist informiert und ruft Sie heute noch an."""
+
+# ------------------------------------------------------------------ P2 Hauptstraße Brande
+
+[[sheet]]
+key = "p2"
+file = "Preisanfrage_PE-Rohre_Formstuecke_Hauptstrasse_Brande.xlsx"
+items = """
+3.1.10 | 1240 m | Druckrohr PE 100 RC da 225 SDR 11 | 45,80 | NordPipe Aqua RC Typ 2, Stangen 12 m | nein | Werksanlieferung, 3 Wochen
+3.1.20 | 34 St | Formstücke PE da 225 | 148,00 | Bögen, T-Stücke, Reduzierungen, lange Schenkel | nein | Mischpreis je Stück über die Liste im Lageplan
+3.1.30 | 1240 m | Trassenwarnband und Ortungsdraht | 0,42 | Warnband blau Trinkwasser und Ortungsdraht 1,5 mm2 | nein | ab Lager
+3.3.20 | 410 m | Hausanschlussleitung PE da 40 | 2,35 | NordPipe Aqua RC da 40 SDR 11, Ringbund 100 m | nein | ab Lager
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 10 Tage, 30 Tage netto", valid_until = "{-365}" }
+
+[[mail]]
+id = "p2_anfrage"
+day = -406
+time = "07:50"
+from = "us"
+to = "rohr"
+subject = "Preisanfrage – PE-Druckrohre und Formstücke – Trinkwasserleitung Hauptstraße Brande"
+body = """Moin Jan,
+
+nächste Anfrage, diesmal Trinkwasser: Wasserverband Geestrand, Hauptstraße in Brande (WVG-N-2207), 1.240 m da 225 mit 46 Hausanschlüssen. Abgabe am {-395}.
+
+Pos. 3.1.10 – 1240 m – Druckrohr PE 100 RC da 225 SDR 11, PN 16, mit DVGW-Zulassung, Stangen
+Pos. 3.1.20 – 34 St – Formstücke PE da 225 (Bögen 11 bis 90 Grad, T-Stücke, Reduzierungen), bitte als Mischpreis
+Pos. 3.1.30 – 1240 m – Trassenwarnband blau und Ortungsdraht
+Pos. 3.3.20 – 410 m – Hausanschlussleitung PE 100 RC da 40 SDR 11
+
+Frei Baustelle Brande, Fabrikat, Lieferzeit. Der Verband gibt die Fabrikate erst nach Vorlage der Zertifikate frei, also bitte nur Ware mit DVGW-Baumusterprüfung. Bindefrist {-365}.
+
+Tabelle hängt an. Bis {-398} wäre gut.
+
+Gruß John"""
+attach = ["sheet:p2:blank"]
+
+[[mail]]
+id = "p2_angebot"
+day = -405
+time = "08:31"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – PE-Druckrohre und Formstücke – Trinkwasserleitung Hauptstraße Brande"
+reply_to = "p2_anfrage"
+body = """Moin John,
+
+Tabelle zurück. Frei Baustelle Brande, 2 % Skonto, gültig bis {-365}.
+
+da 225 kommt als Werksanlieferung in zwei Zügen, drei Wochen ab Bestellung, 12-m-Stangen. Wenn ihr 20-m-Stangen wollt spart ihr Schweißnähte, kostet 0,60 mehr den Meter, sag was du willst. Formstücke hab ich dir als Mischpreis gerechnet, 148 das Stück über alle 34, die T-Stücke 225/225 sind die teuren.
+
+Alles RC Typ 2 mit DVGW-Zertifikat, Werkszeugnis 3.1 gibt es je Charge dazu."""
+attach = ["sheet:p2"]
+
+[[mail]]
+id = "p2_da63"
+day = -399
+time = "08:10"
+from = "us"
+to = "rohr"
+subject = "AW: Preisanfrage – PE-Druckrohre und Formstücke – Trinkwasserleitung Hauptstraße Brande"
+reply_to = "p2_angebot"
+body = """Moin Jan,
+
+Nachzügler: Der Verband hat gestern eine Menge nachgeliefert, die im LV gefehlt hat. Pos. 3.3.40, Hausanschlussleitung PE 100 RC da 63 SDR 11, 35 m, für zwei Gewerbeanschlüsse. Was nimmst du dafür? Außerdem brauche ich für die Notversorgung noch einmal rund 150 m da 63, die laufen aber über meine Pauschale, gleicher Preis reicht mir.
+
+12-m-Stangen bei da 225 bleiben, unsere Schweißer wollen die langen nicht im Ort.
+
+Gruß John"""
+
+[[mail]]
+id = "p2_da63_aw"
+day = -399
+time = "09:02"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – PE-Druckrohre und Formstücke – Trinkwasserleitung Hauptstraße Brande"
+reply_to = "p2_da63"
+body = """Moin,
+
+da 63 SDR 11 RC im 100-m-Ring: 5,10 der Meter frei Baustelle, gilt auch für die 150 m Notleitung. Unter einem ganzen Ring schneiden wir nicht, die 35 m nimmst du also aus dem Ring für die Notversorgung mit. Lager, sofort."""
+
+[[mail]]
+id = "p2_zertifikat"
+day = -393
+time = "09:05"
+from = "us"
+to = "rohr.yildiz"
+cc = ["rohr", "us.albers"]
+subject = "Hauptstraße Brande – DVGW-Zertifikat und Muster-Werkszeugnis für da 225, da 40, da 63"
+body = """Guten Tag Frau Yıldız,
+
+wir liegen bei der Trinkwasserleitung in Brande vorn. Der Wasserverband fragt, welches Fabrikat hinter „PE 100 RC Typ 2“ steckt, und will für die Freigabe das DVGW-Baumusterprüfzertifikat sehen, dazu ein Muster eines Werkszeugnisses 3.1.
+
+Können Sie mir beides für da 225, da 40 und da 63 schicken, außerdem das Datenblatt des Herstellers? Bestellt wird erst nach der Freigabe durch den Verband, das steht so im Auftrag.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p2_zertifikat_aw"
+day = -392
+time = "10:12"
+from = "rohr.yildiz"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Hauptstraße Brande – DVGW-Zertifikat und Muster-Werkszeugnis für da 225, da 40, da 63"
+reply_to = "p2_zertifikat"
+body = """Sehr geehrter Herr Doe,
+
+gern. Das Rohr ist NordPipe Aqua RC, Typ 2 nach PAS 1075, hergestellt im Werk des Herstellers in Mecklenburg. Die Unterlagen sind zusammen 38 MB groß und passen nicht in eine E-Mail; ich habe sie Ihnen und Herrn Albers eben über unseren Downloadbereich bereitgestellt (Zugang mit Ihrer Kundennummer K-20417):
+
+- DVGW-Baumusterprüfzertifikat für da 25 bis da 400
+- Muster-Werkszeugnis 3.1 nach DIN EN 10204, Charge aus dem Vormonat
+- Datenblatt und Verlegeanleitung
+
+Für die Bestellung nach Freigabe: Bitte geben Sie mir zwei Tage Vorlauf für die Werksdisposition, dann halte ich die drei Wochen Lieferzeit für da 225."""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (verloren)
+
+[[sheet]]
+key = "p3"
+file = "Preisanfrage_Kanalrohre_Gewerbegebiet_Sued.xlsx"
+items = """
+3.1.30 | 380 m | PP-Kanalrohr DN 400 SN 10 verlegen | 74,20 | NordPipe PP SN 10, Vollwand | nein | Lieferzeit 2 Wochen
+3.1.40 | 290 m | PP-Kanalrohr DN 300 SN 10 verlegen | 39,80 | NordPipe PP SN 10, Vollwand | nein | ab Lager
+3.1.50 | 24 St | Schacht DN 1000, Tiefe bis 3,00 m | 1180,00 | Hausmarke NordSchacht PP DN 1000, komplett ohne Abdeckung | ja | statt Betonfertigteile, 3 Wochen
+3.2.20 | 760 m | PP-Kanalrohr DN 200 SN 10 verlegen | 19,90 | NordPipe PP SN 10, Vollwand | nein | ab Lager
+5.1.20 | 1380 m | Kabelschutzrohr DN 110 verlegen | 3,15 | PE-HD DN 110, schwarz, 6-m-Stangen mit Zugdraht | nein | ab Lager
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 10 Tage, 30 Tage netto", valid_until = "{-250}" }
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "07:20"
+from = "us"
+to = "rohr"
+subject = "Preisanfrage – Kanalrohre – Erschließung Gewerbegebiet Süd, 1. BA (Itzehoe)"
+body = """Moin Jan,
+
+Erschließung Gewerbegebiet Süd in Itzehoe (OP-ITZ-417), großes LV, Abgabe {-286}. Von dir bräuchte ich:
+
+Pos. 3.1.30 – 380 m – PP-Kanalrohr DN 400 SN 10
+Pos. 3.1.40 – 290 m – PP-Kanalrohr DN 300 SN 10
+Pos. 3.1.50 – 24 St – Schacht DN 1000 bis 3,00 m (ausgeschrieben Betonfertigteile, frag ich auch beim Betonwerk an)
+Pos. 3.2.20 – 760 m – PP-Kanalrohr DN 200 SN 10
+Pos. 5.1.20 – 1380 m – Kabelschutzrohr PE-HD DN 110 mit Zugdraht
+
+Frei Baustelle Itzehoe, Fabrikat, Lieferzeit, Tabelle im Anhang. Bis {-290} bitte.
+
+Gruß John"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_angebot"
+day = -295
+time = "07:58"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – Kanalrohre – Erschließung Gewerbegebiet Süd, 1. BA (Itzehoe)"
+reply_to = "p3_anfrage"
+body = """Moin John,
+
+anbei. Frei Baustelle Itzehoe, 2 % Skonto. Preise sind seit der Mühlenstraße gut 3 % rauf, das hat das Werk im Januar durchgereicht, mehr ist es nicht geworden.
+
+Beim Schacht hab ich dir wieder die Hausmarke angeboten, 1.180 komplett bis 3 m Tiefe ohne Abdeckung, als Alternative markiert. Bei 24 Stück spart ihr gegenüber Beton vor allem den Kran. Wenn das Büro das nicht will nimm den Preis einfach raus.
+
+Gültig bis {-250}."""
+attach = ["sheet:p3"]
+
+[[mail]]
+id = "p3_absage"
+day = -258
+time = "11:48"
+from = "us"
+to = "rohr"
+subject = "AW: Preisanfrage – Kanalrohre – Erschließung Gewerbegebiet Süd, 1. BA (Itzehoe)"
+reply_to = "p3_angebot"
+body = """Moin Jan,
+
+Itzehoe ist weg: Wir sind Zweiter geworden, 3,1 % über dem Ersten, der Auftrag geht an eine Bietergemeinschaft mit eigener Mischanlage. An den Rohren lag es nicht, in den Kanaltiteln waren wir vorn. Danke fürs Rechnen, beim nächsten Mal wieder.
+
+Gruß John"""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße
+
+[[sheet]]
+key = "p4"
+file = "Preisanfrage_Druckrohr_da160_Pumpwerk_Deichstrasse.xlsx"
+items = """
+3.1.20 | 492 m | Druckrohr PE 100 RC da 160 SDR 11 | 23,90 | NordPipe Sewer RC Typ 2, Stangen 12 m | nein | Lieferzeit 2 Wochen
+3.1.30 | 14 St | Formstücke PE da 160 | 86,00 | Bögen und T-Stücke, lange Schenkel | nein | Mischpreis, ab Lager
+3.2.40 | 198 m | Druckrohr da 160 für Rohreinzug | 29,80 | NordPipe Sewer RC Typ 3 mit PP-Schutzmantel | nein | Werksfertigung, 5 Wochen
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 10 Tage, 30 Tage netto", valid_until = "{-165}" }
+
+[[mail]]
+id = "p4_anfrage"
+day = -205
+time = "09:10"
+from = "us"
+to = "rohr"
+subject = "Preisanfrage – Druckrohr PE da 160 – Abwasserpumpwerk Deichstraße mit Druckleitung"
+body = """Moin Jan,
+
+Pumpwerk Deichstraße in Norderbek (TBA-SE-0402), Abgabe {-200}, ich bin etwas spät dran, weil die Stadt die Mengen erst gestern berichtigt hat. Druckleitung zur Kläranlage, teils offen, teils Spülbohrung:
+
+Pos. 3.1.20 – 492 m – Druckrohr PE 100 RC da 160 SDR 11, Stangen 12 m
+Pos. 3.1.30 – 14 St – Formstücke PE da 160 (Bögen, T-Stücke)
+Pos. 3.2.40 – 198 m – Druckrohr da 160 SDR 11 mit additivem PP-Schutzmantel für den Rohreinzug
+
+Frei Baustelle, Fabrikat, Lieferzeit. Bindefrist {-165}. Tabelle anbei. Geht das bis morgen?
+
+Gruß John"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_angebot"
+day = -205
+time = "14:26"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – Druckrohr PE da 160 – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_anfrage"
+body = """Moin John,
+
+geht heute schon, Tabelle anbei. Frei Baustelle, 2 % Skonto, gültig bis {-165}.
+
+Achtung beim Schutzmantelrohr: das wird für euch gefertigt, fünf Wochen ab Bestellung, und das Werk macht nur volle 12-m-Stangen, also 204 m statt 198. Preis gilt je gelieferten Meter. Das normale da 160 zwei Wochen."""
+attach = ["sheet:p4"]
+
+[[mail]]
+id = "p4_ab"
+day = -169
+time = "11:05"
+from = "rohr.yildiz"
+to = "us.albers"
+cc = ["us"]
+subject = "Auftragsbestätigung 61-23310 – Pumpwerk Deichstraße, Druckrohr da 160"
+body = """Sehr geehrter Herr Albers,
+
+wie heute Morgen mit Ihnen telefonisch besprochen, bestätige ich Ihre Bestellung zum Angebot von Herrn Brodersen vom {-205} unter der Nummer 61-23310:
+
+- 492 m Druckrohr PE 100 RC da 160 SDR 11 zu 23,90 EUR/m
+- 14 Formstücke da 160 zu 86,00 EUR/St (Stückliste nach Ihrer Mail)
+- 204 m Druckrohr da 160 SDR 11 mit PP-Schutzmantel zu 29,80 EUR/m (17 Stangen zu 12 m)
+
+Frei Baustelle Deichstraße, 2 % Skonto bei Zahlung in 10 Tagen.
+
+Liefertermine: da 160 und Formstücke in KW {kw-155}, das Schutzmantelrohr in KW {kw-134}. Den genauen Tag stimme ich jeweils eine Woche vorher mit Ihnen ab. Die Zufahrt über den Wirtschaftsweg habe ich für den Spediteur vermerkt (höchstens 26 t, kein Hängerzug)."""
+
+# ------------------------------------------------------------------ P7 Marschhof (Ergebnis offen)
+
+[[sheet]]
+key = "p7"
+file = "Preisanfrage_Druckrohr_da180_Marschhof.xlsx"
+items = """
+3.1.40 | 1142 m | Druckrohr PE 100 RC da 180 SDR 11, Schutzmantel | 37,40 | NordPipe Sewer RC Typ 3 mit PP-Schutzmantel, Stangen 12 m | nein | Werksfertigung, 6 Wochen
+3.2.10 | 64 m | Druckrohr da 180 in offener Bauweise | 30,20 | NordPipe Sewer RC Typ 2, Stangen 12 m | nein | Lieferzeit 2 Wochen
+3.2.50 | 9 St | Elektroschweißmuffe da 180 | 58,00 | E-Muffe PE 100 SDR 11 | nein | ab Lager
+3.2.60 | 4 St | Bogen PE da 180 | 96,00 | Bogen 30 oder 45 Grad, lange Schenkel | nein | ab Lager
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 10 Tage, 30 Tage netto", valid_until = "{-8}" }
+
+[[mail]]
+id = "p7_anfrage"
+day = -46
+time = "08:20"
+from = "us"
+to = "rohr"
+subject = "Preisanfrage – Druckrohr PE da 180 mit Schutzmantel – Abwasserdruckleitung Marschhof"
+body = """Moin Jan,
+
+wieder der Wasserverband Geestrand: Abwasserdruckleitung Marschhof (WVG-A-2431), fast alles Spülbohrung durch die Marsch. Abgabe {-36}.
+
+Pos. 3.1.40 – 1142 m – Druckrohr PE 100 RC da 180 SDR 11 mit additivem PP-Schutzmantel
+Pos. 3.2.10 – 64 m – Druckrohr PE 100 RC da 180 SDR 11 ohne Mantel, offene Verlegung
+Pos. 3.2.50 – 9 St – Elektroschweißmuffe da 180
+Pos. 3.2.60 – 4 St – Bogen PE da 180, 30 oder 45 Grad
+
+Frei Baustelle (Lagerfläche am Pumpwerk Marschhof, Zufahrt über die K 18), Fabrikat, und vor allem die Lieferzeit für das Mantelrohr, die Ausführung ist ab {+35} vorgesehen. Bindefrist {-8}. Tabelle anbei, bis {-40} bitte.
+
+Gruß John"""
+attach = ["sheet:p7:blank"]
+
+[[mail]]
+id = "p7_angebot"
+day = -45
+time = "10:44"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – Druckrohr PE da 180 mit Schutzmantel – Abwasserdruckleitung Marschhof"
+reply_to = "p7_anfrage"
+body = """Moin John,
+
+Tabelle anbei, frei Baustelle Marschhof, 2 % Skonto, gültig bis {-8}.
+
+Das Mantelrohr hat zur Zeit sechs Wochen ab Bestellung, schneller wird das nicht, das Werk ist voll. 1.142 m sind 96 Stangen, das passt genau zu euren Schweißnähten. Kommt in vier Zügen, sag mir vor der Bestellung ob die Wiese einen Sattelzug trägt, sonst laden wir am Pumpwerk auf einen Dreiachser um, das kostet extra.
+
+Vergleich für dich: das da 160 mit Mantel fürs Pumpwerk lag bei 29,80, das da 180 jetzt bei 37,40, je Kilo ist das fast derselbe Preis."""
+attach = ["sheet:p7"]
+
+[[mail]]
+id = "p7_verlaengerung"
+day = -18
+time = "09:36"
+from = "rohr"
+to = "us"
+subject = "AW: Preisanfrage – Druckrohr PE da 180 mit Schutzmantel – Abwasserdruckleitung Marschhof"
+reply_to = "p7_angebot"
+body = """Moin John,
+
+wie eben am Telefon gesagt, hier noch mal schriftlich für deine Akte: Die Preise aus meinem Angebot vom {-45} für Marschhof verlängere ich bis {+21}, unverändert, frei Baustelle, 2 % Skonto. Lieferzeit Mantelrohr bleibt bei sechs Wochen ab Bestellung.
+
+Über den {+21} hinaus kann ich nichts zusagen, zum Jahreswechsel kommt die nächste Runde vom Werk, dazu schreib ich dir noch."""
+
+# ------------------------------------------------------------------ ohne Anfrage
+
+[[mail]]
+id = "preise_januar"
+day = -6
+time = "07:46"
+from = "rohr"
+to = "us"
+subject = "Preise PP und PE ab 1. Januar, Jahresbonus"
+body = """Moin John,
+
+damit du es beim Rechnen weißt: Das Werk erhöht zum 1. Januar, wir geben das weiter. PP-Kanalrohr rund 4 % (DN 300 SN 10 dann 42,60 statt 41,00 der Meter, DN 400 79,30 statt 76,30), PE-Druckrohr rund 3 %. Formteile und Schachtabdeckungen bleiben erstmal.
+
+Alles was du bis Jahresende bestellst und bis Ende Februar abrufst, läuft noch zum alten Preis. Marschhof ist davon nicht betroffen, das Angebot steht bis {+21}.
+
+Und Jahresbonus: Ihr steht bei gut 212.000 Umsatz, ab 250.000 gibt es 1,5 % statt 1 % rückwirkend. Wenn Marschhof noch dieses Jahr bestellt wird, seid ihr drüber.
+
+Zwischen den Jahren ist das Lager zu, vom 24.12. bis 2.1., Yıldız ist bis zum 23. erreichbar."""

@@ -212,6 +212,9 @@ def prepare_database(config_path: str) -> None:
 def main() -> None:
     """boq-mail                      the accounts on the demo server
     boq-mail ADDRESS…             make these accounts (password "demo")
+    boq-mail --fill [--reset]     put the mock world (mock/mail/) into the mailboxes and the directory
+    boq-mail --empty              take the mock mail out of the mailboxes again
+    boq-mail --check              build the mock world and read every LV back, without a server
     boq-mail --database FILE      make the server's database, write its config file   (docker/mail.sh)
     boq-mail --settings [BIND]    apply the demo's settings; exit code 3: a restart is needed (docker/mail.sh)"""
     args = sys.argv[1:]
@@ -220,6 +223,9 @@ def main() -> None:
             prepare_database(args[1])
         elif args[:1] == ["--settings"]:
             sys.exit(3 if settings(*args[1:2]) else 0)
+        elif args[:1] in (["--fill"], ["--check"], ["--empty"]):
+            from boq import mockmail
+            mockmail.main(args)
         else:
             for address in ensure(*args):
                 print(f"made {address}")

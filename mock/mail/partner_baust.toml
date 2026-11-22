@@ -1,0 +1,466 @@
+# Baustoff-Union Elbe GmbH (baust): Olaf Dierks. Verkäufer, redselig, Sie; bietet ungefragt Staffelpreise und
+# Alternativen an, füllt die Tabelle aus UND kommentiert in der Mail. Stark bei Pflaster, Borden, Rinnen, Abläufen.
+# Jobs: P1 Mühlenstraße (Abdeckungen, ging an Nordrohr), P3 Gewerbegebiet Süd (verloren), P4 Pumpwerk (Pflaster, Zaun),
+# P5 Schulweg (verloren), P6 Radweg K 22 (Pfosten, Saatgut, Geotextil für den Bodenaustausch).
+
+# ------------------------------------------------------------------ P1 Mühlenstraße
+
+[[sheet]]
+key = "p1"
+file = "Preisanfrage_Schachtabdeckungen_Muehlenstrasse.xlsx"
+items = """
+3.2.40 | 19 St | Schachtabdeckung Klasse D 400 | 204,00 | ElbeGuss Rund D 400, Rahmen Guss/Beton, LW 625, Dämpfungseinlage | nein | ab 20 St 199,00; mit Lüftungsöffnungen gleicher Preis
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "3 % 14 Tage, 30 Tage netto", valid_until = "{-470}" }
+
+[[mail]]
+id = "p1_anfrage"
+day = -516
+time = "08:55"
+from = "us"
+to = "baust"
+subject = "Preisanfrage – Schachtabdeckungen D 400 – Kanalerneuerung Mühlenstraße"
+body = """Guten Tag Herr Dierks,
+
+wir kalkulieren die Kanalerneuerung Mühlenstraße in Norderbek (Stadt Norderbek, TBA-SE-0318), Abgabe {-500}. Von Ihnen bräuchte ich einen Preis für:
+
+Pos. 3.2.40 – 19 St – Schachtabdeckung nach DIN EN 124, Klasse D 400, lichte Weite 625 mm, Rahmen Guss/Beton, mit Dämpfungseinlage
+
+Bitte frei Baustelle, mit Fabrikat und Lieferzeit; die Tabelle liegt bei. Bindefrist {-470}. Bis {-506} wäre gut.
+
+Viele Grüße"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_angebot"
+day = -515
+time = "14:35"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Schachtabdeckungen D 400 – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Hallo Herr Doe,
+
+schön, von Ihnen zu hören, und danke für die Anfrage! Tabelle ist ausgefüllt und hängt an.
+
+204,00 EUR das Stück frei Baustelle Norderbek für unsere ElbeGuss Rund D 400, ein Klassiker, verkaufen wir an die halbe Westküste. Kleiner Tipp: Wenn Sie 20 statt 19 nehmen, sind Sie in der nächsten Staffel und zahlen 199,00, die eine in Reserve kostet Sie also unterm Strich nichts. Mit Lüftungsöffnungen derselbe Preis, steht bei Schmutzwasser ja oft drin.
+
+Falls Sie für die Mühlenstraße auch Borde, Pflaster für die Gehweganschlüsse oder Schmelzband für die Nähte brauchen: einfach mit in die Tabelle schreiben, ich mache Ihnen einen Objektpreis über alles.
+
+3 % Skonto bei 14 Tagen, Preis halte ich bis zu Ihrer Bindefrist."""
+attach = ["sheet:p1"]
+
+[[mail]]
+id = "p1_absage"
+day = -474
+time = "10:50"
+from = "us"
+to = "baust"
+subject = "AW: Preisanfrage – Schachtabdeckungen D 400 – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_angebot"
+body = """Guten Tag Herr Dierks,
+
+kurze Rückmeldung, damit Sie nicht warten: Wir haben die Mühlenstraße bekommen, die Abdeckungen nehmen wir aber mit den Rohren von unserem Rohrhändler, der lag 6 EUR je Stück darunter und liefert sie mit auf dem Zug. Danke für das schnelle Angebot.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p1_absage_aw"
+day = -474
+time = "13:12"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Schachtabdeckungen D 400 – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_absage"
+body = """Hallo Herr Doe,
+
+Glückwunsch zum Auftrag, und danke, dass Sie Bescheid sagen, das macht nicht jeder.
+
+6 EUR hätte ich mitgehen können, bei 19 Stück sowieso. Rufen Sie mich beim nächsten Mal kurz an, bevor Sie vergeben, dann finden wir etwas. Und wenn in der Mühlenstraße unterwegs etwas fehlt, Splitt, Schnellzement, Schachtringe zum Ausgleichen: Wir fahren jeden Dienstag und Donnerstag Richtung Norderbek."""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (verloren)
+
+[[sheet]]
+key = "p3"
+file = "Preisanfrage_Pflaster_Borde_Ablaeufe_Gewerbegebiet_Sued.xlsx"
+items = """
+3.1.70 | 46 St | Straßenablauf mit Anschlussleitung | 302,00 | Betonteile Nassschlamm, Aufsatz 500 x 500 D 400 Pultform, Eimer | nein | ohne Anschlussleitung DN 150; ab 40 St Staffelpreis bereits eingerechnet
+4.3.10 | 2300 m² | Betonsteinpflaster 8 cm, Gehwege | 15,60 | ElbeStein Rechteck 20/10/8 grau, mit Fase | nein | Staffel ab 2000 m²; ohne Fase gleicher Preis
+4.3.20 | 1650 m | Hochbord 15/30 setzen | 11,20 | ElbeStein Hochbord 15/30/100 grau | nein | Kurvensteine und Übergangssteine 18,40 je St
+4.3.30 | 1420 m | Tiefbord 8/25 setzen | 7,15 | ElbeStein Tiefbord 8/25/100 grau | nein | ab Lager
+4.3.40 | 1650 m | Pflasterrinne, zweizeilig | 9,40 | Rinnenstein 16/16/14 grau, 12,5 St je m | nein | Alternative Rinnenplatte 30/30/8 einzeilig 5,80 je m
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "3 % 14 Tage, 30 Tage netto", valid_until = "{-250}" }
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "08:00"
+from = "us"
+to = "baust"
+subject = "Preisanfrage – Pflaster, Borde, Rinne, Straßenabläufe – Erschließung Gewerbegebiet Süd, 1. BA"
+body = """Guten Tag Herr Dierks,
+
+diesmal etwas Größeres für Sie: Erschließung Gewerbegebiet Süd in Itzehoe, 1. Bauabschnitt (OP-ITZ-417), Abgabe {-286}. Ich brauche Preise für:
+
+Pos. 4.3.10 – 2300 m² – Betonsteinpflaster 20 x 10 x 8 cm, grau, DIN EN 1338
+Pos. 4.3.20 – 1650 m – Hochbord 15/30, DIN EN 1340
+Pos. 4.3.30 – 1420 m – Tiefbord 8/25
+Pos. 4.3.40 – 1650 m – Pflasterrinne zweizeilig aus Betonstein 16 x 16 x 14 cm
+Pos. 3.1.70 – 46 St – Straßenablauf 500 x 500 mm nach DIN 4052 mit Aufsatz D 400 und Schlammeimer (nur die Betonteile mit Aufsatz, die Anschlussleitung kommt vom Rohrhändler)
+
+Frei Baustelle Itzehoe, Fabrikat, Lieferzeit; Tabelle anbei. Zu den Bordabsenkungen (38 Zufahrten) bitte den Stückpreis für Übergangssteine dazuschreiben. Bis {-290} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_angebot"
+day = -295
+time = "11:10"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Pflaster, Borde, Rinne, Straßenabläufe – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_anfrage"
+body = """Hallo Herr Doe,
+
+das ist mal eine Anfrage nach meinem Geschmack, vielen Dank! Ich habe gleich mit dem Werk telefoniert und Ihnen Objektpreise geholt. Tabelle anbei, alles frei Baustelle Itzehoe in vollen Zügen, 3 % Skonto.
+
+Ein paar Worte dazu:
+
+Pflaster 15,60 EUR/m²: Das ist schon der Staffelpreis ab 2.000 m². Ausgeschrieben ist kein Fabrikat, ich habe unseren ElbeStein Rechteck mit Fase angeboten, ohne Fase kostet er dasselbe. Wenn das Büro mitmacht: Der 20/20/8 verlegt sich deutlich schneller und kostet 15,90, das holen Ihre Pflasterer beim Lohn dreimal wieder rein.
+
+Hochbord 11,20, Tiefbord 7,15: Lagerware. Übergangssteine und Kurvensteine für die 38 Absenkungen 18,40 EUR das Stück, je Absenkung brauchen Sie zwei Übergangssteine und fünf Flachborde.
+
+Rinne: zweizeilig mit 16/16/14 sind 12,5 Steine je Meter, 9,40 EUR/m. Ungefragt als Alternative: einzeilige Rinnenplatte 30/30/8 für 5,80 EUR/m, technisch gleichwertig, viele Kommunen nehmen das inzwischen lieber. Steht als Bemerkung drin.
+
+Straßenabläufe 302,00 EUR komplett mit Aufsatz Pultform und Eimer, ohne die Anschlussleitung.
+
+Lieferung: 2 bis 3 Züge je Woche sind kein Problem, bei Abruf bis Donnerstag liefern wir in der Folgewoche. Preise gelten bis {-250}. Wenn Sie in die Vergabe kommen, rufen Sie mich an, dann schaue ich, was noch geht."""
+attach = ["sheet:p3"]
+
+[[mail]]
+id = "p3_nachfrage"
+day = -293
+time = "13:20"
+from = "us"
+to = "baust"
+subject = "AW: Preisanfrage – Pflaster, Borde, Rinne, Straßenabläufe – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_angebot"
+body = """Guten Tag Herr Dierks,
+
+danke, das ist ausführlich. Die Alternativen kann ich hier nicht ansetzen, Nebenangebote sind nicht zugelassen, also 20/10/8 und zweizeilige Rinne wie ausgeschrieben.
+
+Sie sagen, ich soll anrufen, wenn es eng wird; es ist jetzt schon eng. Können Sie beim Hochbord noch etwas machen? 1.650 m sind über 100 Paletten, und ich habe einen Preis von 10,80 auf dem Tisch.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p3_nachlass"
+day = -293
+time = "15:45"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Pflaster, Borde, Rinne, Straßenabläufe – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_nachfrage"
+body = """Hallo Herr Doe,
+
+10,80 kenne ich, das ist Ware aus Polen ohne Frostprüfung nach unserem Standard, aber gut, Sie müssen gewinnen und ich will liefern.
+
+Mein Vorschlag: Hochbord 10,90 EUR/m und Tiefbord 7,05 EUR/m, wenn Pflaster, Borde und Rinne zusammen an uns gehen. Als Paket sind Sie damit rund 900 EUR günstiger als in der Tabelle. Pflaster und Abläufe bleiben, da ist nichts mehr drin.
+
+Gilt bis {-250}. Viel Erfolg bei der Abgabe!"""
+
+[[mail]]
+id = "p3_absage"
+day = -258
+time = "12:10"
+from = "us"
+to = "baust"
+subject = "AW: Preisanfrage – Pflaster, Borde, Rinne, Straßenabläufe – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_nachlass"
+body = """Guten Tag Herr Dierks,
+
+leider keine gute Nachricht: Itzehoe ist an eine Bietergemeinschaft gegangen, wir waren Zweiter mit 3,1 % Abstand. An Pflaster und Borden lag es nicht, der Abstand kam aus dem Asphalt. Danke für Ihre Mühe und den Nachlass.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p3_absage_aw"
+day = -257
+time = "14:28"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Pflaster, Borde, Rinne, Straßenabläufe – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_absage"
+body = """Hallo Herr Doe,
+
+schade, das hätte ich Ihnen und mir gegönnt. 3,1 % bei so einem LV ist knapp daneben, kein Grund zum Ärgern.
+
+Die Bietergemeinschaft hat übrigens schon bei uns angefragt, ich sage natürlich nichts zu Preisen. Für den zweiten Bauabschnitt, der soll im nächsten Jahr kommen, melden Sie sich gern früh, dann reserviere ich Ihnen die Paketpreise."""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße
+
+[[sheet]]
+key = "p4"
+file = "Preisanfrage_Pflaster_Zaun_Pumpwerk_Deichstrasse.xlsx"
+items = """
+5.1.10 | 140 m2 | Betonsteinpflaster 8 cm, Betriebsfläche | 17,40 | ElbeStein Rechteck 20/10/8 grau | nein | 14 Paletten, Mindermenge; Kranentladung 48,00 je Anlieferung
+5.1.20 | 52 m | Stabgitterzaun mit Tor | 68,00 | Doppelstabmatte 6/5/6, h 1,80 m, feuerverzinkt, Pfosten und Zubehör | nein | Tor 4,00 m zweiflügelig gesondert 1.480,00 je St
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "3 % 14 Tage, 30 Tage netto", valid_until = "{-165}" }
+
+[[mail]]
+id = "p4_anfrage"
+day = -211
+time = "08:45"
+from = "us"
+to = "baust"
+subject = "Preisanfrage – Pflaster und Stabgitterzaun – Abwasserpumpwerk Deichstraße"
+body = """Guten Tag Herr Dierks,
+
+eine kleine Anfrage zu den Außenanlagen des Pumpwerks Deichstraße in Norderbek (TBA-SE-0402), Abgabe {-200}:
+
+Pos. 5.1.10 – 140 m2 – Betonsteinpflaster 8 cm für die Betriebsfläche, grau
+Pos. 5.1.20 – 52 m – Doppelstabmattenzaun, Höhe 1,80 m, feuerverzinkt, mit zweiflügeligem Tor 4,00 m (nur Material)
+
+Frei Baustelle, Fabrikat, Lieferzeit. Tabelle anbei. Bindefrist {-165}. Die Außenanlagen kämen erst am Ende der Bauzeit, in gut einem halben Jahr; sagen Sie mir bitte, wie lange Sie den Preis halten können. Bis {-204} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_angebot"
+day = -210
+time = "15:05"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Pflaster und Stabgitterzaun – Abwasserpumpwerk Deichstraße"
+reply_to = "p4_anfrage"
+body = """Hallo Herr Doe,
+
+klein, aber fein, gern! Tabelle anbei.
+
+Pflaster 17,40 EUR/m² frei Baustelle: Bei 140 m² sind wir in der Mindermenge, deshalb nicht der Preis von Itzehoe, das werden Sie verstehen. Kranentladung 48,00 EUR je Anlieferung kommt dazu, wenn Sie keinen Stapler vor Ort haben. Für eine Betriebsfläche mit Saugwagenverkehr würde ich Ihnen ehrlich gesagt den 20/10/10 Schwerlast ans Herz legen, 21,90 EUR/m²; nur falls der Planer mit sich reden lässt.
+
+Zaun: 68,00 EUR je laufendem Meter, Matten, Pfosten zum Einbetonieren, Klemmen, alles dabei. Das Tor 4,00 m zweiflügelig habe ich gesondert ausgewiesen, 1.480,00 EUR, weil es sonst den Meterpreis verzerrt; in Ihrer Position müssen Sie es einrechnen.
+
+Preis halten: bis zur Bindefrist fest. Für die Lieferung in einem halben Jahr kann ich Ihnen den Zaun fest zusagen, beim Pflaster gilt dann die Preisliste am Tag des Abrufs, höchstens aber 3 % mehr. Das schreibe ich Ihnen gern in die Auftragsbestätigung."""
+attach = ["sheet:p4"]
+
+[[mail]]
+id = "p4_abruf"
+day = -33
+time = "07:15"
+from = "us.albers"
+to = "baust"
+cc = ["us"]
+subject = "Pumpwerk Deichstraße Norderbek – Abruf Pflaster und Zaun zum Angebot vom {-210}"
+body = """Guten Morgen Herr Dierks,
+
+die Außenanlagen am Pumpwerk Deichstraße stehen an. Ich rufe ab zu Ihrem Angebot an Herrn Doe vom {-210}:
+
+140 m² Betonsteinpflaster 20/10/8 grau, dazu 6 Säcke Fugensand
+52 m Doppelstabmattenzaun 1,80 m mit Pfosten und Zubehör, 1 Tor 4,00 m zweiflügelig
+
+Anlieferung bitte am {-27}, mit Kran, Zufahrt über den Wirtschaftsweg hinter dem Deich (26 t). Bitte bestätigen Sie mir den Pflasterpreis; Sie hatten höchstens 3 % über 17,40 zugesagt.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_abruf_aw"
+day = -32
+time = "09:40"
+from = "baust"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Pumpwerk Deichstraße Norderbek – Abruf Pflaster und Zaun zum Angebot vom {-210}"
+reply_to = "p4_abruf"
+body = """Hallo Herr Albers,
+
+ist notiert und disponiert: Anlieferung am {-27} zwischen 7 und 10 Uhr mit dem Kranwagen, der Fahrer kennt den Wirtschaftsweg.
+
+Zum Preis: Die Liste steht inzwischen bei 17,20 ab Lager, mit Fracht wären das 17,95. Zugesagt ist zugesagt: Sie bekommen 17,90 EUR/m², das sind knapp 3 % über 17,40. Zaun und Tor wie angeboten, 68,00 EUR/m und 1.480,00 EUR. Kranentladung berechne ich einmal mit 48,00 EUR.
+
+Kleiner Hinweis: Beim Zaun liegen 21 Matten zu 2,50 m und 22 Pfosten auf dem Wagen, eine Matte muss gekürzt werden. Pfostenbeton haben wir als Sackware da, falls Sie den mitgeliefert haben möchten, kurzer Anruf genügt."""
+
+# ------------------------------------------------------------------ P5 Schulweg (verloren)
+
+[[sheet]]
+key = "p5"
+file = "Preisanfrage_Strassenablaeufe_Borde_Schulweg.xlsx"
+items = """
+3.1.40 | 22 St | Straßenablauf setzen | 309,00 | Betonteile Nassschlamm, Aufsatz 500 x 500 D 400 Pultform, Eimer | nein | Staffel ab 20 St eingerechnet; Trockenschlamm 12,00 weniger
+4.1.40 | 240 m | Hochbord aufnehmen und neu setzen | 12,10 | ElbeStein Hochbord 15/30/100 grau, Ersatz für Bruch | nein | nur Ersatzsteine, geschätzt 10 % von 240 m
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "3 % 14 Tage, 30 Tage netto", valid_until = "{-108}" }
+
+[[mail]]
+id = "p5_anfrage"
+day = -147
+time = "08:35"
+from = "us"
+to = "baust"
+subject = "Preisanfrage – Straßenabläufe und Ersatzborde – Regenwasserkanal Schulweg"
+body = """Guten Tag Herr Dierks,
+
+Regenwasserkanal Schulweg in Norderbek (TBA-SE-0431), Abgabe {-138}. Zwei Positionen für Sie:
+
+Pos. 3.1.40 – 22 St – Straßenablauf 500 x 500 mm nach DIN 4052 mit Aufsatz D 400 und Schlammeimer
+Pos. 4.1.40 – 240 m – Hochbord 15/30 aufnehmen und neu setzen; ich brauche nur den Preis für Ersatzsteine bei Bruch
+
+Frei Baustelle, Tabelle anbei, Bindefrist {-108}. Bis {-142} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_angebot"
+day = -146
+time = "13:50"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Straßenabläufe und Ersatzborde – Regenwasserkanal Schulweg"
+reply_to = "p5_anfrage"
+body = """Hallo Herr Doe,
+
+gern, Tabelle anbei, frei Baustelle Norderbek, 3 % Skonto.
+
+Straßenablauf 309,00 EUR komplett: Betonteile für Nassschlamm, Aufsatz Pultform D 400, verzinkter Eimer. Gegenüber Itzehoe sind das 7 EUR mehr, der Guss ist im Frühjahr teurer geworden, die Betonteile kaum. Wenn Trockenschlamm reicht, sparen Sie 12 EUR je Stück; schauen Sie in den Langtext.
+
+Hochbord: Für Ersatz bei Bruch rechnen erfahrene Kollegen mit 10 %, also rund 24 m. Der Meter kostet in der Kleinmenge 12,10 EUR. Alte Borde haben oft ein anderes Maß als die heutigen 15/30; messen Sie vor Ort nach, sonst passt der Anschluss nicht. Zur Not haben wir gebrauchte auf dem Platz liegen.
+
+Gültig bis {-108}."""
+attach = ["sheet:p5"]
+
+[[mail]]
+id = "p5_absage"
+day = -111
+time = "09:45"
+from = "us"
+to = "baust"
+subject = "AW: Preisanfrage – Straßenabläufe und Ersatzborde – Regenwasserkanal Schulweg"
+reply_to = "p5_angebot"
+body = """Guten Tag Herr Dierks,
+
+der Schulweg ist nicht an uns gegangen, Rang 4. Diesmal lag es an Verbau und Wasserhaltung, nicht an den Stoffpreisen. Danke fürs Angebot.
+
+Viele Grüße"""
+
+# ------------------------------------------------------------------ P6 Radweg K 22
+
+[[sheet]]
+key = "p6"
+file = "Preisanfrage_Saatgut_Sperrpfosten_Radweg_K22.xlsx"
+items = """
+3.3.20 | 3600 m² | Rasenansaat | 0,11 | RSM 7.1.2 Landschaftsrasen Standard mit Kräutern, Sack 10 kg | nein | 72 kg bei 20 g/m², 8 Säcke zu 49,50; auf m² umgerechnet
+5.1.40 | 24 St | Sperrpfosten und Leitpfosten | 118,00 | Sperrpfosten Stahl 70 x 70 mm, umlegbar, rot-weiß reflektierend, Bodenhülse | nein | Leitpfosten Kunststoff 14,80 je St, Aufteilung nach Angabe
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "3 % 14 Tage, 30 Tage netto", valid_until = "{-50}" }
+
+[[mail]]
+id = "p6_anfrage"
+day = -92
+time = "08:10"
+from = "us"
+to = "baust"
+subject = "Preisanfrage – Saatgut und Sperrpfosten – Radweg K 22, Abschnitt Hemdingen"
+body = """Guten Tag Herr Dierks,
+
+Radweg an der K 22 bei Hemdingen (LBSW-W-33-0719), Abgabe {-80}. Viel Baustoff ist nicht drin, aber zwei Dinge:
+
+Pos. 3.3.20 – 3600 m² – Rasenansaat mit RSM 7.1.2, 20 g/m² (nur das Saatgut)
+Pos. 5.1.40 – 24 St – Sperrpfosten aus Stahl, umlegbar, rot-weiß reflektierend, oder Leitpfosten nach Angabe
+
+Frei Baustelle, Tabelle anbei, Bindefrist {-50}. Bis {-86} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p6:blank"]
+
+[[mail]]
+id = "p6_angebot"
+day = -91
+time = "11:30"
+from = "baust"
+to = "us"
+subject = "AW: Preisanfrage – Saatgut und Sperrpfosten – Radweg K 22, Abschnitt Hemdingen"
+reply_to = "p6_anfrage"
+body = """Hallo Herr Doe,
+
+Hemdingen, das ist ja fast Nachbarschaft. Tabelle anbei.
+
+Saatgut: Ihre Tabelle will einen Preis je m², wir verkaufen nach Säcken. 3.600 m² mal 20 g sind 72 kg, also 8 Säcke zu 10 kg, je 49,50 EUR, zusammen 396,00 EUR. Das sind 0,11 EUR/m², so steht es drin. Nehmen Sie lieber 9 Säcke, an Böschungen geht immer etwas daneben.
+
+Sperrpfosten 118,00 EUR mit Bodenhülse und Dreikantschloss. „Oder Leitpfosten nach Angabe“ ist eine unschöne Position: Der Leitpfosten kostet 14,80 EUR. Wenn der Landesbetrieb am Ende 20 Leitpfosten und 4 Sperrpfosten will, haben Sie mit 118 zu teuer gerechnet, im umgekehrten Fall mit einem Mischpreis zu billig. Ich würde das fragen.
+
+Was ich in Ihrer Anfrage vermisse: Geotextil. Bei den Böden an der K 22 brauchen Sie das früher oder später, wir haben GRK 3 und GRK 4 immer am Lager, sagen Sie einfach Bescheid."""
+attach = ["sheet:p6"]
+
+[[mail]]
+id = "p6_geotextil"
+day = -19
+time = "08:05"
+from = "us"
+to = "baust"
+cc = ["us.albers"]
+subject = "Radweg K 22 – eilt: Geotextil GRK 3, rund 620 m², Preis heute"
+body = """Guten Tag Herr Dierks,
+
+Sie hatten recht mit dem Geotextil. An der K 22 ist zwischen Bau-km 0+850 und 1+020 ein Bodenaustausch angeordnet, Kiessand auf Geotextil GRK 3. Ich brauche 620 m² verlegte Fläche, mit Überlappung also entsprechend mehr.
+
+Was kostet das frei Baustelle, und wann können Sie liefern? Ich muss den Nachtrag morgen einreichen, die Kolonne fängt übermorgen an. Den Auftrag haben wir seit {-52}, Herr Albers ist vor Ort.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p6_geotextil_aw"
+day = -19
+time = "09:18"
+from = "baust"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Radweg K 22 – eilt: Geotextil GRK 3, rund 620 m², Preis heute"
+reply_to = "p6_geotextil"
+body = """Hallo Herr Doe,
+
+ich sage jetzt nicht, dass ich es gesagt habe. Und Glückwunsch noch zum Auftrag!
+
+GRK 3, Vlies, Rolle 2 x 50 m, also 100 m² je Rolle. Für 620 m² verlegt brauchen Sie bei 30 cm Überlappung 7 Rollen, 700 m². Sie haben Glück: Das Vlies ist gerade in unserer Herbstaktion, 0,84 EUR/m² statt 0,92. Macht 588,00 EUR netto für 7 Rollen, frei Baustelle, weil unser Wagen morgen ohnehin nach Barmstedt fährt und in Hemdingen vorbeikommt. Anlieferung morgen bis 10 Uhr an Ihrer Lagerfläche, wenn Herr Albers mir bis heute 15 Uhr den Abruf schickt.
+
+Falls der Untergrund wirklich so weich ist, wie man hört: GRK 4 in 4 m Breite, 1,34 EUR/m², weniger Stöße und robuster beim Überschütten. Angeordnet ist aber GRK 3, also nur als Hinweis."""
+
+[[mail]]
+id = "p6_geotextil_abruf"
+day = -19
+time = "11:02"
+from = "us.albers"
+to = "baust"
+cc = ["us"]
+subject = "AW: Radweg K 22 – eilt: Geotextil GRK 3, rund 620 m², Preis heute"
+reply_to = "p6_geotextil_aw"
+body = """Hallo Herr Dierks,
+
+hiermit der Abruf: 7 Rollen Geotextil GRK 3, 2 x 50 m, zu 0,84 EUR/m², 588,00 EUR netto frei Baustelle. Lieferung morgen bis 10 Uhr an die Lagerfläche Hof bei Bau-km 0+700, Zufahrt über die Feldzufahrt, ich bin ab 6:30 Uhr da. Lieferschein bitte mit „K 22 Nachtrag Bodenaustausch“, das brauche ich für die Abrechnung getrennt. GRK 3 bleibt, so ist es angeordnet.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ ohne Anfrage
+
+[[mail]]
+id = "bonus"
+day = -3
+time = "16:42"
+from = "baust"
+to = "us"
+subject = "Ihr Jahresbonus, die Preise ab Januar und ein neuer Kollege"
+body = """Hallo Herr Doe,
+
+den Rundbrief zur Preisanpassung haben Sie sicher bekommen; ich schreibe Ihnen lieber noch persönlich, was das für Sie heißt.
+
+Preise: Pflaster und Borde gehen zum 1. Januar um rund 4 % hoch, Guss um gut 6 %. Für Ihre laufenden Baustellen ändert sich nichts. Für alles, was Sie jetzt kalkulieren und im Frühjahr bauen, mache ich Ihnen Objektpreise, die bis zur Ausführung fest sind; schicken Sie mir einfach die Positionen, auch wenn es nur ein paar Borde sind.
+
+Jahresbonus: Sie stehen in diesem Jahr bei 38.400 EUR Umsatz mit uns. Ab 40.000 EUR gibt es 2 % Rückvergütung auf alles, darunter 1 %. Es fehlen also 1.600 EUR. Wenn Sie ohnehin noch Geotextil, Schachtringe oder Winterbaustoffe brauchen, wäre jetzt der Moment.
+
+Neu im Team: Ab dem 1. Dezember sitzt Frau Petersen bei uns im Innendienst Tiefbau und kümmert sich um Abrufe und Liefertermine, Tel. +49 4101 5550 514. Preise und Angebote bleiben bei mir.
+
+Und zwischen den Jahren: Lager Pinneberg offen bis 23. Dezember mittags, wieder ab 4. Januar."""

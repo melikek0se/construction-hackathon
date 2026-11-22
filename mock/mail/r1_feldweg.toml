@@ -1,0 +1,252 @@
+# R1: a small job of the Wasserverband whose whole story lies in the last 13 days: request, a question, our bid,
+# the award (equal to the bid), the start date.
+
+[[lv]]
+key = "lv"
+file = "LV_Feldweg_Hausanschluesse_Schieberkreuz"
+format = "d83"
+client = "wvg"
+name = "Hausanschlüsse und Schieberkreuz Feldweg"
+project = "Erneuerung Trinkwasser-Hausanschlüsse und Schieberkreuz Feldweg, Brande"
+number = "WVG-N-2644"
+remarks = """Vorbemerkungen zur Angebotsanfrage WVG-N-2644
+Maßnahme: Erneuerung von 14 Trinkwasser-Hausanschlüssen und des Schieberkreuzes an der Einmündung Feldweg / Dorfstraße in Brande-Hörnerkirchen.
+Vergabeart: Freihändige Vergabe nach VOB/A, Angebotsanfrage an drei Firmen.
+Angebotsfrist: {-8}, 12:00 Uhr
+Bindefrist: {+20}
+Ausführungsbeginn: {+12}
+Fertigstellung: {+47}
+Die Versorgungsleitung im Feldweg (PVC DN 150, Baujahr 1974) bleibt in Betrieb. Die Hausanschlüsse aus Stahl und PE-weich werden durch PE 100 RC da 40 ersetzt, Überdeckung 1,30 m.
+Das Schieberkreuz wird mit drei Schiebern DN 150 und einem Schieber DN 100 erneuert, dazu ein Unterflurhydrant DN 80.
+Versorgungsunterbrechungen sind je Anschluss auf höchstens 4 Stunden zu begrenzen und den Anliegern 3 Werktage vorher schriftlich anzukündigen. Absperrungen im Netz nimmt nur der Netzmeister des AG vor.
+Der Feldweg ist eine Anliegerstraße mit Asphaltfahrbahn 4,50 m und einseitigem Gehweg aus Betonpflaster. Die Zufahrt für Anlieger, Müllabfuhr und Rettungsdienst ist zu gewährleisten.
+Ausführung nach DVGW W 400-2 und DIN EN 805. Der AN muss nach DVGW GW 301 mindestens in der Gruppe W3 zertifiziert sein.
+Ein Baugrundgutachten liegt nicht vor. Nach den Erfahrungen des AG stehen Sande und Geschiebelehm an, Grundwasser tiefer als 2,00 m.
+Abrechnung nach Aufmaß, Vertragsgrundlage VOB/B."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Baustelleneinrichtung und Verkehrssicherung
+1.1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle für sämtliche Leistungen einrichten, vorhalten und räumen, einschließlich Lagerfläche, Bauwagen und sanitären Einrichtungen.
+1.1.20 | 1 psch | Verkehrssicherung Anliegerstraße | Verkehrssicherung nach RSA 21 für Arbeiten in der Anliegerstraße mit abschnittsweiser halbseitiger Sperrung und Sicherung des Gehwegs aufbauen, für die Bauzeit vorhalten, umsetzen und abbauen, einschließlich verkehrsrechtlicher Anordnung.
+1.1.30 | 6 St | Suchschachtung | Suchschachtung in Handarbeit zum Feststellen der Lage von Leitungen und Kabeln, bis 1,50 m Tiefe und 1,5 m3 je Stück, wieder verfüllen.
+# 2 | Erdarbeiten
+# 2.1 | Aufbruch und Rohrgraben
+2.1.10 | 96 m2 | Asphaltbefestigung aufbrechen | Asphaltbefestigung der Fahrbahn bis 14 cm Dicke einschließlich Schneiden der Kanten aufbrechen, laden und verwerten.
+2.1.20 | 142 m2 | Betonpflaster im Gehweg aufnehmen | Betonpflaster 8 cm im Gehweg aufnehmen, reinigen und für den Wiedereinbau seitlich lagern, Bettung entsorgen.
+2.1.30 | 268 m3 | Boden für Rohrgräben und Baugruben ausheben | Boden für Rohrgräben der Hausanschlüsse und für die Baugrube des Schieberkreuzes profilgerecht ausheben, Tiefe bis 1,75 m, seitlich lagern oder laden. // Verbau nach DIN 4124 und Wasserhaltung sind ohne gesonderte Vergütung einzurechnen.
+2.1.40 | 170 t | Überschüssigen Boden entsorgen | Überschüssigen und nicht wieder einbaufähigen Boden abfahren und verwerten, Zuordnung bis Z 1.2, einschließlich Deklaration. Abrechnung nach m3 Aushubprofil.
+2.1.50 | 105 m3 | Füllsand für Leitungszone liefern und einbauen | Leitungszone mit Füllsand 0/2 herstellen und in Lagen verdichten, Material liefern.
+2.1.60 | 163 m3 | Gräben mit Aushub verfüllen | Rohrgräben und Baugruben oberhalb der Leitungszone mit gelagertem Aushub lagenweise verfüllen und verdichten, Verdichtungsgrad DPr mindestens 97 Prozent.
+2.1.70 | 40 m3 | Bodenaustausch | Nicht verdichtungsfähigen Aushub zusätzlich entsorgen und durch gelieferten Füllsand ersetzen, nur auf Anordnung des AG. | E
+# 3 | Rohrleitungsbau
+# 3.1 | Hausanschlüsse
+3.1.10 | 14 St | Hausanschluss PE 100 RC da 40 bis 8 m | Trinkwasser-Hausanschluss aus PE 100 RC da 40, SDR 11, Länge bis 8 m, mit Anbohrarmatur mit Betriebsabsperrung auf PVC DN 150, Einbaugarnitur und Straßenkappe liefern und einbauen, Rohr auf Sandbettung verlegen, Trassenwarnband.
+3.1.20 | 38 m | Mehrlänge Hausanschluss | Mehrlänge über 8 m zu Position 3.1.10, Rohr da 40 liefern und verlegen.
+3.1.30 | 14 St | Hauseinführung und Umbinden im Gebäude | Hauseinführung durch die Kellerwand mit Kernbohrung und Ringraumdichtung herstellen, neue Leitung an die vorhandene Wasserzähleranlage anbinden, spülen und in Betrieb nehmen.
+3.1.40 | 14 St | Alten Hausanschluss trennen | Alten Hausanschluss an der Versorgungsleitung abtrennen, Anbohrstelle mit Reparaturschelle verschließen.
+# 3.2 | Schieberkreuz
+3.2.10 | 3 St | Absperrschieber DN 150, PN 16 | Weichdichtender Absperrschieber DN 150 nach DIN EN 1074, PN 16, Fabrikat Hanse Armaturen Typ ES-W, mit Einbaugarnitur, Tragplatte und Straßenkappe liefern und einbauen.
+3.2.20 | 1 St | Absperrschieber wie Position 3.2.10, jedoch DN 100 | Absperrschieber wie Position 3.2.10, jedoch DN 100.
+3.2.30 | 1 St | Kreuzstück DN 150 mit Formstücken | Kreuzstück aus duktilem Guss DN 150/150 mit Reduzierung auf DN 100, Flanschverbindungen, Dichtungen und Schrauben A4 liefern und einbauen, einschließlich Widerlager aus Beton.
+3.2.40 | 12 m | Einbindung PE 100 RC da 180 | Einbindung in die vorhandenen Leitungen mit PE 100 RC da 180, SDR 11, und zugfesten Übergangsstücken auf PVC DN 150 herstellen.
+3.2.50 | 1 St | Unterflurhydrant DN 80 | Unterflurhydrant DN 80 nach DIN EN 14339, Rohrdeckung 1,25 m, mit Fußbogen, Straßenkappe und Hinweisschild liefern und einbauen.
+3.2.60 | 1 psch | Druckprüfung, Desinfektion und Spülung | Druckprüfung nach DVGW W 400-2, Desinfektion und Spülung der neuen Leitungsteile, bakteriologische Probe durch ein zugelassenes Labor, Dokumentation.
+# 4 | Oberflächen
+# 4.1 | Wiederherstellung
+4.1.10 | 96 m2 | Asphaltbefestigung wiederherstellen | Asphaltbefestigung der Fahrbahn wiederherstellen: Asphalttragschicht AC 22 T N 10 cm, Deckschicht AC 11 D N 4 cm, Rückschnitt 15 cm, Fugen mit Fugenband.
+4.1.20 | 142 m2 | Betonpflaster wieder verlegen | Gelagertes Betonpflaster im Gehweg auf neuer Bettung 4 cm wieder verlegen, abrütteln und einsanden, Fehlmengen bis 5 Prozent liefern.
+4.1.30 | 110 m2 | Schottertragschicht ergänzen | Schottertragschicht 0/45 unter Fahrbahn und Gehweg in einer Dicke von 20 cm ergänzen und verdichten.
+# 5 | Stundenlohn
+# 5.1 | Stundenlohnarbeiten
+5.1.10 | 30 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter nach Anordnung des AG.
+"""
+
+[[lv]]
+key = "angebot"
+base = "lv"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_Feldweg"
+prices = """
+1.1.10 | 4800,00
+1.1.20 | 2350,00
+1.1.30 | 185,00
+2.1.10 | 14,50
+2.1.20 | 9,80
+2.1.30 | 28,50
+2.1.40 | 31,00
+2.1.50 | 34,00
+2.1.60 | 12,50
+2.1.70 | 46,00
+3.1.10 | 845,00
+3.1.20 | 24,00
+3.1.30 | 310,00
+3.1.40 | 135,00
+3.2.10 | 895,00
+3.2.20 | 610,00
+3.2.30 | 1480,00
+3.2.40 | 96,00
+3.2.50 | 1240,00
+3.2.60 | 1650,00
+4.1.10 | 68,00
+4.1.20 | 32,00
+4.1.30 | 11,50
+5.1.10 | 58,00
+"""
+
+[[lv]]
+key = "auftrag"
+base = "angebot"
+phase = "86"
+file = "Auftrags-LV_Feldweg"
+
+[[doc]]
+key = "auftragsschreiben"
+file = "Auftragsschreiben_WVG-N-2644.pdf"
+title = "Auftragsschreiben"
+text = """Vergabe-Nr.: WVG-N-2644
+Maßnahme: Erneuerung Trinkwasser-Hausanschlüsse und Schieberkreuz Feldweg, Brande
+Auftragnehmer: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+
+Sehr geehrter Herr Doe,
+
+auf Ihr Angebot vom {-8} erteilen wir Ihnen den Auftrag für die oben genannte Maßnahme.
+
+Auftragssumme netto: 71.425,10 EUR
+Umsatzsteuer 19 Prozent: 13.570,77 EUR
+Auftragssumme brutto: 84.995,87 EUR
+
+Vertragsbestandteile sind in dieser Reihenfolge: dieses Auftragsschreiben, das Auftrags-Leistungsverzeichnis (unverändert gegenüber Ihrem Angebot), die Vorbemerkungen der Angebotsanfrage einschließlich unserer Antwort auf Ihre Rückfrage zu Position 2.1.40, die VOB/B und die VOB/C.
+
+Ausführungsbeginn: {+12}
+Fertigstellung: {+47}
+Bauleitung des AG: Petra Lührs, Technik / Netzbau
+Netzmeister: wird zur Bauanlaufbesprechung benannt
+
+Die Bedarfsposition 2.1.70 ist nicht beauftragt; sie wird nur auf schriftliche Anordnung ausgeführt.
+Bitte senden Sie uns die beigefügte Zweitschrift unterschrieben zurück und reichen Sie vor Baubeginn die Freistellungsbescheinigung und den Nachweis der Betriebshaftpflichtversicherung ein.
+
+Brande-Hörnerkirchen, {-3}
+Wasserverband Geestrand"""
+
+[[mail]]
+id = "anfrage"
+day = -13
+time = "08:12"
+from = "wvg.luehrs"
+to = "us"
+subject = "Angebotsanfrage WVG-N-2644: Hausanschlüsse und Schieberkreuz Feldweg, Brande"
+body = """Hallo Herr Doe,
+
+wir müssen im Feldweg in Brande noch vor dem Winter die Hausanschlüsse erneuern, nach dem dritten Rohrbruch in diesem Jahr will der Vorstand nicht länger warten. Bei der Gelegenheit kommt das Schieberkreuz an der Dorfstraße mit raus, zwei der vier Schieber lassen sich nicht mehr schließen.
+
+Wegen der Eile vergeben wir freihändig und fragen drei Firmen an. Das LV bekommen Sie als D83 im Anhang, 14 Anschlüsse, ein Schieberkreuz, ein Hydrant.
+
+Angebotsfrist: {-8}, 12:00 Uhr, per Mail an mich, gern als D84
+Baubeginn: {+12}
+Fertig bis: {+47}
+
+Die Vergabe geht schnell, ich will in der Woche nach der Abgabe beauftragen. Rückfragen bitte kurz per Mail, ich bin viel im Netz unterwegs."""
+attach = ["lv:lv"]
+
+[[mail]]
+id = "frage"
+day = -11
+time = "09:30"
+from = "us.doe"
+to = "wvg.luehrs"
+subject = "AW: Angebotsanfrage WVG-N-2644: Hausanschlüsse und Schieberkreuz Feldweg, Brande"
+reply_to = "anfrage"
+body = """Hallo Frau Lührs,
+
+danke für die Anfrage, wir bieten an. Eine Rückfrage zu Position 2.1.40 (Boden entsorgen):
+
+Die Menge steht mit 170 t im LV, im Langtext heißt es aber "Abrechnung nach m3 Aushubprofil". Was gilt: Abrechnung nach Wiegescheinen in Tonnen oder nach Profil in Kubikmetern? Bei 170 Einheiten macht das im Preis fast den Faktor zwei aus.
+
+Viele Grüße
+John Doe"""
+
+[[mail]]
+id = "antwort"
+day = -10
+time = "10:15"
+from = "wvg.luehrs"
+to = "us"
+subject = "AW: Angebotsanfrage WVG-N-2644: Hausanschlüsse und Schieberkreuz Feldweg, Brande"
+reply_to = "frage"
+body = """Hallo Herr Doe,
+
+gut gesehen, der Satz im Langtext ist aus einem alten LV stehen geblieben. Es gilt die Einheit: Position 2.1.40 wird in Tonnen nach den Wiegescheinen der Annahmestelle abgerechnet. Die 170 t habe ich aus rund 105 m³ Verdrängung durch Sand und Leitungen gerechnet.
+
+Die beiden anderen Firmen bekommen die Antwort auch. Ein neues LV verschicke ich deswegen nicht, die Frist bleibt beim {-8}."""
+
+[[mail]]
+id = "angebot"
+day = -8
+time = "11:20"
+from = "us.doe"
+to = "wvg.luehrs"
+cc = ["us"]
+subject = "Angebot WVG-N-2644: Hausanschlüsse und Schieberkreuz Feldweg, Brande"
+reply_to = "anfrage"
+quote = false
+body = """Hallo Frau Lührs,
+
+anbei unser Angebot für die Erneuerung der Hausanschlüsse und des Schieberkreuzes im Feldweg als D84.
+
+Angebotssumme netto: 71.425,10 €
+zuzüglich 19 % Umsatzsteuer: 13.570,77 €
+Angebotssumme brutto: 84.995,87 €
+
+Die Bedarfsposition 2.1.70 (Bodenaustausch, 46,00 €/m³) ist in der Summe nicht enthalten. Position 2.1.40 haben wir nach Ihrer Antwort in Tonnen nach Wiegeschein kalkuliert.
+
+Zwei Hinweise:
+- Die Schieber haben wir im verlangten Fabrikat angeboten, Lieferzeit derzeit zwei Wochen ab Bestellung. Mit Baubeginn {+12} passt das, wenn der Auftrag in der kommenden Woche kommt.
+- Wir würden mit einer Kolonne arbeiten und zwei Anschlüsse je Tag umbinden; die Ankündigungen an die Anlieger übernehmen wir.
+
+An das Angebot halten wir uns bis zum {+20} gebunden.
+
+Viele Grüße
+John Doe"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "auftrag"
+day = -3
+time = "13:40"
+from = "wvg.luehrs"
+to = "us"
+subject = "Auftrag WVG-N-2644: Hausanschlüsse und Schieberkreuz Feldweg, Brande"
+reply_to = "angebot"
+quote = false
+body = """Hallo Herr Doe,
+
+Ihr Angebot war das wirtschaftlichste der drei, der Vorstand hat gestern zugestimmt. Sie bekommen den Auftrag zu Ihrer Angebotssumme von 71.425,10 € netto (84.995,87 € brutto).
+
+Im Anhang:
+- das Auftragsschreiben (PDF), bitte die Zweitschrift unterschrieben zurück
+- das Auftrags-LV als D86, unverändert gegenüber Ihrem Angebot, alle Mengen und Einheitspreise wie angeboten
+
+Die Bedarfsposition 2.1.70 bleibt Bedarf und ist nicht beauftragt.
+
+Bitte bestellen Sie die Schieber gleich, damit wir den {+12} halten. Wegen des Termins für die Bauanlaufbesprechung melde ich mich noch."""
+attach = ["lv:auftrag", "doc:auftragsschreiben"]
+
+[[mail]]
+id = "baubeginn"
+day = -2
+time = "14:25"
+from = "wvg.luehrs"
+to = "us"
+cc = ["us.albers"]
+subject = "Feldweg Brande (WVG-N-2644): Baubeginn und Bauanlaufbesprechung"
+body = """Hallo Herr Doe,
+
+zum Baubeginn im Feldweg, Herr Albers ist in Kopie:
+
+Es bleibt beim {+12}. Die Bauanlaufbesprechung möchte ich am {+7} um 8:00 Uhr vor Ort machen, Treffpunkt an der Einmündung Dorfstraße. Unser Netzmeister ist dabei und zeigt, welche Schieber er für die Absperrung des Kreuzes zieht.
+
+Zwei Bitten vorab:
+- Die Anliegerschreiben für die ersten vier Anschlüsse (Feldweg 2 bis 8) bitte bis zur Besprechung im Entwurf mitbringen, wir setzen unser Logo dazu.
+- Das Schieberkreuz bitte nicht an einem Freitag: wenn beim Einbinden etwas schiefgeht, will ich nicht übers Wochenende das halbe Dorf ohne Wasser haben.
+
+Die verkehrsrechtliche Anordnung beantragen Sie; das Amt braucht dafür erfahrungsgemäß zwei Wochen, das wird also knapp."""

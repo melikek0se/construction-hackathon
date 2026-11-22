@@ -1,0 +1,137 @@
+# T2: Trinkwasserleitung DN 150 Geestweg–Dorfstraße (Wasserverband Geestrand). GAEB 90.
+
+[[lv]]
+key = "wasser"
+file = "LV_TWL_DN150_Geestweg_Dorfstrasse"
+format = "d83"
+client = "wvg"
+name = "Trinkwasserleitung DN 150 Geestweg"
+project = "Trinkwasserleitung DN 150 Geestweg–Dorfstraße"
+number = "WVG-2026-031"
+remarks = """Vorbemerkungen
+Der Wasserverband Geestrand erneuert die Trinkwasserleitung DN 150 im Geestweg von der Einmündung Dorfstraße bis zum Ortsausgang Richtung Bokel sowie die Stichleitung DN 100 in der Dorfstraße. Die vorhandene Leitung aus Asbestzement DN 150 wird außer Betrieb genommen. 28 Hausanschlüsse werden auf die neue Leitung umgebunden.
+Vergabe: Beschränkte Ausschreibung nach VOB/A, Vergabenummer WVG-2026-031.
+Angebotsfrist: {+8}, 11:00 Uhr
+Bieterfragen bis: {+4}
+Bindefrist: {+38}
+Ausführungsbeginn: {+60}
+Fertigstellung: {+150}
+Es gelten VOB/B und VOB/C, die DVGW-Arbeitsblätter W 400-1 bis W 400-3, GW 301 und W 291, die ZTV E-StB und die ZTV A-StB. Der Bieter muss die Zertifizierung nach DVGW GW 301, Gruppe W 3 oder höher, nachweisen. Schweißarbeiten an PE-Rohren nur durch Schweißer mit gültiger Prüfung nach DVGW GW 330.
+Trasse: 380 m in der Asphaltfahrbahn des Geestwegs, 150 m im gepflasterten Gehweg, 195 m im unbefestigten Seitenstreifen. Regelüberdeckung 1,30 m, Grabentiefe im Mittel 1,50 m.
+Baugrund: Nach Auskunft des Verbandes Sande und lehmige Sande. Ein Baugrundgutachten liegt nicht vor.
+Verfüllung: Die Wiederverfüllung der Rohrgräben erfolgt im gesamten Trassenverlauf ausschließlich mit Liefermaterial (Füllsand). Aushubboden darf nicht wieder eingebaut werden.
+Versorgung: Die Versorgung der Anlieger ist aufrechtzuerhalten. Unterbrechungen sind höchstens 4 Stunden je Tag zulässig und 3 Werktage vorher mit dem Verband abzustimmen und den Anliegern anzukündigen.
+Der Geestweg ist Schulbusstrecke. Die Arbeiten erfolgen unter halbseitiger Sperrung.
+Verjährungsfrist für Mängelansprüche 4 Jahre. Sicherheit für Mängelansprüche 3 v. H. der Abrechnungssumme.
+Abrechnung nach Aufmaß in der Rohrachse."""
+items = """
+# 1 | Baustelleneinrichtung und Vorarbeiten
+# 1.1 | Baustelleneinrichtung
+1.1.10 | 1 psch | Baustelle einrichten | Geräte, Unterkünfte, Sanitär- und Lagereinrichtungen auf die Baustelle bringen, aufstellen und für die Bauzeit vorhalten. Die Lagerfläche am Feuerwehrhaus Dorfstraße wird vom Verband gestellt.
+1.1.20 | 1 psch | Baustelle räumen | Baustelle von allen Geräten und Einrichtungen räumen, benutzte Flächen in den ursprünglichen Zustand versetzen.
+1.1.30 | 1 psch | Verkehrssicherung | Verkehrssicherung nach RSA 21 für die gesamte Bauzeit einschließlich Verkehrszeichenplan, verkehrsrechtlicher Anordnung, Lichtsignalanlage, Beschilderung und Wartung. Die Verkehrsführung wird nach Wahl des AG und der Verkehrsbehörde festgelegt; Umbauten und zusätzliche Bauphasen werden nicht gesondert vergütet.
+1.1.40 | 1 psch | Beweissicherung | Zustand der angrenzenden Einfriedungen, Zufahrten und Gebäude vor Baubeginn mit Fotos und Protokoll dokumentieren, 28 Grundstücke.
+1.1.50 | 8 St | Suchschachtung | Suchschachtung in Handschachtung zum Auffinden der vorhandenen Leitung und kreuzender Kabel, Tiefe bis 1,75 m, einschließlich Verfüllen und Verdichten.
+1.1.60 | 725 m | Trasse abstecken | Leitungstrasse nach Plan abstecken, Festpunkte sichern, Leitungsauskünfte der anderen Versorgungsträger einholen und die Fremdleitungen in der Trasse kennzeichnen.
+# 2 | Erdarbeiten
+# 2.1 | Aufbruch
+2.1.10 | 1100 m | Asphalt schneiden | Asphaltbefestigung geradlinig schneiden, Schnitttiefe bis 14 cm.
+2.1.20 | 420 m2 | Asphaltbefestigung aufbrechen | Asphaltbefestigung der Fahrbahn, Dicke bis 14 cm, aufbrechen, laden und verwerten, Verwertungsklasse A nach RuVA-StB. Aufbruchbreite 1,10 m.
+2.1.30 | 150 m2 | Betonpflaster aufnehmen | Betonsteinpflaster des Gehwegs, 20/10/8 cm, aufnehmen, reinigen und zur Wiederverwendung seitlich lagern. Bettung aufnehmen und abfahren.
+2.1.40 | 310 m2 | Oberboden abtragen | Oberboden im Seitenstreifen in einer Dicke von 20 cm abtragen und zur Wiederverwendung seitlich lagern.
+# 2.2 | Rohrgraben
+2.2.10 | 870 m3 | Rohrgraben ausheben | Boden für den Rohrgraben profilgerecht lösen und laden, Grabentiefe bis 1,75 m, Grabenbreite 0,80 m. Homogenbereiche und Bodenklasse sind nach Wahl des AN zu ermitteln. Erschwernisse durch kreuzende Leitungen und Hausanschlüsse sind einzurechnen.
+2.2.20 | 60 m3 | Handaushub | Wie Position 2.2.10, jedoch Aushub in Handschachtung im Bereich der Baumstandorte und der Gashochdruckleitung, einschließlich Wurzelschutz nach DIN 18920.
+2.2.30 | 930 m3 | Boden abfahren und entsorgen | Aushubboden laden, abfahren und entsorgen. Entsorgung einschl. aller Gebühren unabhängig von der Belastungsklasse, einschließlich Beprobung und Deklaration.
+2.2.40 | 230 m3 | Sandbettung und Leitungszone | Bettung 10 cm und Leitungszone bis 30 cm über Rohrscheitel aus steinfreiem Sand 0/2 liefern, einbauen und verdichten, nach DVGW W 400-2.
+2.2.50 | 640 m3 | Rohrgraben verfüllen | Rohrgraben oberhalb der Leitungszone mit seitlich gelagertem Aushubboden lagenweise verfüllen und verdichten, DPr mind. 97 v. H., unter Verkehrsflächen 100 v. H. im oberen Meter.
+2.2.60 | - m3 | Bodenaustausch | Nicht tragfähigen Boden unter der Grabensohle auf Anordnung zusätzlich ausheben, entsorgen und durch Kiessand 0/32 ersetzen.
+2.2.70 | 725 m | Trassenwarnband | Trassenwarnband aus Kunststoff, blau, Aufdruck Achtung Wasserleitung, 30 cm über dem Rohrscheitel verlegen.
+2.2.80 | 580 m | Grabensohle herstellen | Grabensohle steinfrei, eben und tragfähig herstellen und nachverdichten. Abrechnung nach m2 Sohlfläche.
+# 3 | Rohrleitungsbau
+# 3.1 | Rohre und Formstücke
+3.1.10 | 640 m | PE-Rohr da 180 SDR 11 liefern und verlegen | Druckrohr aus PE 100-RC da 180 x 16,4 mm, SDR 11, PN 16, mit Schutzmantel, Fabrikat Geestrohr Typ RC-Protect, für Trinkwasser mit DVGW-Zeichen, in Stangen von 12 m liefern, im Rohrgraben verlegen und durch Heizelementstumpfschweißen nach DVS 2207-1 verbinden. Schweißprotokolle sind zu führen.
+3.1.20 | 85 m | PE-Rohr da 110 SDR 11 liefern und verlegen | Druckrohr aus PE 100-RC da 110 x 10,0 mm, SDR 11, PN 16, für Trinkwasser mit DVGW-Zeichen oder gleichwertig, als Stichleitung Dorfstraße liefern, verlegen und verschweißen.
+3.1.30 | 14 St | Bogen da 180 | Bogen da 180, 11 bis 90 Grad, aus PE 100, SDR 11, als Zulage zum Rohr liefern und mit Heizwendelmuffen einschweißen.
+3.1.40 | 4 St | T-Stück da 180/110 | T-Stück da 180/110 aus PE 100, SDR 11, mit Heizwendelmuffen liefern und einschweißen.
+3.1.50 | 18 St | Vorschweißbund mit Flansch da 180 | Vorschweißbund da 180 mit Losflansch DN 150 PN 16, Stahl verzinkt und beschichtet, einschließlich Dichtung und Schrauben aus Edelstahl A2, liefern und montieren.
+3.1.60 | 2 St | Einbindung in vorhandene Leitung | Neue Leitung da 180 in die vorhandene Leitung DN 150 GG bzw. DN 200 PVC einbinden, Bestand trennen, Übergangsstücke und zugfeste Kupplungen liefern und einbauen. Arbeiten in der Sperrzeit nach Abstimmung mit dem Verband.
+3.1.70 | 120 m | Altleitung DN 150 AZ ausbauen | Vorhandene Leitung aus Asbestzement DN 150 im Kreuzungsbereich mit der neuen Trasse ausbauen, verpacken und entsorgen. Arbeiten nach TRGS 519 mit Sachkundenachweis, einschließlich Anzeige bei der Behörde.
+3.1.80 | 180 m | Grabenlose Verlegung da 180 | Rohrleitung da 180 im Spülbohrverfahren (HDD) verlegen, einschließlich Start- und Zielgruben, Bohrspülung und deren Entsorgung sowie Einziehprotokoll. Ausführung nur auf Anordnung im Bereich der Baumreihe. | E
+# 3.2 | Armaturen
+3.2.10 | 5 St | Absperrschieber DN 150 | Keilflachschieber DN 150 PN 16, weichdichtend, nach DIN EN 1171, Gehäuse aus duktilem Gusseisen, innen und außen epoxidbeschichtet, mit Flanschen, einschließlich Einbaugarnitur für Rohrdeckung 1,30 m, liefern und einbauen.
+3.2.20 | 3 St | Absperrschieber DN 100 | Keilflachschieber DN 100 PN 16, weichdichtend, sonst wie Position 3.2.10.
+3.2.30 | 4 St | Unterflurhydrant DN 80 | Unterflurhydrant DN 80 PN 16 nach DIN EN 14339, Rohrdeckung 1,25 m, mit doppelter Absperrung und selbsttätiger Entleerung, einschließlich Fußkrümmer, Sickerpackung und Betonwiderlager, liefern und einbauen.
+3.2.40 | 4 St | Überflurhydrant DN 80 | Wie Position 3.2.30, jedoch Überflurhydrant DN 80 nach DIN EN 14384 mit Sollbruchstelle, zwei B-Abgänge, Farbe rot. | A
+3.2.50 | 12 St | Straßenkappe mit Tragplatte | Straßenkappe für Schieber bzw. Hydranten nach DIN 4056 bzw. DIN 4055 mit Tragplatte aus Beton liefern und höhengerecht setzen.
+3.2.60 | 12 St | Hinweisschild | Hinweisschild nach DIN 4067 bzw. DIN 4066 mit Pfosten oder an vorhandener Einfriedung liefern, beschriften und anbringen.
+# 4 | Hausanschlüsse
+# 4.1 | Hausanschlüsse umbinden
+4.1.10 | 28 St | Anbohrarmatur da 180 | Ventilanbohrarmatur für PE-Rohr da 180 mit Betriebsabsperrung, Abgang da 40, einschließlich Einbaugarnitur und Straßenkappe, liefern, aufschweißen und unter Druck anbohren.
+4.1.20 | 310 m | Anschlussleitung PE da 40 | Anschlussleitung aus PE 100-RC da 40 x 3,7 mm, SDR 11, als Ringbund liefern und im Rohrgraben in Sandbettung verlegen.
+4.1.30 | 28 St | Hausanschluss umbinden | Vorhandene Anschlussleitung da 32 bis da 50 aus PE oder Stahl an der Grundstücksgrenze trennen und mit Klemmverbinder an die neue Anschlussleitung anschließen, alte Anbohrstelle verschließen.
+4.1.40 | 310 m | Rohrgraben für Anschlussleitung | Rohrgraben für Anschlussleitungen, Tiefe bis 1,50 m, Breite 0,40 m, ausheben, nach dem Verlegen verfüllen und verdichten, einschließlich Aufbruch und Wiederherstellen der Oberfläche in Gehweg und Zufahrt.
+4.1.50 | 6 St | Wasserzählerschacht versetzen | Wasserzählerschacht aus Kunststoff, DN 1000, mit Schachtabdeckung Klasse B 125, an der Grundstücksgrenze liefern und versetzen, einschließlich Zähleranlage umsetzen. Ausführung nur auf Anordnung. | E
+4.1.60 | 1 psch | Notversorgung | Notwasserversorgung der Anlieger für die gesamte Bauzeit mit oberirdisch verlegten Leitungen und Standrohren, einschließlich Desinfektion, Frostschutz und aller Umbauten, Umfang nach Erfordernis.
+# 5 | Prüfungen
+# 5.1 | Druckprüfung und Desinfektion
+5.1.10 | 2 St | Druckprüfung | Druckprüfung der Leitung nach DVGW W 400-2 im Kontraktionsverfahren, Prüfdruck 15 bar, je Prüfabschnitt einschließlich Prüfeinrichtung, Füllwasser und Protokoll.
+5.1.20 | 725 m | Spülen und Desinfizieren | Rohrleitung nach DVGW W 291 spülen und desinfizieren, Desinfektionsmittel neutralisieren und das Spülwasser schadlos ableiten.
+5.1.30 | 4 St | Wasserprobe | Wasserprobe durch ein akkreditiertes Labor entnehmen und mikrobiologisch nach Trinkwasserverordnung untersuchen, je Probe einschließlich Befund.
+5.1.40 | 725 m | Leitung einmessen | Leitung, Armaturen und Anschlüsse am offenen Graben lage- und höhenmäßig einmessen, Daten im Format des Verbandes (Shape, ETRS89) übergeben.
+5.1.50 | 1 psch | Bestandsdokumentation | Schweißprotokolle, Druckprüfprotokolle, Befunde, Werkszeugnisse 3.1 und Einmessung zusammenstellen und 2-fach übergeben.
+# 6 | Oberflächen und Stundenlohn
+# 6.1 | Wiederherstellung der Oberflächen
+6.1.10 | 420 m2 | Schottertragschicht 0/45 | Schottertragschicht 0/45 nach TL SoB-StB liefern und einbauen, Dicke 30 cm, Ev2 mind. 120 MN/m2.
+6.1.20 | 420 m2 | Asphalttragschicht AC 22 T N, 10 cm | Asphalttragschicht AC 22 T N, Bindemittel 70/100, Einbaudicke 10 cm, im Handeinbau oder mit Kleinfertiger herstellen.
+6.1.30 | 530 m2 | Asphaltdeckschicht AC 8 D N, 4 cm | Asphaltdeckschicht AC 8 D N, Einbaudicke 4 cm, einschließlich Rückschnitt der alten Deckschicht um 15 cm je Seite, Ansprühen und Abstreuen.
+6.1.40 | 1100 m | Naht herstellen | Naht zur vorhandenen Befestigung mit Bitumenfugenband herstellen.
+6.1.50 | 150 m2 | Betonpflaster aufnehmen und lagern | Betonsteinpflaster 20/10/8 cm im Gehweg aufnehmen, reinigen und zur Wiederverwendung lagern.
+6.1.60 | 150 m2 | Betonpflaster wieder verlegen | Gelagertes Betonsteinpflaster auf 4 cm Bettung aus Brechsand-Splitt 0/5 verlegen, abrütteln und einschlämmen, einschließlich Tragschicht 0/32, d = 20 cm. Fehlende Steine bis 10 v. H. liefern.
+6.1.70 | 310 m2 | Oberboden andecken und ansäen | Gelagerten Oberboden 20 cm dick andecken, Feinplanum herstellen und mit Regel-Saatgut-Mischung RSM 7.1.2 ansäen, 20 g/m2.
+# 6.2 | Stundenlohnarbeiten
+6.2.10 | 40 h | Facharbeiter | Stundenlohnarbeiten Rohrleitungsbauer oder Facharbeiter auf Anordnung des Verbandes.
+6.2.20 | 20 h | Minibagger mit Bediener | Minibagger 5 bis 8 t mit Bediener einschließlich Betriebsstoffen auf Anordnung.
+6.2.30 | 20 h | Lkw mit Fahrer | Lkw 3-Achser mit Fahrer einschließlich Betriebsstoffen auf Anordnung.
+"""
+
+[[mail]]
+id = "einladung"
+day = -6
+time = "07:58"
+from = "wvg.luehrs"
+to = "us"
+subject = "Ausschreibung Trinkwasserleitung DN 150 Geestweg–Dorfstraße (WVG-2026-031)"
+body = """Moin Herr Doe,
+
+wir erneuern im Frühjahr die alte AZ-Leitung im Geestweg, rund 640 m da 180 und ein Stück da 110 in die Dorfstraße, dazu 28 Hausanschlüsse umbinden. Nach der Hauptstraße in Brande würde ich mich freuen, wenn Sie wieder mit anbieten. Wir haben fünf Firmen angeschrieben.
+
+Das LV hängt als GAEB-Datei an (D83, unser Programm kann leider nichts Neueres). Pläne und die Leitungsauskünfte schicke ich Ihnen gern als Download-Link, sagen Sie Bescheid.
+
+Die Eckdaten:
+Angebotsfrist: {+8|long}, 11:00 Uhr, per Mail an mich reicht
+Fragen bitte bis {+4}
+Bindefrist: {+38}
+Baubeginn frühestens {+60}, fertig müssen wir bis {+150} sein, danach fängt der Kreis mit der Deckensanierung an
+
+Zwei Dinge vorab, weil sie beim letzten Mal Fragen gegeben haben: Das Rohr stellen wir diesmal nicht bei, das ist komplett Ihre Lieferung. Und die Schieber bitte mit Einbaugarnitur anbieten, so wie es im Text steht.
+
+Wenn Sie sich die Trasse ansehen wollen: Ich bin dienstags und donnerstags vormittags draußen, einfach kurz anrufen.
+"""
+attach = ["lv:wasser"]
+
+[[mail]]
+id = "bestandsplan"
+day = -2
+time = "16:34"
+from = "wvg.luehrs"
+to = "us"
+subject = "Geestweg: Bestandsplan korrigiert, Menge Pos. 3.1.20"
+body = """Moin Herr Doe,
+
+kurze Nachricht an alle Bieter zum Geestweg: Unser Bestandsplan der Dorfstraße war falsch, der alte Schieberknoten sitzt nicht an der Einmündung, sondern vor Haus Nr. 14. Die Stichleitung da 110 wird dadurch länger, etwa 125 m statt der 85 m, die in Position 3.1.20 stehen. Den korrigierten Plan haben Sie über den Download-Link.
+
+Ein neues LV schicke ich deswegen nicht mehr raus, dafür ist die Zeit zu knapp. Bitte lassen Sie die 85 m im LV stehen und bieten Sie den Einheitspreis so an, abgerechnet wird nach Aufmaß. Graben, Sand und Oberfläche laufen ja ohnehin über die Mengen der anderen Positionen mit.
+
+Die Angebotsfrist {+8} bleibt.
+"""

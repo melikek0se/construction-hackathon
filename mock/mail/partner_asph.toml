@@ -1,0 +1,544 @@
+# Asphaltbau Holsten GmbH (asph), Serkan Yilmaz: the history with our estimator. Du with Doe, reliable, fully
+# booked in summer, fills the sheet, prices firm until the end of the year, wants a minimum quantity per day
+# and a closed road for laying. Did P1, P2, P6; quoted P3 (our bid too high on asphalt) and P5.
+
+[[sheet]]
+key = "p1"
+file = "Anfrage_Asphaltarbeiten_Muehlenstrasse.xlsx"
+items = """
+4.1.30 | 2150 m² | Asphalttragschicht AC 22 T S, 10 cm | 22,40 |  |  | Einbau in 4 Abschnitten, je Einsatz mind. 400 m²
+4.1.40 | 2480 m² | Asphaltdeckschicht AC 11 D S, 4 cm | 14,10 |  |  | in einem Zug, nur unter Vollsperrung
+4.1.50 | 1240 m | Nähte und Anschlüsse herstellen | 3,20 |  |  | mit Fugenband
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 14 Tage, 30 Tage netto", valid_until = "{-326}" }
+
+[[sheet]]
+key = "p2"
+file = "Anfrage_Asphaltarbeiten_Hauptstrasse_Brande.xlsx"
+items = """
+2.2.20 | 1480 m2 | Asphalttragschicht AC 22 T N, 10 cm | 21,90 |  |  | höchstens 3 Einsätze, je Einsatz mind. 400 m2
+2.2.30 | 1480 m2 | Asphaltdeckschicht AC 8 D N, 3 cm | 11,90 |  |  | in einem Zug am Ende
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 14 Tage, 30 Tage netto", valid_until = "{-326}" }
+
+[[sheet]]
+key = "p3"
+file = "Anfrage_Asphaltarbeiten_Gewerbegebiet_Sued.xlsx"
+items = """
+4.2.10 | 8600 m² | Asphalttragschicht AC 22 T S, 10 cm | 23,10 |  |  | Tagesleistung rund 2.500 m²
+4.2.20 | 8600 m² | Asphaltbinderschicht AC 16 B S, 6 cm | 15,90
+4.2.30 | 8600 m² | Asphaltdeckschicht AC 11 D S, 4 cm | 14,60 |  |  | Abruf bis Jahresende, danach neuer Preis
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 14 Tage, 30 Tage netto", valid_until = "{+39}" }
+
+[[sheet]]
+key = "p5"
+file = "Anfrage_Asphaltarbeiten_Schulweg.xlsx"
+items = """
+4.1.20 | 1650 m² | Asphalttragschicht AC 22 T S, 10 cm | 23,80 |  |  | 2 Einsätze
+4.1.30 | 1650 m² | Asphaltdeckschicht AC 11 D S, 4 cm | 15,00 |  |  | 1 Einsatz, Vollsperrung
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 14 Tage, 30 Tage netto", valid_until = "{+39}" }
+
+[[sheet]]
+key = "p6"
+file = "Anfrage_Asphalt_Markierung_Radweg_K22.xlsx"
+items = """
+3.2.10 | 4100 m² | Asphalttragschicht AC 22 T N, 8 cm | 19,20 |  |  | Radwegfertiger 2,50 m, je Einsatz mind. 1.000 m²
+3.2.20 | 4100 m² | Asphaltdeckschicht AC 8 D N, 3 cm | 12,40 |  |  | nicht unter 5 Grad
+3.2.30 | 4100 m² | Bitumenemulsion aufsprühen | 0,85
+3.2.40 | 180 m² | Anschluss an Einmündungen herstellen | 48,00 |  |  | Handeinbau, Vollsperrung der Einmündung
+5.1.10 | 3280 m | Schmalstrich Radwegrand | 1,15 |  |  | über unseren Markierer
+5.1.20 | 85 m² | Furtmarkierung und Sinnbilder | 32,00 |  |  | Kaltplastik
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "2 % 14 Tage, 30 Tage netto", valid_until = "{+39}" }
+
+[[doc]]
+key = "p1_rechnung"
+file = "Schlussrechnung_2025-0417_Muehlenstrasse.pdf"
+title = "Schlussrechnung Nr. 2025-0417"
+text = """An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Bauvorhaben: Kanalerneuerung Mühlenstraße, Norderbek
+Ihr Auftrag vom {-478}, Leistungszeitraum {-430} bis {-312}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+4.1.30 | Asphalttragschicht AC 22 T S, 10 cm | 2.150 | m² | 22,40 | 48.160,00
+4.1.40 | Asphaltdeckschicht AC 11 D S, 4 cm | 2.512 | m² | 14,10 | 35.419,20
+4.1.50 | Nähte und Anschlüsse herstellen | 1.240 | m | 3,20 | 3.968,00
+Z 1 | Anfahrt bei Mindermenge unter 400 m² (Abschnitt 2 und 4) | 2 | St | 950,00 | 1.900,00
+
+Summe netto: 89.447,20 EUR
+Die Umsatzsteuer schuldet der Leistungsempfänger (§ 13b UStG).
+
+Abschlagszahlungen sind in der Anlage aufgeführt. Zahlbar 30 Tage netto, 2 % Skonto bei Zahlung innerhalb von 14 Tagen.
+Mengen nach unserem Aufmaß vom {-311}."""
+
+# ------------------------------------------------------------------ P1 Mühlenstraße (won)
+
+[[mail]]
+id = "p1_anfrage"
+day = -507
+time = "14:10"
+from = "us"
+to = "asph"
+subject = "Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Kanalerneuerung Mühlenstraße"
+body = """Hallo Serkan,
+
+wir rechnen gerade die Kanalerneuerung Mühlenstraße in Norderbek für die Stadt (TBA-SE-0318), 860 m Schmutzwasserkanal in offener Bauweise, die Fahrbahn wird danach wiederhergestellt. Den Asphalt möchte ich wie immer mit euch anbieten, komplett mit Material, Lohn und Gerät:
+
+Pos. 4.1.30 – 2150 m² – Asphalttragschicht AC 22 T S, 10 cm
+Pos. 4.1.40 – 2480 m² – Asphaltdeckschicht AC 11 D S, 4 cm
+Pos. 4.1.50 – 1240 m – Nähte und Anschlüsse herstellen
+
+Zur Deckschicht: Im LV stand 2600 m, das war ein Fehler. Die Stadt hat heute auf meine Frage bestätigt, dass m² gemeint ist, 2.480 m², über die volle Fahrbahnbreite. Die Tragschicht liegt nur über dem Graben, gebaut wird in vier Abschnitten unter halbseitiger Sperrung.
+
+Die Positionen hängen als Excel-Datei an, trag deine Preise einfach dort ein. Schreib mir bitte auch, wann ihr könntet: Ausführung {-455} bis {-300}, die Deckschicht kommt ganz am Ende. An unser Angebot sind wir bis {-470} gebunden.
+
+Abgabe ist am {-500}, ich brauche deine Zahlen bis {-503}. Der Auftrag ist uns noch nicht erteilt; im Auftragsfall gilt die VOB/B und was die Stadt uns in den Vertrag schreibt auch für euch.
+
+Danke dir und viele Grüße"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_angebot"
+day = -504
+time = "07:45"
+from = "asph"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Hallo John,
+
+Liste ist ausgefüllt und hängt an. Kurz dazu:
+
+- Tragschicht 22,40 €/m², Deckschicht 14,10 €/m², Nähte 3,20 €/m mit Fugenband. Preise fest bis Jahresende.
+- Tragschicht in vier Abschnitten ist in Ordnung, aber je Einsatz mindestens 400 m². Liegt ein Abschnitt darunter, kommt eine Anfahrt von 950 € dazu, der Fertiger muss ja trotzdem hin.
+- Deckschicht nur in einem Zug und nur bei Vollsperrung. Bei halbseitig mit Ampel baue ich keine Mittelnaht in eine neue Decke, das reklamiert euch die Stadt später. Bitte gleich so in den Bauablauf nehmen.
+- Fräsen der Kanten und Anspritzen ist drin, Schachtabdeckungen anheben macht ihr.
+
+Zeitlich: Tragschicht nach Abruf mit zwei Wochen Vorlauf. Im Sommer sind beide Kolonnen voll, da brauche ich eher drei Wochen."""
+attach = ["sheet:p1"]
+
+[[mail]]
+id = "p1_auftrag"
+day = -478
+time = "07:40"
+from = "us"
+to = "asph"
+cc = ["us.albers"]
+subject = "Mühlenstraße Norderbek – Auftrag Asphaltarbeiten"
+reply_to = "p1_angebot"
+quote = false
+body = """Hallo Serkan,
+
+wir haben den Zuschlag für die Mühlenstraße. Damit beauftrage ich euch auf Grundlage deines Angebots vom {-504}:
+
+4.1.30 Tragschicht AC 22 T S 10 cm, 2.150 m² zu 22,40 €/m²
+4.1.40 Deckschicht AC 11 D S 4 cm, 2.480 m² zu 14,10 €/m²
+4.1.50 Nähte und Anschlüsse, 1.240 m zu 3,20 €/m
+
+Rund 87.100 € netto, abgerechnet wird nach gemeinsamem Aufmaß. Die Mindestmenge von 400 m² je Einsatz und die Anfahrt von 950 € bei Unterschreitung habe ich übernommen, ebenso die Vollsperrung für die Deckschicht. Der Nachunternehmervertrag kommt mit der Post, bitte ein Exemplar unterschrieben zurück.
+
+Für die Stadt brauche ich noch vor Baubeginn von euch: Freistellungsbescheinigung nach § 48b EStG, Unbedenklichkeitsbescheinigungen von Finanzamt, Krankenkasse und Berufsgenossenschaft und den Auszug aus der Präqualifikation.
+
+Bauleiter ist Jonas Albers (in Kopie), mit ihm machst du die Termine. Baubeginn ist am {-455}, die erste Tragschicht wird etwa vier Wochen später fällig.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p1_auftrag_aw"
+day = -477
+time = "10:20"
+from = "asph"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße Norderbek – Auftrag Asphaltarbeiten"
+reply_to = "p1_auftrag"
+body = """Hallo John,
+
+danke, freut mich. Auftrag ist notiert.
+
+Die Unterlagen schickt euch unsere Buchhaltung heute noch in einer Mail: Freistellungsbescheinigung (gilt bis Ende nächsten Jahres), die drei Unbedenklichkeitsbescheinigungen und die PQ-Urkunde. Wir sind im PQ-Verzeichnis unter 010.084417 geführt, da kann die Stadt auch selbst nachsehen.
+
+Jonas, ruf mich an, sobald der erste Abschnitt verfüllt und die Schottertragschicht abgenommen ist."""
+
+[[mail]]
+id = "p1_deck_termin"
+day = -322
+time = "06:45"
+from = "us.albers"
+to = "asph"
+cc = ["us"]
+subject = "Mühlenstraße – Termin Deckschicht, Vollsperrung {-313} und {-312}"
+body = """Hallo Serkan,
+
+die Tragschicht im letzten Abschnitt liegt seit gestern, danke an deine Leute, das lief sauber.
+
+Für die Deckschicht hat die Verkehrsbehörde die Vollsperrung für den {-313} und {-312} angeordnet, jeweils 7 bis 18 Uhr. Die Anlieger sind informiert, die Umleitung stellt Nordmark am Vorabend. Die 19 Schachtabdeckungen heben wir bis {-315} auf Höhe, gefegt wird am Morgen.
+
+Passt das bei euch? Wenn ja, bitte kurz bestätigen, dann gebe ich es an Herrn Hartwig weiter.
+
+Gruß"""
+
+[[mail]]
+id = "p1_deck_aw"
+day = -321
+time = "09:10"
+from = "asph"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Mühlenstraße – Termin Deckschicht, Vollsperrung {-313} und {-312}"
+reply_to = "p1_deck_termin"
+body = """Moin Jonas,
+
+passt. Wir kommen am {-313} mit dem großen Fertiger und zwei Walzen, 2.480 m² schaffen wir an einem Tag, der zweite Tag ist Reserve und für die Nähte an den Einmündungen.
+
+Was ich brauche: Straße ab 7 Uhr wirklich leer, keine parkenden Autos, Kehrmaschine um halb sieben durch, Anspritzen machen wir selbst. Mischgut ist beim Werk bestellt. Bei Dauerregen sage ich bis 5:30 Uhr ab, dann rücken wir auf den Folgetag."""
+
+[[mail]]
+id = "p1_rechnung"
+day = -296
+time = "09:15"
+from = "asph"
+to = "us"
+cc = ["us.albers"]
+subject = "Mühlenstraße – Schlussrechnung 2025-0417"
+body = """Hallo John,
+
+anbei unsere Schlussrechnung für die Mühlenstraße über 89.447,20 € netto. Mengen nach unserem Aufmaß, Deckschicht 2.512 m².
+
+Dabei sind zwei Anfahrten wegen Mindermenge: Abschnitt 2 hatte nur 310 m², Abschnitt 4 nur 380 m². So war es vereinbart."""
+attach = ["doc:p1_rechnung"]
+
+[[mail]]
+id = "p1_rechnung_aw"
+day = -292
+time = "10:50"
+from = "us"
+to = "asph"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße – Schlussrechnung 2025-0417"
+reply_to = "p1_rechnung"
+body = """Hallo Serkan,
+
+Rechnung geprüft, zwei Punkte:
+
+1. Deckschicht: Jonas und dein Polier haben am {-310} gemeinsam aufgemessen und 2.496 m² unterschrieben, nicht 2.512. Die Stadt rechnet mit uns auch nur 2.496 ab. Das sind 35.193,60 € statt 35.419,20 €.
+
+2. Anfahrten: Abschnitt 2 erkenne ich an. Der war wegen des belasteten Bodens bei Station 0+310 kürzer als geplant, das lag bei uns. Abschnitt 4 mit 380 m² aber nicht: Die fehlenden 20 m² sind die Fläche vor dem Bahnübergang, die ihr auf eigenen Wunsch mit der Deckschicht zusammen gemacht habt.
+
+Damit komme ich auf 88.271,60 € netto. Wenn du einverstanden bist, schick mir bitte die berichtigte Rechnung, dann geht das Geld mit Skonto in der nächsten Woche raus.
+
+Viele Grüße"""
+
+# ------------------------------------------------------------------ P2 Hauptstraße Brande (won)
+
+[[mail]]
+id = "p2_anfrage"
+day = -406
+time = "09:35"
+from = "us"
+to = "asph"
+subject = "Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Trinkwasserleitung Hauptstraße"
+body = """Hallo Serkan,
+
+nächste Anfrage: Der Wasserverband Geestrand erneuert die Trinkwasserleitung in der Hauptstraße in Brande (WVG-N-2207), 1.240 m, Graben im Fahrbahnrand. Für die Wiederherstellung brauche ich deine Preise, komplett mit Material, Lohn und Gerät:
+
+Pos. 2.2.20 – 1480 m2 – Asphalttragschicht AC 22 T N, 10 cm
+Pos. 2.2.30 – 1480 m2 – Asphaltdeckschicht AC 8 D N, 3 cm
+
+Bei 2.2.30 steht im LV die Einheit t, laut Langtext wird nach Fläche abgerechnet. Ich frage das beim Verband nach und gehe von 1.480 m2 aus, bitte je m2 anbieten.
+
+Achtung, schmale Streifen: Der Graben ist rund 1,20 m breit, gebaut wird in acht Abschnitten von höchstens 150 m. Sag mir, wie ihr das einbauen wollt und was ihr als Mindestmenge braucht.
+
+Ausführung {-350} bis {-235}. Excel-Liste hängt an. Abgabe ist am {-395}, deine Zahlen bitte bis {-398}. Der Auftrag ist noch nicht erteilt.
+
+Viele Grüße"""
+attach = ["sheet:p2:blank"]
+
+[[mail]]
+id = "p2_angebot"
+day = -403
+time = "06:58"
+from = "asph"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Trinkwasserleitung Hauptstraße"
+reply_to = "p2_anfrage"
+body = """Hallo John,
+
+Liste anbei. Tragschicht 21,90 €/m2, Deckschicht 3 cm 11,90 €/m2.
+
+Acht Einsätze für je 180 m2 mache ich nicht, das rechnet sich für keinen. Vorschlag: Ihr schließt die Gräben provisorisch mit Kaltmischgut oder fahrt auf der Schottertragschicht, und wir kommen dreimal für die Tragschicht (je zwei bis drei Abschnitte, mindestens 400 m2) und einmal am Ende für die Decke. Mit dem kleinen Fertiger 1,10 bis 2,00 m geht der Streifen in einem Zug. Darauf sind die Preise gerechnet. Jeder weitere Einsatz 950 €.
+
+Für die Decke bräuchte ich die Straßenseite einen Tag ohne Ampelverkehr auf der Einbauspur, also Sperrung der Spur ab 7 Uhr und nichts, was vor 16 Uhr drüberfährt.
+
+Fest bis Jahresende. Was im neuen Jahr eingebaut wird, kostet den Preis vom neuen Jahr, das sage ich lieber gleich."""
+attach = ["sheet:p2"]
+
+[[mail]]
+id = "preis2026"
+day = -338
+time = "10:15"
+from = "asph"
+to = "us"
+subject = "Preise ab Januar"
+body = """Hallo John,
+
+damit du es rechtzeitig weißt: Zum 1. Januar gehen unsere Preise im Schnitt um 4,5 % hoch. Das Mischwerk hat Bitumen und Energie neu abgerechnet, dazu die Tariferhöhung im April.
+
+Für eure laufenden Baustellen heißt das:
+- Mühlenstraße: Decke ist für Anfang Januar geplant, bleibt beim alten Preis, das ist mit Jonas so abgesprochen.
+- Brande: Die ersten beiden Tragschicht-Einsätze laufen noch in diesem Jahr. Der dritte und die Decke liegen im neuen Jahr: Tragschicht dann 22,90 €/m2, Decke 12,45 €/m2. Wenn ihr den dritten Abschnitt vor der Winterpause des Mischwerks ({-333} bis {-318}) fertig bekommt, bauen wir ihn noch zum alten Preis ein.
+
+Neue Anfragen rechne ich ab jetzt mit den Preisen für nächstes Jahr."""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (lost; asphalt too dear)
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "11:05"
+from = "us"
+to = "asph"
+subject = "Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+body = """Hallo Serkan,
+
+diesmal etwas Größeres: Erschließung Gewerbegebiet Süd in Itzehoe, 1. BA (OP-ITZ-417), zwei Planstraßen mit zusammen knapp 1.100 m, Vollausbau Bk3,2. Asphalt komplett von euch, mit Material, Lohn und Gerät:
+
+Pos. 4.2.10 – 8600 m² – Asphalttragschicht AC 22 T S, 10 cm
+Pos. 4.2.20 – 8600 m² – Asphaltbinderschicht AC 16 B S, 6 cm
+Pos. 4.2.30 – 8600 m² – Asphaltdeckschicht AC 11 D S, 4 cm
+
+Bei 4.2.30 fehlt im LV die Menge, ich nehme 8.600 m² wie beim Binder an und frage nach. Wichtig: Die Deckschicht wird erst nach den Hochbauarbeiten auf Abruf eingebaut, das kann spät in der Bauzeit liegen (Fertigstellung {-60}). Eine Preisgleitung gibt es bisher nicht.
+
+Ausführung ab {-235}, Tragschicht und Binder der Planstraße A bis {-130}. Excel-Liste hängt an. Abgabe am {-286}, deine Preise bitte bis {-290}. Auftrag ist noch nicht erteilt, öffentliche Ausschreibung, es wird eng.
+
+Viele Grüße"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_angebot"
+day = -293
+time = "07:20"
+from = "asph"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_anfrage"
+body = """Hallo John,
+
+schöne Baustelle, da kann der große Fertiger endlich mal durchfahren. Liste anbei:
+
+Tragschicht 23,10 €/m², Binder 15,90 €/m², Decke 14,60 €/m².
+
+Gerechnet mit Tagesleistungen um 2.500 m², also vier Einbautage je Schicht, freie Strecke ohne Verkehr. Die Decke gilt bei Abruf bis Jahresende. Rutscht der Abruf ins nächste Jahr, muss ich neu rechnen. Ohne Gleitklausel nehme ich das Bitumenrisiko nicht über zwölf Monate.
+
+Kolonne wäre ab Mai frei, wenn ich es bis Ende Februar weiß."""
+attach = ["sheet:p3"]
+
+[[mail]]
+id = "p3_nachlass"
+day = -291
+time = "16:45"
+from = "us"
+to = "asph"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_angebot"
+body = """Hallo Serkan,
+
+danke. Ich sage es offen: Der Asphalt ist mit rund 460.000 € der größte Einzelposten im Angebot, und in Itzehoe bieten Firmen mit, die ein eigenes Mischwerk im Rücken haben. Mit 23,10 für die Tragschicht liege ich über dem, was ich dort erwarte.
+
+Geht bei der Menge noch etwas? Mir würde schon helfen, wenn ihr Tragschicht und Binder in einem Block einbaut und das im Preis ankommt. Abgabe ist am {-286}, ich brauche es bis {-288} mittags.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p3_nachlass_aw"
+day = -288
+time = "07:30"
+from = "asph"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_nachlass"
+body = """Hallo John,
+
+ich habe gestern Abend noch mit dem Chef gesprochen. 2 % auf alle drei Positionen, wenn Tragschicht und Binder je Planstraße in einem Block ohne Umsetzen laufen:
+
+Tragschicht 22,64 €/m², Binder 15,58 €/m², Decke 14,31 €/m².
+
+Mehr ist nicht drin. Das Mischgut kaufen wir zu, da habe ich gegen ein eigenes Werk keine Chance, und unter Einstand fahre ich nicht los. Die Bedingung mit der Decke bis Jahresende bleibt."""
+
+[[mail]]
+id = "p3_verloren"
+day = -258
+time = "09:40"
+from = "us"
+to = "asph"
+subject = "Gewerbegebiet Süd Itzehoe – leider nicht bekommen"
+body = """Hallo Serkan,
+
+kurze Rückmeldung, damit du die Kolonne nicht freihältst: Das Gewerbegebiet Süd ist weg. Wir waren Zweiter, 3,1 % hinter einer Bietergemeinschaft aus Straßenbauer und Kanalbauer.
+
+Das Büro hat mir gesagt, wo es lag: Im Kanal waren wir sogar vorn, der Abstand kommt fast ganz aus dem Asphalttitel, rund 55.000 €. Die haben ihre eigene Mischanlage in der Bietergemeinschaft. Das sind bei drei Schichten auf 8.600 m² gut 2 € je m² und Schicht, die hätten wir beide nicht mehr gefunden.
+
+Kein Vorwurf, dein Preis war ehrlich gerechnet. Im Herbst kommt der 2. BA, da melde ich mich früher, vielleicht fällt uns bis dahin etwas ein.
+
+Viele Grüße"""
+
+# ------------------------------------------------------------------ P5 Schulweg (lost)
+
+[[mail]]
+id = "p5_anfrage"
+day = -147
+time = "08:50"
+from = "us"
+to = "asph"
+subject = "Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Regenwasserkanal Schulweg"
+body = """Hallo Serkan,
+
+Norderbek schreibt den Regenwasserkanal im Schulweg aus (TBA-SE-0431), 420 m, danach Fahrbahn wiederherstellen. Bitte wieder komplett mit Material, Lohn und Gerät:
+
+Pos. 4.1.20 – 1650 m² – Asphalttragschicht AC 22 T S, 10 cm
+Pos. 4.1.30 – 1650 m² – Asphaltdeckschicht AC 11 D S, 4 cm
+
+Gebaut wird unter abschnittsweiser Vollsperrung, die Straße ist für den Einbau also leer. Aber: Das ist der Zugang zur Grundschule, zwischen 7:15 und 8:15 Uhr und mittags fährt da nichts, auch kein Mischgut-Lkw.
+
+Ausführung {-90} bis {+30}. Liste hängt an, Abgabe am {-138}, Preise bitte bis {-142}. Auftrag noch nicht erteilt.
+
+Viele Grüße"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_erinnerung"
+day = -142
+time = "09:05"
+from = "us"
+to = "asph"
+subject = "Erinnerung: Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Regenwasserkanal Schulweg"
+reply_to = "p5_anfrage"
+body = """Hallo Serkan,
+
+ich weiß, bei euch brennt gerade die Saison. Schaffst du mir die zwei Preise für den Schulweg bis morgen Abend? Abgabe ist am {-138}. Wenn es gar nicht geht, sag kurz Bescheid, dann setze ich deine Preise vom Gewerbegebiet mit Zuschlag für die kleine Menge an.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p5_angebot"
+day = -141
+time = "19:40"
+from = "asph"
+to = "us"
+subject = "AW: Erinnerung: Angebotsanfrage Nachunternehmerleistung – Asphaltarbeiten – Regenwasserkanal Schulweg"
+reply_to = "p5_erinnerung"
+body = """Hallo John,
+
+sorry, ich komme erst jetzt vom Einbau. Liste anbei: Tragschicht 23,80 €/m², Decke 15,00 €/m². Kleine Menge, zwei Einsätze Tragschicht, einer für die Decke, mit der Schulpause dazwischen verliere ich jeden Tag zwei Stunden, das steckt drin.
+
+Ehrlich gesagt: Bis KW {kw-80} sind beide Kolonnen ausgebucht. Für den Schulweg mit Beginn im Spätsommer geht das, vorher bekomme ich keinen Tag frei. Fest bis Jahresende."""
+attach = ["sheet:p5"]
+
+# ------------------------------------------------------------------ P6 Radweg K 22 (won)
+
+[[mail]]
+id = "p6_anfrage"
+day = -91
+time = "10:20"
+from = "us"
+to = "asph"
+subject = "Angebotsanfrage Nachunternehmerleistung – Asphalt und Markierung – Radweg K 22, Abschnitt Hemdingen"
+body = """Hallo Serkan,
+
+der Schulweg ist übrigens an Geestland aus Barmstedt gegangen, wir waren Vierter, am Asphalt lag es diesmal nicht.
+
+Jetzt etwas, das besser zu uns passt: Der Landesbetrieb schreibt den Radweg an der K 22 bei Hemdingen aus (LBSW-W-33-0719), 1.640 m, 2,50 m breit. Ich möchte Asphalt und Markierung bei euch anfragen, komplett mit Material, Lohn und Gerät:
+
+Pos. 3.2.10 – 4100 m² – Asphalttragschicht AC 22 T N, 8 cm
+Pos. 3.2.20 – 4100 m² – Asphaltdeckschicht AC 8 D N, 3 cm
+Pos. 3.2.30 – 4100 m² – Bitumenemulsion aufsprühen
+Pos. 3.2.40 – 180 m² – Anschluss an Einmündungen herstellen
+Pos. 5.1.10 – 3280 m – Schmalstrich Radwegrand
+Pos. 5.1.20 – 85 m² – Furtmarkierung und Sinnbilder
+
+Bei 3.2.20 steht im LV wieder einmal t statt m², die Frage läuft, gemeint sind 4.100 m². Gebaut wird neben der Fahrbahn unter halbseitiger Sperrung mit Ampel. Eine Vollsperrung gibt es nur für die Einmündungen und nur mit Anordnung.
+
+Ausführung {-35} bis {+60}. Das heißt Einbau im Spätherbst, sag mir bitte deutlich, bis wann ihr das noch macht. Liste hängt an, Abgabe am {-80}, Preise bitte bis {-84}. Bindefrist {-50}. Auftrag noch nicht erteilt.
+
+Viele Grüße"""
+attach = ["sheet:p6:blank"]
+
+[[mail]]
+id = "p6_angebot"
+day = -88
+time = "07:05"
+from = "asph"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Asphalt und Markierung – Radweg K 22, Abschnitt Hemdingen"
+reply_to = "p6_anfrage"
+body = """Hallo John,
+
+Liste anbei, alles ausgefüllt:
+
+Tragschicht 8 cm 19,20 €/m², Decke 3 cm 12,40 €/m², Emulsion 0,85 €/m², Einmündungen im Handeinbau 48,00 €/m², Schmalstrich 1,15 €/m, Furten und Sinnbilder 32,00 €/m² in Kaltplastik. Die Markierung macht unser fester Markierer, läuft über uns.
+
+Bedingungen wie immer, plus Wetter:
+- Radwegfertiger 2,50 m, je Einsatz mindestens 1.000 m², also 400 m Strecke am Stück fertig und abgenommen. Darunter 950 € Anfahrt.
+- Mischgut kommt mit Dreiachsern über die K 22. Zum Abkippen stehen die auf der Fahrbahn, dafür brauche ich die Spur neben dem Radweg gesperrt, nicht nur verengt.
+- Decke nicht unter 5 Grad und nicht auf nasser Unterlage. Fertigstellung {+60} ist für Asphalt kein Termin. Das Mischwerk macht kurz vor Weihnachten zu. Was bis dahin nicht liegt, liegt im März. Plant so, dass ich die Tragschicht bis Ende November und die Decke bis Mitte Dezember habe.
+- Markierung nur bei trockener Fahrbahn über 5 Grad, sonst ebenfalls Frühjahr.
+
+Preise fest bis Jahresende. Einbau im neuen Jahr zum Preis vom neuen Jahr."""
+attach = ["sheet:p6"]
+
+[[mail]]
+id = "p6_auftrag"
+day = -48
+time = "14:10"
+from = "us"
+to = "asph"
+cc = ["us.albers"]
+subject = "Radweg K 22 Hemdingen – Auftrag Asphalt und Markierung"
+reply_to = "p6_angebot"
+quote = false
+body = """Hallo Serkan,
+
+der Zuschlag für den Radweg ist da, danke auch für die schnelle Verpflichtungserklärung und die Erstprüfungen in der Aufklärung, das hat gepasst.
+
+Ich beauftrage euch mit den Positionen 3.2.10 bis 3.2.40 und 5.1.10, 5.1.20 zu den Preisen deines Angebots vom {-88}, zusammen rund 148.200 € netto, Abrechnung nach Aufmaß. Mindestmenge 1.000 m² je Einsatz und die gesperrte Spur beim Abkippen sind übernommen. Nachunternehmervertrag kommt mit der Post.
+
+Deine Warnung zum Wetter habe ich Jonas weitergegeben. Der Bauzeitenplan hat fünf Abschnitte, vier zu 400 m. Ziel ist, dass ihr in zwei Einsätzen die Tragschicht und in einem die Decke einbaut, alles vor der Winterpause des Mischwerks. Die Vollsperrung für die Einmündungen beantragt Nordmark mit dem Verkehrszeichenplan.
+
+Eure Freistellungsbescheinigung habe ich noch vom letzten Jahr, sie gilt bis Jahresende. Bitte schickt mir die neue, sobald ihr sie habt.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p6_termin"
+day = -10
+time = "15:20"
+from = "us.albers"
+to = "asph"
+cc = ["us"]
+subject = "K 22 Radweg – Tragschicht Abschnitt 1 und 2 in KW {kw+4}?"
+body = """Hallo Serkan,
+
+Stand K 22: Abschnitt 1 und 2 (Bau-km 0+000 bis 0+800) haben Frostschutz und Schottertragschicht, die Plattendruckversuche sind durch. Das sind gut 2.000 m² für euch, also ein voller Einsatz.
+
+Abschnitt 3 hängt. Zwischen 0+850 und 1+020 war das Planum weich, wir tauschen dort gerade Boden aus, der Landesbetrieb hat es angeordnet. Abschnitt 3 bis 5 werden deshalb erst in KW {kw+11} fertig für euch.
+
+Kannst du Abschnitt 1 und 2 in KW {kw+4} einbauen? Die Ampel steht, die Spur neben dem Radweg sperrt Nordmark für eure Lkw, ich brauche dafür nur den Tag zwei Wochen vorher wegen der Anordnung.
+
+Gruß"""
+
+[[mail]]
+id = "p6_winter"
+day = -5
+time = "07:15"
+from = "asph"
+to = ["us.albers", "us"]
+subject = "K 22 und Winterpause Mischwerk"
+body = """Moin Jonas, hallo John,
+
+KW {kw+4} geht nicht mehr, da bin ich voll. Ich habe euch für Abschnitt 1 und 2 den {+9} eingetragen, Tragschicht, ein Tag. Bitte bis übermorgen bestätigen, sonst ist der Tag weg.
+
+Wichtiger: Das Mischwerk hat gestern die Winterpause gemeldet, letzter Liefertag ist der {+26}. Wenn Abschnitt 3 bis 5 erst in KW {kw+11} fertig werden, bekomme ich dort noch die Tragschicht hin, aber die Decke auf 4.100 m² nur, wenn das Wetter mitspielt. Unter 5 Grad baue ich keine 3 cm ein, das hält nicht. Realistisch: Tragschicht komplett dieses Jahr, Decke und Markierung im März. Sagt das dem Landesbetrieb besser jetzt als im Januar.
+
+Was im März eingebaut wird, läuft dann zum neuen Preis. Die Liste für nächstes Jahr kommt im Dezember, rechnet mit rund 4 % mehr. Ab KW {kw+6} haben wir bis zur Pause sonst noch einzelne Tage frei, falls ihr woanders eine Decke zumachen müsst."""

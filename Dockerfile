@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
 COPY --from=stalwartlabs/stalwart:v1 /usr/local/bin/stalwart /usr/local/bin/stalwart
 COPY docker/roundcube.inc.php /opt/roundcube/config/config.inc.php
 COPY docker/mail.sh docker/start.sh /app/
+COPY mock/ mock/
 CMD ["/app/mail.sh"]
 
 FROM mail AS prod

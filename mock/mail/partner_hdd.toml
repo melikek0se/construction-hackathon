@@ -1,0 +1,465 @@
+# Bohrtechnik Wattenmeer GmbH (hdd), Hauke Clausen, owner: the history with our estimator. Writes like a
+# craftsman, direct, one long block, in the evening; many conditions (ground risk with the client, drilling
+# fluid by effort, water from us); wants the soil report every time and types his prices into the mail.
+# P2: asked for two short crossings (not worth his trip). P4: the HDD under the dyke, done. P7: quoted, waiting.
+
+[[sheet]]
+key = "p4"
+file = "Anfrage_Spuelbohrung_Pumpwerk_Deichstrasse.xlsx"
+items = """
+3.2.10 | 1 psch | Bohranlage einrichten und räumen | 6800,00
+3.2.20 | 198 m | Horizontalspülbohrung für Rohr da 160 | 118,00
+3.2.40 | 198 m | Druckrohr da 160 für Rohreinzug | 14,50 |  |  | nur Einzug, Rohr bauseits
+3.2.50 | 60 m3 | Bohrspülung und Bohrklein entsorgen | 96,00 |  |  | nach Aufwand
+"""
+
+[[sheet]]
+key = "p7"
+file = "Anfrage_Spuelbohrung_ADL_Marschhof.xlsx"
+items = """
+1.1.20 | 1 psch | Bohranlage einrichten und umsetzen | 14500,00
+3.1.10 | 412 m | HDD Bohrabschnitt 1, Rohr da 180 | 124,00
+3.1.20 | 386 m | HDD Bohrabschnitt 2, Unterquerung Wettern | 138,00
+3.1.30 | 344 m | HDD Bohrabschnitt 3, Unterquerung K 18 | 129,00
+3.1.60 | 190 m3 | Bohrspülung und Bohrklein entsorgen | 98,00 |  |  | nach Aufwand
+3.1.70 | 1 psch | Bohrhindernisse und Baugrundrisiko
+3.1.80 | 1142 m | Bohrverlauf einmessen, Bestandsplan | 3,80
+3.1.90 | 250 h | Stillstand Bohranlage auf Anordnung | 285,00
+"""
+
+[[doc]]
+key = "p4_rechnung"
+file = "Rechnung_26-118_Spuelbohrung_Deichstrasse.pdf"
+title = "Rechnung Nr. 26-118"
+text = """An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Bauvorhaben: Abwasserpumpwerk Deichstraße mit Druckleitung, Norderbek, Spülbohrung unter dem Deichfuß
+Auftrag vom {-172}, ausgeführt {-88} bis {-81}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.2.10 | Bohranlage einrichten und räumen | 1 | psch | 6.800,00 | 6.800,00
+3.2.20 | Horizontalspülbohrung für Rohr da 160 | 198 | m | 118,00 | 23.364,00
+3.2.40 | Rohreinzug da 160 | 198 | m | 14,50 | 2.871,00
+3.2.50 | Bohrspülung und Bohrklein entsorgen | 78 | m3 | 96,00 | 7.488,00
+Z 1 | Stillstand Bohranlage am {-88}, 7 bis 13 Uhr | 6 | h | 265,00 | 1.590,00
+
+Summe netto: 42.113,00 EUR
+Steuerschuldnerschaft des Leistungsempfängers nach § 13b UStG.
+
+Zahlbar innerhalb von 14 Tagen ohne Abzug. Bohrprotokoll, Zugkraftprotokoll und Lieferscheine des Saugwagens liegen bei."""
+
+[[doc]]
+key = "p7_referenz"
+file = "Referenzbestaetigung_Druckleitung_da225.pdf"
+title = "Referenzbestätigung des Auftraggebers"
+text = """Maßnahme: Abwasserdruckleitung da 225 SDR 11, Unterquerung eines Marschgewässers und einer Bahnstrecke
+Verfahren: Horizontalspülbohrung, Bohrlänge 420 m in einem Zug, Baugrund Klei, Torf, Sand
+Ausführung: Bohrtechnik Wattenmeer GmbH, Büsum, als Nachunternehmer des Rohrleitungsbauers
+Ausführungszeit: vor drei Jahren, 11 Arbeitstage
+
+Der Auftraggeber bestätigt, dass die Bohrung plangerecht, ohne Ausbläser und ohne Beanstandung ausgeführt und die Leitung nach bestandener Druckprüfung abgenommen wurde.
+
+Unterschrift und Stempel des Auftraggebers liegen im Original vor."""
+
+# ------------------------------------------------------------------ P2 Hauptstraße: two short crossings (not taken)
+
+[[mail]]
+id = "p2_rakete"
+day = -317
+time = "13:10"
+from = "us"
+to = "hdd"
+subject = "Anfrage: zwei kurze Unterquerungen da 63 in Brande-Hörnerkirchen"
+body = """Guten Tag Herr Clausen,
+
+wir bauen für den Wasserverband Geestrand die Trinkwasserleitung in der Hauptstraße in Brande. Jetzt kommen zwei Hausanschlüsse dazu, bei denen die Leitung unter einer Natursteinmauer durch muss: zweimal je etwa 6 m, PE da 40 im Schutzrohr da 63, Tiefe 1,30 m, Sand mit etwas Lehm, zwei Kopflöcher im Vorgarten stellen wir her.
+
+Würden Sie das für uns machen, und zu welchem Preis je Querung? Ausführung in den nächsten drei Wochen. Ein Baugrundgutachten gibt es für die Grundstücke nicht, ich kann Ihnen nur Fotos vom Rohrgraben daneben schicken.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p2_rakete_aw"
+day = -316
+time = "18:25"
+from = "hdd"
+to = "us"
+subject = "AW: Anfrage: zwei kurze Unterquerungen da 63 in Brande-Hörnerkirchen"
+reply_to = "p2_rakete"
+body = """Moin Herr Doe,
+
+danke für die Anfrage aber ich sag es wie es ist, für zweimal sechs Meter fahre ich mit der Anlage nicht von Büsum nach Brande, das sind hin und zurück gut drei Stunden und unter einem Tagessatz von 1.850 € netto plus 95 € je Meter rückt bei mir keiner aus, damit wären Sie bei knapp 3.000 € für eine Arbeit die Ihre eigene Kolonne mit einer gemieteten Erdrakete 75 mm an einem Vormittag macht, bei Sand mit Lehm und 1,30 m Tiefe läuft die Rakete gerade wenn Sie sie sauber auf der Lafette ausrichten und vorher wissen wo Gas und Strom liegen. Wenn Sie mal was ab 50 m haben oder unter einer Straße oder einem Gewässer durch müssen dann gerne, dafür bin ich da, dann aber bitte gleich mit Bodengutachten und Längsschnitt, ohne die rechne ich nichts."""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße: HDD under the dyke (done)
+
+[[mail]]
+id = "p4_voranfrage"
+day = -212
+time = "10:30"
+from = "us"
+to = "hdd"
+subject = "Spülbohrung da 160 unter dem Deichfuß, Pumpwerk Deichstraße Norderbek – Unterlagen vorab"
+body = """Guten Tag Herr Clausen,
+
+jetzt habe ich etwas für Sie, das die Fahrt lohnt. Die Stadt Norderbek schreibt den Neubau des Abwasserpumpwerks Deichstraße mit Druckleitung zur Kläranlage aus (TBA-SE-0402). Von den rund 690 m Druckleitung PE 100 RC da 160 SDR 11 liegen laut LV 185 m im Spülbohrverfahren unter dem Deichfuß und der Krückau-Niederung.
+
+Sie hatten gesagt: nichts ohne Bodengutachten. Deshalb zuerst die Unterlagen und dann die Preisanfrage. Baugrundgutachten, Lageplan und Längsschnitt der Druckleitung (Blatt 5) stehen unter dem Link, den ich Ihnen gleich getrennt schicke. Kurz der Baugrund: Klei und Torf bis 4,50 m, darunter Sande, Grundwasser 0,80 m unter Gelände und gespannt.
+
+Bitte schauen Sie sich das an und sagen mir, was Ihnen fehlt. Abgabe ist am {-200}, Ausführung ab {-150}. Die Positionen schicke ich Ihnen als Liste, sobald die Mengen geklärt sind.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_fragen"
+day = -210
+time = "20:15"
+from = "hdd"
+to = "us"
+subject = "AW: Spülbohrung da 160 unter dem Deichfuß, Pumpwerk Deichstraße Norderbek – Unterlagen vorab"
+reply_to = "p4_voranfrage"
+body = """Moin Herr Doe,
+
+Unterlagen hab ich durch, so ist das richtig rum, danke. Erstens stimmt die Länge nicht, wenn ich im Längsschnitt Blatt 5 von Startgrube bis Zielgrube die Bohrlinie abgreife mit Eintritts- und Austrittswinkel komme ich auf rund 198 m und nicht 185, das sollten Sie die Stadt fragen bevor einer von uns rechnet, und die Entsorgung der Bohrspülung in Metern ist Unsinn, das sind Kubikmeter, bei da 160 und Aufweitung auf 250 mm rechne ich mit 55 bis 65 m3 wenn der Torf nicht alles schluckt. Zweitens der Baugrund, Klei und Torf oben und gespanntes Wasser im Sand darunter, da muss ich tief genug in den Sand und flach genug raus, am Deichfuß will ich mindestens 5 m Überdeckung sonst habe ich einen Ausbläser auf der Deichberme und dann redet der Deichverband mit, wer holt eigentlich die Genehmigung vom Deichverband und von der Wasserbehörde, das mache ich nicht und das muss vor Bohrbeginn schriftlich da sein. Drittens die Zufahrt zur Zielgrube in der Niederung, auf Klei fahre ich mit 14 Tonnen Anlage nicht ohne Platten, und ich brauche Wasser, 20 m3 am Tag aus einem Hydranten oder Sie stellen mir einen Tankwagen hin. Wenn das geklärt ist bekommen Sie einen Preis."""
+
+[[mail]]
+id = "p4_anfrage"
+day = -206
+time = "15:10"
+from = "us"
+to = "hdd"
+subject = "Angebotsanfrage Nachunternehmerleistung – Horizontalspülbohrung – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_fragen"
+quote = false
+body = """Guten Tag Herr Clausen,
+
+Sie hatten in beiden Punkten recht. Ich habe die Stadt gefragt, heute kam die Bieterinformation: Die Bohrlänge wird auf 198 m berichtigt, die Entsorgung der Bohrspülung auf 60 m3. Damit bitte ich um Ihr Angebot als Nachunternehmer, einschließlich Material, Lohn und Gerät:
+
+Pos. 3.2.10 – 1 psch – Bohranlage einrichten und räumen
+Pos. 3.2.20 – 198 m – Horizontalspülbohrung für Rohr da 160
+Pos. 3.2.40 – 198 m – Druckrohr da 160 für Rohreinzug
+Pos. 3.2.50 – 60 m3 – Bohrspülung und Bohrklein entsorgen
+
+Zu Ihren Fragen:
+- Genehmigungen von Deichverband und Wasserbehörde holt die Stadt als Auftraggeber. Sie will dafür die Bohrplanung nach GW 321 vier Wochen vor Bohrbeginn sehen, die bräuchte ich von Ihnen.
+- Start- und Zielgrube (Pos. 3.2.30) stellen wir her, einschließlich Wasserhaltung. Lastverteilplatten zur Zielgrube legen wir.
+- Das Rohr liefern wir, schweißen es zu einem Strang und legen es auf Rollen aus. Von Ihnen nur der Einzug.
+- Wasser: Hydrant mit Standrohr an der Deichstraße, etwa 60 m von der Startgrube.
+
+Die Positionen liegen als Excel-Datei bei. Bitte nennen Sie mir auch den möglichen Ausführungszeitraum und bis wann Ihr Angebot gilt. Wir sind bis {-165} an unser Angebot gebunden. Der Auftrag ist uns noch nicht erteilt; im Auftragsfall gelten die VOB/B und die Vertragsbedingungen der Stadt auch für Ihre Leistung. Ich brauche Ihre Preise bis {-203}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_angebot"
+day = -204
+time = "21:05"
+from = "hdd"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Horizontalspülbohrung – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_anfrage"
+body = """Moin Herr Doe,
+
+mit Excel habe ich es nicht so, hier die Preise netto: Pos. 3.2.10 Anlage einrichten und räumen 6.800 € pauschal, Pos. 3.2.20 Bohrung 198 m je 118 € den Meter mit Pilotbohrung, einer Aufweitstufe 250 mm und Ortung, Pos. 3.2.40 Rohreinzug 14,50 € den Meter wenn der Strang fertig geschweißt und geprüft auf Rollen in der Flucht liegt, Pos. 3.2.50 Spülung und Bohrklein 96 € je m3 mit Saugwagen und Annahme, das aber nach Aufwand gegen Lieferschein und nicht gedeckelt auf 60, im Torf weiß vorher keiner was wegläuft. Bedingungen und die sind nicht verhandelbar: Baugrundrisiko liegt beim Auftraggeber, treffe ich auf Holz, Findlinge, alte Spundbohlen oder sonst was das nicht im Gutachten steht ist das Stillstand und Mehraufwand gegen Nachweis, Stillstand der Anlage mit drei Mann 265 € die Stunde, das gilt auch wenn die Gruben nicht fertig sind oder kein Wasser da ist, Wasser stellen Sie bauseits, Gruben und Wasserhaltung bauseits, Platten bauseits, Genehmigungen bauseits. Die Bohrplanung nach GW 321 mache ich, ist im Einrichten drin. Dauer sechs Arbeitstage, frei bin ich im Spätsommer, im Juli nicht. Angebot gilt acht Wochen, danach frage ich nach dem Dieselpreis."""
+
+[[mail]]
+id = "p4_auftrag"
+day = -172
+time = "09:20"
+from = "us"
+to = "hdd"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Auftrag Spülbohrung, Bauanlaufbesprechung am {-163}"
+reply_to = "p4_angebot"
+quote = false
+body = """Guten Tag Herr Clausen,
+
+wir haben den Auftrag für das Pumpwerk Deichstraße bekommen. Ich beauftrage Sie hiermit auf Grundlage Ihrer Mail vom {-204}:
+
+3.2.10 Bohranlage einrichten und räumen, pauschal 6.800,00 €
+3.2.20 Spülbohrung 198 m zu 118,00 €/m
+3.2.40 Rohreinzug 198 m zu 14,50 €/m
+3.2.50 Bohrspülung und Bohrklein, nach Lieferschein zu 96,00 €/m3 (im LV 60 m3)
+
+Ihre Bedingungen habe ich gelesen und übernehme sie in den Nachunternehmervertrag, mit einer Ergänzung: Stillstand rechnen wir nur ab, wenn Sie ihn am selben Tag bei unserem Bauleiter anzeigen. Baugrundrisiko geben wir so an die Stadt weiter, wie es die VOB/B vorsieht.
+
+Drei Dinge brauche ich von Ihnen:
+1. Die Bauanlaufbesprechung ist am {-163} um 13:00 Uhr auf der Kläranlage Norderbek. Die Stadt will die Schnittstellen mit allen Nachunternehmern durchgehen, bitte kommen Sie selbst.
+2. Die Bohrplanung nach GW 321, spätestens vier Wochen vor Bohrbeginn.
+3. Für die Akte: Zertifikat GW 302, Freistellungsbescheinigung nach § 48b EStG und die Unbedenklichkeitsbescheinigungen.
+
+Bauleiter ist Jonas Albers (in Kopie). Den Bohrtermin stimmen Sie bitte mit ihm ab, nach heutigem Plan im Spätsommer.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_auftrag_aw"
+day = -171
+time = "19:40"
+from = "hdd"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Pumpwerk Deichstraße – Auftrag Spülbohrung, Bauanlaufbesprechung am {-163}"
+reply_to = "p4_auftrag"
+body = """Moin Herr Doe,
+
+Auftrag ist angenommen, mit der Anzeige am selben Tag kann ich leben, ich rufe sowieso sofort an wenn die Anlage steht. Am {-163} bin ich da. Für die Bohrplanung brauche ich von Ihnen die Leitungsauskünfte aller Versorger im Bereich der Gruben, die eingemessenen Koordinaten und Höhen von Start- und Zielgrube und die Deichkrone im Schnitt, ohne das zeichne ich keine Bohrlinie. Zertifikat GW 302 und die Bescheinigungen schickt meine Frau morgen aus dem Büro."""
+
+[[mail]]
+id = "p4_termin"
+day = -102
+time = "14:20"
+from = "us.albers"
+to = "hdd"
+cc = ["us"]
+subject = "Pumpwerk Deichstraße – Bohrbeginn {-88}"
+body = """Moin Hauke,
+
+wie am Telefon besprochen, hier noch einmal schriftlich:
+
+- Deichverband und Wasserbehörde haben deine Bohrplanung freigegeben, Schreiben liegt bei mir im Container.
+- Startgrube an der Deichstraße und Zielgrube in der Niederung sind bis {-90} fertig, Wasserhaltung läuft dann.
+- Rohrstrang da 160, 198 m, wird ab {-95} geschweißt und liegt auf Rollen in der Flucht hinter der Zielgrube, Schweißprotokolle bekommst du.
+- Platten zur Zielgrube liegen, 120 m.
+- Standrohr am Hydranten Deichstraße 41 steht ab {-89}.
+
+Bohrbeginn also {-88}, 7 Uhr. Passt das noch?
+
+Gruß"""
+
+[[mail]]
+id = "p4_behinderung"
+day = -88
+time = "17:30"
+from = "hdd"
+to = "us.albers"
+cc = ["us"]
+subject = "Deichstraße – Behinderungsanzeige, Stillstand Bohranlage heute 7 bis 13 Uhr"
+body = """Moin Jonas,
+
+wie heute früh am Telefon gesagt zeige ich hiermit die Behinderung schriftlich an: Wir standen um 7 Uhr mit Anlage, Mischanlage und drei Mann an der Startgrube, die Grube stand 80 cm unter Wasser weil eure Pumpe über Nacht ausgefallen war, und das Standrohr am Hydranten war nicht da sondern lag noch auf dem Bauhof, ohne Wasser mische ich keine Spülung an und in eine abgesoffene Grube setze ich kein Gestänge. Grube war um 11:30 Uhr leer, Standrohr um 12:45 Uhr dran, gebohrt haben wir ab 13 Uhr. Das sind sechs Stunden Stillstand zu 265 €, so steht es im Vertrag, und der Bohrbeginn verschiebt sich um einen Tag, fertig also nicht am {-82} sondern am {-81}."""
+
+[[mail]]
+id = "p4_behinderung_aw"
+day = -87
+time = "18:45"
+from = "us.albers"
+to = "hdd"
+cc = ["us"]
+subject = "AW: Deichstraße – Behinderungsanzeige, Stillstand Bohranlage heute 7 bis 13 Uhr"
+reply_to = "p4_behinderung"
+body = """Moin Hauke,
+
+Anzeige ist angekommen. Die Pumpe ist getauscht, eine zweite steht als Reserve daneben, das passiert nicht noch einmal.
+
+Zur Zeit: Die Grube war laut meinem Bautagebuch um 11:00 Uhr leer und das Standrohr um 11:20 Uhr angeschlossen. Ich schreibe vier Stunden auf. Über den Rest redest du bitte mit John, wenn die Rechnung kommt. Den einen Tag später nehme ich so hin.
+
+Gruß"""
+
+[[mail]]
+id = "p4_fertig"
+day = -80
+time = "18:50"
+from = "hdd"
+to = "us"
+cc = ["us.albers"]
+subject = "Deichstraße – Bohrung fertig, Rohr eingezogen, Mehrmenge Bohrspülung"
+body = """Moin Herr Doe,
+
+das Rohr ist drin, Einzug war gestern um 15:40 Uhr durch, 198 m in einem Zug, größte Zugkraft 62 kN und damit weit unter dem was das Rohr da 160 SDR 11 aushält, Protokolle von Pilotbohrung, Aufweitung und Einzug bekommt Jonas morgen auf Papier und Sie als Datei. Überdeckung am Deichfuß 5,40 m, kein Ausbläser, der Deichverband war zweimal da und hat nichts gesagt. Was ich angekündigt hatte ist eingetreten, im Torf zwischen Meter 60 und 110 ist uns Spülung weggelaufen, wir haben nachgemischt und am Ende 78 m3 Spülung und Bohrklein mit dem Saugwagen abgefahren statt der 60 aus dem LV, die Lieferscheine liegen bei der Rechnung, das ist Baugrund und nach Aufwand vereinbart. Bitte machen Sie die Abnahme meiner Leistung zusammen mit Ihrer Druckprüfung, ich will das nicht bis zur Abnahme vom ganzen Pumpwerk offen haben."""
+
+[[mail]]
+id = "p4_rechnung"
+day = -72
+time = "10:40"
+from = "hdd"
+to = "us"
+subject = "Rechnung 26-118 Spülbohrung Deichstraße"
+body = """Moin Herr Doe,
+
+Druckprüfung ist ja bestanden wie Jonas mir sagte, damit ist meine Leistung abgenommen und anbei die Rechnung über 42.113,00 € netto, darin die 78 m3 Spülung und die sechs Stunden Stillstand vom ersten Tag. Zahlbar in 14 Tagen."""
+attach = ["doc:p4_rechnung"]
+
+[[mail]]
+id = "p4_rechnung_aw"
+day = -68
+time = "11:15"
+from = "us"
+to = "hdd"
+cc = ["us.albers"]
+subject = "AW: Rechnung 26-118 Spülbohrung Deichstraße"
+reply_to = "p4_rechnung"
+body = """Guten Tag Herr Clausen,
+
+erst einmal: saubere Arbeit, das Protokoll der Druckprüfung vom {-74} ist ohne Beanstandung, Ihre Leistung gilt damit als abgenommen.
+
+Zur Rechnung zwei Kürzungen:
+
+1. Bohrspülung: Die Lieferscheine des Saugwagens, die Ihrer Rechnung beiliegen, ergeben zusammen 71,4 m3, nicht 78. Die Differenz ist nach Ihrer eigenen Notiz Restspülung, die Sie im Tank wieder mitgenommen haben. Vereinbart ist die Abrechnung nach Lieferschein: 71,4 m3 zu 96,00 € = 6.854,40 €. Die Mehrmenge über 60 m3 melde ich bei der Stadt als Mengenmehrung an.
+
+2. Stillstand: Unser Bautagebuch und die Mail von Herrn Albers vom {-87} belegen vier Stunden, nicht sechs. Ab 11:20 Uhr konnten Sie arbeiten. 4 h zu 265,00 € = 1.060,00 €.
+
+Damit ergibt sich: 6.800,00 + 23.364,00 + 2.871,00 + 6.854,40 + 1.060,00 = 40.949,40 € netto. Diesen Betrag weise ich heute an. Wenn Sie das anders sehen, rufen Sie mich bitte an.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ P7 Marschhof (quoted, result open)
+
+[[mail]]
+id = "p7_voranfrage"
+day = -47
+time = "11:40"
+from = "us"
+to = "hdd"
+subject = "Abwasserdruckleitung Marschhof, 1.142 m Spülbohrung da 180 – Unterlagen und Begehung"
+body = """Guten Tag Herr Clausen,
+
+nach der Deichstraße die nächste, und diesmal ist die Bohrung die Hauptsache: Der Wasserverband Geestrand schreibt die Abwasserdruckleitung Marschhof beschränkt aus (WVG-A-2431). PE 100 RC da 180 SDR 11 mit Schutzmantel, 1.142 m im Spülbohrverfahren in drei Abschnitten (412 m, 386 m unter der Marschhofer Wettern, 344 m unter der K 18), dazu 64 m offen zwischen den Gruben. Die offene Verlegung, die Gruben, das Rohr und das Schweißen machen wir, die Bohrung möchte ich mit Ihnen anbieten.
+
+Wie gewohnt zuerst die Unterlagen: Baugrundgutachten, Lageplan 1:1000 und Längsschnitt mit den Bohrlinien liegen unter dem Link, den ich Ihnen gleich schicke. Baugrund laut Vorbemerkung: Klei 2,5 bis 4,0 m, darunter Torf und Mudde, ab 6 bis 8 m Sande. Sondierungen im Abstand von rund 150 m.
+
+Der Verband verlangt vom Bohrunternehmen GW 302 GN 2 und drei Referenzen für Spülbohrungen über 300 m in Weichböden aus den letzten fünf Jahren. Können Sie das belegen?
+
+Ich würde die Trasse gern morgen, am {-46}, mit Ihnen abgehen, 10 Uhr am Pumpwerk Geestkante. Abgabe ist am {-36}, Ausführung {+35} bis {+110}, außerhalb der Weidesaison.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p7_anfrage"
+day = -44
+time = "16:30"
+from = "us"
+to = "hdd"
+subject = "Angebotsanfrage Nachunternehmerleistung – Horizontalspülbohrung – Abwasserdruckleitung Marschhof"
+reply_to = "p7_voranfrage"
+quote = false
+body = """Guten Tag Herr Clausen,
+
+danke für die Begehung am {-46}, das war gut investierte Zeit. Hier die förmliche Anfrage, einschließlich Material, Lohn und Gerät:
+
+Pos. 1.1.20 – 1 psch – Bohranlage einrichten und umsetzen
+Pos. 3.1.10 – 412 m – HDD Bohrabschnitt 1, Rohr da 180
+Pos. 3.1.20 – 386 m – HDD Bohrabschnitt 2, Unterquerung Wettern
+Pos. 3.1.30 – 344 m – HDD Bohrabschnitt 3, Unterquerung K 18
+Pos. 3.1.60 – 190 m3 – Bohrspülung und Bohrklein entsorgen
+Pos. 3.1.70 – 1 psch – Bohrhindernisse und Baugrundrisiko
+Pos. 3.1.80 – 1142 m – Bohrverlauf einmessen, Bestandsplan
+Pos. 3.1.90 – 250 h – Stillstand Bohranlage auf Anordnung (Bedarfsposition)
+
+Bei 3.1.60 fehlt im LV die Menge. Ich habe Ihre Zahl von der Begehung genommen, 190 m3 bei 280 mm Aufweitung, und sie dem Verband heute als Bieterfrage genannt.
+
+Zu 3.1.70 kennen Sie meine Meinung, und ich kenne Ihre. Der Verband will sämtliche Erschwernisse aus dem Baugrund pauschal im Preis haben, einschließlich Abbruch und Neuansatz. Ich habe gefragt, ob das auf das beschränkt wird, was aus dem Gutachten erkennbar ist. Unabhängig von der Antwort brauche ich von Ihnen eine Zahl: Was kostet ein Abbruch mit Neuansatz in einem der drei Abschnitte?
+
+Rohr, Schweißen, Gruben, Wasserhaltung und die Lastverteilplatten sind bei uns. Die Positionen liegen als Excel-Datei bei, Sie können die Preise auch wieder in die Mail schreiben. Bitte nennen Sie den möglichen Ausführungszeitraum und die Anlage, die Sie einsetzen. Bindefrist gegenüber dem Verband ist der {-8}. Der Auftrag ist uns noch nicht erteilt. Ich brauche Ihr Angebot bis {-39}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p7:blank"]
+
+[[mail]]
+id = "p7_angebot"
+day = -41
+time = "21:30"
+from = "hdd"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Horizontalspülbohrung – Abwasserdruckleitung Marschhof"
+reply_to = "p7_anfrage"
+body = """Moin Herr Doe,
+
+hier die Preise netto, wieder in die Mail: Pos. 1.1.20 Anlage einrichten und zweimal umsetzen 14.500 € pauschal, Pos. 3.1.10 Abschnitt 1 mit 412 m je 124 € den Meter, Pos. 3.1.20 Abschnitt 2 unter der Wettern 386 m je 138 € weil ich da mit Kreiselkompass orten muss, unter dem Wasser kann keiner mit dem Empfänger langlaufen, und weil ich eine zweite Aufweitstufe fahre, Pos. 3.1.30 Abschnitt 3 unter der K 18 mit 344 m je 129 €, Pos. 3.1.60 Spülung und Bohrklein 98 € je m3 nach Lieferschein und nach Aufwand, die 190 sind meine Schätzung und kein Festpreis, Pos. 3.1.80 Einmessen und Bestandsplan 3,80 € den Meter, Pos. 3.1.90 Stillstand 285 € die Stunde mit Anlage und vier Mann. Ich komme mit der 400 kN Anlage, mit der kleinen fange ich 412 m in Mudde nicht an, unter der Wettern plane ich 4,20 m Überdeckung unter der Sohle damit ich im Sand bohre und mir die Spülung nicht ins Gewässer drückt. Pos. 3.1.70 biete ich nicht an, ein Baugrundrisiko pauschal bei Sondierungen alle 150 m unterschreibe ich nicht und das sollten Sie auch nicht, was ich Ihnen gebe ist ein Preis für den Fall: Abbruch einer Bohrung mit Ziehen des Gestänges, Verpressen des Bohrkanals und Neuansatz um zwei Meter versetzt 16.800 € je Fall in Abschnitt 1 und 3 und 19.400 € in Abschnitt 2, dazu die Meter die neu gebohrt werden. Sonst wie bei der Deichstraße: Baugrundrisiko beim Auftraggeber oder bei Ihnen aber nicht bei mir, Wasser bauseits und in der Marsch heißt das Tankwagen, 25 m3 am Tag, Platten bauseits und zwar bis an die Anlage, Bentonitentsorgung nach Aufwand, Frost unter minus 5 Grad ist Stillstand weil mir die Spülung in den Schläuchen friert. Dauer fünf Wochen. GW 302 GN 2 habe ich, Referenzen bekommen Sie drei, zwei davon mit Bestätigung vom Auftraggeber, die dritte muss ich anfordern. Angebot gilt bis zur Bindefrist am {-8}."""
+
+[[mail]]
+id = "p7_risiko"
+day = -38
+time = "09:10"
+from = "us"
+to = "hdd"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Horizontalspülbohrung – Abwasserdruckleitung Marschhof"
+reply_to = "p7_angebot"
+body = """Guten Tag Herr Clausen,
+
+danke, damit kann ich rechnen. Der Stand zu 3.1.70: Der Verband hat geantwortet, die Position bleibt, wie sie ist, das Risiko ist mit der Pauschale einzukalkulieren. Ich nehme es deshalb auf unsere Seite und setze dafür einen Neuansatz in einem der drei Abschnitte mit halber Wahrscheinlichkeit an, auf der Grundlage Ihrer 16.800 beziehungsweise 19.400 €. Diese beiden Zahlen brauche ich als Festpreis je Fall bis zum Ende der Bindefrist. Bitte bestätigen Sie mir das kurz.
+
+Zu den Mengen: 3.1.60 wird mit 190 m3 gewertet, Abrechnung nach Lieferschein, das passt zu Ihrer Bedingung. Die Fläche der Lastverteilplatten hat der Verband auf 1.800 m2 gesetzt, wir setzen die Platten mit Ihrer Anlage um.
+
+Die drei Referenzen und das Zertifikat brauche ich bis {-37} als PDF, sie gehen mit dem Angebot zum Verband.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p7_risiko_aw"
+day = -38
+time = "18:40"
+from = "hdd"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Horizontalspülbohrung – Abwasserdruckleitung Marschhof"
+reply_to = "p7_risiko"
+body = """Moin Herr Doe,
+
+bestätigt, 16.800 € je Neuansatz in Abschnitt 1 und 3 und 19.400 € in Abschnitt 2 als Festpreis bis {-8}, die neu gebohrten Meter kommen zum Meterpreis dazu. Dass Sie das Risiko auf Ihre Kappe nehmen ist Ihre Sache, ich hätte dem Verband die Position zurückgegeben. Zertifikat und Referenzen kommen morgen, bei der zweiten, der Druckleitung da 225 mit 420 m, fehlt mir noch der Stempel vom damaligen Auftraggeber, den besorge ich."""
+
+[[mail]]
+id = "p7_referenz"
+day = -27
+time = "10:05"
+from = "us"
+to = "hdd"
+subject = "Marschhof – Bestätigung zur Referenz 2 (da 225, 420 m) bis {-24}"
+body = """Guten Tag Herr Clausen,
+
+wir liegen beim Marschhof nach der Eröffnung auf Platz 2, knapp 7.600 € hinter dem Ersten, entschieden ist nichts. Der Verband prüft jetzt die Referenzen der Bohrfirmen und fragt nach: Bei Ihrer zweiten Referenz fehlt die Bestätigung des Auftraggebers. Ich habe zugesagt, sie bis {-24} nachzureichen.
+
+Bitte schicken Sie mir das Blatt bis dahin als PDF. Ohne die Bestätigung zählt die Referenz nicht, und dann haben wir nur zwei von drei.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p7_referenz_aw"
+day = -25
+time = "20:10"
+from = "hdd"
+to = "us"
+subject = "AW: Marschhof – Bestätigung zur Referenz 2 (da 225, 420 m) bis {-24}"
+reply_to = "p7_referenz"
+body = """Moin Herr Doe,
+
+anbei die Bestätigung, ich bin heute selbst hingefahren und habe sie mir unterschreiben lassen, per Post hätte das drei Wochen gedauert. Das Original mit Stempel liegt bei mir, wenn der Verband es sehen will."""
+attach = ["doc:p7_referenz"]
+
+[[mail]]
+id = "p7_bindefrist"
+day = -19
+time = "09:30"
+from = "us"
+to = "hdd"
+subject = "Marschhof – Verband bittet um Verlängerung der Bindefrist bis {+21}"
+body = """Guten Tag Herr Clausen,
+
+die Referenz ist angekommen und vom Verband anerkannt, danke für den Weg.
+
+Jetzt die nächste Bitte. Der Verband schafft die Vergabe nicht bis zum {-8}: Der Zuwendungsbescheid fehlt noch, und die Verbandsversammlung tagt erst am {+14}. Alle Bieter sollen die Bindefrist bis {+21} verlängern, ohne Änderung an Preis und Inhalt. Wer nicht zustimmt, ist draußen.
+
+Ich möchte zustimmen, kann das aber nur, wenn Sie mitgehen. Halten Sie Ihre Preise vom {-41} einschließlich der beiden Festpreise für den Neuansatz bis {+21}? Und bleibt die 400 kN Anlage für uns ab {+35} frei? Ich muss dem Verband bis {-13} antworten.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p7_bindefrist_aw"
+day = -18
+time = "19:15"
+from = "hdd"
+to = "us"
+subject = "AW: Marschhof – Verband bittet um Verlängerung der Bindefrist bis {+21}"
+reply_to = "p7_bindefrist"
+body = """Moin Herr Doe,
+
+die Preise halte ich bis {+21}, auch die beiden für den Neuansatz, das können Sie dem Verband so schreiben. Die Anlage ist für Sie ab {+35} vorgemerkt aber mehr als vormerken kann ich ohne Auftrag nicht, eine Maschine die sechs Wochen auf dem Hof steht und wartet verdient kein Geld, verbindlich reserviert ist sie an dem Tag an dem ich Ihren Auftrag schriftlich habe. Und denken Sie an das Rohr, wenn der Auftrag erst am {+21} kommt und das Rohr sechs Wochen Lieferzeit hat dann bohre ich nicht am {+35} sondern stehe vor leeren Rollen, den Stillstand zahle ich nicht."""
+
+[[mail]]
+id = "stand"
+day = -3
+time = "20:40"
+from = "hdd"
+to = "us"
+subject = "Marschhof, große Anlage, Preise ab Januar"
+body = """Moin Herr Doe,
+
+ich melde mich weil ich planen muss. Für die 400 kN Anlage habe ich seit gestern eine zweite Anfrage, eine Gasleitung bei Brunsbüttel von KW {kw+40} an für vier Wochen, das überschneidet sich mit dem Marschhof wenn dort am {+35} angefangen wird. Bisher stehen Sie vorne weil Sie zuerst gefragt haben, aber wenn ich bis zum {+21} keinen Auftrag von Ihnen habe sage ich dort zu und dann ist die Anlage erst ab KW {kw+75} wieder frei, mit der kleinen bohre ich die 412 m nicht, das habe ich gesagt und dabei bleibt es. Zweitens zum Jahreswechsel: Bentonit und Diesel sind teurer geworden, ab Januar gehen meine Meterpreise für neue Anfragen um 5 % hoch, der Marschhof bleibt bei den Preisen vom {-41} solange der Auftrag bis {+21} kommt. Drittens Winter, vom {+31} bis {+43} ist bei mir Betriebsruhe und bei Dauerfrost wird nicht gebohrt, das steht im Angebot und gilt. Geben Sie mir Bescheid sobald Sie vom Verband etwas hören, auch wenn es eine Absage ist."""

@@ -1,0 +1,511 @@
+# P4: Abwasserpumpwerk Deichstraße mit Druckleitung (Stadt Norderbek). Estimated day -215 … -200, won,
+# under construction. The client's side of the job as it lies in our estimator's mailbox.
+
+[[lv]]
+key = "pumpwerk"
+file = "LV_Pumpwerk_Deichstrasse"
+format = "pdf"
+client = "tba"
+name = "Abwasserpumpwerk Deichstraße mit Druckleitung"
+project = "Neubau Abwasserpumpwerk Deichstraße mit Druckleitung zur Kläranlage, Norderbek"
+number = "TBA-SE-0402"
+remarks = """Vorbemerkungen zum Leistungsverzeichnis
+Bauvorhaben: Ersatzneubau des Schmutzwasserpumpwerks Deichstraße als Fertigteilpumpwerk DN 2500 mit zwei Tauchmotorpumpen, Schaltanlage im Freiluftschrank und Fernwirktechnik sowie Neubau der Abwasserdruckleitung PE 100 RC da 160 bis zum Übergabeschacht an der Kläranlage, Länge rund 690 m, davon 185 m im Horizontalspülbohrverfahren unter dem Deichfuß und der Krückau-Niederung.
+Vergabeart: Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {-200}, 10:00 Uhr
+Bindefrist: {-165}
+Bieterfragen bis: {-207}
+Ausführungsbeginn: {-150}
+Fertigstellung: {+45}
+Das vorhandene Pumpwerk bleibt bis zur Inbetriebnahme des neuen in Betrieb. Der Umschluss erfolgt in Abstimmung mit dem Betrieb der Stadtentwässerung.
+Baugrund: Klei und Torf bis 4,50 m unter Gelände, darunter Sande; Grundwasser 0,80 m unter Gelände, gespannt. Siehe Baugrundgutachten.
+Es gelten VOB/B und VOB/C, DIN EN 1610, DIN EN 12050, DWA-A 134, DWA-A 125, DVGW GW 321, die VDE-Bestimmungen und die Technischen Anschlussbedingungen des Netzbetreibers."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Einrichtung und Sicherung
+1.1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle für sämtliche Leistungen einrichten, vorhalten und räumen. Die Zufahrt erfolgt über die Deichstraße, zulässiges Gesamtgewicht 26 t. // Stellfläche für den Mobilkran zum Versetzen der Fertigteile ist vom AN herzustellen und zurückzubauen.
+1.1.20 | 1 psch | Verkehrssicherung Deichstraße | Verkehrssicherung nach RSA 21 für halbseitige Sperrung der Deichstraße auf 80 m Länge während der Arbeiten am Pumpwerk und für die Tagesbaustellen der Druckleitung, einschließlich Verkehrszeichenplan.
+1.1.30 | 160 m | Bauzaun stellen und vorhalten | Mobilen Bauzaun, Höhe 2,00 m, mit Sichtschutz zur Wohnbebauung stellen, für die Bauzeit vorhalten und räumen.
+1.1.40 | 1 psch | Provisorische Abwasserüberleitung | Abwasserüberleitung während des Umschlusses vom alten auf das neue Pumpwerk herstellen, betreiben und zurückbauen, einschließlich Pumpen, Leitungen und Bereitschaft. Dauer und Fördermenge nach Erfordernis.
+# 2 | Baugrube und Pumpwerk
+# 2.1 | Baugrube
+2.1.10 | 310 m2 | Baugrubenverbau mit Spundwand | Baugrubenverbau als wasserdichte Spundwand, Profillänge bis 9,00 m, erschütterungsarm einpressen, einfach aussteifen, vorhalten und nach Verfüllung ziehen. Statik und Ausführungsplanung durch den AN.
+2.1.20 | 290 m3 | Baugrube ausheben, Tiefe bis 6,20 m | Boden (Klei, Torf, Sand) in der verbauten Baugrube lösen, heben und laden, Aushubtiefe bis 6,20 m unter Gelände.
+2.1.30 | 1 psch | Wasserhaltung einrichten | Geschlossene Wasserhaltung mit Schwerkraftbrunnen zur Entspannung des Grundwassers einrichten und zurückbauen, einschließlich wasserrechtlichem Antrag und Enteisenungsanlage.
+2.1.40 | 45 d | Wasserhaltung betreiben | Wasserhaltung der Position 2.1.30 betreiben und überwachen, einschließlich Energie, Notstrom und Bereitschaft. Abrechnung je Kalendertag.
+2.1.50 | 60 d | Wasserhaltung betreiben, Verlängerung | Wasserhaltung über die Dauer der Position 2.1.40 hinaus betreiben, auf Anordnung des AG. | E
+2.1.60 | 520 t | Boden entsorgen, Klei und Torf | Aushub aus Klei und Torf, Zuordnung bis Z 1.2, TOC erhöht, abfahren und verwerten oder entsorgen. Abrechnung nach Wiegescheinen.
+2.1.70 | 32 m3 | Sohlplatte C30/37 mit Auftriebssicherung | Sohlplatte aus Stahlbeton C30/37, XA2, Dicke 50 cm, mit umlaufendem Auftriebskragen herstellen, einschließlich Schalung, Betonstahl B500B bis 110 kg/m3 und Sauberkeitsschicht.
+2.1.80 | 180 m3 | Baugrube verfüllen | Arbeitsraum mit geliefertem Füllsand lagenweise verfüllen und verdichten, DPr mindestens 98 %.
+# 2.2 | Pumpwerk und maschinelle Ausrüstung
+2.2.10 | 1 St | Fertigteil-Pumpschacht DN 2500 | Pumpschacht aus Stahlbetonfertigteilen DN 2500, Bauhöhe 5,80 m, Beton C40/50 mit hohem Sulfatwiderstand, monolithisches Unterteil mit strömungsgünstig ausgebildeter Sohle, Schachtringe, Abdeckplatte befahrbar Klasse D 400, liefern und mit Mobilkran versetzen. Auftriebsnachweis durch den Hersteller.
+2.2.20 | 2 St | Tauchmotorpumpe Q = 28 l/s, H = 14 m | Abwasser-Tauchmotorpumpe in Nassaufstellung, Förderstrom 28 l/s bei 14 m Förderhöhe, freier Kugeldurchgang mindestens 80 mm, Motor 7,5 kW, explosionsgeschützt, mit Kupplungsfuß, Führungsrohren und Kette aus Edelstahl liefern und einbauen.
+2.2.30 | 1 psch | Rohrinstallation Edelstahl DN 100 | Druckrohrleitungen im Pumpschacht aus Edelstahl 1.4571, DN 100, mit Hosenstück, Passstücken, Flanschen und Halterungen liefern und montieren.
+2.2.40 | 2 St | Rückflussverhinderer DN 100 | Kugelrückschlagventil DN 100, PN 10, GGG epoxidbeschichtet, liefern und einbauen.
+2.2.50 | 2 St | Absperrschieber DN 100 | Weichdichtender Keilflachschieber DN 100, PN 10, mit Handrad, für Abwasser, liefern und einbauen.
+2.2.60 | 1 St | Schachtabdeckung Edelstahl mit Absturzsicherung | Einstiegs- und Montageöffnung 1000 x 1400 mm mit Abdeckung aus Edelstahl, gasdicht, mit Gasdruckfedern, Absturzsicherungsgitter und Einstiegshilfe liefern und einbauen.
+2.2.70 | 1 St | Zulaufschacht DN 1000 mit Absperrschieber | Schacht aus Betonfertigteilen DN 1000, Tiefe 4,20 m, mit Spindelschieber DN 300 im Zulauf, liefern und herstellen, einschließlich Anschluss des vorhandenen Zulaufkanals DN 300.
+# 3 | Druckleitung
+# 3.1 | Offene Bauweise
+3.1.10 | 640 m3 | Rohrgraben ausheben und verfüllen | Rohrgraben für die Druckleitung, Tiefe bis 1,60 m, ausheben, Verbau nach Erfordernis, Leitungszone aus Sand 0/2 herstellen und Graben mit Aushub verfüllen.
+3.1.20 | 505 m | Druckrohr PE 100 RC da 160 SDR 11 | Abwasserdruckrohr PE 100 RC, da 160 x 14,6 mm, SDR 11, in Stangen von 12 m liefern, durch Heizelementstumpfschweißen verbinden und im Graben verlegen.
+3.1.30 | 14 St | Formstücke PE da 160 | Bögen und T-Stücke PE 100 da 160 SDR 11 liefern und einschweißen.
+3.1.40 | 620 m2 | Oberflächen wiederherstellen | Wirtschaftsweg im Grabenbereich mit Schottertragschicht 0/45, 25 cm, und Asphalttragdeckschicht AC 16 TD, 8 cm, wiederherstellen.
+# 3.2 | Horizontalspülbohrung
+3.2.10 | 1 psch | Bohranlage einrichten und räumen | Horizontalspülbohranlage mit mindestens 250 kN Zugkraft einschließlich Mischanlage und Recyclingeinheit antransportieren, einrichten und räumen. Bohrplanung nach DVGW GW 321.
+3.2.20 | 185 m | Horizontalspülbohrung für Rohr da 160 | Pilotbohrung, Aufweitbohrung und Rohreinzug für Druckrohr da 160 im Horizontalspülbohrverfahren unter Deichfuß und Niederung, Überdeckung mindestens 4,00 m, mit Bohrprotokoll und Vermessung des Bohrverlaufs.
+3.2.30 | 2 St | Start- und Zielgrube | Start- oder Zielgrube 2,5 x 4,0 m, Tiefe bis 2,00 m, mit Verbau und offener Wasserhaltung herstellen und wieder verfüllen.
+3.2.40 | 185 m | Druckrohr da 160 für Rohreinzug | Wie Position 3.1.20, jedoch mit additivem Schutzmantel aus PP, als Rohrstrang vorgeschweißt und auf Rollenböcken ausgelegt.
+3.2.50 | 60 m | Bohrspülung und Bohrklein entsorgen | Bohrspülung (Bentonitsuspension) und Bohrklein absaugen, abfahren und ordnungsgemäß entsorgen, einschließlich Nachweisen.
+# 3.3 | Prüfung und Einbindung
+3.3.10 | 1 psch | Druckprüfung Druckleitung | Druckprüfung der gesamten Druckleitung nach DIN EN 805 und DVGW W 400-2, Prüfdruck 10 bar, einschließlich Molchen und Protokoll.
+3.3.20 | 1 St | Einbindung in Übergabeschacht Kläranlage | Druckleitung da 160 in den vorhandenen Übergabeschacht der Kläranlage einbinden, mit Mauerdurchführung, Flanschverbindung und Absperrschieber DN 150.
+# 4 | Elektro- und MSR-Technik
+# 4.1 | Schaltanlage und Fernwirktechnik
+4.1.10 | 1 St | Schaltanlage im Freiluftschrank | Schaltanlage für zwei Pumpen 7,5 kW mit Sanftanlauf, speicherprogrammierbarer Steuerung, Bedienpanel, Überspannungsschutz und Einspeisung für mobiles Notstromaggregat, im doppelwandigen Freiluftschrank aus Edelstahl auf Fertigteilsockel, liefern, aufstellen und anschließen.
+4.1.20 | 1 St | Füllstandsmessung | Hydrostatische Füllstandssonde 0 bis 4 m, Ex-Ausführung, und zwei Schwimmerschalter für Trockenlaufschutz und Hochwasseralarm liefern, montieren und anschließen.
+4.1.30 | 1 St | Fernwirkanlage, Anbindung Leitsystem | Fernwirkunterstation mit Mobilfunkrouter liefern, montieren und an das vorhandene Prozessleitsystem der Kläranlage anbinden. Fabrikat nach Wahl des AG. Anpassungen am Leitsystem einschließlich Prozessbildern ohne gesonderte Vergütung.
+4.1.40 | 85 m | Kabel und Kabelschutzrohre | Energie- und Steuerkabel zwischen Schaltschrank und Pumpschacht in Kabelschutzrohren DN 110 liefern und verlegen, einschließlich Erdarbeiten und gasdichten Durchführungen.
+4.1.50 | 1 psch | Netzanschluss mit Zähleranschlusssäule | Zähleranschlusssäule nach den Anschlussbedingungen des Netzbetreibers liefern und setzen, Anschlusskabel bis zum Schaltschrank. Die Netzanschlusskosten trägt der AG.
+4.1.60 | 1 psch | Inbetriebnahme, Probebetrieb, Dokumentation | Inbetriebnahme der Gesamtanlage, Probebetrieb über 14 Tage, Einweisung des Betriebspersonals und Dokumentation dreifach in Papier und digital.
+# 5 | Außenanlagen
+# 5.1 | Befestigung und Einfriedung
+5.1.10 | 140 m2 | Betonsteinpflaster 8 cm, Betriebsfläche | Betriebsfläche mit Betonsteinpflaster 8 cm auf Bettung und Schottertragschicht 0/45, 25 cm, herstellen, befahrbar für Saugwagen 26 t, einschließlich Tiefbordeinfassung.
+5.1.20 | 52 m | Stabgitterzaun mit Tor | Doppelstabmattenzaun, Höhe 1,80 m, feuerverzinkt, mit zweiflügeligem Tor 4,00 m, liefern und setzen.
+5.1.30 | 180 m2 | Oberboden andecken und Rasen ansäen | Oberboden 15 cm andecken, Feinplanum herstellen und Landschaftsrasen ansäen, einschließlich Fertigstellungspflege.
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "Aufforderung_Angebotsabgabe_Pumpwerk_Deichstrasse.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0402
+Maßnahme: Neubau Abwasserpumpwerk Deichstraße mit Druckleitung zur Kläranlage, Norderbek
+Vergabeart: Öffentliche Ausschreibung nach VOB/A, Abschnitt 1
+
+Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek beabsichtigt, die oben genannte Bauleistung zu vergeben. Sie werden gebeten, ein Angebot abzugeben.
+
+Ablauf der Angebotsfrist und Eröffnungstermin: {-200|long}, 10:00 Uhr
+Ablauf der Bindefrist: {-165}
+Fragen zu den Vergabeunterlagen: in Textform bis {-207} an die Zentrale Vergabestelle
+Ausführungsfristen: Beginn {-150}, Fertigstellung einschließlich Probebetrieb bis {+45}
+
+Die Leistung wird als Gesamtleistung vergeben (Bautechnik, Maschinentechnik, Elektro- und MSR-Technik). Der Bieter hat anzugeben, welche Teile er an Nachunternehmer vergibt.
+
+Angebote sind elektronisch in Textform über den Vergabemarktplatz Nord einzureichen. Nebenangebote sind nicht zugelassen.
+
+Mit dem Angebot vorzulegen: Angebotsschreiben (Formblatt 213), Leistungsverzeichnis mit Preisen, Eigenerklärung zur Eignung (Formblatt 124), Formblatt 221 oder 222, Verzeichnis der Nachunternehmerleistungen (Formblatt 233), Fabrikatsangaben für Pumpen, Pumpschacht und Schaltanlage.
+Zuschlagskriterium: Preis 100 %.
+Sicherheiten: Vertragserfüllungsbürgschaft 5 %, Mängelansprüchebürgschaft 3 %. Vertragsstrafe 0,1 % je Werktag, höchstens 5 % der Auftragssumme.
+
+Anlagen: Leistungsverzeichnis (PDF), Baubeschreibung, Lageplan, Bauwerksplan Pumpwerk, Längsschnitt Druckleitung, R+I-Schema, Baugrundgutachten."""
+
+[[doc]]
+key = "niederschrift"
+file = "Submissionsergebnis_TBA-SE-0402.pdf"
+title = "Mitteilung über das Ergebnis der Angebotseröffnung"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0402
+Maßnahme: Neubau Abwasserpumpwerk Deichstraße mit Druckleitung zur Kläranlage, Norderbek
+Eröffnungstermin: {-200}, 10:00 Uhr, Rathaus Norderbek, Zimmer 2.14
+Zahl der eingegangenen Angebote: 4, davon verspätet: 0. Nebenangebote: keine.
+
+Ungeprüfte Angebotsendsummen (netto, ohne Umsatzsteuer):
+
+Rang | Bieter | Summe netto
+1 | Bieter 1 | 1.094.870,45
+2 | Bieter 3 | 1.129.344,10
+3 | Bieter 4 | 1.171.902,80
+4 | Bieter 2 | 1.248.615,00
+
+Ihr Angebot ist in dieser Aufstellung als Bieter 1 geführt.
+
+Die Summen sind rechnerisch noch nicht geprüft. Aus dieser Mitteilung kann kein Anspruch auf Erteilung des Zuschlags abgeleitet werden. Die Mitteilung erfolgt nach § 14a Abs. 7 VOB/A."""
+
+[[doc]]
+key = "auftrag"
+file = "Auftragsschreiben_TBA-SE-0402.pdf"
+title = "Auftragsschreiben (Zuschlag)"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0402
+Maßnahme: Neubau Abwasserpumpwerk Deichstraße mit Druckleitung zur Kläranlage, Norderbek
+An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+
+Sehr geehrte Damen und Herren,
+
+auf Ihr Angebot vom {-201} erhalten Sie den Zuschlag für die oben genannte Leistung.
+
+Auftragssumme netto: 1.094.870,45 EUR
+Umsatzsteuer 19 %: 208.025,39 EUR
+Auftragssumme brutto: 1.302.895,84 EUR
+
+Vertragsbestandteile sind in dieser Reihenfolge: dieses Auftragsschreiben, das Leistungsverzeichnis mit Baubeschreibung einschließlich der Bieterinformation Nr. 1 vom {-206}, die Besonderen und Zusätzlichen Vertragsbedingungen, die Pläne, die VOB/C und die VOB/B.
+
+Ausführungsfristen: Beginn spätestens am {-150}. Einzelfrist: Pumpwerk betriebsbereit zum Umschluss bis {-40}. Gesamtfertigstellung einschließlich Probebetrieb bis {+45}. Beide Fristen sind Vertragsfristen.
+Sicherheit für die Vertragserfüllung: 5 % der Auftragssumme, 54.743,52 EUR, als Bürgschaft nach Formblatt 421 innerhalb von 18 Werktagen.
+
+Bauleitung des Auftraggebers: Dipl.-Ing. Sven Hartwig, Fachdienst Tiefbau, Stadtentwässerung.
+
+Bitte bestätigen Sie den Empfang umgehend in Textform und benennen Sie Ihren verantwortlichen Bauleiter.
+
+Stadt Norderbek
+Der Bürgermeister
+Im Auftrag
+Meyer"""
+
+[[mail]]
+id = "einladung"
+day = -215
+time = "09:40"
+from = "tba.meyer"
+to = "us"
+subject = "Aufforderung zur Angebotsabgabe – Abwasserpumpwerk Deichstraße mit Druckleitung (TBA-SE-0402)"
+body = """Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek schreibt den Ersatzneubau des Abwasserpumpwerks Deichstraße einschließlich der Druckleitung zur Kläranlage öffentlich aus. Als in unserer Bieterdatei geführtes Unternehmen erhalten Sie die Unterlagen zusätzlich zur Bekanntmachung auf dem Vergabemarktplatz Nord.
+
+Vergabenummer: TBA-SE-0402
+Ablauf der Angebotsfrist: {-200|long}, 10:00 Uhr
+Bindefrist: {-165}
+Bieterfragen: in Textform bis {-207} an die Zentrale Vergabestelle
+
+Beigefügt sind die Aufforderung zur Angebotsabgabe und das Leistungsverzeichnis. Das Leistungsverzeichnis wurde von einem beauftragten Fachplaner für Maschinen- und Elektrotechnik zusammengestellt und liegt bei dieser Maßnahme nur als PDF vor; eine GAEB-Datei kann nicht zur Verfügung gestellt werden. Die Preise sind in das Formular auf dem Vergabemarktplatz einzutragen.
+
+Eine Ortsbesichtigung mit Zugang zum vorhandenen Pumpwerk findet am {-210} um 14:00 Uhr statt, Treffpunkt Deichstraße 41. Die Teilnahme ist freigestellt."""
+attach = ["doc:anschreiben", "lv:pumpwerk"]
+
+[[mail]]
+id = "fragen"
+day = -209
+time = "11:18"
+from = "us"
+to = "tba.meyer"
+subject = "Bieterfragen zu TBA-SE-0402 – Abwasserpumpwerk Deichstraße mit Druckleitung"
+body = """Sehr geehrte Frau Meyer,
+
+nach der Ortsbesichtigung am {-210} und der Durchsicht des Leistungsverzeichnisses bitten wir um Beantwortung der folgenden Fragen:
+
+1. Position 1.1.40 „Provisorische Abwasserüberleitung“, 1 psch
+Laut Langtext sind „Dauer und Fördermenge nach Erfordernis“. Für eine Pauschale benötigen wir beides. Bei der Besichtigung wurde ein Umschluss in einer Nacht genannt. Wir nehmen an: Überleitung für längstens 3 Tage, Fördermenge bis 28 l/s (Auslegung der neuen Pumpen), Einleitung in die neue Druckleitung.
+
+2. Position 4.1.30 „Fernwirkanlage, Anbindung Leitsystem“, 1 St
+„Fabrikat nach Wahl des AG“ und „Anpassungen am Leitsystem einschließlich Prozessbildern ohne gesonderte Vergütung“: Ohne Angabe von Fabrikat und Version des vorhandenen Prozessleitsystems sowie der Zahl der Datenpunkte und Prozessbilder ist die Leistung nicht kalkulierbar. Welches System ist vorhanden, welches Fabrikat der Unterstation wird vorgegeben, und wer nimmt die Eingriffe am Leitsystem vor (Systemlieferant des AG oder der AN)? Wir nehmen an: 40 Datenpunkte, ein Prozessbild, Ausführung am Leitsystem durch den Systemlieferanten im Auftrag des AN.
+
+3. Positionen 3.2.20 und 3.2.50, Horizontalspülbohrung
+Position 3.2.50 „Bohrspülung und Bohrklein entsorgen“ ist mit 60 m ausgeschrieben; entsorgt wird nach Volumen oder Gewicht. Wir gehen von 60 m³ aus. Außerdem ergibt der Längsschnitt (Blatt 5) zwischen Start- und Zielgrube eine Bohrlänge von rund 198 m, ausgeschrieben sind in 3.2.20 und 3.2.40 je 185 m. Bitte prüfen Sie die Menge.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "antwort"
+day = -206
+time = "13:50"
+from = "tba.meyer"
+to = "us"
+subject = "AW: Bieterfragen zu TBA-SE-0402 – Abwasserpumpwerk Deichstraße mit Druckleitung (Bieterinformation Nr. 1)"
+reply_to = "fragen"
+body = """Sehr geehrter Herr Doe,
+
+zu Ihren Fragen vom {-209} ergeht nach Rücksprache mit dem Fachdienst Tiefbau und dem Fachplaner die Bieterinformation Nr. 1. Sie wird allen Bietern bekannt gegeben und ist Bestandteil der Vergabeunterlagen.
+
+Zu 1 (Position 1.1.40): Der Umschluss ist für eine Nacht vorgesehen. Die Überleitung ist für längstens 3 Kalendertage und einen Förderstrom bis 28 l/s auszulegen, mit einer Reservepumpe gleicher Leistung. Eingeleitet wird in die neue Druckleitung über einen Stutzen DN 100 im Zulaufschacht.
+
+Zu 2 (Position 4.1.30): Angaben zum vorhandenen Prozessleitsystem können aus Gründen der IT-Sicherheit im Vergabeverfahren nicht veröffentlicht werden. Das Fabrikat der Fernwirkunterstation wird nach Auftragserteilung benannt. Der Aufwand für die Anbindung ist nach den Angaben der Baubeschreibung, Abschnitt 6.3, einzukalkulieren. Der Wortlaut der Position bleibt unverändert.
+
+Zu 3 (Positionen 3.2.20, 3.2.40, 3.2.50): Die Mengeneinheit der Position 3.2.50 ist m³, Menge 60 m³. Die Bohrlänge wurde anhand des Längsschnitts geprüft; die Menge der Positionen 3.2.20 und 3.2.40 wird jeweils auf 198 m berichtigt. Die Menge der Position 3.1.20 verringert sich entsprechend auf 492 m.
+
+Die Angebotsfrist bleibt unverändert."""
+
+[[mail]]
+id = "eingang"
+day = -201
+time = "17:32"
+from = "portal.noreply"
+to = "us"
+subject = "Eingangsbestätigung: Ihr Angebot zu TBA-SE-0402 wurde übermittelt"
+body = """Guten Tag,
+
+Ihr Angebot wurde verschlüsselt an die Vergabestelle übermittelt.
+
+Vergabestelle: Stadt Norderbek, Zentrale Vergabestelle
+Vergabenummer: TBA-SE-0402
+Bezeichnung: Neubau Abwasserpumpwerk Deichstraße mit Druckleitung zur Kläranlage
+Bieter: Acme Tiefbau GmbH, Hamburg
+Eingang auf dem Server: {-201}, 17:31:19 Uhr
+Ablauf der Angebotsfrist: {-200}, 10:00 Uhr
+Übermittelte Dateien: 9
+
+Das Angebot kann bis zum Ablauf der Angebotsfrist zurückgezogen und neu eingereicht werden. Diese Bestätigung dient als Nachweis des fristgerechten Eingangs."""
+
+[[mail]]
+id = "angebot"
+day = -201
+time = "17:41"
+from = "us"
+to = "tba.meyer"
+cc = ["us"]
+subject = "Angebot TBA-SE-0402 – zur Information: wie eben über die Vergabeplattform eingereicht"
+body = """Sehr geehrte Frau Meyer,
+
+zu Ihrer Information: Unser Angebot zur Vergabe TBA-SE-0402 haben wir soeben vollständig über den Vergabemarktplatz Nord eingereicht; die Eingangsbestätigung liegt uns vor. Maßgeblich ist allein das dort eingereichte Angebot.
+
+Anbei erhalten Sie vorab das Leistungsverzeichnis mit unseren Preisen als PDF, da das Leistungsverzeichnis nur als PDF vorlag, damit es Ihnen für die Prüfung auch unmittelbar vorliegt. Die Angebotssumme beträgt 1.094.870,45 EUR netto. Die Bieterinformation Nr. 1 vom {-206} ist berücksichtigt (Positionen 3.2.20 und 3.2.40 mit je 198 m, Position 3.1.20 mit 492 m, Position 3.2.50 mit 60 m³).
+
+Mit freundlichen Grüßen"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "niederschrift"
+day = -197
+time = "08:40"
+from = "tba.meyer"
+to = "us"
+subject = "TBA-SE-0402 – Mitteilung über das Ergebnis der Angebotseröffnung"
+body = """Sehr geehrte Damen und Herren,
+
+die Angebote zur oben genannten Vergabe wurden am {-200} um 10:00 Uhr geöffnet. Die Mitteilung über die ungeprüften Angebotsendsummen nach § 14a Abs. 7 VOB/A ist beigefügt.
+
+Es sind vier Angebote eingegangen. Ihr Angebot liegt nach der ungeprüften Endsumme an erster Stelle. Die Prüfung und Wertung steht noch aus; ein Anspruch auf den Zuschlag ergibt sich hieraus nicht."""
+attach = ["doc:niederschrift"]
+
+[[mail]]
+id = "zuschlag"
+day = -178
+time = "10:05"
+from = "tba.meyer"
+to = "us"
+cc = ["tba.hartwig"]
+subject = "Zuschlag – Abwasserpumpwerk Deichstraße mit Druckleitung (TBA-SE-0402)"
+body = """Sehr geehrter Herr Doe,
+
+nach Abschluss der Prüfung und Wertung erhalten Sie den Zuschlag auf Ihr Angebot vom {-201}. Das Auftragsschreiben ist beigefügt; das Original geht Ihnen mit der Post zu.
+
+Auftragssumme: 1.094.870,45 EUR netto. Das Auftrags-Leistungsverzeichnis ist als PDF beigefügt; es entspricht Ihrem Angebot ohne Änderungen.
+
+Bitte bestätigen Sie den Empfang in Textform und benennen Sie Ihren Bauleiter. Die Vertragserfüllungsbürgschaft ist innerhalb von 18 Werktagen vorzulegen. Auf die Einzelfrist für die Betriebsbereitschaft des Pumpwerks ({-40}) wird besonders hingewiesen. Herr Hartwig lädt zur Bauanlaufbesprechung ein."""
+attach = ["doc:auftrag", "lv:auftrag"]
+
+[[mail]]
+id = "bestaetigung"
+day = -175
+time = "08:22"
+from = "us"
+to = "tba.meyer"
+cc = ["tba.hartwig", "us.albers"]
+subject = "AW: Zuschlag – Abwasserpumpwerk Deichstraße mit Druckleitung (TBA-SE-0402)"
+reply_to = "zuschlag"
+body = """Sehr geehrte Frau Meyer,
+
+wir bestätigen den Empfang des Auftragsschreibens vom {-178} und danken für den Auftrag.
+
+Verantwortlicher Bauleiter ist wie in der Mühlenstraße Herr Jonas Albers (in Kopie). Die Vertragserfüllungsbürgschaft über 54.743,52 EUR ist beantragt.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "anlauf"
+day = -171
+time = "07:55"
+from = "tba.hartwig"
+to = "us"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Bauanlaufbesprechung {-163}, Urkalkulation, Freigaben"
+body = """Hallo Herr Doe, hallo Herr Albers,
+
+Bauanlaufbesprechung am {-163|long}, 13:00 Uhr, auf der Kläranlage (Betriebsgebäude), danach gehen wir zum Pumpwerk rüber. Bringen Sie bitte Ihre Nachunternehmer für Maschinentechnik, EMSR und die Spülbohrung mit, ich will die Schnittstellen einmal mit allen durchgehen.
+
+Vorab brauche ich:
+- Urkalkulation im verschlossenen Umschlag
+- Terminplan mit Lieferterminen für Pumpschacht, Pumpen und Schaltanlage. Die Einzelfrist {-40} für die Betriebsbereitschaft ist ernst gemeint, das alte Pumpwerk hält keinen weiteren Winter.
+- Werkpläne Pumpschacht mit Auftriebsnachweis zur Freigabe, bevor das Fertigteilwerk produziert
+- Pumpenkennlinien, Datenblätter, Ex-Bescheinigung
+- Stromlaufpläne Schaltanlage zur Freigabe. Die Fernwirkunterstation ist jetzt festgelegt: Typ wie auf den anderen acht Pumpwerken der Stadt, Bezeichnung und Datenpunktliste (52 Punkte) bekommen Sie in der Besprechung.
+- Statik Spundwandverbau, geprüft
+- Bohrplanung für die Querung nach GW 321, die Wasserbehörde und der Deichverband wollen sie vier Wochen vor Bohrbeginn sehen
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "anlauf_aw"
+day = -168
+time = "16:12"
+from = "us"
+to = "tba.hartwig"
+cc = ["us.albers"]
+subject = "AW: Pumpwerk Deichstraße – Bauanlaufbesprechung {-163}, Urkalkulation, Freigaben"
+reply_to = "anlauf"
+body = """Sehr geehrter Herr Hartwig,
+
+der Termin am {-163} um 13:00 Uhr ist notiert. Wir kommen mit Herrn Albers und bringen die Ansprechpartner des Pumpenlieferanten (Aquatec, liefert auch die Schaltanlage), der Elektrofirma und des Bohrunternehmens mit.
+
+Die Urkalkulation bringen wir mit. Terminplan und Werkpläne des Pumpschachts erhalten Sie bis {-165}. Lieferzeiten nach heutigem Stand ab Freigabe: Pumpschacht DN 2500 sieben Wochen, Pumpen zehn Wochen, Schaltanlage zwölf Wochen. Damit die Einzelfrist {-40} gehalten wird, benötigen wir die Freigabe der Pumpen und der Stromlaufpläne bis spätestens {-140}.
+
+Zur Fernwirkunterstation ein Hinweis vorab: Wir haben mit 40 Datenpunkten kalkuliert und dies in unserer Bieterfrage vom {-209} so angegeben. Den Mehraufwand für 52 Punkte prüfen wir, sobald die Liste vorliegt.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "behinderung"
+day = -66
+time = "10:34"
+from = "us.albers"
+to = "tba.hartwig"
+cc = ["us"]
+subject = "Pumpwerk Deichstraße – Behinderungsanzeige § 6 Abs. 1 VOB/B: Lieferverzug Tauchmotorpumpen (Pos. 2.2.20)"
+body = """Sehr geehrter Herr Hartwig,
+
+der Pumpenlieferant hat uns gestern schriftlich mitgeteilt, dass die beiden Tauchmotorpumpen der Position 2.2.20 nicht wie bestätigt in KW {kw-58}, sondern erst in KW {kw+2} geliefert werden. Grund laut Hersteller: Die explosionsgeschützten Motoren 7,5 kW sind beim Vorlieferanten nicht verfügbar, betroffen ist die gesamte Baureihe. Das Schreiben des Lieferanten füge ich in der Besprechung bei.
+
+Stand der übrigen Leistungen: Pumpschacht versetzt und verfüllt, Edelstahlverrohrung montiert, Druckleitung einschließlich Spülbohrung fertig und geprüft (Protokoll vom {-74}), Schaltanlage wird in KW {kw-52} aufgestellt.
+
+Die Einzelfrist {-40} für die Betriebsbereitschaft ist damit ohne die Pumpen nicht zu halten. Ich zeige hiermit Behinderung nach § 6 Abs. 1 VOB/B an. Wir haben die Pumpen am {-139}, einen Tag nach Ihrer Freigabe, bestellt; den Verzug haben wir nicht zu vertreten.
+
+Herr Doe meldet sich mit einem Vorschlag, wie das Pumpwerk trotzdem vor dem Winter in Betrieb gehen kann.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "behinderung_aw"
+day = -63
+time = "07:31"
+from = "tba.hartwig"
+to = "us.albers"
+cc = ["us", "tba.meyer"]
+subject = "AW: Pumpwerk Deichstraße – Behinderungsanzeige § 6 Abs. 1 VOB/B: Lieferverzug Tauchmotorpumpen (Pos. 2.2.20)"
+reply_to = "behinderung"
+body = """Hallo Herr Albers,
+
+so geht das nicht. Die Behinderungsanzeige weise ich zurück. Der Lieferant ist Ihr Nachunternehmer, sein Verzug ist Ihr Risiko und kein Umstand aus dem Bereich des Auftraggebers. § 6 Abs. 2 VOB/B greift hier nicht. Die Einzelfrist {-40} ist Vertragsfrist, die Vertragsstrafe steht im Vertrag.
+
+Mir geht es aber nicht um die Vertragsstrafe, mir geht es darum, dass das alte Pumpwerk im Winter nicht mehr läuft. Die Pumpe 2 dort ist seit drei Wochen ausgefallen, wir fahren mit einer Pumpe ohne Reserve. Ich erwarte bis Ende der Woche einen belastbaren Vorschlag, wie das neue Pumpwerk bis {-40} fördert. Ob mit den endgültigen Pumpen oder anderen, ist mir zunächst gleich.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "vorschlag"
+day = -60
+time = "15:48"
+from = "us"
+to = "tba.hartwig"
+cc = ["us.albers", "tba.meyer"]
+subject = "Pumpwerk Deichstraße – Vorschlag: Inbetriebnahme mit Leihpumpen bis {-40}, Nachtrag N 2"
+reply_to = "behinderung_aw"
+quote = false
+body = """Sehr geehrter Herr Hartwig,
+
+wir verstehen Ihre Lage und haben mit dem Lieferanten eine Lösung ausgehandelt, mit der das neue Pumpwerk zur Einzelfrist fördert:
+
+1. Der Lieferant stellt ab KW {kw-48} zwei Leihpumpen derselben Baureihe mit dem nächstkleineren Motor (5,5 kW, Ex-Ausführung, 24 l/s bei 14 m) kostenfrei zur Verfügung. Sie passen auf die eingebauten Kupplungsfüße und Führungsrohre. Für den Trockenwetterzufluss von 11 l/s reicht eine Pumpe mit Reserve; bei Regenwetter laufen beide parallel.
+2. Die Schaltanlage wird für die Leihpumpen parametriert (Motorschutz, Sanftanlauf). Umschluss vom alten Pumpwerk in der Nacht zum {-42}, wie geplant über Position 1.1.40.
+3. Die endgültigen Pumpen werden in KW {kw+2} getauscht, eine Pumpe nach der anderen, ohne Betriebsunterbrechung. Danach beginnt der 14-tägige Probebetrieb der Position 4.1.60. Die Gesamtfertigstellung {+45} bleibt erreichbar.
+
+Kosten: Miete und Transport der Leihpumpen trägt der Lieferant. Bei uns entstehen der zweimalige Aus- und Einbau sowie die zweite Parametrierung und Inbetriebnahme, zusammen 6.480,00 EUR netto (Nachtrag N 2). Wir bieten an, diesen Betrag zur Hälfte selbst zu tragen, wenn die Stadt im Gegenzug die Einzelfrist als gewahrt ansieht, sobald das Pumpwerk mit den Leihpumpen am {-42} in Betrieb ist, und auf die Vertragsstrafe aus der Einzelfrist verzichtet.
+
+Unabhängig davon steht noch der Mehraufwand der Fernwirkanbindung (52 statt 40 Datenpunkte, zwei Prozessbilder) aus unserem Schreiben vom {-120} aus; hierzu bitten wir um Ihre Entscheidung.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "vorschlag_aw"
+day = -56
+time = "09:17"
+from = "tba.hartwig"
+to = "us"
+cc = ["us.albers", "tba.meyer"]
+subject = "AW: Pumpwerk Deichstraße – Vorschlag: Inbetriebnahme mit Leihpumpen bis {-40}, Nachtrag N 2"
+reply_to = "vorschlag"
+body = """Hallo Herr Doe,
+
+das ist ein brauchbarer Vorschlag. Mit dem Betrieb und Frau Meyer abgestimmt:
+
+- Inbetriebnahme mit den Leihpumpen 5,5 kW: einverstanden. Bedingung: Kennlinien und Ex-Bescheinigung der Leihpumpen vor dem Einbau an mich, und der Lieferant bestätigt schriftlich den Liefertermin KW {kw+2} für die endgültigen Pumpen.
+- Wenn das Pumpwerk am {-42} mit den Leihpumpen fördert und die Schaltanlage samt Störmeldung auf dem Leitsystem läuft, gilt die Einzelfrist als gewahrt. Keine Vertragsstrafe.
+- Nachtrag N 2: Die Hälfte, 3.240,00 EUR netto, übernehmen wir. Mehr nicht, der Verzug bleibt in Ihrer Sphäre.
+- Die Gewährleistung für die Pumpen beginnt mit der Abnahme nach dem Probebetrieb, nicht mit dem Einbau der Leihpumpen.
+- Fernwirkanbindung: Die zwölf zusätzlichen Datenpunkte und das zweite Prozessbild erkenne ich als Mehrleistung an, Sie hatten das in der Bieterfrage offengelegt. Bitte als Nachtrag N 1 mit Aufgliederung einreichen, die Stunden des Systemlieferanten gegen Nachweis.
+
+Umschluss in der Nacht zum {-42}, Beginn 22:00 Uhr. Unser Betrieb ist mit zwei Mann und dem Saugwagen dabei.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "umschluss"
+day = -41
+time = "06:52"
+from = "us.albers"
+to = "tba.hartwig"
+cc = ["us"]
+subject = "Pumpwerk Deichstraße – Umschluss erfolgt, Anlage fördert seit 03:40 Uhr"
+body = """Sehr geehrter Herr Hartwig,
+
+kurze Meldung für die Akte: Der Umschluss ist heute Nacht ohne Zwischenfälle gelaufen. Zulauf um 22:15 Uhr abgesperrt, Überleitung über Position 1.1.40 bis 03:30 Uhr, seit 03:40 Uhr fördert das neue Pumpwerk mit Leihpumpe 1 in die Druckleitung. Leihpumpe 2 ist im Wechselbetrieb getestet. Druck am Übergabeschacht 1,3 bar, Störmeldungen kommen auf dem Leitsystem an (von Ihrem Betrieb um 04:10 Uhr bestätigt).
+
+Das alte Pumpwerk ist abgeschiebert und stromlos. Den Rückbau der Überleitung machen wir heute Vormittag. Das Protokoll mit den Unterschriften Ihrer Kollegen schicke ich nach.
+
+Offen: Tausch gegen die endgültigen Pumpen in KW {kw+2}, danach Probebetrieb; Außenanlagen (Titel 5) ab KW {kw-30}.
+
+Mit freundlichen Grüßen"""
+
+# Our bid: the tender LV with the quantities and units of the client's answers and our unit prices.
+[[lv]]
+key = "angebot"
+base = "pumpwerk"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_Pumpwerk_Deichstrasse"
+set = [
+  "3.1.20 | 492 m | Druckrohr PE 100 RC da 160 SDR 11 | Abwasserdruckrohr PE 100 RC, da 160 x 14,6 mm, SDR 11, in Stangen von 12 m liefern, durch Heizelementstumpfschweißen verbinden und im Graben verlegen.",
+  "3.2.20 | 198 m | Horizontalspülbohrung für Rohr da 160 | Pilotbohrung, Aufweitbohrung und Rohreinzug für Druckrohr da 160 im Horizontalspülbohrverfahren unter Deichfuß und Niederung, Überdeckung mindestens 4,00 m, mit Bohrprotokoll und Vermessung des Bohrverlaufs.",
+  "3.2.40 | 198 m | Druckrohr da 160 für Rohreinzug | Wie Position 3.1.20, jedoch mit additivem Schutzmantel aus PP, als Rohrstrang vorgeschweißt und auf Rollenböcken ausgelegt.",
+  "3.2.50 | 60 m3 | Bohrspülung und Bohrklein entsorgen | Bohrspülung (Bentonitsuspension) und Bohrklein absaugen, abfahren und ordnungsgemäß entsorgen, einschließlich Nachweisen.",
+]
+prices = """
+1.1.10 | 78003,03
+1.1.20 | 10150,00
+1.1.30 | 14,93
+1.1.40 | 17675,00
+2.1.10 | 501,55
+2.1.20 | 50,16
+2.1.30 | 50150,00
+2.1.40 | 1170,00
+2.1.50 | 1125,00
+2.1.60 | 40,60
+2.1.70 | 931,45
+2.1.80 | 42,99
+2.2.10 | 114650,00
+2.2.20 | 23650,00
+2.2.30 | 38200,00
+2.2.40 | 1375,00
+2.2.50 | 931,45
+2.2.60 | 11705,00
+2.2.70 | 17315,00
+3.1.10 | 38,21
+3.1.20 | 69,26
+3.1.30 | 292,57
+3.1.40 | 54,93
+3.2.10 | 22100,00
+3.2.20 | 292,57
+3.2.30 | 5015,00
+3.2.40 | 58,51
+3.2.50 | 220,92
+3.3.10 | 5015,00
+3.3.20 | 8120,00
+4.1.10 | 100300,00
+4.1.20 | 5850,00
+4.1.30 | 34050,00
+4.1.40 | 81,20
+4.1.50 | 9315,00
+4.1.60 | 14925,00
+5.1.10 | 93,15
+5.1.20 | 197,04
+5.1.30 | 11,34
+"""
+
+# The award: equal to the bid.
+[[lv]]
+key = "auftrag"
+base = "angebot"
+phase = "86"
+file = "Auftrags-LV_Pumpwerk_Deichstrasse"

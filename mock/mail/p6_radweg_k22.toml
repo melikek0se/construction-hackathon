@@ -1,0 +1,498 @@
+# P6: Radweg K 22, Abschnitt Hemdingen (Landesbetrieb Straßen und Wege Küste). Estimated day -95 … -80,
+# won, Zuschlag on day -52. The client's side of the job as it lies in our estimator's mailbox.
+
+[[lv]]
+key = "radweg"
+file = "LV_Radweg_K22_Hemdingen"
+format = "x83"
+client = "lbk"
+name = "Radweg K 22, Abschnitt Hemdingen"
+project = "K 22, Neubau eines Radweges zwischen Hemdingen und Heede, Abschnitt Hemdingen, Bau-km 0+000 bis 1+640"
+number = "LBSW-W-33-0719"
+remarks = """Vorbemerkungen
+Baumaßnahme: Neubau eines straßenbegleitenden Radweges an der Kreisstraße 22, Abschnitt Hemdingen, Bau-km 0+000 bis 1+640, Breite 2,50 m, mit Trennstreifen zur Fahrbahn, Banketten, Mulde und sechs Durchlässen. Aufbau nach RStO 12, Tafel 6: Asphaltdeckschicht 3 cm, Asphalttragschicht 8 cm, Schottertragschicht 15 cm, Frostschutzschicht 30 cm.
+Vergabeart: Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {-80}, 11:00 Uhr
+Bindefrist: {-50}
+Bieterfragen bis: {-87}
+Ausführungsbeginn: {-35}
+Fertigstellung: {+60}
+Die Arbeiten sind unter halbseitiger Sperrung der K 22 mit Lichtsignalanlage auszuführen. Eine Vollsperrung ist nur für den Asphalteinbau an den Einmündungen und nur nach Anordnung der Verkehrsbehörde zulässig.
+Die Fällarbeiten im Knick sind wegen der Schutzfrist des Bundesnaturschutzgesetzes vor Beginn der Brutzeit abzuschließen oder ruhen bis zu deren Ende.
+Es gelten VOB/B und VOB/C, die ZTV E-StB, ZTV SoB-StB, ZTV Asphalt-StB, ZTV Ew-StB, ZTV M, ZTV-SA, die RSA 21 und das Handbuch für die Vergabe und Ausführung von Bauleistungen im Straßen- und Brückenbau (HVA B-StB)."""
+items = """
+# 1 | Baustelleneinrichtung und Verkehrssicherung
+# 1.1 | Baustelleneinrichtung und Verkehrssicherung
+1.1.10 | 1 psch | Baustelle einrichten | Geräte, Werkzeuge und sonstige Betriebsmittel, die zur vertragsgemäßen Ausführung der Bauleistungen erforderlich sind, auf die Baustelle bringen, bereitstellen und betriebsfertig aufstellen. // Flächen für die Baustelleneinrichtung stellt der AG nicht zur Verfügung.
+1.1.20 | 1 psch | Baustelle räumen | Baustelle von allen Geräten, Anlagen und Einrichtungen räumen. Benutzte Flächen und Wege entsprechend dem ursprünglichen Zustand herrichten.
+1.1.30 | 1 psch | Verkehrssicherung einrichten und räumen | Einrichtungen zur Verkehrssicherung nach RSA 21 und ZTV-SA für halbseitige Sperrung, Regelplan C I/5, aufbauen, je Bauabschnitt (höchstens 400 m) umsetzen und abbauen, einschließlich Verkehrszeichenplan und Antrag auf verkehrsrechtliche Anordnung.
+1.1.40 | 70 d | Verkehrssicherung vorhalten, halbseitig mit LSA | Verkehrssicherung für halbseitige Sperrung mit verkehrsabhängiger Lichtsignalanlage vorhalten, betreiben, warten und zweimal täglich kontrollieren. Abrechnung je Kalendertag.
+1.1.50 | 30 d | Verkehrssicherung vorhalten, Vollsperrung | Wie Position 1.1.40, jedoch Vollsperrung der K 22 mit Umleitungsbeschilderung über die L 75 und die Gemeindestraßen, Umleitungslänge rund 9 km. | E
+# 2 | Erdbau
+# 2.1 | Oberboden, Rodung, Erdbau
+2.1.10 | 5200 m² | Oberboden abtragen | Oberboden in einer Dicke von 20 cm abtragen und seitlich in Mieten lagern, soweit er für das Andecken benötigt wird, im Übrigen laden.
+2.1.20 | 420 m³ | Oberboden andecken | Gelagerten Oberboden auf Banketten, Mulden und Böschungen in einer Dicke von 10 cm andecken.
+2.1.30 | 14 St | Baum fällen und Wurzelstock roden | Baum, Stammdurchmesser 30 bis 60 cm, fällen, aufarbeiten, Wurzelstock roden und Rodungsgut entsorgen. Holz geht in das Eigentum des AN über.
+2.1.40 | 380 m | Knick auf den Stock setzen | Gehölze des Knicks auf der Radwegseite fachgerecht auf den Stock setzen, Schnittgut häckseln und abfahren. Abschnitte und Umfang nach Wahl des AG im Benehmen mit der unteren Naturschutzbehörde, Mehrlängen ohne gesonderte Vergütung.
+2.1.50 | 2300 m³ | Boden lösen, Koffer Radweg | Boden der Homogenbereiche O und B1 für den Radwegkoffer und die Mulde profilgerecht lösen und laden.
+2.1.60 | - t | Überschussboden verwerten | Überschüssigen Boden und Oberboden der Zuordnung Z 0 abfahren und einer Verwertung zuführen. Abrechnung nach Wiegescheinen.
+2.1.70 | 4700 m² | Planum herstellen | Planum des Radweges herstellen und verdichten, EV2 mindestens 45 MN/m², Querneigung 2,5 %.
+# 3 | Oberbau
+# 3.1 | Schichten ohne Bindemittel
+3.1.10 | 4700 m² | Frostschutzschicht 0/32, 30 cm | Frostschutzschicht aus Kies-Sand-Gemisch 0/32 nach TL SoB-StB liefern und in 30 cm Dicke einbauen und verdichten, EV2 mindestens 100 MN/m².
+3.1.20 | 4300 m² | Schottertragschicht 0/32, 15 cm | Schottertragschicht 0/32 nach TL SoB-StB liefern und in 15 cm Dicke einbauen, EV2 mindestens 120 MN/m².
+# 3.2 | Asphalt
+3.2.10 | 4100 m² | Asphalttragschicht AC 22 T N, 8 cm | Asphalttragschicht AC 22 T N, Bindemittel 70/100, Einbaudicke 8 cm, mit Fertiger in 2,50 m Breite liefern und einbauen.
+3.2.20 | 4100 t | Asphaltdeckschicht AC 8 D N, 3 cm | Asphaltdeckschicht AC 8 D N, Bindemittel 70/100, Einbaudicke 3 cm, mit Fertiger liefern und einbauen. Abrechnung nach eingebauter Fläche.
+3.2.30 | 4100 m² | Bitumenemulsion aufsprühen | Unterlage reinigen und mit Bitumenemulsion C40BF1-S, 0,3 kg/m², ansprühen.
+3.2.40 | 180 m² | Anschluss an Einmündungen herstellen | Vorhandene Asphaltbefestigung an fünf Einmündungen 4 cm tief fräsen, Fräsgut verwerten, und Deckschicht AC 11 D N im Handeinbau an den Radweg anschließen, einschließlich Nahtband.
+# 3.3 | Bankette und Begrünung
+3.3.10 | 3280 m | Bankett herstellen, Breite 0,50 m | Bankett beidseitig des Radweges, Breite 0,50 m, Dicke 15 cm, aus Bankettmaterial 0/32 mit Oberbodenanteil herstellen und verdichten.
+3.3.20 | 3600 m² | Rasenansaat | Bankette, Mulden und Böschungen mit Regel-Saatgut-Mischung RSM 7.1.2, 20 g/m², ansäen, einschließlich Fertigstellungspflege mit zwei Schnitten.
+# 4 | Entwässerung
+# 4.1 | Durchlässe und Mulden
+4.1.10 | 48 m | Durchlass Stahlbetonrohr DN 400 | Stahlbetonrohr DN 400 nach DIN EN 1916 für sechs Durchlässe unter dem Radweg, Länge je 8 m, auf Kiessandbettung verlegen, einschließlich Erdarbeiten.
+4.1.20 | 12 St | Böschungsstück DN 400 | Böschungsstück aus Beton für Rohr DN 400, Neigung 1:1,5, liefern und setzen, Sohle 1 m mit Wasserbausteinen sichern.
+4.1.30 | 1250 m | Mulde profilieren | Entwässerungsmulde zwischen Fahrbahn und Radweg, Breite 1,50 m, Tiefe 0,30 m, profilieren.
+4.1.40 | 1 psch | Grabenverrohrungen und Zufahrten anpassen | Vorhandene Grabenverrohrungen und Feldzufahrten im Zuge des Radweges anpassen, verlängern oder erneuern. Anzahl und Umfang nach örtlicher Feststellung.
+# 5 | Markierung und Ausstattung
+# 5.1 | Markierung und Beschilderung
+5.1.10 | 3280 m | Schmalstrich Radwegrand | Randmarkierung als Schmalstrich 12 cm, weiß, Typ II, aus Kaltspritzplastik, beidseitig aufbringen.
+5.1.20 | 85 m² | Furtmarkierung und Sinnbilder | Radfurten an fünf Einmündungen und Sinnbilder Radverkehr aus Kaltplastik, weiß, rutschhemmend, aufbringen.
+5.1.30 | 18 St | Verkehrszeichen aufstellen | Verkehrszeichen Größe 2, Folie RA 2, mit Rohrpfosten 60 mm und Fundament liefern und aufstellen.
+5.1.40 | 24 St | Sperrpfosten und Leitpfosten | Sperrpfosten aus Stahl, umlegbar, rot-weiß reflektierend, oder Leitpfosten nach Angabe liefern und setzen.
+# 6 | Stundenlohnarbeiten
+# 6.1 | Stundenlohn
+6.1.10 | 50 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter, nur auf schriftliche Anordnung des AG.
+6.1.20 | 25 h | Mobilbagger mit Bediener | Mobilbagger bis 16 t mit Bediener, nur auf schriftliche Anordnung des AG.
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "HVA_B-StB_Aufforderung_Angebotsabgabe_LBSW-W-33-0719.pdf"
+title = "Aufforderung zur Abgabe eines Angebots (HVA B-StB)"
+from = "lbk"
+text = """Vergabenummer: LBSW-W-33-0719
+Baumaßnahme: K 22, Neubau eines Radweges zwischen Hemdingen und Heede, Abschnitt Hemdingen, Bau-km 0+000 bis 1+640
+Auftraggeber: Kreis Pinneberg, vertreten durch den Landesbetrieb Straßen und Wege Küste, Niederlassung West
+Vergabeart: Öffentliche Ausschreibung nach VOB/A, Abschnitt 1
+
+Es ist beabsichtigt, die in der Leistungsbeschreibung bezeichneten Leistungen im Namen und für Rechnung des oben genannten Auftraggebers zu vergeben. Es wird gebeten, ein Angebot einzureichen.
+
+Ablauf der Angebotsfrist: {-80|long}, 11:00 Uhr
+Ablauf der Bindefrist: {-50}
+Fragen zu den Vergabeunterlagen sind bis zum {-87} in Textform über die Vergabeplattform zu stellen.
+Ausführungsfristen: Beginn {-35}, Vollendung {+60}.
+
+Angebote sind ausschließlich elektronisch in Textform über die Vergabeplattform einzureichen. Nebenangebote sind nicht zugelassen.
+
+Mit dem Angebot sind einzureichen: Angebotsschreiben HVA B-StB, Leistungsverzeichnis als GAEB-Datei DA 84, Eigenerklärung zur Eignung oder Präqualifikation, Formblatt Preisermittlung, Verzeichnis der Nachunternehmerleistungen.
+Auf gesondertes Verlangen: Urkalkulation, Nachweis MVAS für den Verantwortlichen der Verkehrssicherung, Eignungsnachweise für Asphaltmischgut.
+
+Zuschlagskriterium ist der Preis.
+Sicherheit für die Vertragserfüllung: 5 v. H. der Auftragssumme. Sicherheit für Mängelansprüche: 3 v. H. der Abrechnungssumme.
+
+Anlagen: Baubeschreibung, Leistungsverzeichnis (GAEB DA XML), Lagepläne Blatt 1 bis 4, Regelquerschnitt, Höhenplan, Landschaftspflegerischer Begleitplan (Auszug), Baugrundgutachten."""
+
+[[doc]]
+key = "niederschrift"
+file = "Niederschrift_Oeffnungstermin_LBSW-W-33-0719.pdf"
+title = "Niederschrift über den Öffnungstermin (Auszug)"
+from = "lbk"
+text = """Vergabenummer: LBSW-W-33-0719
+Baumaßnahme: K 22, Neubau eines Radweges, Abschnitt Hemdingen
+Öffnungstermin: {-80}, 11:00 Uhr
+Zahl der bis zum Ablauf der Angebotsfrist eingegangenen Angebote: 6. Verspätet eingegangen: 0.
+
+Endbeträge der Angebote ohne Umsatzsteuer, ungeprüft:
+
+Rang | Bieter | Summe netto
+1 | Bieter 6 | 618.442,80
+2 | Bieter 2 | 631.870,55
+3 | Bieter 3 | 644.019,20
+4 | Bieter 1 | 667.385,00
+5 | Bieter 5 | 702.914,65
+6 | Bieter 4 | 739.260,10
+
+Das Angebot des Empfängers dieser Mitteilung ist als Bieter 6 geführt.
+
+Preisnachlässe ohne Bedingungen: keine. Nebenangebote: keine.
+Die Endbeträge sind ungeprüft. Die Mitteilung begründet keinen Anspruch auf Erteilung des Zuschlags."""
+
+[[doc]]
+key = "auftrag"
+file = "Auftragsschreiben_LBSW-W-33-0719.pdf"
+title = "Auftragsschreiben (Zuschlag) nach HVA B-StB"
+from = "lbk"
+text = """Vergabenummer: LBSW-W-33-0719
+Baumaßnahme: K 22, Neubau eines Radweges zwischen Hemdingen und Heede, Abschnitt Hemdingen
+Auftragnehmer: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+
+Im Namen und für Rechnung des Kreises Pinneberg wird Ihnen auf Ihr Angebot vom {-81} der Zuschlag erteilt.
+
+Auftragssumme ohne Umsatzsteuer: 618.442,80 EUR
+Umsatzsteuer 19 v. H.: 117.504,13 EUR
+Auftragssumme einschließlich Umsatzsteuer: 735.946,93 EUR
+
+Vertragsbestandteile: dieses Auftragsschreiben, die Leistungsbeschreibung einschließlich der Bieterinformation Nr. 1 vom {-86}, die Besonderen Vertragsbedingungen, die Zusätzlichen Vertragsbedingungen, die Zusätzlichen Technischen Vertragsbedingungen, die VOB/C und die VOB/B.
+
+Ausführungsfristen: Mit der Ausführung ist am {-35} zu beginnen. Die Leistung ist bis zum {+60} zu vollenden.
+Sicherheit für die Vertragserfüllung: 30.922,14 EUR, zu leisten binnen 18 Werktagen nach Vertragsschluss.
+
+Bauüberwachung: Landesbetrieb Straßen und Wege Küste, Niederlassung West, Sachgebiet Bau, Bauüberwacher Herr Tams.
+
+Der Empfang dieses Schreibens ist unverzüglich zu bestätigen."""
+
+[[mail]]
+id = "einladung"
+day = -95
+time = "07:58"
+from = "lbk.vergabe"
+to = "us"
+subject = "Vergabe LBSW-W-33-0719: K 22, Neubau Radweg, Abschnitt Hemdingen – Aufforderung zur Angebotsabgabe"
+body = """Sehr geehrte Damen und Herren,
+
+zu der oben genannten Baumaßnahme werden Ihnen die Aufforderung zur Abgabe eines Angebots und das Leistungsverzeichnis als GAEB-Datei übersandt. Die vollständigen Vergabeunterlagen sind auf der Vergabeplattform unter der Vergabenummer LBSW-W-33-0719 abrufbar.
+
+Ablauf der Angebotsfrist: {-80|long}, 11:00 Uhr
+Ablauf der Bindefrist: {-50}
+Bieterfragen: bis {-87}, ausschließlich in Textform
+
+Es wird darauf hingewiesen, dass Angebote ausschließlich elektronisch über die Vergabeplattform einzureichen sind. Per E-Mail eingehende Angebote werden ausgeschlossen. Auskünfte werden nur in Textform und an alle Bewerber gleichlautend erteilt."""
+attach = ["doc:anschreiben", "lv:radweg"]
+
+[[mail]]
+id = "fragen"
+day = -90
+time = "13:44"
+from = "us"
+to = "lbk.vergabe"
+subject = "Bieterfragen zur Vergabe LBSW-W-33-0719 – K 22, Radweg Abschnitt Hemdingen"
+body = """Sehr geehrte Damen und Herren,
+
+zur Vergabe LBSW-W-33-0719 stellen wir die folgenden Bieterfragen; gleichlautend haben wir sie auf der Vergabeplattform eingestellt:
+
+1. Position 2.1.60 „Überschussboden verwerten“
+Die Position enthält keine Menge (Einheit t). Aus den Positionen 2.1.10, 2.1.20 und 2.1.50 errechnen wir rund 2.900 m³ Überschuss, das entspricht etwa 5.200 t. Bitte nennen Sie die Menge.
+
+2. Position 3.2.20 „Asphaltdeckschicht AC 8 D N, 3 cm“, 4100 t
+Laut Langtext erfolgt die „Abrechnung nach eingebauter Fläche“, die Einheit ist jedoch t. Die Tragschicht (3.2.10) ist mit 4100 m² ausgeschrieben; 4100 m² Deckschicht von 3 cm entsprechen rund 300 t. Wir gehen davon aus, dass 4100 m² gemeint sind.
+
+3. Position 4.1.40 „Grabenverrohrungen und Zufahrten anpassen“, 1 psch
+„Anzahl und Umfang nach örtlicher Feststellung“ lässt eine Pauschale nicht zu. In den Lageplänen zählen wir sieben Feldzufahrten; ob deren Verrohrungen zu verlängern oder zu erneuern sind, ist nicht erkennbar. Wir bitten um Angabe von Anzahl, Nennweite und Länge oder um Umwandlung in Einheitspreispositionen. Vorläufig nehmen wir sieben Zufahrten mit je 3 m Verlängerung DN 300 an.
+
+4. Position 1.1.50 „Verkehrssicherung vorhalten, Vollsperrung“, 30 d, Bedarfsposition
+Nach den Vorbemerkungen ist eine Vollsperrung nur für den Asphalteinbau an den Einmündungen zulässig. Dafür genügen nach unserer Einschätzung drei bis fünf Tage. Wird die Position mit 30 Tagen gewertet?
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "antwort"
+day = -86
+time = "14:20"
+from = "lbk.vergabe"
+to = "us"
+subject = "AW: Bieterfragen zur Vergabe LBSW-W-33-0719 – K 22, Radweg Abschnitt Hemdingen (Bieterinformation Nr. 1)"
+reply_to = "fragen"
+body = """Sehr geehrte Damen und Herren,
+
+auf die eingegangenen Bieterfragen wird allen Bewerbern die nachstehende Bieterinformation Nr. 1 erteilt. Sie wird Bestandteil der Vergabeunterlagen.
+
+Zu Frage 1 (Position 2.1.60): Die Menge beträgt 3.900 t. Der für das Andecken benötigte Oberboden und der für die Bankette verwendete Boden sind in Abzug gebracht.
+
+Zu Frage 2 (Position 3.2.20): Die Mengeneinheit wird berichtigt. Sie lautet m². Die Menge beträgt 4.100 m².
+
+Zu Frage 3 (Position 4.1.40): Eine Änderung der Leistungsbeschreibung ist nicht vorgesehen. Der Umfang ergibt sich aus den Lageplänen und der Örtlichkeit; den Bewerbern wird die Besichtigung der Baustrecke empfohlen. Die Leistung ist in die Pauschale einzukalkulieren.
+
+Zu Frage 4 (Position 1.1.50): Die Position ist eine Bedarfsposition. Sie wird mit der ausgeschriebenen Menge gewertet. Über die Ausführung entscheidet der Auftraggeber nach Maßgabe der verkehrsrechtlichen Anordnung.
+
+Die Angebotsfrist wird nicht verlängert."""
+
+[[mail]]
+id = "eingang"
+day = -81
+time = "16:03"
+from = "portal.noreply"
+to = "us"
+subject = "Eingangsbestätigung: Ihr Angebot zu LBSW-W-33-0719 wurde übermittelt"
+body = """Guten Tag,
+
+Ihr Angebot wurde verschlüsselt an die Vergabestelle übermittelt.
+
+Vergabestelle: Landesbetrieb Straßen und Wege Küste, Niederlassung West
+Vergabenummer: LBSW-W-33-0719
+Bezeichnung: K 22, Neubau eines Radweges, Abschnitt Hemdingen
+Bieter: Acme Tiefbau GmbH, Hamburg
+Eingang auf dem Server: {-81}, 16:02:41 Uhr
+Ablauf der Angebotsfrist: {-80}, 11:00 Uhr
+Übermittelte Dateien: 5
+
+Das Angebot kann bis zum Ablauf der Angebotsfrist zurückgezogen und neu eingereicht werden. Diese Bestätigung dient als Nachweis des fristgerechten Eingangs."""
+
+[[mail]]
+id = "angebot"
+day = -81
+time = "16:14"
+from = "us"
+to = "lbk.vergabe"
+cc = ["us"]
+subject = "Angebot LBSW-W-33-0719 – zur Information: wie eben über die Vergabeplattform eingereicht"
+body = """Sehr geehrte Damen und Herren,
+
+zu Ihrer Information: Unser Angebot zur Vergabe LBSW-W-33-0719 haben wir soeben vollständig über die Vergabeplattform eingereicht; die Eingangsbestätigung liegt uns vor. Maßgeblich ist allein das dort eingereichte Angebot.
+
+Anbei erhalten Sie vorab das Leistungsverzeichnis mit unseren Preisen als GAEB-Datei (X84), damit es Ihnen für die Prüfung auch unmittelbar vorliegt. Die Angebotssumme beträgt 618.442,80 EUR netto. Die Bieterinformation Nr. 1 vom {-86} ist berücksichtigt (Position 2.1.60 mit 3.900 t, Position 3.2.20 mit 4.100 m²).
+
+Mit freundlichen Grüßen"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "niederschrift"
+day = -77
+time = "09:10"
+from = "lbk.vergabe"
+to = "us"
+subject = "Vergabe LBSW-W-33-0719 – Mitteilung über das Ergebnis des Öffnungstermins"
+body = """Sehr geehrte Damen und Herren,
+
+nach § 14a Abs. 7 VOB/A wird Ihnen der Auszug aus der Niederschrift über den Öffnungstermin vom {-80} übersandt.
+
+Es sind sechs Angebote eingegangen. Die Endbeträge sind ungeprüft. Ein Anspruch auf Erteilung des Zuschlags kann aus dieser Mitteilung nicht hergeleitet werden. Von Sachstandsanfragen ist abzusehen."""
+attach = ["doc:niederschrift"]
+
+[[mail]]
+id = "urkalkulation"
+day = -68
+time = "10:31"
+from = "lbk.vergabe"
+to = "us"
+subject = "Vergabe LBSW-W-33-0719 – Anforderung von Unterlagen nach § 16a VOB/A, Frist {-61}"
+body = """Sehr geehrte Damen und Herren,
+
+Ihr Angebot ist in die engere Wahl gekommen. Zur weiteren Prüfung werden die folgenden Unterlagen angefordert:
+
+1. Urkalkulation im verschlossenen Umschlag oder als verschlüsselte Datei über die Vergabeplattform
+2. Aufgliederung der Einheitspreise (Formblatt 223) für die Positionen 2.1.50, 3.1.10, 3.2.10, 3.2.20 und 1.1.40
+3. Verpflichtungserklärungen der Nachunternehmer für Asphalt, Markierung und Verkehrssicherung
+4. Nachweis der Qualifikation des Verantwortlichen für die Verkehrssicherung nach MVAS
+5. Erstprüfungen (Eignungsnachweise) für das Asphaltmischgut AC 22 T N und AC 8 D N
+
+Die Unterlagen müssen bis zum {-61}, 12:00 Uhr, vorliegen. Werden sie nicht fristgerecht vorgelegt, wird das Angebot ausgeschlossen."""
+
+[[mail]]
+id = "urkalkulation_aw"
+day = -64
+time = "15:36"
+from = "us"
+to = "lbk.vergabe"
+subject = "AW: Vergabe LBSW-W-33-0719 – Anforderung von Unterlagen nach § 16a VOB/A, Frist {-61}"
+reply_to = "urkalkulation"
+body = """Sehr geehrte Damen und Herren,
+
+die angeforderten Unterlagen haben wir heute vollständig über die Vergabeplattform eingereicht:
+
+1. Urkalkulation als verschlüsselte Datei
+2. Formblatt 223 für die Positionen 1.1.40, 2.1.50, 3.1.10, 3.2.10 und 3.2.20
+3. Verpflichtungserklärungen: Asphaltbau Holsten GmbH, Elmshorn (Asphalt Titel 3.2 und Markierung Titel 5.1); Verkehrssicherung Nordmark GmbH, Henstedt-Ulzburg (Titel 1.1, Positionen 1.1.30 bis 1.1.50)
+4. MVAS-Nachweis des Verantwortlichen der Verkehrssicherung Nordmark GmbH
+5. Erstprüfungen des Mischwerks für AC 22 T N und AC 8 D N
+
+Bitte bestätigen Sie den Eingang.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "zuschlag"
+day = -52
+time = "11:14"
+from = "lbk.vergabe"
+to = "us"
+subject = "Vergabe LBSW-W-33-0719: K 22, Radweg Abschnitt Hemdingen – Zuschlag"
+body = """Sehr geehrte Damen und Herren,
+
+im Namen und für Rechnung des Kreises Pinneberg wird Ihnen auf Ihr Angebot vom {-81} der Zuschlag erteilt. Das Auftragsschreiben ist beigefügt.
+
+Auftragssumme: 618.442,80 EUR ohne Umsatzsteuer. Das Auftrags-Leistungsverzeichnis (GAEB DA 86) ist beigefügt; es stimmt mit dem Angebot überein.
+
+Der Empfang ist unverzüglich in Textform zu bestätigen. Die Sicherheit für die Vertragserfüllung in Höhe von 30.922,14 EUR ist binnen 18 Werktagen zu leisten. Der verantwortliche Bauleiter und der Verantwortliche für die Verkehrssicherung sind zu benennen. Zur Bauanlaufbesprechung ergeht eine gesonderte Einladung durch die Bauüberwachung."""
+attach = ["doc:auftrag", "lv:auftrag"]
+
+[[mail]]
+id = "bestaetigung"
+day = -49
+time = "08:18"
+from = "us"
+to = "lbk.vergabe"
+cc = ["us.albers"]
+subject = "AW: Vergabe LBSW-W-33-0719: K 22, Radweg Abschnitt Hemdingen – Zuschlag"
+reply_to = "zuschlag"
+body = """Sehr geehrte Damen und Herren,
+
+wir bestätigen den Empfang des Auftragsschreibens vom {-52} und bedanken uns für den Auftrag.
+
+Verantwortlicher Bauleiter: Herr Jonas Albers, Mobil +49 171 5550 318 (in Kopie).
+Verantwortlicher für die Verkehrssicherung: wird von der Verkehrssicherung Nordmark GmbH gestellt, Name und MVAS-Nachweis liegen Ihnen aus der Angebotsaufklärung vor.
+
+Die Vertragserfüllungsbürgschaft über 30.922,14 EUR ist beantragt und geht Ihnen im Original zu.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "anlauf"
+day = -45
+time = "09:02"
+from = "lbk.vergabe"
+to = "us"
+cc = ["us.albers"]
+subject = "K 22, Radweg Abschnitt Hemdingen – Einladung zur Bauanlaufbesprechung am {-38}"
+body = """Sehr geehrte Damen und Herren,
+
+zur Bauanlaufbesprechung wird eingeladen:
+
+Termin: {-38|long}, 10:00 Uhr
+Ort: Straßenmeisterei Elmshorn, Besprechungsraum; anschließend Befahrung der Baustrecke
+Teilnehmer: Bauüberwachung (Herr Tams), Verkehrsbehörde des Kreises Pinneberg, Polizei, untere Naturschutzbehörde, Gemeinde Hemdingen, Auftragnehmer
+
+Bis zum {-41} sind vorzulegen:
+- Bauzeitenplan mit Bauabschnitten von höchstens 400 m Länge
+- Verkehrszeichenplan zur verkehrsrechtlichen Anordnung (Regelplan C I/5, Standorte der Lichtsignalanlage)
+- Benennung der Lagerflächen (der Auftraggeber stellt keine Flächen)
+- Sicherheit für die Vertragserfüllung im Original
+- Liste der vorgesehenen Baustoffe mit Eignungsnachweisen: Frostschutzmaterial 0/32, Schottertragschicht 0/32, Bankettmaterial, Stahlbetonrohre DN 400
+
+Es wird darauf hingewiesen, dass mit Fällarbeiten und dem Auf-den-Stock-Setzen des Knicks erst nach Freigabe durch die untere Naturschutzbehörde begonnen werden darf."""
+
+[[mail]]
+id = "anlauf_aw"
+day = -42
+time = "14:47"
+from = "us.albers"
+to = "lbk.vergabe"
+cc = ["us"]
+subject = "AW: K 22, Radweg Abschnitt Hemdingen – Einladung zur Bauanlaufbesprechung am {-38}"
+reply_to = "anlauf"
+body = """Sehr geehrte Damen und Herren,
+
+an der Bauanlaufbesprechung am {-38} nehmen Herr Doe und ich teil, dazu der Disponent unseres Verkehrssicherers.
+
+Vorab übersende ich über die Vergabeplattform:
+- Bauzeitenplan mit fünf Bauabschnitten (vier zu 400 m, der letzte 40 m mit der Einmündung Heeder Weg), Beginn bei Bau-km 0+000
+- Verkehrszeichenplan, Entwurf, für Abschnitt 1 und 2
+- Baustoffliste: Frostschutzmaterial 0/32 und Schottertragschicht 0/32 aus dem Kieswerk in Hemdingen (Transportweg unter 3 km), Eignungsnachweise liegen bei
+- Lagerfläche: Wir haben die Hoffläche eines Landwirts bei Bau-km 0+700 angemietet, Zufahrt über die vorhandene Feldzufahrt
+
+Die Bürgschaft geht mit der Post an die Vergabestelle. Mit den Fällarbeiten beginnen wir erst nach Freigabe.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "planum"
+day = -24
+time = "12:10"
+from = "us.albers"
+to = "lbk.vergabe"
+cc = ["us"]
+subject = "K 22, Radweg Abschnitt Hemdingen – Bedenken § 4 Abs. 3 VOB/B und Mehrkostenanzeige: Planum Bau-km 0+850 bis 1+020"
+body = """Sehr geehrte Damen und Herren, sehr geehrter Herr Tams,
+
+im Abschnitt 3 erreichen wir zwischen Bau-km 0+850 und 1+020 auf dem Planum den geforderten Verformungsmodul nicht. Die Plattendruckversuche vom {-26} ergeben EV2 zwischen 18 und 27 MN/m² (gefordert 45 MN/m², Position 2.1.70). Angetroffen wird unter dem Oberboden ein weicher, organisch durchsetzter Schluff, der im Baugrundgutachten für diesen Bereich nicht beschrieben ist (nächste Sondierung bei Bau-km 0+600 und 1+200). Die Prüfprotokolle sind beigefügt worden und liegen der Bauüberwachung vor.
+
+Wir melden hiermit Bedenken nach § 4 Abs. 3 VOB/B gegen den Einbau der Frostschutzschicht auf diesem Planum an und zeigen Mehrkosten nach § 2 Abs. 5 und 6 VOB/B an. Das Leistungsverzeichnis enthält keine Position für Bodenaustausch oder Bodenverbesserung.
+
+Vorschlag: Bodenaustausch 40 cm tief auf 170 m Länge und 3,50 m Breite, rund 240 m³, Einbau von Kiessand 0/32 auf Geotextil GRK 3. Ein Nachtragsangebot reicht Herr Doe ein. Bis zu Ihrer Anordnung arbeiten wir im Abschnitt 4 weiter; eine Behinderung entsteht, wenn die Anordnung nicht bis {-19} vorliegt.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "planum_aw"
+day = -20
+time = "08:26"
+from = "lbk.vergabe"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: K 22, Radweg Abschnitt Hemdingen – Bedenken § 4 Abs. 3 VOB/B und Mehrkostenanzeige: Planum Bau-km 0+850 bis 1+020"
+reply_to = "planum"
+body = """Sehr geehrte Damen und Herren,
+
+Ihre Anzeige vom {-24} wurde durch die Bauüberwachung geprüft. Die Feststellungen wurden bei der gemeinsamen Begehung am {-22} bestätigt.
+
+Nach § 1 Abs. 4 VOB/B wird angeordnet: Zwischen Bau-km 0+850 und 1+020 ist ein Bodenaustausch von 40 cm Dicke mit Kiessand 0/32 auf Geotextil auszuführen. Der Nachweis EV2 von mindestens 45 MN/m² ist auf dem Austauschmaterial zu führen.
+
+Die Vergütung wird nach § 2 Abs. 6 VOB/B vereinbart. Das Nachtragsangebot ist auf der Grundlage der Urkalkulation aufzustellen und binnen sechs Werktagen einzureichen. Für das Lösen und Verwerten des Bodens sind die Einheitspreise der Positionen 2.1.50 und 2.1.60 anzuwenden. Mit der Ausführung ist unverzüglich zu beginnen; die Vereinbarung der Vergütung bleibt vorbehalten.
+
+Ein Anspruch auf Verlängerung der Ausführungsfrist wird hiermit nicht anerkannt."""
+
+[[mail]]
+id = "nachtrag"
+day = -17
+time = "16:20"
+from = "us"
+to = "lbk.vergabe"
+cc = ["us.albers"]
+subject = "AW: K 22, Radweg Abschnitt Hemdingen – Nachtragsangebot N 1: Bodenaustausch Bau-km 0+850 bis 1+020"
+reply_to = "planum_aw"
+body = """Sehr geehrte Damen und Herren,
+
+auf Ihre Anordnung vom {-20} reichen wir das Nachtragsangebot N 1 ein (netto, entwickelt aus der Urkalkulation; die Aufgliederung liegt als Formblatt auf der Vergabeplattform):
+
+- Boden lösen, 240 m³, zum Einheitspreis der Position 2.1.50
+- Boden verwerten, 430 t, zum Einheitspreis der Position 2.1.60
+- N1.1 Geotextil GRK 3 liefern und verlegen: 620 m² zu 1,95 EUR = 1.209,00 EUR
+- N1.2 Kiessand 0/32 liefern, 40 cm dick einbauen und verdichten: 240 m³ zu 31,40 EUR = 7.536,00 EUR
+- N1.3 Plattendruckversuche auf dem Austauschmaterial: 4 St zu 145,00 EUR = 580,00 EUR
+
+Summe der neuen Positionen N1.1 bis N1.3: 9.325,00 EUR netto, zuzüglich der Mehrmengen zu Vertragspreisen.
+
+Mit der Ausführung haben wir heute begonnen. Der Bodenaustausch dauert vier Arbeitstage; wir bitten, die Ausführungsfrist um diese vier Tage zu verlängern, und behalten uns den Anspruch vor.
+
+Mit freundlichen Grüßen"""
+
+# Our bid: the tender LV with the quantities and units of the client's answers and our unit prices.
+[[lv]]
+key = "angebot"
+base = "radweg"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_Radweg_K22"
+set = [
+  "2.1.60 | 3900 t | Überschussboden verwerten | Überschüssigen Boden und Oberboden der Zuordnung Z 0 abfahren und einer Verwertung zuführen. Abrechnung nach Wiegescheinen.",
+  "3.2.20 | 4100 m² | Asphaltdeckschicht AC 8 D N, 3 cm | Asphaltdeckschicht AC 8 D N, Bindemittel 70/100, Einbaudicke 3 cm, mit Fertiger liefern und einbauen. Abrechnung nach eingebauter Fläche.",
+]
+prices = """
+1.1.10 | 37967,18
+1.1.20 | 7295,00
+1.1.30 | 16275,00
+1.1.40 | 263,76
+1.1.50 | 291,82
+2.1.10 | 2,13
+2.1.20 | 9,54
+2.1.30 | 426,50
+2.1.40 | 16,27
+2.1.50 | 11,00
+2.1.60 | 16,61
+2.1.70 | 1,35
+3.1.10 | 16,61
+3.1.20 | 12,23
+3.2.10 | 27,84
+3.2.20 | 17,85
+3.2.30 | 0,73
+3.2.40 | 53,87
+3.3.10 | 7,18
+3.3.20 | 1,52
+4.1.10 | 207,64
+4.1.20 | 471,40
+4.1.30 | 4,27
+4.1.40 | 9540,00
+5.1.10 | 1,63
+5.1.20 | 47,14
+5.1.30 | 274,98
+5.1.40 | 185,19
+6.1.10 | 65,10
+6.1.20 | 103,26
+"""
+
+# The award: equal to the bid.
+[[lv]]
+key = "auftrag"
+base = "angebot"
+phase = "86"
+file = "Auftrags-LV_Radweg_K22"

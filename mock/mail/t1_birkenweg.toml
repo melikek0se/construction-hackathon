@@ -1,0 +1,347 @@
+# T1: Erneuerung Mischwasserkanal Birkenweg, 2. BA (Stadt Norderbek). GAEB XML 3.2, later a changed issue.
+
+[[lv]]
+key = "kanal"
+file = "LV_Mischwasserkanal_Birkenweg_2BA"
+format = "x83"
+client = "tba"
+name = "Kanal- und Straßenbauarbeiten Birkenweg, 2. BA"
+project = "Erneuerung Mischwasserkanal Birkenweg, 2. BA"
+number = "TBA-2026-114"
+remarks = """Vorbemerkungen zum Leistungsverzeichnis
+Baumaßnahme: Erneuerung des Mischwasserkanals im Birkenweg, 2. Bauabschnitt, zwischen Eschenallee (Schacht M 208) und Lindenstraße (Schacht M 216), einschließlich der Anschlussleitungen bis zur Grundstücksgrenze und der Wiederherstellung der Verkehrsflächen.
+Vergabenummer: TBA-2026-114, Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {+14}, 10:00 Uhr
+Bieterfragen bis: {+7}
+Bindefrist: {+60}
+Ausführungsbeginn: {+95}
+Fertigstellung: {+250}
+Vertragsgrundlagen sind die VOB/B und VOB/C in der bei Angebotsabgabe gültigen Fassung, die ZTV E-StB, die ZTV A-StB, die ZTV Asphalt-StB sowie DIN EN 1610 und das Arbeitsblatt DWA-A 139.
+Der Birkenweg ist eine Anliegerstraße mit beidseitiger Wohnbebauung. Die Bauausführung erfolgt abschnittsweise unter Vollsperrung in Abschnitten von höchstens 60 m Länge. Die Zufahrt für Rettungsdienst und Müllabfuhr ist jederzeit, die Zufahrt der Anlieger zu den Grundstücken außerhalb der Arbeitszeit zu gewährleisten.
+Der vorhandene Mischwasserkanal bleibt bis zur Umbindung der Anschlussleitungen in Betrieb. Die Vorflut ist während der gesamten Bauzeit aufrechtzuerhalten.
+Baugrund: Unter der Fahrbahnbefestigung stehen nach dem Baugrundgutachten vom {-120} Auffüllungen bis 1,20 m, darunter Geschiebelehm und Geschiebemergel an, örtlich mit Sandlinsen. Schichtenwasser wurde zwischen 1,80 m und 2,60 m unter Gelände angetroffen. Das Gutachten liegt den Vergabeunterlagen bei.
+Aushubboden: Der beim Aushub anfallende Boden bleibt Eigentum des Auftraggebers. Wiedereinbaufähiger Boden ist auf dem Zwischenlager des städtischen Bauhofs, Am Klärwerk 4 (Entfernung ca. 3,5 km), abzuladen. Die Entsorgung nicht verwertbarer Böden wird nach Deklaration gesondert nach Zuordnungsklassen vergütet.
+Vorhandene Leitungen: Im Baufeld liegen Gas-, Wasser-, Strom- und Telekommunikationsleitungen. Der AN hat vor Baubeginn die Leitungsauskünfte der Versorgungsträger einzuholen.
+Arbeitszeit: werktags 7:00 bis 18:00 Uhr. Nacht- und Wochenendarbeit nur mit Zustimmung des AG.
+Vertragsstrafe: 0,1 v. H. der Auftragssumme je Werktag der Überschreitung des Fertigstellungstermins, höchstens 5 v. H.
+Sicherheiten: Vertragserfüllungsbürgschaft 5 v. H., Mängelansprüchebürgschaft 3 v. H. der Abrechnungssumme. Verjährungsfrist für Mängelansprüche 5 Jahre.
+Abrechnung nach Aufmaß. Stundenlohnarbeiten nur auf schriftliche Anordnung der Bauüberwachung."""
+items = """
+# 1 | Baustelleneinrichtung und Verkehrssicherung
+# 1.1 | Baustelleneinrichtung
+1.1.10 | 1 psch | Baustelle einrichten | Geräte, Werkzeuge und sonstige Betriebsmittel, die zur vertragsgemäßen Ausführung der Bauleistungen erforderlich sind, auf die Baustelle bringen und betriebsfertig aufstellen. Baubüro, Unterkünfte und Sanitäreinrichtungen aufbauen, Strom- und Wasseranschluss herstellen. // Eine Lagerfläche von ca. 400 m2 wird vom AG auf dem Wendeplatz Eschenallee zur Verfügung gestellt.
+1.1.20 | 1 psch | Baustelle räumen | Baustelle von allen Geräten, Anlagen und Einrichtungen räumen. Benutzte Flächen und Wege entsprechend dem ursprünglichen Zustand herrichten.
+1.1.30 | 30 Wo | Baustelleneinrichtung vorhalten | Baustelleneinrichtung der Position 1.1.10 vorhalten, unterhalten und betreiben, einschließlich Mieten, Gebühren und Verbrauchskosten. Abrechnung nach Wochen der vertraglichen Bauzeit.
+1.1.40 | 1 psch | Beweissicherung Gebäude und Verkehrsflächen | Zustand der angrenzenden Gebäude, Einfriedungen, Zufahrten und Verkehrsflächen vor Baubeginn durch einen Sachverständigen feststellen und dokumentieren, Fotodokumentation und Rissprotokolle. 34 Grundstücke. Übergabe 2-fach in Papier und digital.
+1.1.50 | 620 m | Bauzaun stellen, vorhalten, umsetzen | Mobilen Bauzaun, Höhe 2,00 m, mit Betonfüßen und Verbindungsschellen aufstellen, für die Dauer der Bauzeit vorhalten, je Bauabschnitt umsetzen und wieder abbauen. Abrechnung nach einmal gestellter Länge.
+1.1.60 | 1 psch | Absteckung und Bestandsvermessung | Achsen und Höhen der Kanaltrasse nach den Ausführungsplänen abstecken und sichern. Nach Fertigstellung Bestand lage- und höhenmäßig einmessen, Bestandsplan nach den Vorgaben des AG im Format DXF und PDF liefern.
+# 1.2 | Verkehrssicherung
+1.2.10 | 1 psch | Verkehrssicherung für die gesamte Bauzeit | Verkehrssicherung der Arbeitsstelle nach RSA 21 für die gesamte Bauzeit herstellen, vorhalten, betreiben, umbauen und abbauen, einschließlich Verkehrszeichenplan, Einholen der verkehrsrechtlichen Anordnung, Umleitungsbeschilderung, Beleuchtung, täglicher Kontrolle und Wartung. // Änderungen und Ergänzungen der Verkehrsführung nach Wahl des AG oder nach Anordnung der Verkehrsbehörde sind ohne gesonderte Vergütung auszuführen. Die Anzahl der Bauphasen ist vom AN zu ermitteln.
+1.2.20 | 6 St | Fußgängerbrücke über Rohrgraben | Fußgängerbrücke über den Rohrgraben, lichte Breite mind. 1,20 m, beidseitig mit Geländer, rutschfest, liefern, vorhalten und nach Baufortschritt umsetzen.
+1.2.30 | 30 Wo | Mobile Lichtsignalanlage vorhalten | Mobile Lichtsignalanlage, zwei Signalgeber, verkehrsabhängige Steuerung, für die Einmündung Lindenstraße aufstellen, betreiben und warten, einschließlich Akkuwechsel. Ausführung nur auf Anordnung des AG. | E
+1.2.40 | 34 St | Provisorische Grundstückszufahrt | Provisorische Überfahrt über den Rohrgraben für Pkw mit Stahlplatten, d mind. 25 mm, herstellen, vorhalten und wieder aufnehmen, je Grundstück.
+# 2 | Aufbrucharbeiten
+# 2.1 | Straßenaufbruch
+2.1.10 | 720 m | Asphaltbefestigung schneiden | Asphaltbefestigung der Fahrbahn geradlinig schneiden, Schnitttiefe bis 18 cm, einschließlich Beseitigen des Schneidschlamms.
+2.1.20 | 860 m2 | Asphaltbefestigung aufbrechen | Asphaltbefestigung der Fahrbahn, Dicke bis 18 cm, aufbrechen, laden und einer Verwertung zuführen. Verwertungsklasse A nach RuVA-StB. Verwertung einschließlich Gebühren. // Aufbruchbreite Kanalgraben 2,20 m zuzüglich der Aufbrüche für Anschlussleitungen.
+2.1.30 | 110 m2 | Pechhaltige Schichten aufbrechen | Pechhaltige Befestigung, Verwertungsklasse C nach RuVA-StB, Dicke bis 8 cm, getrennt aufnehmen, laden und einer zugelassenen Entsorgungsanlage zuführen, einschließlich Nachweisführung. Ausführung nur, wenn bei der Voruntersuchung angetroffen. | E
+2.1.40 | 240 m2 | Betonpflaster aufnehmen und lagern | Betonsteinpflaster der Gehwege, 20/10/8 cm, aufnehmen, reinigen, auf Paletten setzen und zur Wiederverwendung auf der Lagerfläche lagern. Bettungsmaterial aufnehmen und entsorgen.
+2.1.50 | 180 m | Bordsteine aufnehmen | Hochbordsteine aus Beton 15/30 cm einschließlich Rückenstütze und Fundament aufnehmen, laden und entsorgen.
+2.1.60 | 860 m | Ungebundene Tragschicht aufnehmen | Ungebundene Tragschichten unter der Fahrbahnbefestigung, Dicke bis 40 cm, aufnehmen, laden und zur Wiederverwendung seitlich lagern oder verwerten. Abrechnung nach aufgenommener Fläche.
+2.1.70 | 14 St | Straßenablauf ausbauen | Straßenablauf aus Betonfertigteilen mit Aufsatz 500 x 500 mm ausbauen, laden und entsorgen. Anschlussleitung am Ablauf trennen und provisorisch verschließen.
+# 3 | Erdarbeiten, Verbau und Wasserhaltung
+# 3.1 | Erdarbeiten
+3.1.10 | 12 St | Suchschachtung | Suchschachtung zum Auffinden und Freilegen vorhandener Leitungen in Handschachtung, Tiefe bis 1,50 m, Grundfläche bis 1,5 m2, einschließlich Wiederverfüllen und Verdichten.
+3.1.20 | 1490 m3 | Boden für Rohrgraben ausheben | Boden für Rohrgraben profilgerecht lösen und laden, Grabentiefe bis 3,50 m, Grabenbreite nach DIN EN 1610 und DIN 4124. // Die Homogenbereiche und Bodenklassen sind nach Wahl des AN zu ermitteln; Erschwernisse aus abweichenden Bodenverhältnissen, Steinen und Findlingen bis 0,6 m3 sind in den Einheitspreis einzurechnen. // Abrechnung nach Aufmaß, rechnerische Grabenbreite 1,50 m.
+3.1.30 | 180 m3 | Handaushub im Bereich von Leitungen | Wie Position 3.1.20, jedoch Aushub in Handschachtung im Bereich kreuzender und parallel verlaufender Versorgungsleitungen, einschließlich Sichern und Abfangen der Leitungen.
+3.1.40 | 1150 m3 | Boden abfahren und entsorgen | Überschüssigen Aushubboden laden, abfahren und entsorgen. Der Boden geht in das Eigentum des AN über. Entsorgung einschl. aller Gebühren unabhängig von der Belastungsklasse, einschließlich Deklaration, Zwischenlagerung und Nachweisen.
+3.1.50 | - m3 | Bodenaustausch unter der Rohrsohle | Nicht tragfähigen Boden unter der Grabensohle auf Anordnung der Bauüberwachung zusätzlich ausheben, abfahren und durch Kiessand 0/32 ersetzen, lagenweise verdichten auf DPr mind. 97 v. H.
+3.1.60 | 370 m3 | Bettung und Leitungszone herstellen | Bettung Typ 1 nach DIN EN 1610 und Leitungszone bis 30 cm über Rohrscheitel aus Sand 0/8 liefern, einbauen und lagenweise verdichten, DPr mind. 97 v. H.
+3.1.70 | 1020 m3 | Rohrgraben verfüllen mit Liefermaterial | Rohrgraben oberhalb der Leitungszone mit Füllsand, verdichtungsfähig, Bodengruppe SE/SW, liefern, lagenweise einbauen und verdichten, DPr mind. 98 v. H. im oberen Meter 100 v. H. nach ZTV E-StB.
+3.1.80 | 465 m2 | Grabensohle herstellen | Grabensohle profilgerecht herstellen und nachverdichten, Abweichung von der Sollhöhe höchstens 2 cm.
+3.1.90 | 12 St | Verdichtungsprüfung | Verdichtungsgrad der Grabenverfüllung mit der dynamischen Lastplatte oder Rammsondierung durch ein anerkanntes Prüfinstitut nachweisen, je Prüfung einschließlich Protokoll.
+# 3.2 | Verbau
+3.2.10 | 1980 m2 | Grabenverbau herstellen und vorhalten | Verbau des Rohrgrabens nach DIN 4124 mit Verbauplatten oder Gleitschienenverbau, Grabentiefe bis 3,50 m, einbauen, für die Dauer der Arbeiten vorhalten und im Zuge der Verfüllung zurückbauen. Statischer Nachweis durch den AN. Abrechnung nach verbauter Wandfläche.
+3.2.20 | 120 m2 | Verbau Schachtbaugruben | Zulage zu Position 3.2.10 für den Verbau der Schachtbaugruben mit Eckschienen oder Stirnverbau, Tiefe bis 3,80 m.
+3.2.30 | 800 m2 | Spundwandverbau | Verbau des Rohrgrabens mit Stahlspundbohlen, erschütterungsarm eingepresst, Bohlenlänge bis 6,00 m, einschließlich Aussteifung, Vorhalten und Ziehen. Ausführung nur auf Anordnung des AG bei nicht standfestem Boden. | E
+# 3.3 | Wasserhaltung
+3.3.10 | 1 psch | Wasserhaltung für die gesamte Bauzeit | Wasserhaltung für sämtliche Rohrgräben und Baugruben für die gesamte Bauzeit, offene Wasserhaltung und soweit erforderlich Grundwasserabsenkung, Art und Umfang nach Wahl des AN. Einrichten, Betreiben, Vorhalten und Räumen einschließlich aller Nebenleistungen und Erschwernisse, Energie, Absetzbecken und Einleitgebühren. // Das Einholen der wasserrechtlichen Erlaubnis ist Sache des AN.
+3.3.20 | 26 Wo | Abwasserüberleitung vorhalten | Provisorische Überleitung des Mischwassers mit Pumpen und Druckschläuchen, Förderleistung bis 40 l/s, über die jeweilige Haltungslänge einrichten, betreiben und nach Baufortschritt umsetzen, einschließlich Absperrblasen und Bereitschaft außerhalb der Arbeitszeit.
+# 4 | Kanalbau
+# 4.1 | Rohrleitungen
+4.1.10 | 310 m | Altkanal ausbauen | Vorhandenen Mischwasserkanal aus Betonrohren DN 300 im Zuge des Grabenaushubs ausbauen, laden und entsorgen einschließlich Gebühren.
+4.1.20 | 186 m | PP-Kanalrohr DN 400 SN 10 | Kanalrohr aus Polypropylen, Vollwandrohr DN 400, SN 10, Fabrikat NordPipe Typ Robust, mit Steckmuffe und werkseitig eingelegtem Dichtring, nach DIN EN 1852, liefern und nach DIN EN 1610 in vorbereitete Bettung verlegen, Gefälle nach Plan 4 bis 6 Promille. Einschließlich Passstücken und Schneiden.
+4.1.30 | 124 m | Steinzeugrohr DN 300 | Steinzeugrohr DN 300 nach DIN EN 295, Hochlastreihe, Scheiteldruckkraft 72 kN/m, Verbindungssystem C mit Steckmuffe K, liefern und nach DIN EN 1610 verlegen. Einschließlich Passstücken und Schneiden.
+4.1.40 | 124 m | PP-Kanalrohr DN 300 SN 10 statt Steinzeug | Wahlposition zu Position 4.1.30: Kanalrohr aus Polypropylen, Vollwandrohr DN 300, SN 10, nach DIN EN 1852, liefern und nach DIN EN 1610 verlegen. | A
+4.1.50 | 20 St | Abzweig DN 400/150 | Abzweig 45 Grad DN 400/150 aus PP, passend zu Position 4.1.20, als Zulage zum Rohr liefern und einbauen.
+4.1.60 | 14 St | Abzweig DN 300/150 | Abzweig 45 Grad DN 300/150 aus Steinzeug, passend zu Position 4.1.30, als Zulage zum Rohr liefern und einbauen.
+4.1.70 | 2 St | Anschluss an vorhandenen Schacht | Neue Rohrleitung DN 400 bzw. DN 300 an vorhandenen Schacht aus Mauerwerk anschließen, Schachtwand aufstemmen, Schachtfutter einbauen, Gerinne anpassen und wasserdicht verschließen.
+# 4.2 | Schächte
+4.2.10 | 8 St | Schachtunterteil DN 1000 | Schachtunterteil DN 1000 aus Beton C 40/50 nach DIN EN 1917 und DIN 4034-1, monolithisch mit Gerinne und Berme, Anschlüsse DN 300 bis DN 400 mit eingebauten Dichtungen nach Schachtliste, liefern und auf Sauberkeitsschicht C 12/15, d = 10 cm, versetzen.
+4.2.20 | 22 St | Schachtringe DN 1000 | Schachtringe DN 1000 nach DIN 4034-1 mit Steigeisen und Lastausgleichsring, in Bauhöhen 250, 500 und 1000 mm, liefern und versetzen. Abrechnung nach Meter Bauhöhe.
+4.2.30 | 8 St | Schachthals DN 1000/625 | Schachthals (Konus) DN 1000/625, Bauhöhe 600 mm, nach DIN 4034-1 mit Steigeisen liefern und versetzen.
+4.2.40 | 8 St | Schachtabdeckung Klasse D 400 | Schachtabdeckung nach DIN EN 124, Klasse D 400, lichte Weite 625 mm, Rahmen Guss/Beton, Deckel mit Lüftungsöffnungen und dämpfender Einlage, mit Schmutzfänger liefern, mit Auflageringen höhengerecht versetzen.
+4.2.50 | 8 St | Vorhandenen Schacht abbrechen | Schacht aus Mauerwerk oder Beton, DN 1000, Tiefe bis 3,50 m, abbrechen, Abbruchmaterial laden und entsorgen, Schachtabdeckung zum Bauhof liefern.
+4.2.60 | 2 St | Außenliegender Absturz DN 150 | Außenliegenden Absturz DN 150 am Schacht aus PP-Formstücken herstellen, Höhe bis 1,50 m, einschließlich Betonummantelung C 12/15.
+# 5 | Anschlussleitungen
+# 5.1 | Haus- und Straßenablaufanschlüsse
+5.1.10 | 272 m | Rohrgraben für Anschlussleitungen | Rohrgraben für Anschlussleitungen DN 150 herstellen, Tiefe bis 2,50 m, einschließlich Aushub, Verbau, Bettung aus Sand 0/8, Verfüllen mit Füllsand und Verdichten. Überschüssigen Boden abfahren.
+5.1.20 | 272 m | PP-Kanalrohr DN 150 SN 10 | Kanalrohr aus Polypropylen DN 150, SN 10, nach DIN EN 1852, als Anschlussleitung vom Abzweig bis zur Grundstücksgrenze liefern und verlegen.
+5.1.30 | 34 St | Anschluss an Grundstücksleitung | Neue Anschlussleitung an die vorhandene Grundstücksentwässerungsleitung DN 100 bis DN 150 aus Steinzeug oder Beton an der Grundstücksgrenze mit Übergangskupplung anschließen.
+5.1.40 | 12 St | Revisionsschacht DN 400 | Revisionsschacht DN 400 aus PP mit geradem Durchlauf DN 150, Steigrohr und Abdeckung Klasse B 125, an der Grundstücksgrenze liefern und einbauen, Einbautiefe bis 2,00 m.
+5.1.50 | 68 St | Bogen DN 150 | Bogen DN 150, 15 bis 45 Grad, aus PP als Zulage zu Position 5.1.20 liefern und einbauen.
+5.1.60 | 14 St | Straßenablauf setzen | Straßenablauf aus Betonfertigteilen nach DIN 4052 für Trockenschlamm, mit Aufsatz 500 x 500 mm Klasse C 250 und Eimer, liefern und auf Betonfundament C 12/15 höhengerecht setzen.
+5.1.70 | 84 m | Anschlussleitung Straßenablauf DN 150 | Anschlussleitung DN 150 aus PP, SN 10, vom Straßenablauf zum Kanal liefern und verlegen, einschließlich Rohrgraben, Bettung, Verfüllung und Anschluss an den Abzweig.
+# 6 | Straßenwiederherstellung
+# 6.1 | Asphaltbauweise
+6.1.10 | 860 m2 | Asphaltbefestigung aufbrechen und entsorgen | Asphaltbefestigung der Fahrbahn im Bereich der Kanaltrasse, Dicke bis 18 cm, aufbrechen, laden und verwerten einschließlich Gebühren.
+6.1.20 | 860 m2 | Frostschutzschicht 0/32 | Frostschutzschicht aus Kies-Sand-Gemisch 0/32 nach TL SoB-StB liefern und einbauen, Dicke 30 cm, Verformungsmodul Ev2 mind. 100 MN/m2.
+6.1.30 | 860 m2 | Schottertragschicht 0/45 | Schottertragschicht 0/45 nach TL SoB-StB liefern und einbauen, Dicke 15 cm, Ev2 mind. 150 MN/m2 auf der Oberfläche.
+6.1.40 | 860 m2 | Asphalttragschicht AC 22 T S, 10 cm | Asphalttragschicht aus Asphalttragschichtmischgut AC 22 T S, Bindemittel 50/70, Einbaudicke 10 cm, nach ZTV Asphalt-StB herstellen. Einbau in Teilflächen, Breite 2,20 bis 3,00 m.
+6.1.50 | 380 m2 | Asphaltdeckschicht fräsen | Asphaltdeckschicht beidseitig der Kanaltrasse zum Rückschnitt fräsen, Frästiefe 4 cm, Fräsgut laden und verwerten, Fläche reinigen.
+6.1.60 | 1240 m2 | Asphaltdeckschicht AC 11 D S, 4 cm | Asphaltdeckschicht aus Asphaltbeton AC 11 D S, Bindemittel 50/70, Einbaudicke 4 cm, einschließlich Ansprühen der Unterlage mit Bitumenemulsion und Abstreuen. Einbau in einer Bahn je Fahrstreifen.
+6.1.70 | 720 m | Naht und Anschluss herstellen | Nähte und Anschlüsse an die vorhandene Befestigung mit Bitumenfugenband 40 x 10 mm herstellen.
+6.1.80 | 2100 m2 | Deckschicht in ganzer Fahrbahnbreite | Asphaltdeckschicht der gesamten Fahrbahn auf ganzer Breite 4 cm fräsen und mit AC 11 D S, 4 cm, neu herstellen. Ausführung nur auf Anordnung des AG. | E
+# 6.2 | Pflaster und Borde
+6.2.10 | 240 m2 | Betonpflaster wieder verlegen | Gelagertes Betonsteinpflaster 20/10/8 cm auf 4 cm Bettung aus Brechsand-Splitt 0/5 verlegen, abrütteln und Fugen mit Brechsand 0/2 einschlämmen. Einschließlich Tragschicht 0/32, d = 25 cm.
+6.2.20 | 60 m2 | Betonpflaster liefern | Betonsteinpflaster 20/10/8 cm, grau, nach DIN EN 1338, als Ersatz für beschädigte Steine liefern. Zulage zu Position 6.2.10.
+6.2.30 | 180 m | Hochbord 15/30 setzen | Hochbordstein aus Beton HB 15 x 30 nach DIN EN 1340 und DIN 483 liefern und auf 20 cm Fundament mit Rückenstütze aus Beton C 20/25 setzen, Ansicht 12 cm.
+6.2.40 | 180 m | Rinne aus Betonpflaster, einzeilig | Rinne aus Betonsteinpflaster 16/16/14 cm einzeilig vor dem Bord auf Beton C 20/25 setzen und mit Fugenmörtel verfugen.
+6.2.50 | 9 St | Schachtabdeckung angleichen | Schachtabdeckungen und Schieberkappen fremder Leitungsträger im Bereich der Deckschicht höhenmäßig angleichen, mit schwindfreiem Vergussmörtel unterstopfen.
+# 7 | Prüfungen und Dokumentation
+# 7.1 | Prüfungen
+7.1.10 | 310 m | Kanalreinigung | Neu verlegten Kanal vor der Abnahme mit Hochdruckspülgerät reinigen, Spülgut aufnehmen und entsorgen.
+7.1.20 | 582 m | Optische Inspektion | Optische Inspektion der Haltungen und Anschlussleitungen mit fahrbarer Farbkamera nach DIN EN 13508-2 und DWA-M 149-2, einschließlich Neigungsmessung, Haltungsberichten und Datenträger im Format ISYBAU XML.
+7.1.30 | 8 St | Dichtheitsprüfung Haltung | Dichtheitsprüfung der Haltungen DN 300 bis DN 400 mit Luft nach DIN EN 1610, Verfahren LC, je Haltung einschließlich Prüfprotokoll.
+7.1.40 | 8 St | Dichtheitsprüfung Schacht | Dichtheitsprüfung der Schächte DN 1000 mit Wasser nach DIN EN 1610, je Schacht einschließlich Prüfprotokoll.
+7.1.50 | 34 St | Dichtheitsprüfung Anschlussleitung | Dichtheitsprüfung der Anschlussleitungen DN 150 mit Luft nach DIN EN 1610, je Leitung einschließlich Prüfprotokoll.
+7.1.60 | 6 St | Deklarationsanalyse Boden | Probenahme nach LAGA PN 98 und Deklarationsanalyse von Aushubboden nach Ersatzbaustoffverordnung durch ein akkreditiertes Labor, je Mischprobe einschließlich Bericht.
+7.1.70 | 1 psch | Bestandsunterlagen | Bestandsunterlagen zusammenstellen: Schachtprotokolle, Haltungsberichte, Prüfprotokolle, Liefernachweise und Verdichtungsnachweise, 2-fach in Papier und digital.
+# 8 | Stundenlohnarbeiten
+# 8.1 | Stundenlohn und Geräte
+8.1.10 | 60 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter, Spezialbaufacharbeiter oder Vorarbeiter, auf Anordnung des AG.
+8.1.20 | 40 h | Bauhelfer | Stundenlohnarbeiten Bauhelfer, auf Anordnung des AG.
+8.1.30 | 30 h | Mobilbagger mit Bediener | Mobilbagger 14 bis 18 t mit Bediener, einschließlich Betriebsstoffen, auf Anordnung des AG.
+8.1.40 | 30 h | Lkw mit Fahrer | Lkw 3-Achser mit Fahrer, Nutzlast mind. 12 t, einschließlich Betriebsstoffen, auf Anordnung des AG.
+8.1.50 | 20 h | Radlader mit Bediener | Radlader, Schaufelinhalt 1,0 bis 1,5 m3, mit Bediener, einschließlich Betriebsstoffen, auf Anordnung des AG.
+"""
+
+[[lv]]
+key = "kanal2"
+base = "kanal"
+file = "LV_Mischwasserkanal_Birkenweg_2BA_Stand_2"
+remarks = """Vorbemerkungen zum Leistungsverzeichnis, Stand 2 (Bieterinformation Nr. 1)
+Baumaßnahme: Erneuerung des Mischwasserkanals im Birkenweg, 2. Bauabschnitt, zwischen Eschenallee (Schacht M 208) und Lindenstraße (Schacht M 216), einschließlich der Anschlussleitungen bis zur Grundstücksgrenze und der Wiederherstellung der Verkehrsflächen.
+Vergabenummer: TBA-2026-114, Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {+18}, 10:00 Uhr
+Bieterfragen bis: {+11}
+Bindefrist: {+64}
+Ausführungsbeginn: {+95}
+Fertigstellung: {+250}
+Vertragsgrundlagen sind die VOB/B und VOB/C in der bei Angebotsabgabe gültigen Fassung, die ZTV E-StB, die ZTV A-StB, die ZTV Asphalt-StB sowie DIN EN 1610 und das Arbeitsblatt DWA-A 139.
+Der Birkenweg ist eine Anliegerstraße mit beidseitiger Wohnbebauung. Die Bauausführung erfolgt abschnittsweise unter Vollsperrung in Abschnitten von höchstens 60 m Länge. Die Zufahrt für Rettungsdienst und Müllabfuhr ist jederzeit, die Zufahrt der Anlieger zu den Grundstücken außerhalb der Arbeitszeit zu gewährleisten.
+Der vorhandene Mischwasserkanal bleibt bis zur Umbindung der Anschlussleitungen in Betrieb. Die Vorflut ist während der gesamten Bauzeit aufrechtzuerhalten.
+Baugrund: Unter der Fahrbahnbefestigung stehen nach dem Baugrundgutachten vom {-120} Auffüllungen bis 1,20 m, darunter Geschiebelehm und Geschiebemergel an, örtlich mit Sandlinsen. Schichtenwasser wurde zwischen 1,80 m und 2,60 m unter Gelände angetroffen. Das Gutachten liegt den Vergabeunterlagen bei.
+Aushubboden: Der beim Aushub anfallende Boden bleibt Eigentum des Auftraggebers. Wiedereinbaufähiger Boden ist auf dem Zwischenlager des städtischen Bauhofs, Am Klärwerk 4 (Entfernung ca. 3,5 km), abzuladen. Die Entsorgung nicht verwertbarer Böden wird nach Deklaration gesondert nach Zuordnungsklassen vergütet.
+Vorhandene Leitungen: Im Baufeld liegen Gas-, Wasser-, Strom- und Telekommunikationsleitungen. Der AN hat vor Baubeginn die Leitungsauskünfte der Versorgungsträger einzuholen.
+Arbeitszeit: werktags 7:00 bis 18:00 Uhr. Nacht- und Wochenendarbeit nur mit Zustimmung des AG.
+Vertragsstrafe: 0,1 v. H. der Auftragssumme je Werktag der Überschreitung des Fertigstellungstermins, höchstens 5 v. H.
+Sicherheiten: Vertragserfüllungsbürgschaft 5 v. H., Mängelansprüchebürgschaft 3 v. H. der Abrechnungssumme. Verjährungsfrist für Mängelansprüche 5 Jahre.
+Abrechnung nach Aufmaß. Stundenlohnarbeiten nur auf schriftliche Anordnung der Bauüberwachung.
+Änderungen im Stand 2: Positionen 3.1.20, 3.1.50, 3.2.10, 4.1.20, 4.2.10 und 4.2.50 geändert, Positionen 1.2.50, 3.3.30 und 4.2.70 neu, Position 1.2.30 entfallen."""
+set = [
+  "3.1.20 | 1620 m3 | Boden für Rohrgraben ausheben | Boden für Rohrgraben profilgerecht lösen und laden, Grabentiefe bis 3,80 m, Grabenbreite nach DIN EN 1610 und DIN 4124. // Die Homogenbereiche und Bodenklassen sind nach Wahl des AN zu ermitteln; Erschwernisse aus abweichenden Bodenverhältnissen, Steinen und Findlingen bis 0,6 m3 sind in den Einheitspreis einzurechnen. // Abrechnung nach Aufmaß, rechnerische Grabenbreite 1,50 m, im Bereich des Schachtes M 212 2,00 m.",
+  "3.1.50 | 85 m3 | Bodenaustausch unter der Rohrsohle | Nicht tragfähigen Boden unter der Grabensohle auf Anordnung der Bauüberwachung zusätzlich ausheben, abfahren und durch Kiessand 0/32 ersetzen, lagenweise verdichten auf DPr mind. 97 v. H.",
+  "3.2.10 | 2150 m2 | Grabenverbau herstellen und vorhalten | Verbau des Rohrgrabens nach DIN 4124 mit Verbauplatten oder Gleitschienenverbau, Grabentiefe bis 3,80 m, einbauen, für die Dauer der Arbeiten vorhalten und im Zuge der Verfüllung zurückbauen. Statischer Nachweis durch den AN. Abrechnung nach verbauter Wandfläche.",
+  "4.1.20 | 204 m | PP-Kanalrohr DN 400 SN 10 | Kanalrohr aus Polypropylen, Vollwandrohr DN 400, SN 10, Fabrikat NordPipe Typ Robust, mit Steckmuffe und werkseitig eingelegtem Dichtring, nach DIN EN 1852, liefern und nach DIN EN 1610 in vorbereitete Bettung verlegen, Gefälle nach Plan 4 bis 6 Promille. Einschließlich Passstücken und Schneiden.",
+  "4.2.10 | 7 St | Schachtunterteil DN 1000 | Schachtunterteil DN 1000 aus Beton C 40/50 nach DIN EN 1917 und DIN 4034-1, monolithisch mit Gerinne und Berme, Anschlüsse DN 300 bis DN 400 mit eingebauten Dichtungen nach Schachtliste, liefern und auf Sauberkeitsschicht C 12/15, d = 10 cm, versetzen.",
+  "4.2.50 | 8 St | Vorhandenen Schacht abbrechen | Schacht aus Mauerwerk oder Beton, DN 1000, Tiefe bis 3,50 m, einschließlich Sohlplatte vollständig abbrechen. Abbruchmaterial und Schachtabdeckung gehen in das Eigentum des AN über und sind auf dessen Kosten zu entsorgen.",
+]
+drop = ["1.2.30"]
+add = """
+1.2.50 | 1 psch | Umleitung Buslinie 6 beschildern | Umleitungsstrecke der Buslinie 6 über Eschenallee und Ulmenweg nach Verkehrszeichenplan beschildern, zwei Ersatzhaltestellen mit Haltestellenmast und Wartefläche einrichten, für die Dauer der Sperrung des Abschnitts 3 vorhalten und abbauen.
+3.3.30 | 120 m | Grundwasserabsenkung mit Vakuumlanzen | Grundwasserabsenkung mit Vakuumanlage, Lanzen im Abstand von 1,0 bis 1,5 m einseitig des Rohrgrabens einspülen, Absenkziel 0,5 m unter Grabensohle, betreiben und nach Baufortschritt umsetzen. Ausführung nur auf Anordnung des AG im Bereich der Sandlinsen. Abrechnung nach Grabenlänge. | E
+4.2.70 | 1 St | Schachtunterteil DN 1200 | Schachtunterteil DN 1200 aus Beton C 40/50 nach DIN EN 1917 und DIN 4034-1 für Schacht M 212, monolithisch mit Gerinne und Berme, Zulauf DN 400, Ablauf DN 400 und seitlicher Zulauf DN 300 Ulmenweg, mit Übergangsplatte DN 1200/1000, liefern und auf Sauberkeitsschicht C 12/15 versetzen.
+"""
+
+[[lv]]
+key = "kanal_druck"
+base = "kanal"
+format = "pdf"
+file = "LV_Kanalsanierung_Birkenweg_Ausdruck"
+remarks = """Vorbemerkungen zum Leistungsverzeichnis
+Baumaßnahme: Erneuerung des Mischwasserkanals im Birkenweg, 2. Bauabschnitt, zwischen Eschenallee (Schacht M 208) und Lindenstraße (Schacht M 216), einschließlich der Anschlussleitungen bis zur Grundstücksgrenze und der Wiederherstellung der Verkehrsflächen.
+Vergabenummer: TBA-2026-114, Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {+14}, 10:00 Uhr
+Bieterfragen bis: {+7}
+Bindefrist: {+60}
+Ausführungsbeginn: {+95}
+Fertigstellung: {+250}
+Vertragsgrundlagen sind die VOB/B und VOB/C in der bei Angebotsabgabe gültigen Fassung, die ZTV E-StB, die ZTV A-StB, die ZTV Asphalt-StB sowie DIN EN 1610 und das Arbeitsblatt DWA-A 139.
+Der Birkenweg ist eine Anliegerstraße mit beidseitiger Wohnbebauung. Die Bauausführung erfolgt abschnittsweise unter Vollsperrung in Abschnitten von höchstens 60 m Länge. Die Zufahrt für Rettungsdienst und Müllabfuhr ist jederzeit, die Zufahrt der Anlieger zu den Grundstücken außerhalb der Arbeitszeit zu gewährleisten.
+Der vorhandene Mischwasserkanal bleibt bis zur Umbindung der Anschlussleitungen in Betrieb. Die Vorflut ist während der gesamten Bauzeit aufrechtzuerhalten.
+Baugrund: Unter der Fahrbahnbefestigung stehen nach dem Baugrundgutachten vom {-120} Auffüllungen bis 1,20 m, darunter Geschiebelehm und Geschiebemergel an, örtlich mit Sandlinsen. Schichtenwasser wurde zwischen 1,80 m und 2,60 m unter Gelände angetroffen. Das Gutachten liegt den Vergabeunterlagen bei.
+Aushubboden: Der beim Aushub anfallende Boden bleibt Eigentum des Auftraggebers. Wiedereinbaufähiger Boden ist auf dem Zwischenlager des städtischen Bauhofs, Am Klärwerk 4 (Entfernung ca. 3,5 km), abzuladen. Die Entsorgung nicht verwertbarer Böden wird nach Deklaration gesondert nach Zuordnungsklassen vergütet.
+Vorhandene Leitungen: Im Baufeld liegen Gas-, Wasser-, Strom- und Telekommunikationsleitungen. Der AN hat vor Baubeginn die Leitungsauskünfte der Versorgungsträger einzuholen.
+Arbeitszeit: werktags 7:00 bis 18:00 Uhr. Nacht- und Wochenendarbeit nur mit Zustimmung des AG.
+Vertragsstrafe: 0,1 v. H. der Auftragssumme je Werktag der Überschreitung des Fertigstellungstermins, höchstens 5 v. H.
+Sicherheiten: Vertragserfüllungsbürgschaft 5 v. H., Mängelansprüchebürgschaft 3 v. H. der Abrechnungssumme. Verjährungsfrist für Mängelansprüche 5 Jahre.
+Abrechnung nach Aufmaß. Stundenlohnarbeiten nur auf schriftliche Anordnung der Bauüberwachung.
+Zwischentermin: Die Kanalbauarbeiten im Abschnitt Eschenallee bis Schacht M 211 einschließlich Verfüllung sind bis {+170} abzuschließen. Bei Überschreitung dieses Zwischentermins wird eine Vertragsstrafe von 1500 EUR je Werktag fällig.
+Lärmschutz: Lärmintensive Arbeiten (Aufbruch, Einpressen und Ziehen von Verbau, Verdichten) sind nur montags bis freitags zwischen 8:00 und 12:00 Uhr sowie zwischen 14:00 und 17:00 Uhr zulässig. Samstags ruht die Baustelle."""
+set = [
+  "3.1.50 | 85 m3 | Bodenaustausch unter der Rohrsohle | Nicht tragfähigen Boden unter der Grabensohle auf Anordnung der Bauüberwachung zusätzlich ausheben, abfahren und durch Kiessand 0/32 ersetzen, lagenweise verdichten auf DPr mind. 97 v. H.",
+  "3.1.70 | 1200 m3 | Rohrgraben verfüllen mit Liefermaterial | Rohrgraben oberhalb der Leitungszone mit Füllsand, verdichtungsfähig, Bodengruppe SE/SW, liefern, lagenweise einbauen und verdichten, DPr mind. 98 v. H. im oberen Meter 100 v. H. nach ZTV E-StB.",
+  "6.1.40 | 680 m2 | Asphalttragschicht AC 22 T S, 10 cm | Asphalttragschicht aus Asphalttragschichtmischgut AC 22 T S, Bindemittel 50/70, Einbaudicke 10 cm, nach ZTV Asphalt-StB herstellen. Einbau in Teilflächen, Breite 2,20 bis 3,00 m.",
+  "2.1.50 | 180 m | Bordsteine aufnehmen | Hochbordsteine aus Beton 15/30 cm einschließlich Rückenstütze und Fundament aufnehmen, laden und entsorgen. Einschließlich Entsorgung des Aufbruchmaterials und der Betonreste auf Kosten des AN, unabhängig von der Belastung.",
+  "4.1.10 | 310 m | Altkanal ausbauen | Vorhandenen Mischwasserkanal aus Betonrohren DN 300 im Zuge des Grabenaushubs ausbauen, laden und entsorgen einschließlich Gebühren. Einschließlich Abbruch der Betonummantelung und der Rohrauflager sowie Verdämmen der stillgelegten Anschlussleitungen mit Dämmer.",
+  "7.1.10 | 310 m | Kanalreinigung | Neu verlegten Kanal vor der Abnahme mit Hochdruckspülgerät reinigen, Spülgut aufnehmen und entsorgen. Die Reinigung ist nach jeder Bauphase und zusätzlich unmittelbar vor der Abnahme auszuführen, insgesamt mindestens dreimal.",
+]
+
+[[lv]]
+key = "kanal2_druck"
+base = "kanal2"
+format = "pdf"
+file = "LV_Mischwasserkanal_Birkenweg_2BA_Stand_2_Ausdruck"
+# The addendum put right some of what the first print-out had wrong, not all: one quantity, one sentence and
+# the two clauses still stand only in the print-out.
+remarks = """Vorbemerkungen zum Leistungsverzeichnis, Stand 2 (Bieterinformation Nr. 1)
+Baumaßnahme: Erneuerung des Mischwasserkanals im Birkenweg, 2. Bauabschnitt, zwischen Eschenallee (Schacht M 208) und Lindenstraße (Schacht M 216), einschließlich der Anschlussleitungen bis zur Grundstücksgrenze und der Wiederherstellung der Verkehrsflächen.
+Vergabenummer: TBA-2026-114, Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {+18}, 10:00 Uhr
+Bieterfragen bis: {+11}
+Bindefrist: {+64}
+Ausführungsbeginn: {+95}
+Fertigstellung: {+250}
+Vertragsgrundlagen sind die VOB/B und VOB/C in der bei Angebotsabgabe gültigen Fassung, die ZTV E-StB, die ZTV A-StB, die ZTV Asphalt-StB sowie DIN EN 1610 und das Arbeitsblatt DWA-A 139.
+Der Birkenweg ist eine Anliegerstraße mit beidseitiger Wohnbebauung. Die Bauausführung erfolgt abschnittsweise unter Vollsperrung in Abschnitten von höchstens 60 m Länge. Die Zufahrt für Rettungsdienst und Müllabfuhr ist jederzeit, die Zufahrt der Anlieger zu den Grundstücken außerhalb der Arbeitszeit zu gewährleisten.
+Der vorhandene Mischwasserkanal bleibt bis zur Umbindung der Anschlussleitungen in Betrieb. Die Vorflut ist während der gesamten Bauzeit aufrechtzuerhalten.
+Baugrund: Unter der Fahrbahnbefestigung stehen nach dem Baugrundgutachten vom {-120} Auffüllungen bis 1,20 m, darunter Geschiebelehm und Geschiebemergel an, örtlich mit Sandlinsen. Schichtenwasser wurde zwischen 1,80 m und 2,60 m unter Gelände angetroffen. Das Gutachten liegt den Vergabeunterlagen bei.
+Aushubboden: Der beim Aushub anfallende Boden bleibt Eigentum des Auftraggebers. Wiedereinbaufähiger Boden ist auf dem Zwischenlager des städtischen Bauhofs, Am Klärwerk 4 (Entfernung ca. 3,5 km), abzuladen. Die Entsorgung nicht verwertbarer Böden wird nach Deklaration gesondert nach Zuordnungsklassen vergütet.
+Vorhandene Leitungen: Im Baufeld liegen Gas-, Wasser-, Strom- und Telekommunikationsleitungen. Der AN hat vor Baubeginn die Leitungsauskünfte der Versorgungsträger einzuholen.
+Arbeitszeit: werktags 7:00 bis 18:00 Uhr. Nacht- und Wochenendarbeit nur mit Zustimmung des AG.
+Vertragsstrafe: 0,1 v. H. der Auftragssumme je Werktag der Überschreitung des Fertigstellungstermins, höchstens 5 v. H.
+Sicherheiten: Vertragserfüllungsbürgschaft 5 v. H., Mängelansprüchebürgschaft 3 v. H. der Abrechnungssumme. Verjährungsfrist für Mängelansprüche 5 Jahre.
+Abrechnung nach Aufmaß. Stundenlohnarbeiten nur auf schriftliche Anordnung der Bauüberwachung.
+Änderungen im Stand 2: Positionen 3.1.20, 3.1.50, 3.2.10, 4.1.20, 4.2.10 und 4.2.50 geändert, Positionen 1.2.50, 3.3.30 und 4.2.70 neu, Position 1.2.30 entfallen.
+Zwischentermin: Die Kanalbauarbeiten im Abschnitt Eschenallee bis Schacht M 211 einschließlich Verfüllung sind bis {+170} abzuschließen. Bei Überschreitung dieses Zwischentermins wird eine Vertragsstrafe von 1500 EUR je Werktag fällig.
+Lärmschutz: Lärmintensive Arbeiten (Aufbruch, Einpressen und Ziehen von Verbau, Verdichten) sind nur montags bis freitags zwischen 8:00 und 12:00 Uhr sowie zwischen 14:00 und 17:00 Uhr zulässig. Samstags ruht die Baustelle."""
+set = [
+  "6.1.40 | 680 m2 | Asphalttragschicht AC 22 T S, 10 cm | Asphalttragschicht aus Asphalttragschichtmischgut AC 22 T S, Bindemittel 50/70, Einbaudicke 10 cm, nach ZTV Asphalt-StB herstellen. Einbau in Teilflächen, Breite 2,20 bis 3,00 m.",
+  "7.1.10 | 310 m | Kanalreinigung | Neu verlegten Kanal vor der Abnahme mit Hochdruckspülgerät reinigen, Spülgut aufnehmen und entsorgen. Die Reinigung ist nach jeder Bauphase und zusätzlich unmittelbar vor der Abnahme auszuführen, insgesamt mindestens dreimal.",
+]
+
+[[doc]]
+key = "anschreiben"
+file = "Aufforderung_zur_Angebotsabgabe_TBA-2026-114.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "tba"
+text = """Vergabenummer: TBA-2026-114
+Maßnahme: Erneuerung Mischwasserkanal Birkenweg, 2. BA
+Leistung: Kanal- und Straßenbauarbeiten
+Vergabeart: Öffentliche Ausschreibung nach VOB/A, Abschnitt 1
+
+Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek beabsichtigt, die oben genannte Leistung im Namen und für Rechnung des Eigenbetriebs Stadtentwässerung zu vergeben. Wir fordern Sie auf, ein Angebot abzugeben.
+
+Termine
+Ablauf der Angebotsfrist | {+14|long}, 10:00 Uhr
+Eröffnungstermin | {+14}, 10:00 Uhr, Rathaus, Raum 2.14
+Bieterfragen bis | {+7}
+Ablauf der Bindefrist | {+60}
+Ausführungsbeginn | {+95}
+Fertigstellung | {+250}
+
+Umfang der Leistung
+ca. 310 m Mischwasserkanal DN 300 bis DN 400 in offener Bauweise, Tiefe bis 3,50 m
+8 Schachtbauwerke DN 1000
+34 Anschlussleitungen DN 150, zusammen ca. 270 m
+ca. 860 m2 Wiederherstellung der Fahrbahn in Asphaltbauweise, ca. 240 m2 Pflaster
+
+Form der Angebote
+Angebote sind in Textform über den Vergabemarktplatz Nord oder schriftlich im verschlossenen Umschlag einzureichen. Das Leistungsverzeichnis ist als GAEB-Datei (DA 84) und als unterschriebener Ausdruck des Angebotsschreibens (Formblatt 213) abzugeben. Nebenangebote sind nur in Verbindung mit einem Hauptangebot zugelassen. Eine Aufteilung in Lose erfolgt nicht.
+
+Mit dem Angebot vorzulegen
+Eigenerklärung zur Eignung (Formblatt 124) oder Nachweis der Präqualifikation
+Nachweis der Fachkunde: Gütezeichen Kanalbau AK 2 oder gleichwertig
+Urkalkulation im verschlossenen Umschlag auf Anforderung
+Verzeichnis der Nachunternehmerleistungen (Formblatt 235)
+
+Zuschlagskriterium ist der Preis (100 v. H.).
+
+Sicherheiten: Vertragserfüllung 5 v. H. der Auftragssumme, Mängelansprüche 3 v. H. der Abrechnungssumme.
+
+Auskünfte zum Verfahren erteilt die Zentrale Vergabestelle, Frau Meyer, vergabe@norderbek.test. Technische Auskünfte: Fachdienst Tiefbau, Herr Hartwig, Tel. +49 4122 5550 167. Fragen sind in Textform zu stellen; die Antworten gehen allen Bietern zu.
+
+Anlagen: Leistungsverzeichnis (GAEB DA 83), Baubeschreibung, Lageplan 1:250, Längsschnitt, Schachtliste, Baugrundgutachten, Formblätter 124, 213, 221/222, 235."""
+
+[[mail]]
+id = "einladung"
+day = -4
+time = "08:41"
+from = "tba.meyer"
+to = "us"
+subject = "Aufforderung zur Angebotsabgabe – Erneuerung Mischwasserkanal Birkenweg, 2. BA (TBA-2026-114)"
+body = """Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek schreibt die Kanal- und Straßenbauarbeiten für die Erneuerung des Mischwasserkanals im Birkenweg, 2. Bauabschnitt, öffentlich aus (Vergabenummer TBA-2026-114). Da Ihr Unternehmen den 1. Bauabschnitt in der Mühlenstraße ausgeführt hat, übersenden wir Ihnen die Unterlagen zusätzlich zur Bekanntmachung auf dem Vergabemarktplatz Nord direkt.
+
+Die wichtigsten Termine:
+Angebotsfrist und Eröffnung: {+14|long}, 10:00 Uhr
+Bieterfragen bis: {+7}
+Bindefrist: {+60}
+Ausführung: {+95} bis {+250}
+
+Im Anhang finden Sie die Aufforderung zur Abgabe eines Angebots; das Leistungsverzeichnis liegt als GAEB-Datei (X83) und als PDF-Ausdruck bei. Pläne, Schachtliste und Baugrundgutachten stehen auf dem Vergabemarktplatz Nord unter der Vergabenummer zum Abruf bereit.
+
+Fragen zu den Vergabeunterlagen richten Sie bitte ausschließlich in Textform an die Vergabestelle. Telefonische Auskünfte zum Inhalt der Unterlagen können wir aus Gründen der Gleichbehandlung nicht geben.
+"""
+attach = ["lv:kanal", "lv:kanal_druck", "doc:anschreiben"]
+
+[[mail]]
+id = "ortstermin"
+day = -3
+time = "15:22"
+from = "tba.hartwig"
+to = "us"
+subject = "Birkenweg 2. BA – Ortsbesichtigung"
+body = """Hallo Herr Doe,
+
+kurzer Hinweis zur Ausschreibung Birkenweg: Wer sich die Örtlichkeit ansehen möchte, kann das am {+3|long} um 9:30 Uhr mit mir zusammen tun. Treffpunkt ist die Einmündung Eschenallee am Schacht M 208. Dauer etwa eine Stunde, wir gehen die Trasse einmal ab und schauen in zwei Schächte.
+
+Der Termin ist freiwillig und für alle Bieter gleich, Fragen zum LV kann ich vor Ort nicht beantworten, die bitte schriftlich an Frau Meyer. Sagen Sie mir kurz Bescheid, ob und mit wie vielen Personen Sie kommen.
+
+Freundliche Grüße
+"""
+
+[[mail]]
+id = "bieterinfo1"
+day = -1
+time = "11:07"
+from = "tba.meyer"
+to = "us"
+subject = "Bieterinformation Nr. 1 – TBA-2026-114 Mischwasserkanal Birkenweg, 2. BA – geändertes LV, Fristverlängerung"
+body = """Sehr geehrte Damen und Herren,
+
+zu dem oben genannten Vergabeverfahren sind Bieterfragen eingegangen. Die Fragen und die Antworten des Auftraggebers teilen wir hiermit allen Bietern mit. Diese Bieterinformation wird Bestandteil der Vergabeunterlagen.
+
+Frage 1: In Position 3.1.50 (Bodenaustausch unter der Rohrsohle) ist keine Menge angegeben. Mit welcher Menge ist zu kalkulieren?
+Antwort: Die Menge fehlte versehentlich. Es sind 85 m3 anzusetzen. Die Position wird nach Aufmaß abgerechnet.
+
+Frage 2: Nach dem Längsschnitt mündet am Schacht M 212 der Kanal DN 300 aus dem Ulmenweg ein. Ein Schachtunterteil DN 1000 lässt die drei Anschlüsse in dieser Lage nicht zu. Ist ein größerer Schacht vorgesehen?
+Antwort: Der Hinweis ist berechtigt. Der Schacht M 212 wird als DN 1200 ausgeführt (neue Position 4.2.70), die Anzahl in Position 4.2.10 verringert sich auf 7 Stück. Die Sohle im Abschnitt M 211 bis M 213 wird um 30 cm tiefer gelegt; dadurch ändern sich die Mengen der Positionen 3.1.20 (jetzt 1620 m3, Tiefe bis 3,80 m) und 3.2.10 (jetzt 2150 m2). Die Haltung M 212 bis M 213 wird in DN 400 ausgeführt; die Länge in Position 4.1.20 beträgt jetzt 204 m.
+
+Weitere Änderungen durch den Auftraggeber:
+- Position 1.2.30 (mobile Lichtsignalanlage) entfällt. Eine nach der verkehrsrechtlichen Anordnung erforderliche Lichtsignalanlage ist in die Pauschale der Position 1.2.10 einzurechnen.
+- Position 4.2.50 (Schächte abbrechen): Text geändert. Die Schächte sind einschließlich Sohlplatte abzubrechen; die Schachtabdeckungen werden nicht mehr zum Bauhof geliefert, sondern gehen mit dem Abbruchmaterial in das Eigentum des AN über.
+- Neu: Position 1.2.50, Umleitung der Buslinie 6.
+- Neu: Position 3.3.30, Grundwasserabsenkung mit Vakuumlanzen als Bedarfsposition.
+
+Das geänderte Leistungsverzeichnis (Stand 2) liegt als GAEB-Datei (X83) und als PDF-Ausdruck bei. Dem Angebot ist ausschließlich dieser Stand zugrunde zu legen; Angebote auf der Grundlage des ersten Standes müssen ausgeschlossen werden.
+
+Wegen der Änderungen wird die Angebotsfrist verlängert auf {+18|long}, 10:00 Uhr. Der Eröffnungstermin verschiebt sich entsprechend. Bieterfragen sind noch bis {+11} möglich, die Bindefrist endet am {+64}. Die Ausführungsfristen bleiben unverändert.
+
+Bitte bestätigen Sie den Erhalt dieser Bieterinformation.
+"""
+attach = ["lv:kanal2", "lv:kanal2_druck"]

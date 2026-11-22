@@ -1115,7 +1115,7 @@ shadow, Barlow only, the question as an ink bubble, passages as white cards (DES
 
 Decided 2026-11-22, on the user's word (fill everybody's mailbox with sensible data, tenders like the
 dataset's in different situations, kept as mock data so that every run fills the mail again).
-- **`mock/mail/`** is the world as data (TOML; format and story in its README): our firm (Kaya Tiefbau GmbH),
+- **`mock/mail/`** is the world as data (TOML; format and story in its README): our firm (Acme Tiefbau GmbH),
   7 clients, 14 suppliers and subcontractors, 3 others; 460 messages, 161 with files, from 17 months back
   to yesterday. Written in German, as the dataset is (the user, asked through the tender session).
   - 7 current tenders (T1–T7) in every format the app reads, each LV with unmarked defects; T1 comes as

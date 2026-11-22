@@ -1,0 +1,268 @@
+# R2: a private client's small job whose whole story lies in the last 13 days: request (X83 and its print-out),
+# site visit, our bid, changes after talking to the tenant, the award, which differs from the bid in four places.
+
+[[lv]]
+key = "lv"
+file = "LV_Ladehof_Halle2_Rinne_Asphalt"
+format = "x83"
+client = "ind"
+name = "Sanierung Ladehof Halle 2"
+project = "Sanierung Ladehof Halle 2: Entwässerungsrinne und Asphaltflächen"
+number = "HLP-H2-2026-07"
+remarks = """Vorbemerkungen
+Bauvorhaben: Sanierung des Ladehofs vor Halle 2, Containerstraße 9, 21129 Hamburg: Erneuerung der Entwässerungsrinne vor den Toren und der Asphaltbefestigung, Fläche ca. 1.870 m2.
+Aufgestellt im Auftrag der Hansa Logistikpark Verwaltungs GmbH durch ein beauftragtes Ingenieurbüro.
+Angebotsfrist: {-7}, 14:00 Uhr
+Bindefrist: {+21}
+Ausführungsbeginn: {+15}
+Fertigstellung: {+43}
+Der Ladehof wird von Sattelzügen befahren, Belastungsklasse Bk3,2 nach RStO 12.
+Geplante Sanierung: auf 1.450 m2 Deckschicht 4 cm fräsen, auf 420 m2 (Schadstellen und Rinnentrasse) vollständiger Neuaufbau; anschließend auf der gesamten Fläche Asphaltbinderschicht 8 cm und Asphaltdeckschicht 4 cm.
+Entwässerungsrinne und Abdeckungen in Klasse E 600 nach DIN EN 1433.
+Die Halle 2 ist vermietet und bleibt in Betrieb. Von den Toren 1 bis 8 müssen jederzeit mindestens vier anfahrbar sein; die Ausführung erfolgt in zwei Abschnitten.
+Asphaltarbeiten nur bei trockener Witterung und Unterlagentemperaturen über 5 Grad C.
+Ein Baugrundgutachten liegt nicht vor.
+Vertragsgrundlage ist die VOB/B. Gewährleistung 4 Jahre. Abrechnung nach Aufmaß."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Baustelleneinrichtung und Sicherung
+1.1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle für sämtliche Leistungen einrichten, vorhalten und räumen, einschließlich einmaligem Umsetzen zwischen den beiden Bauabschnitten.
+1.1.20 | 1 psch | Absperrung und Verkehrsführung im Ladehof | Baufeld gegen den Lkw- und Staplerverkehr mit Bauzaun und Leitbaken absperren, Beschilderung der Zufahrt zu den freien Toren, für die Bauzeit vorhalten und je Bauabschnitt umsetzen.
+1.1.30 | 1 psch | Höhenaufmaß und Deckenhöhenplan | Höhenaufmaß der vorhandenen Fläche im Raster 5 x 5 m, Deckenhöhenplan mit Gefälle mindestens 2,0 Prozent zur Rinne aufstellen und dem AG zur Freigabe vorlegen.
+# 2 | Abbruch- und Erdarbeiten
+# 2.1 | Abbruch
+2.1.10 | 180 m | Asphalt schneiden | Asphaltbefestigung bis 18 cm Dicke geradlinig schneiden, an den Rändern der Schadstellen, an der Rinnentrasse und an der Hallenwand.
+2.1.20 | 1450 m2 | Asphaltdeckschicht fräsen, 4 cm | Asphaltdeckschicht in einer Dicke von 4 cm fräsen, Fräsgut laden und verwerten, Fläche kehren.
+2.1.30 | 420 m2 | Asphaltbefestigung aufbrechen, bis 18 cm | Asphaltbefestigung in den Schadstellen und in der Rinnentrasse in voller Dicke bis 18 cm aufbrechen, laden und verwerten. // Verwertung unabhängig von der Belastungsklasse des Ausbauasphalts einschließlich aller Nachweise.
+2.1.40 | 62 m | Vorhandene Entwässerungsrinne ausbauen | Vorhandene Kastenrinne aus Beton mit Gussrosten einschließlich Betonummantelung ausbauen, laden und entsorgen.
+2.1.50 | 4 St | Hofablauf ausbauen | Vorhandenen Hofablauf aus Betonteilen mit Aufsatz ausbauen und entsorgen, Anschlussleitung für den Wiederanschluss sichern.
+# 2.2 | Erdarbeiten
+2.2.10 | 195 m3 | Ungebundene Schichten und Boden ausheben | Ungebundene Tragschichten und Boden unter den aufgebrochenen Flächen bis 45 cm unter Oberkante Asphalt sowie für das Rinnenfundament ausheben und laden.
+2.2.20 | 350 t | Aushub entsorgen | Aushub der Position 2.2.10 abfahren und verwerten, Zuordnung bis Z 1.2, einschließlich Deklarationsanalyse, Nachweis durch Wiegescheine.
+2.2.30 | 420 m2 | Planum herstellen | Planum profilgerecht herstellen und verdichten, Verformungsmodul Ev2 mindestens 45 MN/m2.
+2.2.40 | 60 m3 | Bodenaustausch | Nicht tragfähigen Boden unter dem Planum zusätzlich ausheben, entsorgen und durch Schotter 0/45 ersetzen, nur auf Anordnung. | E
+# 3 | Entwässerung
+# 3.1 | Rinne und Leitungen
+3.1.10 | 62 m | Entwässerungsrinne NW 200, Klasse E 600 | Entwässerungsrinne aus Polymerbeton, Nennweite 200, mit Gusszarge und verschraubtem Gussrost Klasse E 600 nach DIN EN 1433, Fabrikat Hansadrain Typ HD 200 E, auf Fundament aus Beton C 30/37 mit beidseitiger Ummantelung versetzen, einschließlich Stirnwänden.
+3.1.20 | 2 St | Einlaufkasten zur Rinne NW 200 | Einlaufkasten mit Schlammeimer und Anschlussstutzen DN 200 zur Rinne der Position 3.1.10 liefern und einbauen.
+3.1.30 | 28 m | Anschlussleitung PP DN 200, SN 10 | Anschlussleitung aus PP-Rohren DN 200, SN 10, von den Einlaufkästen zum vorhandenen Schacht verlegen, einschließlich Graben bis 1,50 m Tiefe, Sandbettung, Verfüllung und Formstücken.
+3.1.40 | 1 St | Anschluss an vorhandenen Schacht | Anschluss der Leitung DN 200 an den vorhandenen Schacht durch Kernbohrung mit Dichtelement herstellen, Gerinne anpassen.
+3.1.50 | 4 St | Hofablauf Klasse D 400 | Hofablauf aus Betonfertigteilen nach DIN 4052 mit Aufsatz 500 x 500 mm Klasse D 400 und Eimer setzen und an die gesicherte Anschlussleitung anschließen.
+3.1.60 | 1 psch | Dichtheitsprüfung und Kamerabefahrung | Dichtheitsprüfung der neuen Leitung nach DIN EN 1610 und optische Inspektion mit Dokumentation.
+# 4 | Oberbau
+# 4.1 | Tragschichten und Asphalt
+4.1.10 | 420 m2 | Schottertragschicht 0/45, d = 25 cm | Schottertragschicht aus gebrochenem Baustoffgemisch 0/45 nach TL SoB-StB, Dicke 25 cm, liefern, einbauen und verdichten, Ev2 mindestens 150 MN/m2.
+4.1.20 | 420 m2 | Asphalttragschicht AC 22 T S, d = 12 cm | Asphalttragschicht aus AC 22 T S, Bindemittel 50/70, Dicke 12 cm, in den Flächen mit Neuaufbau herstellen.
+4.1.30 | 1870 m2 | Asphaltbinderschicht AC 16 B S, d = 6 cm | Asphaltbinderschicht aus AC 16 B S, Bindemittel 25/55-55 A, Dicke 6 cm, auf der gesamten Fläche herstellen, Unterlage reinigen und mit Bitumenemulsion ansprühen.
+4.1.40 | 1870 m2 | Asphaltdeckschicht AC 11 D S, d = 4 cm | Asphaltdeckschicht aus Asphaltbeton AC 11 D S, Bindemittel 25/55-55 A, Dicke 4 cm, auf der gesamten Fläche herstellen, Oberfläche abstumpfen.
+4.1.50 | 240 m | Fugen und Anschlüsse mit Fugenband | Anschlüsse an Rinne, Hallensockel, Einbauten und Bestand mit Bitumenfugenband 40 x 10 mm herstellen.
+4.1.60 | 6 St | Schachtabdeckung angleichen | Vorhandene Schachtabdeckung auf die neue Deckenhöhe angleichen, Ausgleichsringe und Mörtel liefern.
+# 5 | Markierung
+# 5.1 | Markierungsarbeiten
+5.1.10 | 380 m | Markierung der Torzufahrten und Stellplätze | Markierung als Strich 12 cm in Kaltplastik, gelb, für Torzufahrten und Lkw-Stellplätze nach Markierungsplan des AG herstellen.
+# 6 | Stundenlohn
+# 6.1 | Stundenlohnarbeiten
+6.1.10 | 40 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter auf Anordnung des AG.
+"""
+
+[[lv]]
+key = "druck"
+base = "lv"
+format = "pdf"
+
+[[lv]]
+key = "angebot"
+base = "lv"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_Ladehof_Halle2"
+prices = """
+1.1.10 | 6800,00
+1.1.20 | 2900,00
+1.1.30 | 1450,00
+2.1.10 | 6,20
+2.1.20 | 3,90
+2.1.30 | 13,80
+2.1.40 | 38,00
+2.1.50 | 165,00
+2.2.10 | 26,50
+2.2.20 | 29,00
+2.2.30 | 1,60
+2.2.40 | 48,00
+3.1.10 | 385,00
+3.1.20 | 780,00
+3.1.30 | 118,00
+3.1.40 | 1250,00
+3.1.50 | 640,00
+3.1.60 | 980,00
+4.1.10 | 13,40
+4.1.20 | 31,50
+4.1.30 | 19,80
+4.1.40 | 15,90
+4.1.50 | 7,40
+4.1.60 | 290,00
+5.1.10 | 3,20
+6.1.10 | 58,00
+"""
+
+[[lv]]
+key = "auftrag"
+base = "angebot"
+phase = "86"
+file = "Auftrags-LV_Ladehof_Halle2"
+drop = ["5.1.10"]
+set = ["3.1.30 | 36 m | Anschlussleitung PP DN 200, SN 10 | Anschlussleitung aus PP-Rohren DN 200, SN 10, von den Einlaufkästen zum vorhandenen Schacht verlegen, einschließlich Graben bis 1,50 m Tiefe, Sandbettung, Verfüllung und Formstücken."]
+add = """
+4.1.70 | 1 psch | Zulage Asphalteinbau am Wochenende | Zulage für den Einbau der Asphaltbinder- und Asphaltdeckschicht im Bereich vor den Toren 1 bis 4 an einem Wochenende von Samstag 6:00 Uhr bis Sonntag 20:00 Uhr, einschließlich aller Zuschläge für Personal, Mischwerk und Transport.
+"""
+prices = """
+3.1.10 | 368,00
+3.1.30 | 118,00
+4.1.70 | 4200,00
+"""
+
+[[mail]]
+id = "anfrage"
+day = -12
+time = "08:40"
+from = "ind.schuett"
+to = "us"
+subject = "Anfrage Sanierung Ladehof Halle 2 (HLP-H2-2026-07)"
+body = """Guten Tag Herr Doe,
+
+wir haben noch eine zweite, kleinere Sache als den Hof vor Halle 4, und die ist eiliger: Der Ladehof vor Halle 2 soll saniert werden. Die Rinne vor den Toren ist an mehreren Stellen eingebrochen, der Asphalt hat Spurrinnen und Löcher, und unser Mieter dort hat uns eine Frist gesetzt.
+
+Unser Ingenieur hat dafür wieder ein Leistungsverzeichnis gemacht. Diesmal hat er mir zwei Dateien gegeben: eine mit der Endung X83, die Sie wohl in Ihr Programm einlesen können, und dasselbe noch einmal als PDF zum Lesen. Beide hängen an.
+
+Wir bräuchten Ihr Angebot bis zum {-7}, 14 Uhr. Gebaut werden soll ab dem {+15}, vier Wochen sind dafür vorgesehen. Die Halle bleibt in Betrieb, es muss immer die Hälfte der Tore frei sein.
+
+Wenn Sie sich die Fläche vorher ansehen möchten, sagen Sie Bescheid."""
+attach = ["lv:lv", "lv:druck"]
+
+[[mail]]
+id = "termin_frage"
+day = -10
+time = "09:50"
+from = "us.doe"
+to = "ind.schuett"
+subject = "AW: Anfrage Sanierung Ladehof Halle 2 (HLP-H2-2026-07)"
+reply_to = "anfrage"
+body = """Guten Tag Frau Schütt,
+
+vielen Dank, wir bieten gern an. Die Fläche würden wir uns vorher ansehen, vor allem die Rinne und den Schacht, an den angeschlossen wird. Ginge das kurzfristig, heute Nachmittag oder morgen früh? Herr Albers, unser Bauleiter, käme mit.
+
+Mit freundlichen Grüßen
+John Doe"""
+
+[[mail]]
+id = "termin_antwort"
+day = -10
+time = "10:30"
+from = "ind.schuett"
+to = "us"
+subject = "AW: Anfrage Sanierung Ladehof Halle 2 (HLP-H2-2026-07)"
+reply_to = "termin_frage"
+body = """Guten Tag Herr Doe,
+
+heute um 15:00 Uhr passt. Melden Sie sich bitte am Pförtner, Herr Brandt vom Mieter holt Sie dort ab und zeigt Ihnen den Hof und den Schacht. Ich selbst bin in einer Besprechung, komme aber dazu, wenn ich es schaffe.
+
+Bitte Warnweste mitbringen, ohne lässt der Pförtner niemanden auf das Gelände."""
+
+[[mail]]
+id = "angebot"
+day = -7
+time = "11:15"
+from = "us.doe"
+to = "ind.schuett"
+cc = ["us"]
+subject = "Angebot Sanierung Ladehof Halle 2 (HLP-H2-2026-07)"
+reply_to = "anfrage"
+quote = false
+body = """Guten Tag Frau Schütt,
+
+anbei erhalten Sie unser Angebot für die Sanierung des Ladehofs vor Halle 2. Die Datei mit der Endung X84 ist das ausgefüllte Leistungsverzeichnis für Ihren Ingenieur, er kann sie direkt einlesen.
+
+Angebotssumme netto: 168.915,50 €
+zuzüglich 19 % Umsatzsteuer: 32.093,95 €
+Angebotssumme brutto: 201.009,45 €
+
+Nicht in der Summe enthalten ist die Bedarfsposition 2.2.40 (Bodenaustausch, 48,00 €/m³), sie fällt nur an, wenn der Untergrund nicht trägt.
+
+Aus der Besichtigung drei Anmerkungen:
+1. Die Vorbemerkungen nennen eine Binderschicht von 8 cm, die Position 4.1.30 beschreibt 6 cm. Wir haben 6 cm angeboten, wie in der Position. Für die Belastung durch Sattelzüge wären 8 cm die bessere Wahl; den Mehrpreis nennen wir Ihnen gern.
+2. Die Rinne haben wir im ausgeschriebenen Fabrikat angeboten. Ein gleichwertiges Produkt eines anderen Herstellers wäre etwas günstiger und schneller lieferbar.
+3. Die Asphaltarbeiten führt für uns die Asphaltbau Holsten GmbH aus. Einbau in dieser Jahreszeit geht nur bei trockenem Wetter und über 5 Grad; ein paar Tage Verschiebung müssen Sie einplanen.
+
+Bauzeit vier Wochen in zwei Abschnitten, wie ausgeschrieben. An das Angebot halten wir uns bis zum {+21} gebunden.
+
+Mit freundlichen Grüßen
+John Doe"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "aenderungen"
+day = -5
+time = "12:10"
+from = "ind.schuett"
+to = "us"
+subject = "AW: Angebot Sanierung Ladehof Halle 2 (HLP-H2-2026-07)"
+reply_to = "angebot"
+body = """Guten Tag Herr Doe,
+
+vielen Dank für das Angebot. Wir möchten Sie gern beauftragen, allerdings haben sich nach dem Gespräch mit unserem Mieter ein paar Dinge geändert:
+
+- Die Markierung (Position 5.1.10) macht der Mieter selbst, er stellt im Frühjahr sowieso die Torbelegung um. Die Position soll entfallen.
+- Der Bereich vor den Toren 1 bis 4 kann nur an einem Wochenende asphaltiert werden, unter der Woche geht das dort nicht. Unser Ingenieur meint, dafür bräuchte es eine eigene Position. Was würde das kosten?
+- Die Anschlussleitung soll nicht in den Schacht direkt vor der Halle gehen, sondern in den nächsten, der ist in besserem Zustand. Laut Ingenieur sind das 36 m statt 28 m.
+- Und eine Bitte von unserer Geschäftsführung: Die Rinne ist mit 385 € je Meter der mit Abstand größte Einzelposten bei der Entwässerung. Können Sie uns da im Preis entgegenkommen? Sie hatten ja selbst geschrieben, dass es günstiger ginge.
+
+Bei 6 cm Binderschicht bleibt es, der Ingenieur sagt, das reicht.
+
+Wenn wir uns einig werden, schicke ich Ihnen in den nächsten Tagen den Auftrag."""
+
+[[mail]]
+id = "zusage"
+day = -4
+time = "13:05"
+from = "us.doe"
+to = "ind.schuett"
+subject = "AW: Angebot Sanierung Ladehof Halle 2 (HLP-H2-2026-07)"
+reply_to = "aenderungen"
+body = """Guten Tag Frau Schütt,
+
+das können wir so machen:
+
+- Position 5.1.10 Markierung entfällt.
+- Asphalteinbau vor den Toren 1 bis 4 am Wochenende: Zulage pauschal 4.200,00 € netto, darin sind die Zuschläge für unsere Leute, den Asphaltbauer und das Mischwerk enthalten.
+- Anschlussleitung 36 m statt 28 m, zum angebotenen Einheitspreis von 118,00 €/m.
+- Rinne Position 3.1.10: Mit dem gleichwertigen Fabrikat können wir Ihnen 368,00 €/m statt 385,00 €/m anbieten, gleiche Nennweite und Klasse E 600. Das Datenblatt schicke ich Ihrem Ingenieur.
+
+Alle übrigen Mengen und Preise bleiben wie angeboten.
+
+Mit freundlichen Grüßen
+John Doe"""
+
+[[mail]]
+id = "auftrag"
+day = -2
+time = "14:30"
+from = "ind.schuett"
+to = "us"
+subject = "Auftrag Sanierung Ladehof Halle 2 (HLP-H2-2026-07)"
+reply_to = "zusage"
+quote = false
+body = """Guten Tag Herr Doe,
+
+hiermit beauftragen wir Sie mit der Sanierung des Ladehofs vor Halle 2. Unser Ingenieur hat das Leistungsverzeichnis entsprechend angepasst, Sie erhalten es als Datei mit der Endung X86 im Anhang.
+
+Gegenüber Ihrem Angebot ist Folgendes geändert, alles andere ist unverändert:
+1. Die Position 5.1.10 (Markierung) ist entfallen.
+2. Neu hinzugekommen ist die Position 4.1.70, Zulage Asphalteinbau am Wochenende, pauschal 4.200,00 €.
+3. Bei der Position 3.1.30 (Anschlussleitung) ist die Menge von 28 m auf 36 m erhöht.
+4. Bei der Position 3.1.10 (Entwässerungsrinne) gilt der vereinbarte Einheitspreis von 368,00 €/m statt 385,00 €/m.
+
+Die Auftragssumme beträgt damit 171.789,50 € netto, das sind 204.429,51 € brutto. Die Bedarfsposition 2.2.40 ist nicht beauftragt.
+
+Baubeginn ist der {+15}. Das Wochenende für die Tore 1 bis 4 stimmen Sie bitte direkt mit Herrn Brandt vom Mieter ab. Die schriftliche Auftragsbestätigung mit Unterschrift der Geschäftsführung geht Ihnen per Post zu.
+
+Wir freuen uns auf die Zusammenarbeit."""
+attach = ["lv:auftrag"]

@@ -1,0 +1,139 @@
+# T6: the municipal utility's yearly framework contract for gas and water house connections, a unit-price catalogue.
+
+[[lv]]
+key = "rahmen"
+file = "Preisblatt_Rahmenvertrag_Hausanschluesse_2027"
+format = "xlsx"
+client = "swn"
+name = "Rahmenvertrag Hausanschlüsse Gas/Wasser 2027"
+project = "Rahmenvertrag Hausanschlüsse Gas/Wasser 2027, Netzgebiet Norderbek"
+number = "SWN-RV-2027-02"
+remarks = """Vorbemerkungen zum Preisblatt SWN-RV-2027-02
+Gegenstand: Tiefbau- und Rohrverlegearbeiten für Gas- und Trinkwasser-Hausanschlüsse im Netzgebiet der Stadtwerke Norderbek GmbH (Stadtgebiet Norderbek und Umlandgemeinden bis 15 km).
+Angebotsfrist: {+2}, 10:00 Uhr
+Bindefrist: {+40}
+Vertragslaufzeit: 01.01.2027 bis 31.12.2027, Verlängerungsoption des AG um 12 Monate zu unveränderten Preisen.
+Ausführungsbeginn: jeweils innerhalb von 10 Werktagen nach Einzelabruf.
+Die angegebenen Mengen sind geschätzte Jahresmengen auf Grundlage der Jahre 2024 bis 2026. Ein Anspruch auf Abruf bestimmter Mengen oder eines Mindestumsatzes besteht nicht.
+Die Einheitspreise sind Festpreise für die gesamte Vertragslaufzeit. Eine Preisgleitung für Lohn, Material oder Kraftstoffe ist ausgeschlossen.
+Rohre, Armaturen und Hauseinführungen für Gas stellt der AG ab Lager Gasstraße 12 bei. Material für Trinkwasser liefert der AN, soweit die Position nichts anderes sagt.
+Der AN muss für die Laufzeit nach DVGW GW 301 (Gruppe G3 ge, W3 ge) zertifiziert sein, Nachweis mit dem Angebot.
+An- und Abfahrten sowie das Einrichten der Einzelbaustellen werden nicht gesondert vergütet.
+Verkehrsrechtliche Anordnungen beantragt der AN. Oberflächen werden nach den Vorgaben des jeweiligen Straßenbaulastträgers wiederhergestellt.
+Abrechnung je Einzelmaßnahme nach Aufmaßblatt des AG, Rechnungsstellung monatlich gesammelt."""
+items = """
+# 1 | Allgemeines
+1.10 | 1 psch | Baustelleneinrichtung für alle Einzelmaßnahmen | Vorhalten von Geräten, Fahrzeugen, Absperrmaterial und Personal für alle im Vertragsjahr abgerufenen Einzelmaßnahmen, einschließlich Lagerplatz und Entsorgungscontainer. // Abgeltung pauschal für die gesamte Vertragslaufzeit unabhängig von der Anzahl der Abrufe.
+1.20 | 140 St | Verkehrssicherung je Einzelmaßnahme | Verkehrssicherung einer Einzelbaustelle im Gehweg oder am Fahrbahnrand nach RSA 21, Regelplan B I, aufbauen, bis 10 Arbeitstage vorhalten und abbauen, einschließlich Einholen der verkehrsrechtlichen Anordnung.
+# 2 | Hausanschlüsse Trinkwasser
+2.10 | 85 St | Hausanschluss Wasser da 40 bis 10 m | Trinkwasser-Hausanschluss aus PE 100 RC da 40, SDR 11, von der Versorgungsleitung bis zur Hauseinführung herstellen, Länge bis 10 m, Überdeckung 1,30 m. // Rohrgraben in offener Bauweise ausheben und verfüllen unabhängig von der Bodenklasse, Rohr und Anbohrarmatur DN 100 bis DN 150 liefern und einbauen, Druckprüfung nach DVGW W 400-2, Spülung und Inbetriebnahme mit dem Netzmeister.
+2.20 | 310 m | Mehrlänge Hausanschluss Wasser | Mehrlänge über 10 m zu Position 2.10, je Meter Rohrgraben und Leitung da 40.
+2.30 | 22 St | Hausanschluss Wasser da 63 bis 10 m | Trinkwasser-Hausanschluss wie Position 2.10, jedoch da 63 für Mehrfamilienhäuser und Gewerbe.
+2.40 | 85 St | Mauerdurchführung Wasser, Kernbohrung | Kernbohrung bis 150 mm Durchmesser durch Kellerwand aus Mauerwerk oder Beton bis 40 cm Dicke herstellen, Hauseinführung Fabrikat Dichtfix Typ MSH Basic einsetzen und abdichten.
+2.50 | 30 St | Alten Hausanschluss Wasser trennen | Stillgelegten Hausanschluss an der Versorgungsleitung abtrennen, Anbohrarmatur ausbauen, Versorgungsleitung mit Reparaturschelle verschließen, einschließlich Kopfloch.
+# 3 | Hausanschlüsse Gas
+3.10 | 48 St | Hausanschluss Gas da 32 bis 10 m | Gas-Hausanschluss aus PE 100 da 32, SDR 11, Niederdruck oder Mitteldruck bis 1 bar, Länge bis 10 m, herstellen. // Tiefbau wie Position 2.10, Rohr und Armaturen beigestellt, Heizwendelschweißung durch geprüfte Schweißer nach DVGW GW 330, Druckprüfung nach DVGW G 459-1.
+3.20 | 95 St | Mehrlänge Hausanschluss Gas | Mehrlänge über 10 m zu Position 3.10, je Meter Rohrgraben und Leitung da 32.
+3.30 | 38 St | Kombianschluss Gas und Wasser im gemeinsamen Graben | Gas- und Trinkwasser-Hausanschluss im gemeinsamen Graben bis 10 m Länge, lichter Abstand der Leitungen mindestens 20 cm, Leistungen wie Positionen 2.10 und 3.10.
+3.40 | - m | Mehrlänge Kombianschluss | Mehrlänge über 10 m zu Position 3.30, je Meter gemeinsamer Graben mit beiden Leitungen.
+3.50 | 48 St | Mauerdurchführung Gas, Kernbohrung | Kernbohrung bis 150 mm Durchmesser durch Kellerwand aus Mauerwerk oder Beton bis 40 cm Dicke herstellen, beigestellte Gas-Hauseinführung mit Ausziehsicherung einsetzen und abdichten.
+3.60 | 15 St | Grabenlose Verlegung mit Erdrakete bis 10 m | Hausanschlussleitung da 32 bis da 63 grabenlos mit Bodenverdrängungshammer herstellen, Länge bis 10 m, einschließlich Start- und Zielgrube. Die Wahl des Verfahrens trifft der AG je Einzelmaßnahme.
+# 4 | Oberflächen
+4.10 | 420 m2 | Oberfläche unbefestigt wiederherstellen | Unbefestigte Flächen, Rasen und Vorgärten nach Verfüllung wiederherstellen, Oberboden 20 cm andecken, Rasenansaat.
+4.20 | 380 m2 | Pflaster- und Plattenbeläge aufnehmen und wieder verlegen | Betonpflaster oder Gehwegplatten aufnehmen, seitlich lagern und nach Verfüllung auf neuer Bettung wieder verlegen, Tragschicht 20 cm ergänzen, Fehlmaterial bis 10 Prozent liefern.
+4.30 | 260 m | Asphaltbefestigung Gehweg wiederherstellen | Asphaltbefestigung im Gehweg aufbrechen, entsorgen und wiederherstellen: Tragschicht AC 22 T N 8 cm, Deckschicht AC 8 D N 3 cm, Schottertragschicht 20 cm, Fugen mit Fugenband.
+4.40 | 110 m2 | Asphaltbefestigung Fahrbahn wiederherstellen | Asphaltbefestigung in der Fahrbahn aufbrechen, entsorgen und wiederherstellen nach Vorgabe des Straßenbaulastträgers, Aufbau bis 22 cm Asphalt in drei Schichten, Rückschnitt 20 cm je Seite. // Entsorgung des Ausbauasphalts einschließlich aller Nebenleistungen und Analysen.
+# 5 | Zulagen und Sonstiges
+5.10 | 45 St | Montagegrube an der Versorgungsleitung | Montagegrube 1,50 x 1,20 m, Tiefe bis 1,60 m, an der Versorgungsleitung herstellen, verbauen, nach der Montage verfüllen und verdichten.
+5.20 | 60 St | Zulage Kopfloch an der Hauptleitung | Zulage für das Herstellen einer Montagegrube 1,50 x 1,20 m bis 1,60 m Tiefe an der Versorgungsleitung einschließlich Verbau und Verfüllung.
+5.30 | 120 St | Zulage Winterbau | Zulage je Hausanschluss für Arbeiten bei Frost: Aufbrechen gefrorenen Bodens, Frostschutzmaßnahmen an Graben und Leitung, Auftauen der Verfüllmassen. Anordnung und Zeitraum nach Wahl des AG. | E
+5.40 | 35 St | Zulage Ausführung innerhalb von 5 Werktagen | Zulage für die Ausführung einer Einzelmaßnahme innerhalb von 5 Werktagen nach Abruf. Im Übrigen gilt für alle Abrufe eine Ausführungsfrist von 5 Werktagen. | E
+5.50 | 180 m3 | Bodenaustausch und Entsorgung | Nicht wieder einbaufähigen Aushub abfahren, entsorgen und durch Füllsand ersetzen, Entsorgung unabhängig von der Belastungsklasse einschließlich Deklaration.
+5.60 | 25 St | Handschachtung im Bereich von Fremdleitungen | Zulage für Handschachtung bei Kreuzung oder Parallelführung von Kabeln und Leitungen Dritter, je Kreuzungsstelle, ohne gesonderte Vergütung von Sicherungsmaßnahmen.
+5.70 | 150 h | Stundenlohn Kolonne Tiefbau, Facharbeiter | Stundenlohnarbeiten Facharbeiter einschließlich Kolonnenfahrzeug und Kleingerät, nur nach Anordnung des Netzmeisters.
+5.80 | 60 h | Rufbereitschaft, Einsatzstunde außerhalb der Arbeitszeit | Einsatzstunde einer Kolonne aus zwei Mann mit Minibagger bei Störungen außerhalb der Regelarbeitszeit, Eintreffen an der Einsatzstelle innerhalb von 90 Minuten. Das Vorhalten der Rufbereitschaft an 365 Tagen ist mit dem Stundensatz abgegolten. | A
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "SWN-RV-2027-02_Aufforderung_Angebotsabgabe.pdf"
+title = "Aufforderung zur Angebotsabgabe – Rahmenvertrag Hausanschlüsse Gas/Wasser 2027"
+text = """Vergabe-Nr.: SWN-RV-2027-02
+Verfahren: Beschränkte Ausschreibung im Sektorenbereich, Vertragsgrundlage VOB/B
+
+Sehr geehrte Damen und Herren,
+
+die Stadtwerke Norderbek GmbH beabsichtigt, die Tiefbau- und Rohrverlegearbeiten für Gas- und Trinkwasser-Hausanschlüsse im Jahr 2027 erneut im Rahmenvertrag zu vergeben. Wir fordern Sie auf, auf der Grundlage des beigefügten Preisblatts ein Angebot abzugeben.
+
+Termine
+Angebotsfrist: {+2}, 10:00 Uhr
+Bindefrist: {+40}
+Vergabeentscheidung: voraussichtlich KW {kw+12}
+Vertragsbeginn: 01.01.2027
+Vertragsende: 31.12.2027
+
+Preise
+Die Einheitspreise gelten für 12 Monate ab Vertragsbeginn als Festpreise. Eine Preisgleitung (Lohn-, Stoff- oder Kraftstoffgleitklausel) ist nicht vereinbart und wird auch nicht nachträglich zugestanden.
+Der AG kann den Vertrag einmalig um 12 Monate zu unveränderten Preisen verlängern; die Erklärung erfolgt bis zum 30.09.2027.
+
+Umfang
+Im Mittel der letzten drei Jahre wurden abgerufen:
+Jahr | Art | Anzahl
+2024 | Hausanschlüsse Wasser | 98
+2024 | Hausanschlüsse Gas | 71
+2025 | Hausanschlüsse Wasser | 104
+2025 | Hausanschlüsse Gas | 55
+2026 | Hausanschlüsse Wasser (bis Oktober) | 91
+2026 | Hausanschlüsse Gas (bis Oktober) | 37
+Die Mengen des Preisblatts sind Schätzmengen. Ein Mindestabruf wird nicht zugesichert.
+
+Mit dem Angebot einzureichen
+- ausgefülltes Preisblatt (Excel und unterschriebener Ausdruck)
+- Zertifikat nach DVGW GW 301, Gruppen G3 ge und W3 ge
+- Nachweis von mindestens zwei Kolonnen mit geprüften PE-Schweißern nach DVGW GW 330
+- Unbedenklichkeitsbescheinigungen von Finanzamt, Krankenkasse und Berufsgenossenschaft
+- Nachweis der Betriebshaftpflichtversicherung, Deckung mindestens 5 Mio. EUR
+
+Wertung
+Gewertet wird die Summe aus Einheitspreisen und Schätzmengen des Preisblatts. Bedarfs- und Wahlpositionen werden mit gewertet.
+
+Rückfragen richten Sie bitte bis zwei Werktage vor Ablauf der Angebotsfrist an netzbau@stadtwerke-norderbek.test."""
+
+[[mail]]
+id = "einladung"
+day = -9
+time = "11:03"
+from = "swn.reimers"
+to = "us"
+subject = "Angebotsaufforderung Rahmenvertrag Hausanschlüsse Gas/Wasser 2027 (SWN-RV-2027-02)"
+body = """Sehr geehrter Herr Doe,
+
+der laufende Rahmenvertrag für die Hausanschlüsse endet zum 31.12.2026. Für das Jahr 2027 schreiben wir die Leistung neu aus und fordern Sie hiermit zur Abgabe eines Angebots auf.
+
+Anbei erhalten Sie
+- das Anschreiben mit Terminen und Bedingungen (PDF),
+- das Preisblatt mit den Schätzmengen für 2027 (Excel).
+
+Bitte beachten Sie:
+Die Angebotsfrist endet am {+2} um 10:00 Uhr. Das Preisblatt ist vollständig auszufüllen, auch die Bedarfs- und Wahlpositionen. Die Einheitspreise sind für 12 Monate fest, eine Preisgleitung ist nicht vorgesehen.
+
+Gegenüber dem Vorjahr neu sind die Positionen für den Kombianschluss im gemeinsamen Graben (3.30, 3.40) und die Rufbereitschaft (5.80). Die Gasmengen haben wir wegen der rückläufigen Anfragen niedriger angesetzt.
+
+Das Angebot senden Sie bitte per E-Mail an diese Adresse und den unterschriebenen Ausdruck per Post nach."""
+attach = ["lv:rahmen", "doc:anschreiben"]
+
+[[mail]]
+id = "erinnerung"
+day = -1
+time = "13:47"
+from = "swn.reimers"
+to = "us"
+subject = "AW: Angebotsaufforderung Rahmenvertrag Hausanschlüsse Gas/Wasser 2027 (SWN-RV-2027-02)"
+reply_to = "einladung"
+body = """Sehr geehrter Herr Doe,
+
+uns liegt zum Rahmenvertrag Hausanschlüsse 2027 noch kein Angebot Ihres Hauses vor. Die Angebotsfrist endet am {+2} um 10:00 Uhr, eine Verlängerung ist nicht vorgesehen.
+
+Da Sie in den vergangenen Jahren mehrfach Einzelmaßnahmen für uns ausgeführt haben, würden wir ein Angebot von Ihnen begrüßen. Sollten Sie nicht anbieten wollen, bitte ich um eine kurze Mitteilung, damit wir das in der Vergabeakte vermerken können.
+
+Die Unterlagen haben Sie mit meiner Mail vom {-9} erhalten."""

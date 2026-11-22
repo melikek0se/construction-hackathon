@@ -1,0 +1,532 @@
+# Verkehrssicherung Nordmark GmbH (vs), Dragan Petrovic, dispatcher: the history with our estimator. Terse,
+# answers within a day, prices per day and per week from his list, needs the traffic order
+# (verkehrsrechtliche Anordnung) two weeks ahead, 24 h emergency service, invoices by days and weeks counted.
+# Did P1, P2, P6 (half-side closure 70 d, full closure as a contingency item); quoted P5 with crossing
+# guards and P7.
+
+[[sheet]]
+key = "p1"
+file = "Anfrage_Verkehrssicherung_Muehlenstrasse.xlsx"
+items = """
+1.2.10 | 1 psch | Verkehrssicherung einrichten, vorhalten, räumen | 5400,00 |  |  | halbseitig, 4 Abschnitte, ohne Vollsperrung
+1.2.20 | 26 Wo | Lichtsignalanlage vorhalten und betreiben | 1190,00 |  |  | je angefangene Woche
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "14 Tage netto", valid_until = "{-326}" }
+
+[[sheet]]
+key = "p2"
+file = "Anfrage_Verkehrssicherung_Hauptstrasse_Brande.xlsx"
+items = """
+1.1.20 | 1 psch | Verkehrssicherung Ortsdurchfahrt | 6900,00 |  |  | halbseitig, 8 Abschnitte, 7 Umsetzungen
+1.1.30 | 18 Wo | Lichtsignalanlage vorhalten | 1190,00 |  |  | je angefangene Woche
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "14 Tage netto", valid_until = "{-326}" }
+
+[[sheet]]
+key = "p5"
+file = "Anfrage_Verkehrssicherung_Schulweg.xlsx"
+items = """
+1.1.20 | 1 psch | Verkehrssicherung und Schulwegsicherung | 31976,00 |  |  | 9.800,00 Sperrung und Umleitung, 22.176,00 Sicherungsposten 576 h
+1.1.30 | 320 m | Fußgängernotweg mit Absperrschranken | 14,80
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "14 Tage netto", valid_until = "{+39}" }
+
+[[sheet]]
+key = "p6"
+file = "Anfrage_Verkehrssicherung_Radweg_K22.xlsx"
+items = """
+1.1.30 | 1 psch | Verkehrssicherung einrichten und räumen | 4850,00 |  |  | 5 Abschnitte, Verkehrszeichenplan dabei
+1.1.40 | 70 d | Verkehrssicherung vorhalten, halbseitig mit LSA | 185,00 |  |  | je Kalendertag
+1.1.50 | 30 d | Verkehrssicherung vorhalten, Vollsperrung | 240,00 |  |  | mit Umleitungsbeschilderung, nur mit Anordnung
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "14 Tage netto", valid_until = "{+39}" }
+
+# ------------------------------------------------------------------ P1 Mühlenstraße (won)
+
+[[mail]]
+id = "p1_anfrage"
+day = -516
+time = "11:20"
+from = "us"
+to = "vs"
+subject = "Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung – Kanalerneuerung Mühlenstraße"
+body = """Hallo Herr Petrovic,
+
+wir rechnen die Kanalerneuerung Mühlenstraße in Norderbek (TBA-SE-0318). Bitte Ihr Angebot für die Verkehrssicherung, komplett mit Material, Auf- und Abbau, Kontrolle und Wartung:
+
+Pos. 1.2.10 – 1 psch – Verkehrssicherung einrichten, vorhalten, räumen
+Pos. 1.2.20 – 26 Wo – Lichtsignalanlage vorhalten und betreiben
+
+Kurz die Lage: 860 m Kanal in der Fahrbahn, halbseitige Sperrung nach RSA 21, wir bauen in vier Abschnitten, Zufahrt für Anlieger und Rettung muss frei bleiben. Ein abgestimmter Verkehrszeichenplan liegt nicht vor, den brauche ich von Ihnen. Der Langtext der Pauschale will auch Vollsperrungen mit Umleitung ohne Mehrvergütung drin haben. Ich habe dazu eine Frage an die Stadt gestellt und rechne ohne Vollsperrung. Bitte nennen Sie mir den Preis dafür getrennt.
+
+Ausführung {-455} bis {-300}. Liste hängt als Excel-Datei an. Abgabe am {-500}, Preise bitte bis {-505}. Auftrag ist noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_angebot"
+day = -515
+time = "16:42"
+from = "vs"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Hallo Hr. Doe,
+
+Liste anbei.
+
+1.2.10 pauschal 5.400,00: Verkehrszeichenplan, Aufbau, 3 x Umsetzen, Abbau, Kontrolle 2 x täglich.
+1.2.20 LSA 1.190,00 je Woche, angefangene Woche zählt.
+
+Nicht in der Pauschale, nach Preisliste:
+Vollsperrung mit Umleitung 210,00 je Tag
+jedes weitere Umsetzen 380,00
+Notdienst-Einsatz 185,00 zzgl. Material
+
+Vollsperrung pauschal ohne Tage rechne ich nicht.
+Anordnung brauche ich 2 Wochen vor jedem Aufbau und Umbau. Ohne Anordnung kein Schild."""
+attach = ["sheet:p1"]
+
+[[mail]]
+id = "p1_auftrag"
+day = -478
+time = "13:40"
+from = "us"
+to = "vs"
+cc = ["us.albers"]
+subject = "Mühlenstraße Norderbek – Auftrag Verkehrssicherung"
+reply_to = "p1_angebot"
+quote = false
+body = """Hallo Herr Petrovic,
+
+Zuschlag ist da. Auftrag an Sie wie angeboten am {-515}:
+
+1.2.10 pauschal 5.400,00 €
+1.2.20 LSA 1.190,00 € je Woche, Abrechnung nach tatsächlichen Wochen (LV: 26)
+Vollsperrung, Umsetzen, Notdienst nach Ihrer Preisliste, nur auf Abruf durch unseren Bauleiter
+
+Bauleiter ist Jonas Albers (in Kopie). Die Stadt will den Verkehrszeichenplan zur Bauanlaufbesprechung am {-468} als Entwurf sehen, Verkehrsbehörde sitzt mit am Tisch. Bitte bis {-470} an Herrn Albers. Baubeginn {-455}, Beginn am Bahnübergang.
+
+Für die Akte brauche ich: Freistellungsbescheinigung § 48b EStG, Unbedenklichkeitsbescheinigungen, MVAS-Nachweis Ihres Verantwortlichen.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p1_abschnitt3"
+day = -420
+time = "10:05"
+from = "us.albers"
+to = "vs"
+cc = ["us"]
+subject = "Mühlenstraße – Umbau auf Abschnitt 3 ab {-406}"
+body = """Moin Dragan,
+
+wir kommen schneller voran als im Plan. Abschnitt 2 ist bis {-408} zu, ab {-406} will ich in Abschnitt 3 (Station 0+400 bis 0+620). Kannst du die Ampel am {-407} abends umsetzen?
+
+Der Plan für Abschnitt 3 ist der aus deinem Entwurf, Blatt 3, unverändert.
+
+Gruß"""
+
+[[mail]]
+id = "p1_abschnitt3_aw"
+day = -419
+time = "16:30"
+from = "vs"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Mühlenstraße – Umbau auf Abschnitt 3 ab {-406}"
+reply_to = "p1_abschnitt3"
+body = """Moin Jonas,
+
+umsetzen kann ich. Aber: Angeordnet sind nur Abschnitt 1 und 2. Für 3 muss ich neu beantragen, Blatt 3 war nur Entwurf.
+
+Antrag geht morgen früh raus. Behörde Norderbek braucht 10 Arbeitstage, schneller war sie noch nie. Rechne mit {-404}, nicht {-406}.
+
+Vorher stelle ich nichts um. Nächstes Mal 2 Wochen vorher, steht im Angebot."""
+
+[[mail]]
+id = "p1_notdienst"
+day = -371
+time = "06:40"
+from = "vs"
+to = "us.albers"
+cc = ["us"]
+subject = "Mühlenstraße – Notdienst-Einsatz heute Nacht, LSA umgefahren"
+body = """Moin Jonas,
+
+Meldung Polizei Norderbek 02:10 Uhr: Signalgeber Seite Marktstraße von Pkw umgefahren, Ampel dunkel, Fahrer weg.
+
+Notdienst vor Ort 02:50 bis 04:20 Uhr. Ersatzgeber aufgestellt, Akku getauscht, Anlage läuft wieder. 4 Baken und 1 Leuchte ersetzt.
+
+Polizei hat aufgenommen, Vorgangsnummer hat mein Fahrer. Fotos schicke ich dir aufs Handy.
+
+Berechnet wird: Einsatz 185,00, Akku 240,00. Der Signalgeber läuft über unsere Versicherung."""
+
+[[mail]]
+id = "p1_rechnung"
+day = -297
+time = "08:20"
+from = "vs"
+to = "us"
+subject = "Mühlenstraße – Schlussrechnung 26-0044"
+body = """Hallo Hr. Doe,
+
+Schlussrechnung Mühlenstraße, Papier kommt per Post:
+
+1.2.10 pauschal 5.400,00
+1.2.20 LSA 21 Wo x 1.190,00 = 24.990,00
+Vollsperrung Deckschicht 2 Tage x 210,00 = 420,00
+Umsetzen zusätzlich 1 x 380,00 = 380,00
+Notdienst {-371}: Einsatz 185,00 + Akku 240,00 = 425,00
+
+Summe netto 31.615,00
+
+Aufgebaut {-452}, abgebaut {-314}. Abschläge sind abgezogen, siehe Papier."""
+
+[[mail]]
+id = "p1_rechnung_aw"
+day = -293
+time = "14:10"
+from = "us"
+to = "vs"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße – Schlussrechnung 26-0044"
+reply_to = "p1_rechnung"
+body = """Hallo Herr Petrovic,
+
+geprüft. Ein Punkt:
+
+LSA: Von {-452} bis {-314} sind es nach Ihren eigenen Daten 138 Tage, das sind 19 volle Wochen und 5 Tage, also 20 angefangene Wochen, nicht 21. 20 x 1.190,00 = 23.800,00 €.
+
+Alles andere erkenne ich an: die Pauschale, zwei Tage Vollsperrung für die Deckschicht, das zusätzliche Umsetzen (das war der Halt wegen des belasteten Bodens in Abschnitt 2, unser Thema) und den Notdienst vom {-371}. Den Notdienst reichen wir mit der Vorgangsnummer der Polizei bei unserer Versicherung ein.
+
+Ergibt 30.425,00 € netto. Bitte berichtigte Rechnung, dann zahlen wir in 14 Tagen.
+
+Freundliche Grüße"""
+
+# ------------------------------------------------------------------ P2 Hauptstraße Brande (won)
+
+[[mail]]
+id = "p2_anfrage"
+day = -407
+time = "10:50"
+from = "us"
+to = "vs"
+subject = "Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung – Trinkwasserleitung Hauptstraße"
+body = """Hallo Herr Petrovic,
+
+nächste Baustelle: Trinkwasserleitung Hauptstraße in Brande-Hörnerkirchen für den Wasserverband Geestrand (WVG-N-2207). Bitte Ihr Angebot, komplett:
+
+Pos. 1.1.20 – 1 psch – Verkehrssicherung Ortsdurchfahrt
+Pos. 1.1.30 – 18 Wo – Lichtsignalanlage vorhalten
+
+1.240 m Ortsdurchfahrt, halbseitig mit Ampel, acht Abschnitte von höchstens 150 m, also siebenmal umsetzen. Verkehrszeichenplan von Ihnen, zuständig ist die Verkehrsaufsicht des Kreises.
+
+Ausführung {-350} bis {-235}. Liste hängt an. Abgabe am {-395}, Preise bitte bis {-400}. Auftrag noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p2:blank"]
+
+[[mail]]
+id = "p2_angebot"
+day = -406
+time = "15:30"
+from = "vs"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung – Trinkwasserleitung Hauptstraße"
+reply_to = "p2_anfrage"
+body = """Hallo Hr. Doe,
+
+Liste anbei.
+
+1.1.20 pauschal 6.900,00: Plan, Aufbau, 7 x Umsetzen, Abbau.
+1.1.30 LSA 1.190,00 je Woche.
+
+Kreis braucht für die Anordnung 2 bis 3 Wochen. Alle 8 Abschnitte beantrage ich in einem Antrag, dann gibt es beim Umsetzen kein Warten wie in Norderbek. Dafür brauche ich Ihren Bauzeitenplan mit Daten je Abschnitt vor dem Antrag.
+
+Preise gelten bis Jahresende."""
+attach = ["sheet:p2"]
+
+[[mail]]
+id = "preise2026"
+day = -331
+time = "07:05"
+from = "vs"
+to = "us"
+subject = "Preisliste 2026"
+body = """Hallo Hr. Doe,
+
+ab 1. Januar, netto:
+
+LSA 2 Signalgeber, je Tag 185,00, je Woche 1.250,00
+LSA 3 Signalgeber (Einmündung), je Tag 215,00
+halbseitige Sperrung ohne LSA, je Tag 62,00
+Vollsperrung mit Umleitung bis 5 km, je Tag 225,00
+Umsetzen 395,00
+Verkehrszeichenplan mit Antrag 480,00
+Sicherungsposten je Stunde 38,50
+Notdienst-Einsatz 195,00 zzgl. Material, 24 h
+
+Laufende Baustellen: Mühlenstraße bleibt alt. Brande ab Januar LSA 1.250,00 je Woche, Angebot galt bis Jahresende."""
+
+# ------------------------------------------------------------------ P5 Schulweg (lost): crossing guards
+
+[[mail]]
+id = "p5_anfrage"
+day = -147
+time = "13:15"
+from = "us"
+to = "vs"
+subject = "Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung und Schulwegsicherung – Regenwasserkanal Schulweg"
+body = """Hallo Herr Petrovic,
+
+Norderbek schreibt den Regenwasserkanal im Schulweg aus (TBA-SE-0431). Bitte Ihr Angebot, komplett:
+
+Pos. 1.1.20 – 1 psch – Verkehrssicherung und Schulwegsicherung
+Pos. 1.1.30 – 320 m – Fußgängernotweg mit Absperrschranken
+
+Abschnittsweise Vollsperrung mit Umleitung nach RSA 21, 420 m Kanal. Besonderheit: Der Schulweg ist der Zugang zur Grundschule. In der Pauschale stecken laut Langtext auch Sicherungsposten zu den Schulzeiten, nach Vorgabe von Schulleitung und Verkehrsbehörde.
+
+Ausführung {-90} bis {+30}. Liste hängt an. Abgabe am {-138}, Preise bitte bis {-142}. Auftrag noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_rueckfrage"
+day = -147
+time = "15:05"
+from = "vs"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung und Schulwegsicherung – Regenwasserkanal Schulweg"
+reply_to = "p5_anfrage"
+body = """Hallo Hr. Doe,
+
+so kann ich die Pauschale nicht rechnen. Fragen:
+
+1. Posten: wie viele, an welchen Stellen, welche Uhrzeiten, wie viele Schultage?
+2. Wie viele Sperrabschnitte, wie oft Umbau?
+3. Umleitung: Strecke vorgegeben? Länge?
+4. Notweg 320 m: gleichzeitig oder wandernd?
+
+Posten rechne ich nach Stunden, 38,50. Ohne Stundenzahl kein Preis. Bitte bei der Stadt fragen."""
+
+[[mail]]
+id = "p5_antwort"
+day = -142
+time = "12:10"
+from = "us"
+to = "vs"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung und Schulwegsicherung – Regenwasserkanal Schulweg"
+reply_to = "p5_rueckfrage"
+body = """Hallo Herr Petrovic,
+
+die Stadt hat heute geantwortet (Bieterinformation Nr. 1):
+
+1. Posten: zwei Stellen (Querung Am Bleichgraben, Zugang Schulhof), an Schultagen 7:15 bis 8:15 Uhr und 12:30 bis 13:45 Uhr, 128 Schultage in der Bauzeit. Das sind 2 x 2,25 h x 128 = 576 Stunden.
+2. Sperrabschnitte: von uns geplant vier, also drei Umbauten.
+3. Umleitung: über Am Bleichgraben und Ringstraße, rund 1,2 km, nicht vorgegeben, aber naheliegend.
+4. Notweg: wandert mit dem Abschnitt, gleichzeitig stehen höchstens 110 m. Abgerechnet werden die 320 m einmal.
+
+Ich brauche Ihre Zahlen heute, spätestens morgen früh. Abgabe ist am {-138}.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p5_angebot"
+day = -142
+time = "15:40"
+from = "vs"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung und Schulwegsicherung – Regenwasserkanal Schulweg"
+reply_to = "p5_antwort"
+body = """Hallo Hr. Doe,
+
+Liste anbei.
+
+1.1.20 pauschal 31.976,00, davon:
+Vollsperrung 4 Abschnitte, Plan, Aufbau, 3 x Umbau, Umleitung, Vorhaltung, Abbau 9.800,00
+Sicherungsposten 576 h x 38,50 = 22.176,00
+
+1.1.30 Notweg 14,80 je m, Schrankenzaun mit Fußplatten und Leuchten, wandernd.
+
+Posten sind geschulte Leute mit Warnkleidung und Kelle, keine Aushilfen. Fällt Unterricht aus, wird trotzdem berechnet, wenn nicht am Vortag bis 12 Uhr abgesagt. Mehr Schultage: je Tag 173,25.
+
+Anordnung für Vollsperrung vor einer Schule: 3 Wochen einplanen, Polizei und Schulamt werden gehört."""
+attach = ["sheet:p5"]
+
+[[mail]]
+id = "p5_verloren"
+day = -115
+time = "10:30"
+from = "us"
+to = "vs"
+subject = "Schulweg Norderbek – nicht bekommen"
+body = """Hallo Herr Petrovic,
+
+zur Info: Der Schulweg ist an einen Mitbewerber gegangen, wir waren Vierter. Sie können das Angebot streichen.
+
+Die Stadt hat mir gesagt, dass unsere Schulwegsicherung fast doppelt so teuer war wie beim Ersten. Andere haben die 128 Schultage offenbar nicht voll gerechnet. Ich halte Ihre Rechnung trotzdem für die richtige: 576 Stunden sind 576 Stunden. Beim nächsten Mal frage ich bei Ihnen zusätzlich einen Preis ohne Posten ab, dann stellen wir die Posten notfalls selbst.
+
+Freundliche Grüße"""
+
+# ------------------------------------------------------------------ P6 Radweg K 22 (won)
+
+[[mail]]
+id = "p6_anfrage"
+day = -91
+time = "14:40"
+from = "us"
+to = "vs"
+subject = "Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung – Radweg K 22, Abschnitt Hemdingen"
+body = """Hallo Herr Petrovic,
+
+der Landesbetrieb schreibt den Radweg an der K 22 bei Hemdingen aus (LBSW-W-33-0719). Diesmal ist die Verkehrssicherung sauber in Tagen ausgeschrieben, das sollte Ihnen gefallen. Bitte Ihr Angebot, komplett:
+
+Pos. 1.1.30 – 1 psch – Verkehrssicherung einrichten und räumen
+Pos. 1.1.40 – 70 d – Verkehrssicherung vorhalten, halbseitig mit LSA
+Pos. 1.1.50 – 30 d – Verkehrssicherung vorhalten, Vollsperrung (Bedarfsposition)
+
+1.640 m Radweg neben der Fahrbahn, halbseitige Sperrung mit Ampel, Bauabschnitte höchstens 400 m. Vollsperrung nur für den Asphalteinbau an den Einmündungen und nur mit Anordnung. Die 30 Tage halte ich für zu viel und habe nachgefragt, gewertet wird die Position aber. Der Landesbetrieb verlangt für den Verantwortlichen der Verkehrssicherung den MVAS-Nachweis.
+
+Ausführung {-35} bis {+60}. Liste hängt an. Abgabe am {-80}, Preise bitte bis {-85}. Bindefrist {-50}. Auftrag noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p6:blank"]
+
+[[mail]]
+id = "p6_angebot"
+day = -90
+time = "16:05"
+from = "vs"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung – Radweg K 22, Abschnitt Hemdingen"
+reply_to = "p6_anfrage"
+body = """Hallo Hr. Doe,
+
+Liste anbei.
+
+1.1.30 pauschal 4.850,00: Plan nach Regelplan C I/5, Antrag, Aufbau, 4 x Umsetzen, Abbau.
+1.1.40 halbseitig mit LSA 185,00 je Kalendertag.
+1.1.50 Vollsperrung 240,00 je Tag mit Umleitung über Heede, 9 km. Umleitungsschilder stehen nur an den Tagen der Sperrung.
+
+Abrechnung nach Tagen, die die Anlage steht. Wochenende und Frosttage zählen mit.
+MVAS: Verantwortlicher bin ich, Nachweis kann ich schicken.
+Anordnung Kreis Pinneberg: 2 Wochen, für Vollsperrung Kreisstraße 3 Wochen."""
+attach = ["sheet:p6"]
+
+[[mail]]
+id = "p6_auftrag"
+day = -48
+time = "16:00"
+from = "us"
+to = "vs"
+cc = ["us.albers"]
+subject = "Radweg K 22 Hemdingen – Auftrag Verkehrssicherung"
+reply_to = "p6_angebot"
+quote = false
+body = """Hallo Herr Petrovic,
+
+Zuschlag K 22 ist da. Auftrag an Sie wie angeboten am {-90}:
+
+1.1.30 pauschal 4.850,00 €
+1.1.40 halbseitig mit LSA, 185,00 € je Kalendertag (LV: 70 d)
+1.1.50 Vollsperrung, 240,00 € je Tag, nur auf Abruf und mit Anordnung (LV: 30 d)
+
+Abrechnung nach Tagen, mit Auf- und Abbauprotokoll. Ich habe Sie dem Landesbetrieb als Verantwortlichen für die Verkehrssicherung benannt.
+
+Termine: Bauanlaufbesprechung am {-38}, 10:00 Uhr, Straßenmeisterei Elmshorn, bitte kommen Sie selbst, Verkehrsbehörde und Polizei sind dabei. Der Verkehrszeichenplan für Abschnitt 1 und 2 muss bis {-41} beim Landesbetrieb sein. Baubeginn {-35} bei Bau-km 0+000.
+
+Bauleiter ist wieder Jonas Albers (in Kopie).
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p6_asphalt"
+day = -4
+time = "11:00"
+from = "us.albers"
+to = "vs"
+cc = ["us"]
+subject = "K 22 – Asphalteinbau Abschnitt 1 und 2 am {+9}: Spur sperren"
+body = """Moin Dragan,
+
+Holsten hat uns für die Tragschicht den {+9} gegeben, Abschnitt 1 und 2 (Bau-km 0+000 bis 0+800). Die Mischgut-Lkw müssen dafür auf der Fahrbahn neben dem Radweg stehen. Serkan will die Spur gesperrt haben, nicht nur verengt.
+
+Reicht dafür unsere Anordnung für die halbseitige Sperrung mit Ampel, wenn wir die Ampel für den Tag auf die ganzen 800 m ziehen? Oder brauchst du etwas Neues?
+
+Und zur Erinnerung: Abschnitt 3 bis 5 kommen in KW {kw+11}, da sind zwei Einmündungen dabei, also Vollsperrung nach 1.1.50.
+
+Gruß"""
+
+[[mail]]
+id = "p6_asphalt_aw"
+day = -3
+time = "13:20"
+from = "vs"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: K 22 – Asphalteinbau Abschnitt 1 und 2 am {+9}: Spur sperren"
+reply_to = "p6_asphalt"
+body = """Moin Jonas,
+
+reicht nicht. Angeordnet sind höchstens 400 m Sperrlänge. 800 m mit Ampel heißt Räumzeit über 2 Minuten, das muss der Kreis neu anordnen.
+
+Antrag für den {+9} geht heute raus, als Tagesbaustelle 7 bis 17 Uhr. Bis dahin sind es keine 2 Wochen, ich rufe beim Kreis an. Wenn er ablehnt: zwei Tage zu je 400 m.
+
+Einmündungen KW {kw+11}: Vollsperrung Kreisstraße braucht 3 Wochen. Ich brauche die Tage von dir bis Ende dieser Woche, sonst wird das dieses Jahr nichts mehr."""
+
+# ------------------------------------------------------------------ P7 Marschhof (quoted)
+
+[[mail]]
+id = "p7_anfrage"
+day = -45
+time = "15:20"
+from = "us"
+to = "vs"
+subject = "Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung K 18 – Abwasserdruckleitung Marschhof"
+body = """Hallo Herr Petrovic,
+
+kleine Anfrage, eine Zahl genügt: Für den Wasserverband Geestrand rechnen wir eine Druckleitung bei Marschhof (WVG-A-2431), fast alles im Spülbohrverfahren. Ein Bohrabschnitt unterquert die Kreisstraße 18, Start- und Zielgrube liegen neben der Straße im Grünland.
+
+Pos. 1.1.30 – 1 psch – Verkehrssicherung Kreisstraße 18
+
+Gebraucht wird die Sicherung der Baustellenzufahrt und der Grube am Straßenrand, keine Ampel, etwa drei Wochen Standzeit, mit Plan und Antrag. Ausführung im Winter ({+35} bis {+110}). Abgabe am {-36}, Preis bitte bis {-40}. Auftrag noch nicht erteilt.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p7_angebot"
+day = -44
+time = "16:10"
+from = "vs"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Verkehrssicherung K 18 – Abwasserdruckleitung Marschhof"
+reply_to = "p7_anfrage"
+body = """Hallo Hr. Doe,
+
+1.1.30 pauschal 1.650,00: Plan mit Antrag, Beschilderung Baustellenausfahrt beidseitig, Geschwindigkeit 50, Absicherung Grube mit Baken und Leuchten, 21 Tage, Auf- und Abbau.
+
+Jeder weitere Tag 34,00. Muss wegen der Bohranlage doch halbseitig gesperrt werden: LSA 185,00 je Tag dazu.
+
+Anordnung 2 Wochen vorher."""
+
+# ------------------------------------------------------------------ now
+
+[[mail]]
+id = "jahreswechsel"
+day = -4
+time = "07:30"
+from = "vs"
+to = ["us", "us.albers"]
+subject = "Preise 2027, Notdienst über die Feiertage, Anträge für Januar"
+body = """Hallo Hr. Doe, moin Jonas,
+
+1. Preise ab 1. Januar, netto: LSA 192,00 je Tag, 1.300,00 je Woche. Vollsperrung 235,00 je Tag. Umsetzen 410,00. Posten 40,00 je Stunde. Notdienst 205,00. Liste kommt per Post.
+
+2. K 22 läuft zum Auftragspreis weiter, 185,00 je Tag, bis die 70 Tage voll sind. Stand heute: 31 Tage. Bei Bauende im März wird das mehr als 70, Mehrtage zum selben Preis.
+
+3. Feiertage: Büro zu vom {+32} bis {+41}. Notdienst 24 h besetzt, Nummer wie immer. Die Ampel an der K 22 bleibt über die Feiertage stehen und wird alle 2 Tage kontrolliert. Wenn ihr die Baustelle winterfest räumt und die Fahrbahn freigebt, baue ich ab, dann zählen die Tage nicht. Sagt Bescheid.
+
+4. Anträge: Die Behörden arbeiten zwischen den Jahren nicht. Was im Januar gesperrt werden soll, muss bis {+12} beantragt sein. Danach gilt: Antrag im Januar, Aufbau im Februar."""

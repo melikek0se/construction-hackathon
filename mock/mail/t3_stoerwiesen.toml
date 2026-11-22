@@ -1,0 +1,246 @@
+# T3: Wohnquartier Störwiesen (Ohlsen + Partner for the Wohnungsbaugenossenschaft Elbmarsch eG). Two LVs, GAEB XML 3.1.
+
+[[lv]]
+key = "erschliessung"
+file = "Stoerwiesen_LV1_Erschliessung"
+format = "x83-31"
+client = "arch"
+name = "LV 1 Erschließung: Erd-, Kanal- und Straßenbau"
+project = "Wohnquartier Störwiesen"
+number = "OP-2614-LV1"
+remarks = """Vorbemerkungen zu LV 1, Erschließung
+Bauherr: Wohnungsbaugenossenschaft Elbmarsch eG, Itzehoe. Planung und Bauüberwachung: Ohlsen + Partner Ingenieure PartG mbB.
+Bauvorhaben: Wohnquartier Störwiesen, Neubau von 6 Mehrfamilienhäusern mit 84 Wohnungen. Gegenstand dieses LV ist die innere Erschließung: Planstraße A (Länge 220 m, Fahrbahnbreite 5,50 m, einseitiger Gehweg), Schmutz- und Regenwasserkanäle, Leerrohre für die Beleuchtung. Die Außenanlagen sind Gegenstand des LV 2.
+Die Vergabe erfolgt als freihändige Vergabe eines privaten Auftraggebers. Beide LV können einzeln oder gemeinsam angeboten werden; der Bauherr behält sich die getrennte Vergabe vor.
+Angebotsfrist: {+16}, 12:00 Uhr
+Bieterfragen bis: {+9}
+Bindefrist: {+58}
+Ausführungsbeginn: {+80}
+Fertigstellung: {+230}
+Vertragsgrundlage ist die VOB/B, soweit der Bauvertrag des Bauherrn nichts anderes regelt, ferner die VOB/C, die ZTV E-StB, die ZTV SoB-StB, die ZTV Asphalt-StB, die ZTV Pflaster-StB und DIN EN 1610.
+Baugrund: Das Baufeld liegt in der Störniederung. Ein Baugrundgutachten ist beauftragt und wird nachgereicht. Mit Klei, Torfeinlagerungen und hohem Grundwasserstand ist zu rechnen.
+Oberboden: Der abgetragene Oberboden verbleibt im Eigentum des Bauherrn und ist vollständig auf dem Baufeld für die Außenanlagen (LV 2) in Mieten zu lagern.
+Das Baufeld wird gleichzeitig durch den Hochbau genutzt. Die Baustraße ist für alle Gewerke freizuhalten. Behinderungen aus dem Baustellenverkehr anderer Unternehmer sind in die Preise einzurechnen.
+Zahlungen nach Baufortschritt, Zahlungsziel 30 Tage. Einbehalt 10 v. H. bis zur Abnahme. Vertragserfüllungsbürgschaft 10 v. H., Mängelansprüchebürgschaft 5 v. H. Verjährungsfrist für Mängelansprüche 5 Jahre und 3 Monate.
+Vertragsstrafe 0,2 v. H. der Auftragssumme je Werktag, höchstens 5 v. H."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Einrichtung und Sicherung
+1.1.10 | 1 psch | Baustelle einrichten | Geräte, Unterkünfte, Sanitäreinrichtungen und Lager für die Leistungen dieses LV antransportieren, aufbauen und für die Bauzeit vorhalten. Bauwasser und Baustrom stellt der Bauherr an einer Übergabestelle gegen Kostenbeteiligung von 0,4 v. H. der Abrechnungssumme.
+1.1.20 | 1 psch | Baustelle räumen | Baustelle von allen Geräten und Einrichtungen räumen und die benutzten Flächen geräumt übergeben.
+1.1.30 | 900 m2 | Baustraße herstellen und unterhalten | Baustraße aus Recycling-Schotter RC 0/45, Dicke 40 cm, auf Geotextil GRK 4 herstellen, Breite 4,50 m, während der gesamten Bauzeit für alle Gewerke unterhalten und reinigen, nach Abschluss aufnehmen und das Material verwerten.
+1.1.40 | 480 m | Bauzaun | Mobilen Bauzaun, Höhe 2,00 m, mit zwei Toren stellen, für die Bauzeit vorhalten, bei Bedarf umsetzen und abbauen.
+1.1.50 | 1 psch | Verkehrssicherung Anbindung Störstraße | Verkehrssicherung an der Anbindung der Planstraße A an die Störstraße (Kreisstraße) für die gesamte Bauzeit einschließlich verkehrsrechtlicher Anordnung, Beschilderung, Reifenwaschanlage und laufender Reinigung der Störstraße, Umfang nach Erfordernis.
+# 2 | Erdarbeiten
+# 2.1 | Oberboden und Bodenbewegung
+2.1.10 | 5200 m2 | Oberboden abtragen | Oberboden in einer Dicke von im Mittel 30 cm abtragen, laden und abfahren. Der Oberboden geht in das Eigentum des AN über und ist von diesem zu verwerten.
+2.1.20 | 2600 m3 | Boden lösen, Straßentrasse | Boden im Bereich der Straßentrasse und der Stellplätze profilgerecht lösen und laden, Abtragstiefe bis 1,20 m. Bodenklasse nach Wahl des AN zu ermitteln. Ein Anspruch auf Mehrvergütung wegen abweichender Bodenverhältnisse besteht nicht.
+2.1.30 | 1800 m3 | Boden abfahren und entsorgen | Überschüssigen Boden laden, abfahren und entsorgen. Entsorgung einschl. aller Gebühren unabhängig von der Belastungsklasse und vom organischen Anteil, einschließlich Deklarationsanalysen.
+2.1.40 | - m3 | Bodenaustausch Torf und Klei | Nicht tragfähige Böden (Torf, Klei) unterhalb des Planums auf Anordnung der Bauüberwachung ausheben, entsorgen und durch Sand, Bodengruppe SE, ersetzen, lagenweise verdichten, DPr mind. 98 v. H.
+2.1.50 | 2400 m2 | Planum herstellen | Planum der Verkehrsflächen profilgerecht herstellen und verdichten, Ev2 mind. 45 MN/m2, Abweichung von der Sollhöhe höchstens 3 cm.
+2.1.60 | 2400 m2 | Geogitter auf dem Planum | Geogitter aus Polypropylen, biaxial, Zugfestigkeit mind. 30 kN/m, mit Vlies GRK 3 kaschiert, liefern und mit 50 cm Überlappung verlegen. Ausführung nur auf Anordnung. | E
+2.1.70 | 3500 m3 | Bodenverbesserung mit Bindemittel | Boden unterhalb des Planums mit Mischbindemittel (Kalk/Zement), Zugabemenge 3 bis 5 M.-%, im Baumischverfahren verbessern, Frästiefe 40 cm, verdichten. Eignungsprüfung durch den AN. Ausführung nur auf Anordnung. | E
+2.1.80 | 1400 m3 | Sand liefern und einbauen | Sand, Bodengruppe SE/SW, als Auffüllung der Trasse liefern, lagenweise einbauen und verdichten, DPr mind. 100 v. H.
+# 2.2 | Leitungsgräben
+2.2.10 | 1650 m3 | Rohrgraben ausheben bis 3,00 m | Boden für Rohrgräben der Schmutz- und Regenwasserkanäle profilgerecht lösen und seitlich lagern oder laden, Grabentiefe bis 3,00 m, Grabenbreite nach DIN EN 1610.
+2.2.20 | 2700 m2 | Grabenverbau | Verbau der Rohrgräben nach DIN 4124 mit Verbauplatten, Grabentiefe bis 3,00 m, herstellen, vorhalten und zurückbauen. Abrechnung nach verbauter Wandfläche.
+2.2.30 | 1 psch | Wasserhaltung | Wasserhaltung für alle Rohrgräben und Baugruben dieses LV für die gesamte Bauzeit. Verfahren, Anlagenumfang und Betriebsdauer nach Wahl des AN, einschließlich aller Nebenleistungen und Erschwernisse, Genehmigungen, Ableitung und Gebühren. Nachforderungen aus dem tatsächlichen Wasserandrang sind ausgeschlossen.
+2.2.40 | 400 m3 | Bettung und Leitungszone | Bettung Typ 1 und Leitungszone bis 30 cm über Rohrscheitel aus Sand 0/8 liefern, einbauen und verdichten, DPr mind. 97 v. H.
+2.2.50 | 1200 m3 | Rohrgraben verfüllen | Rohrgraben oberhalb der Leitungszone mit verdichtungsfähigem Liefermaterial, Bodengruppe SE/SW, lagenweise verfüllen und verdichten, DPr mind. 98 v. H., im oberen Meter 100 v. H.
+2.2.60 | 250 m3 | Rohrgraben ausheben 3,00 bis 4,50 m | Wie Position 2.2.10, jedoch Grabentiefe über 3,00 m bis 4,50 m im Bereich des Anschlusses an den Sammler Störstraße.
+# 3 | Kanalbau
+# 3.1 | Schmutzwasserkanal
+3.1.10 | 240 m | PP-Kanalrohr DN 200 SN 10 | Kanalrohr aus Polypropylen, Vollwandrohr DN 200, SN 10, nach DIN EN 1852, mit Steckmuffe und Dichtring, liefern und nach DIN EN 1610 verlegen, Gefälle nach Plan.
+3.1.20 | 6 St | Schacht DN 1000, Schmutzwasser | Schacht DN 1000 aus Betonfertigteilen nach DIN EN 1917 und DIN 4034-1, Schachtunterteil mit Gerinne DN 200, Schachtringen, Konus und Auflageringen, Tiefe bis 2,50 m, komplett liefern und versetzen. Abdeckung in gesonderter Position.
+3.1.30 | 18 St | Abzweig DN 200/150 | Abzweig 45 Grad DN 200/150 aus PP als Zulage zum Rohr liefern und einbauen.
+3.1.40 | 108 m | Anschlussleitung DN 150 | Anschlussleitung DN 150 aus PP, SN 10, vom Abzweig bis 1,00 m vor die Gebäude liefern und verlegen, Ende mit Muffenstopfen verschließen und einmessen.
+3.1.50 | 1 St | Anschluss an Schacht Störstraße | Schmutzwasserkanal DN 200 an den vorhandenen Schacht des Sammlers in der Störstraße anschließen, Kernbohrung, Schachtfutter, Gerinne anpassen. Arbeiten unter Betrieb des Sammlers.
+# 3.2 | Regenwasserkanal
+3.2.10 | 260 m | PP-Kanalrohr DN 300 SN 10 | Kanalrohr aus Polypropylen, Vollwandrohr DN 300, SN 10, nach DIN EN 1852, liefern und nach DIN EN 1610 verlegen.
+3.2.20 | 60 m | PP-Kanalrohr DN 400 SN 10 | Kanalrohr aus Polypropylen, Vollwandrohr DN 400, SN 10, nach DIN EN 1852, liefern und nach DIN EN 1610 verlegen.
+3.2.30 | 8 St | Schacht DN 1000, Regenwasser | Schacht DN 1000 aus Betonfertigteilen nach DIN EN 1917 und DIN 4034-1, Schachtunterteil mit Gerinne DN 300 bis DN 400, Tiefe bis 2,50 m, komplett liefern und versetzen. Abdeckung in gesonderter Position.
+3.2.40 | 24 St | Straßenablauf | Straßenablauf Fabrikat Störtal Typ SU-M mit Schlammraum, Aufsatz 500 x 500 mm Klasse D 400 mit Scharnier, liefern und auf Betonfundament C 12/15 höhengerecht setzen.
+3.2.50 | 96 m | Anschlussleitung Straßenablauf DN 150 | Anschlussleitung DN 150 aus PP, SN 10, vom Straßenablauf zum Regenwasserkanal liefern und verlegen, einschließlich Anschluss mit Sattelstück.
+3.2.60 | 1 St | Drosselschacht DN 1500 | Drosselschacht DN 1500 aus Betonfertigteilen mit Wirbeldrossel, Drosselabfluss 12 l/s, Notüberlauf und Schieber DN 300 aus Edelstahl, Tiefe bis 3,20 m, komplett liefern und einbauen, einschließlich Abdeckung D 400.
+3.2.70 | 180 m3 | Füllkörperrigole | Rigole aus Kunststoff-Füllkörpern, Speicherkoeffizient mind. 95 v. H., befahrbar SLW 60, einschließlich Vliesummantelung, Kontrollschacht und Zulaufverteilung liefern und einbauen. Abrechnung nach Bruttovolumen.
+3.2.80 | 14 St | Schachtabdeckung Klasse D 400 | Schachtabdeckung nach DIN EN 124, Klasse D 400, lichte Weite 625 mm, mit dämpfender Einlage und Schmutzfänger, liefern und höhengerecht versetzen.
+# 4 | Straßenbau
+# 4.1 | Trag- und Deckschichten
+4.1.10 | 2400 m2 | Planum der Verkehrsflächen herstellen | Planum der Fahrbahn, Gehwege und Stellplätze profilgerecht herstellen und verdichten, Ev2 mind. 45 MN/m2.
+4.1.20 | 2400 m2 | Frostschutzschicht 0/32, 40 cm | Frostschutzschicht aus Kies-Sand-Gemisch 0/32 nach TL SoB-StB liefern und einbauen, Dicke 40 cm, Ev2 mind. 120 MN/m2.
+4.1.30 | 1650 m2 | Schottertragschicht 0/45, 15 cm | Schottertragschicht 0/45 nach TL SoB-StB liefern und einbauen, Dicke 15 cm, Ev2 mind. 150 MN/m2.
+4.1.40 | 1300 m | Asphalttragschicht AC 22 T N, 10 cm | Asphalttragschicht AC 22 T N, Bindemittel 70/100, Einbaudicke 10 cm, in der Fahrbahn der Planstraße A und der Wendeanlage mit Fertiger herstellen. Abrechnung nach eingebauter Fläche.
+4.1.50 | 1300 m2 | Asphaltdeckschicht AC 8 D N, 4 cm | Asphaltdeckschicht AC 8 D N, Bindemittel 70/100, Einbaudicke 4 cm, einschließlich Ansprühen der Unterlage und Abstreuen. Einbau nach Fertigstellung des Hochbaus in einem zweiten Einsatz.
+# 4.2 | Pflaster und Borde
+4.2.10 | 440 m | Hochbord 15/30 | Hochbordstein aus Beton HB 15 x 30 nach DIN EN 1340 liefern und auf Fundament mit Rückenstütze aus Beton C 20/25 setzen, einschließlich Absenkungen an den Zufahrten und Rundungssteinen.
+4.2.20 | 380 m | Tiefbord 8/25 | Tiefbordstein aus Beton TB 8 x 25 nach DIN EN 1340 als Einfassung der Gehwege und Stellplätze liefern und in Beton C 20/25 setzen.
+4.2.30 | 750 m2 | Betonpflaster 8 cm, Gehweg | Betonsteinpflaster 20/10/8 cm, grau, nach DIN EN 1338, auf 4 cm Bettung aus Brechsand-Splitt 0/5 im Ellenbogenverband verlegen, abrütteln und einschlämmen.
+4.2.40 | 750 m2 | Betonpflaster 8 cm, anthrazit | Wie Position 4.2.30, jedoch Farbe anthrazit mit Vorsatz aus Hartgestein. | A
+4.2.50 | 440 m | Rinne, zweizeilig | Rinne aus Betonsteinpflaster 16/16/14 cm zweizeilig vor dem Hochbord auf Beton C 20/25 setzen und verfugen.
+4.2.60 | 320 m2 | Stellplätze aus Rasenfugenpflaster | Rasenfugenpflaster aus Beton 20/20/8 cm mit 3 cm Fuge für 26 Stellplätze auf 4 cm Bettung verlegen, Fugen mit Substrat füllen und ansäen, einschließlich Markierung der Stellplätze durch Pflastersteine in Anthrazit.
+# 5 | Leerrohre und Beleuchtung
+# 5.1 | Kabeltrasse
+5.1.10 | 460 m | Kabelgraben | Kabelgraben, Tiefe 0,80 m, Breite 0,40 m, ausheben, Sandbett herstellen, nach Verlegung verfüllen und verdichten, einschließlich Trassenwarnband.
+5.1.20 | 460 m | Kabelschutzrohr DN 110 | Kabelschutzrohr DN 110 aus PE-HD, glatt, mit Zugdraht liefern und im Kabelgraben verlegen.
+5.1.30 | 9 St | Fundament für Lichtmast | Köcherfundament aus Betonfertigteil für Lichtmast, Lichtpunkthöhe 5,00 m, mit Kabeleinführung liefern und setzen.
+5.1.40 | 8 St | Kabelzugschacht | Kabelzugschacht aus Kunststoff 60 x 60 cm mit Abdeckung Klasse B 125 liefern und einbauen.
+# 6 | Stundenlohnarbeiten
+# 6.1 | Stundenlohn und Geräte
+6.1.10 | 50 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter auf Anordnung der Bauüberwachung.
+6.1.20 | 30 h | Bagger mit Bediener | Hydraulikbagger 16 bis 22 t mit Bediener einschließlich Betriebsstoffen auf Anordnung.
+6.1.30 | 30 h | Lkw mit Fahrer | Lkw 3-Achser oder Sattelkipper mit Fahrer einschließlich Betriebsstoffen auf Anordnung.
+"""
+
+[[lv]]
+key = "aussen"
+file = "Stoerwiesen_LV2_Aussenanlagen"
+format = "x83-31"
+client = "arch"
+name = "LV 2 Außenanlagen: Landschaftsbau, Spielplatz, Einfriedung"
+project = "Wohnquartier Störwiesen"
+number = "OP-2614-LV2"
+remarks = """Vorbemerkungen zu LV 2, Außenanlagen
+Bauherr: Wohnungsbaugenossenschaft Elbmarsch eG, Itzehoe. Planung und Bauüberwachung: Ohlsen + Partner Ingenieure PartG mbB.
+Bauvorhaben: Wohnquartier Störwiesen. Gegenstand dieses LV sind die Außenanlagen: Vegetationsflächen, Wege, Spielplatz für Kinder von 3 bis 12 Jahren und die Einfriedung des Quartiers. Die Erschließung ist Gegenstand des LV 1.
+Angebotsfrist: {+16}, 12:00 Uhr
+Bieterfragen bis: {+9}
+Bindefrist: {+58}
+Ausführungsbeginn: {+170}
+Fertigstellung: {+290}
+Es gelten die VOB/B, soweit der Bauvertrag nichts anderes regelt, die VOB/C, insbesondere DIN 18915 bis DIN 18920, DIN EN 1176 und DIN EN 1177 sowie die FLL-Richtlinien.
+Oberboden: Für das Andecken der Vegetationsflächen steht der im Zuge der Erschließung (LV 1) abgetragene und auf dem Baufeld gelagerte Oberboden zur Verfügung.
+Pflanzen sind in Baumschulqualität nach den FLL-Gütebestimmungen zu liefern. Die Pflanzzeit ist auf die Fertigstellung abzustimmen; Pflanzungen außerhalb der Pflanzzeit begründen keinen Anspruch auf Mehrvergütung.
+Die Abnahme der Vegetationsflächen erfolgt nach Abschluss der Fertigstellungspflege. Ausgefallene Pflanzen sind bis zum Ende der Entwicklungspflege ohne gesonderte Vergütung zu ersetzen.
+Zahlungen, Sicherheiten und Vertragsstrafe wie LV 1."""
+items = """
+# 1 | Vorarbeiten
+# 1.1 | Einrichtung und Baufeld
+1.1.10 | 1 psch | Baustelle einrichten und räumen | Geräte und Einrichtungen für die Leistungen dieses LV antransportieren, vorhalten und nach Abschluss räumen. Mitbenutzung der Baustraße aus LV 1.
+1.1.20 | 2800 m2 | Baufeld säubern | Vegetationsflächen von Bauresten, Steinen über 5 cm Durchmesser, Unrat und Aufwuchs säubern, Räumgut laden und entsorgen.
+1.1.30 | 12 St | Baumschutz herstellen | Vorhandene Bäume an der Störstraße nach DIN 18920 und RAS-LP 4 mit ortsfestem Schutzzaun im Kronentraufbereich schützen, vorhalten und abbauen.
+# 2 | Bodenarbeiten
+# 2.1 | Oberboden und Planum
+2.1.10 | 3100 m2 | Unterboden lockern | Unterboden der Vegetationsflächen kreuzweise 30 cm tief lockern, Verdichtungen aus dem Baubetrieb beseitigen.
+2.1.20 | 3100 m2 | Oberboden andecken | Oberboden aus dem Lager auf dem Baufeld aufnehmen, fördern und 25 cm dick auf den Vegetationsflächen andecken.
+2.1.30 | 420 m3 | Oberboden liefern | Oberboden nach DIN 18915, Bodengruppe 4 bis 6, frei von Wurzelunkräutern, als Ergänzung liefern und andecken.
+2.1.40 | - m3 | Bodenaustausch Pflanzflächen | Verdichteten oder mit Bauresten durchsetzten Boden in Pflanzflächen auf Anordnung 50 cm tief ausheben, entsorgen und durch Pflanzsubstrat ersetzen.
+2.1.50 | 3100 m2 | Feinplanum herstellen | Feinplanum der Vegetationsflächen herstellen, Abweichung höchstens 2 cm auf 4 m, Steine und Fremdkörper über 3 cm ablesen.
+# 3 | Wege, Plätze und Ausstattung
+# 3.1 | Beläge und Ausstattung
+3.1.10 | 380 m2 | Wassergebundene Wegedecke | Wassergebundene Wegedecke nach FLL: Tragschicht 0/32, 20 cm, dynamische Schicht 0/16, 6 cm, Deckschicht 0/8 aus Brechsand-Splitt-Gemisch, 3 cm, gelb-beige, liefern, einbauen und abwalzen.
+3.1.20 | 320 m2 | Stellplätze mit Rasenfugenpflaster | Rasenfugenpflaster aus Beton 20/20/8 cm mit 3 cm Fuge für die Stellplätze an der Planstraße A auf 4 cm Bettung verlegen, Fugen mit Substrat füllen und ansäen.
+3.1.30 | 260 m | Wegeeinfassung Stahlband | Einfassung der Wege aus Stahlband, verzinkt, 150 x 5 mm, mit angeschweißten Erdankern, liefern und höhengerecht einbauen.
+3.1.40 | 140 m2 | Betonplatten 40/40/5, Terrassen | Betonplatten 40 x 40 x 5 cm, grau, gestrahlt, auf 4 cm Splittbett 2/5 und 20 cm Tragschicht 0/32 im Kreuzverband verlegen.
+3.1.50 | 18 St | Fahrradanlehnbügel | Fahrradanlehnbügel aus Rundrohr 48 mm, feuerverzinkt, Höhe 80 cm, zum Einbetonieren, einschließlich Fundamenten C 20/25 liefern und setzen.
+3.1.60 | 8 St | Sitzbank | Sitzbank mit Rückenlehne, Länge 1,80 m, Gestell Stahl verzinkt und pulverbeschichtet, Belattung Lärche, Fabrikat Parkform Typ Elbe 180, liefern und auf Fundamenten montieren.
+3.1.70 | 5 St | Abfallbehälter | Abfallbehälter 50 l mit Regenhaube und Ascher, Stahl feuerverzinkt und pulverbeschichtet, RAL 7016, oder gleichwertig, liefern und auf Fundament montieren.
+# 4 | Vegetation
+# 4.1 | Rasen
+4.1.10 | 2400 m2 | Rasenansaat | Rasenfläche mit Regel-Saatgut-Mischung RSM 2.3 Gebrauchsrasen-Spielrasen ansäen, 25 g/m2, einschließlich Startdüngung, Einarbeiten und Anwalzen nach DIN 18917.
+4.1.20 | 2400 m2 | Fertigstellungspflege Rasen | Fertigstellungspflege der Rasenflächen nach DIN 18917 bis zum abnahmefähigen Zustand, 6 Schnitte, Düngen, Wässern nach Bedarf.
+4.1.30 | 2400 m2 | Fertigrasen statt Ansaat | Wie Position 4.1.10, jedoch Fertigrasen (Rollrasen) nach DIN 18917 liefern, verlegen, anwalzen und bis zum Anwachsen wässern. | A
+# 4.2 | Pflanzung
+4.2.10 | 22 St | Hochstamm Feldahorn 18-20 | Acer campestre Elsrijk, Hochstamm, 4-mal verpflanzt, mit Drahtballen, Stammumfang 18 bis 20 cm, liefern und pflanzen, Pflanzgrube 1,5 x 1,5 x 0,8 m mit Baumsubstrat nach FLL, Pflanzschnitt.
+4.2.20 | 22 St | Baumverankerung Dreibock | Baumverankerung als Dreibock aus Holzpfählen, Zopfstärke 8 cm, Länge 2,50 m, mit Lattenrahmen und Kokosstrick, einschließlich Stammschutz aus Schilfrohrmatte.
+4.2.30 | 640 m2 | Strauchpflanzung | Sträucher, 2-mal verpflanzt, Höhe 60 bis 100 cm, nach Pflanzliste (Cornus, Ligustrum, Rosa, Viburnum), 2 Stück je m2, liefern und pflanzen einschließlich Bodenvorbereitung.
+4.2.40 | 180 St | Hainbuchenhecke | Carpinus betulus, Heckenpflanze, 2-mal verpflanzt, mit Ballen, Höhe 100 bis 125 cm, 3 Pflanzen je Meter liefern und in Pflanzgraben setzen. Abrechnung nach laufendem Meter fertiger Hecke.
+4.2.50 | 640 m2 | Mulchschicht | Pflanzflächen 7 cm dick mit Rindenmulch, Körnung 10 bis 40 mm, abdecken, einschließlich Ausgleichsdüngung mit Hornspänen.
+4.2.60 | 1 psch | Entwicklungspflege 2 Jahre | Entwicklungspflege aller Pflanz- und Rasenflächen nach DIN 18919 über 2 Vegetationsperioden nach der Abnahme, einschließlich Wässern nach Bedarf, Schnitt, Düngung, Ersatz ausgefallener Pflanzen und aller Nebenleistungen und Erschwernisse.
+4.2.70 | 220 St | Bewässerungsgang Bäume | Zusätzlicher Bewässerungsgang je Baum mit 100 l Wasser in Trockenperioden, auf Anordnung. | E
+# 5 | Spielplatz
+# 5.1 | Spielgeräte und Fallschutz
+5.1.10 | 72 m3 | Fallschutzsand | Fallschutzsand 0,2/2 mm, gewaschen, nach DIN EN 1177, 40 cm dick in die Spielbereiche einbauen, einschließlich Trennvlies auf dem Planum.
+5.1.20 | 1 St | Spielkombination mit Rutsche | Spielkombination aus Robinienholz mit zwei Türmen, Hängebrücke, Kletternetz und Edelstahlrutsche, Podesthöhe 1,50 m, Fabrikat Holzwurm Typ Störtebeker 3, liefern und nach Herstellerangaben auf Fundamenten montieren.
+5.1.30 | 1 St | Doppelschaukel | Doppelschaukel aus Robinienholz, Aufhängehöhe 2,20 m, mit zwei Gummisitzen, nach DIN EN 1176 oder gleichwertig, liefern und auf Fundamenten montieren.
+5.1.40 | 2 St | Federwippgerät | Federwippgerät für Kleinkinder, Stahlfeder mit Klemmschutz, Sitz aus HDPE, liefern und mit Bodenanker einbauen.
+5.1.50 | 42 m | Sandkasteneinfassung | Einfassung des Sandspielbereichs aus Robinien-Rundholz, Durchmesser 18 bis 22 cm, geschält, auf Punktfundamenten befestigen.
+5.1.60 | 1 psch | Sicherheitsprüfung Spielplatz | Prüfung des fertigen Spielplatzes nach DIN EN 1176-7 durch einen qualifizierten Spielplatzprüfer vor der Inbetriebnahme, einschließlich Prüfbericht.
+5.1.70 | 60 m2 | Fallschutzplatten statt Sand | Fallschutzplatten aus Gummigranulat 50 x 50 cm, Dicke 45 mm, für Fallhöhen bis 1,50 m, auf Tragschicht 0/32 verlegen, im Bereich der Schaukel anstelle von Fallschutzsand. | A
+# 6 | Einfriedung
+# 6.1 | Zaun und Tore
+6.1.10 | 310 m | Stabgitterzaun 1,20 m | Stabgitterzaun aus Doppelstabmatten 6/5/6, Höhe 1,20 m, feuerverzinkt und pulverbeschichtet RAL 7016, Pfosten 60 x 40 mm im Abstand von 2,50 m in Betonfundamenten C 20/25, liefern und montieren.
+6.1.20 | 3 St | Gehtor, einflügelig | Gehtor einflügelig, lichte Breite 1,20 m, Höhe 1,20 m, passend zum Zaun, mit Drückergarnitur und Profilzylinder, liefern und montieren.
+6.1.30 | 1 St | Fahrtor, zweiflügelig | Fahrtor zweiflügelig, lichte Breite 4,00 m, Höhe 1,20 m, mit Bodenriegel und Feststeller, liefern und montieren.
+6.1.40 | 85 m | Stabgitterzaun 1,80 m | Wie Position 6.1.10, jedoch Höhe 1,80 m, an der Grenze zum Gewerbegrundstück.
+6.1.50 | 240 m | Sichtschutz aus Holzlamellen | Sichtschutzelemente aus Lärchenholz-Lamellen, Höhe 1,80 m, an Stahlpfosten, einschließlich Fundamenten liefern und montieren. Ausführung nur auf Anordnung des Bauherrn. | E
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "Stoerwiesen_Angebotsaufforderung.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "arch"
+text = """Bauvorhaben: Wohnquartier Störwiesen, Itzehoe
+Bauherr: Wohnungsbaugenossenschaft Elbmarsch eG
+Projektnummer: OP-2614
+
+Sehr geehrte Damen und Herren,
+
+im Namen und im Auftrag der Wohnungsbaugenossenschaft Elbmarsch eG bitten wir Sie um Ihr Angebot für die folgenden Leistungen:
+
+LV | Leistung | Datei
+LV 1 | Erschließung: Erd-, Kanal- und Straßenbau | Stoerwiesen_LV1_Erschliessung.x83
+LV 2 | Außenanlagen: Landschaftsbau, Spielplatz, Einfriedung | Stoerwiesen_LV2_Aussenanlagen.x83
+
+Beide Leistungsverzeichnisse können einzeln oder gemeinsam angeboten werden. Bei gemeinsamer Vergabe wird ein Nachlass erwartet, der gesondert auszuweisen ist. Der Bauherr ist als privater Auftraggeber nicht an die VOB/A gebunden und behält sich Verhandlungen mit den Bietern vor.
+
+Termine
+Abgabe der Angebote | {+16|long}, 12:00 Uhr, per E-Mail an m.ohlsen@ohlsen-partner.test
+Bieterfragen bis | {+9}
+Bindefrist | {+58}
+Ausführung LV 1 | {+80} bis {+230}
+Ausführung LV 2 | {+170} bis {+290}
+
+Abzugeben sind
+die ausgefüllten Leistungsverzeichnisse als GAEB-Datei (DA 84) und als PDF
+Referenzen über drei vergleichbare Erschließungsmaßnahmen der letzten fünf Jahre
+Freistellungsbescheinigung nach Paragraph 48b EStG und Nachweis der Betriebshaftpflicht
+ein Bauzeitenplan mit den wesentlichen Vorgängen
+
+Vertragsbedingungen: Bauvertrag des Bauherrn (Muster in der Anlage), nachrangig VOB/B. Vertragserfüllungsbürgschaft 10 v. H., Mängelansprüchebürgschaft 5 v. H., Zahlungsziel 30 Tage.
+
+Rückfragen sind ausschließlich schriftlich an unser Büro zu richten.
+
+Anlagen: LV 1 und LV 2 (GAEB DA 83), Lageplan Erschließung 1:250, Regelquerschnitte, Lageplan Außenanlagen 1:200, Pflanzliste, Muster Bauvertrag."""
+
+[[mail]]
+id = "einladung"
+day = -2
+time = "09:12"
+from = "arch.ohlsen"
+to = "us"
+subject = "Wohnquartier Störwiesen, Itzehoe – Angebotsaufforderung LV 1 Erschließung und LV 2 Außenanlagen"
+body = """Sehr geehrter Herr Doe,
+
+für unseren Bauherrn, die Wohnungsbaugenossenschaft Elbmarsch eG, schreiben wir die Erschließung und die Außenanlagen des Wohnquartiers Störwiesen in Itzehoe aus. Wir kennen Ihr Unternehmen aus dem Verfahren Gewerbegebiet Süd und möchten Sie hiermit zur Abgabe eines Angebots auffordern.
+
+Die Ausschreibung umfasst zwei Leistungsverzeichnisse:
+LV 1 – Erschließung: Erd-, Kanal- und Straßenbau (Planstraße A, 220 m, Schmutz- und Regenwasserkanal, Rigole)
+LV 2 – Außenanlagen: Landschaftsbau, Spielplatz, Einfriedung
+
+Die LV können einzeln oder gemeinsam angeboten werden. Der Bauherr bevorzugt die Vergabe beider LV an einen Auftragnehmer, eine Verpflichtung dazu besteht nicht.
+
+Angebotsfrist: {+16|long}, 12:00 Uhr, per E-Mail an mich
+Bieterfragen bis: {+9}
+Bindefrist: {+58}
+Ausführung LV 1: {+80} bis {+230}; LV 2: {+170} bis {+290}
+
+Beigefügt sind die Angebotsaufforderung und beide Leistungsverzeichnisse im Format GAEB DA XML 3.1. Die Pläne erhalten Sie wegen der Dateigröße in einer gesonderten Nachricht mit Download-Link.
+
+Bitte teilen Sie uns bis {+3} mit, ob Sie ein Angebot abgeben werden.
+"""
+attach = ["doc:anschreiben", "lv:erschliessung", "lv:aussen"]
+
+[[mail]]
+id = "gutachten"
+day = -1
+time = "14:36"
+from = "arch.kroeger"
+to = "us"
+subject = "Störwiesen – Bodengutachten kommt noch"
+body = """Hallo Herr Doe,
+
+kurz zur Info, weil schon zwei Firmen danach gefragt haben: Das Bodengutachten für die Störwiesen ist noch nicht fertig. Der Gutachter hat letzte Woche gebohrt, den Bericht soll ich Ende KW {kw+7} bekommen, ich schicke ihn dann sofort an alle rum. Vorab mündlich von ihm: oben Klei, darunter stellenweise Torf bis ca. 2,5 m, Wasser steht ziemlich hoch. Bitte noch nicht als verbindlich nehmen.
+
+Fragen zu den LVs am besten per Mail direkt an mich (t.kroeger@ohlsen-partner.test), Frau Ohlsen in cc. Ich sammle die und wir beantworten alles in einem Rutsch für alle Bieter. Telefonisch bin ich nachmittags gut zu erreichen.
+"""

@@ -1,0 +1,204 @@
+# T7: the road authority's public tender for a foot and cycle path along a state road, GAEB XML 3.2.
+
+[[lv]]
+key = "radweg"
+file = "LV_L113_OD_Hemdingen_Geh-Radweg_2BA"
+format = "x83"
+client = "lbk"
+name = "Geh- und Radweg L 113, OD Hemdingen, 2. BA"
+project = "Geh- und Radweg L 113, Ortsdurchfahrt Hemdingen, 2. BA"
+number = "LBSW-W-2026-0187"
+remarks = """Vorbemerkungen zur Baubeschreibung, Vergabenummer LBSW-W-2026-0187
+Baumaßnahme: Neubau eines gemeinsamen Geh- und Radweges an der L 113 in der Ortsdurchfahrt Hemdingen, 2. Bauabschnitt, von Station 1+240 (Einmündung Heidkamp) bis Station 2+390 (Ortsausgang Richtung Bilsen), Baulänge 1.150 m, Südseite.
+Angebotsfrist: {+5}, 10:00 Uhr
+Eröffnungstermin: {+5}, 10:00 Uhr
+Bindefrist: {+50}
+Ausführungsbeginn: {+70}
+Fertigstellung: {+190}
+Regelquerschnitt: Geh- und Radweg 2,50 m breit, von der Fahrbahn durch Hochbord und Sicherheitstrennstreifen 0,50 m getrennt, außerhalb der Bebauung mit Bankett 0,50 m und Entwässerungsmulde.
+Oberbau des Geh- und Radweges nach RStO 12, Tafel 6: Asphaltdeckschicht AC 8 D N 3 cm, Asphalttragschicht AC 22 T N 8 cm, Schottertragschicht 15 cm, Frostschutzschicht 24 cm, Gesamtdicke 50 cm.
+Oberbau der Fahrbahnrandangleichung, Belastungsklasse Bk3,2: Asphaltdeckschicht 4 cm, Asphaltbinderschicht 6 cm, Asphalttragschicht AC 22 T S 12 cm.
+Verkehrsführung: Die L 113 (DTV 6.800 Kfz/24 h, Schwerverkehrsanteil 7 Prozent) bleibt während der gesamten Bauzeit befahrbar. Zulässig ist eine halbseitige Sperrung mit Lichtsignalanlage auf höchstens 300 m Länge. Eine Vollsperrung ist ausgeschlossen. Der Linienbusverkehr und die Zufahrt zu den Anliegergrundstücken sind aufrechtzuerhalten.
+Die Bauabschnitte und ihre Reihenfolge legt der AG nach Auftragserteilung fest.
+Baugrund: Geotechnischer Bericht vom März 2026 (Anlage 7). Unter 20 bis 35 cm Oberboden stehen Geschiebelehm und Sande an, Homogenbereiche B1 und B2. Schichtenwasser wurde in 0,9 bis 1,4 m Tiefe angetroffen.
+Ausbaustoffe: Der vorhandene Asphalt der Fahrbahnränder ist nach den Voruntersuchungen teerfrei (Verwertungsklasse A). Boden ist nach Ersatzbaustoffverordnung zu deklarieren.
+Es gelten die ZTV E-StB 17, ZTV SoB-StB 20, ZTV Asphalt-StB 07/13, ZTV Pflaster-StB 20, ZTV-SA 97 und RSA 21 sowie das HVA B-StB.
+Kontrollprüfungen veranlasst der AG. Eigenüberwachungsprüfungen sind in die Einheitspreise einzurechnen.
+Leitungen Dritter (Trinkwasser, Gas, Telekommunikation, Strom 0,4 kV) liegen im Baufeld; die Leitungsauskünfte sind vom AN vor Baubeginn einzuholen."""
+items = """
+# 1 | Baustelleneinrichtung und Verkehrssicherung
+# 1.1 | Baustelleneinrichtung
+1.1.10 | 1 psch | Baustelle einrichten | Geräte, Werkzeuge und sonstige Betriebsmittel, die zur vertragsgemäßen Ausführung der Bauleistungen erforderlich sind, auf die Baustelle bringen und betriebsfertig aufstellen. Baubüro, Unterkünfte, Lagerflächen und Baustellenzufahrt herstellen. // Flächen für die Baustelleneinrichtung stellt der AG nicht zur Verfügung.
+1.1.20 | 1 psch | Baustelle räumen | Baustelle von allen Geräten, Anlagen und Einrichtungen räumen. Benutzte Flächen und Wege entsprechend dem ursprünglichen Zustand herrichten.
+1.1.40 | 1 psch | Beweissicherung | Beweissicherung an den angrenzenden Gebäuden, Einfriedungen und Grundstückszufahrten vor Baubeginn durch Fotodokumentation mit Ortsangabe durchführen und dem AG in digitaler Form übergeben.
+1.1.50 | 1 psch | Bestandsvermessung und Bestandspläne | Vermessung der fertigen Leistung nach Lage und Höhe, Bestandspläne nach den Vorgaben der Anweisung Straßeninformationsbank, Übergabe als DXF und PDF.
+1.1.60 | 1 psch | Sichern und Umlegen von Leitungen Dritter | Sämtliche im Baufeld angetroffenen Kabel und Leitungen Dritter in Abstimmung mit den Versorgungsträgern sichern, abfangen, unterfahren und soweit erforderlich provisorisch umlegen, Umfang nach örtlichem Erfordernis. // Einschließlich aller Nebenleistungen, Suchschachtungen und Abstimmungen.
+# 1.2 | Verkehrssicherung an der Landesstraße
+1.2.10 | 1 psch | Verkehrszeichenplan und verkehrsrechtliche Anordnung | Verkehrszeichenpläne für alle Bauphasen nach RSA 21 aufstellen, mit Verkehrsbehörde, Polizei und Busunternehmen abstimmen und die verkehrsrechtliche Anordnung einholen. Fortschreibung bei Änderung der Bauabschnitte ohne gesonderte Vergütung.
+1.2.20 | 4 St | Halbseitige Sperrung mit LSA aufbauen und abbauen | Verkehrssicherung für halbseitige Sperrung der L 113 auf bis zu 300 m Länge nach RSA 21, Regelplan C I/5, mit transportabler Lichtsignalanlage Typ C, verkehrsabhängig gesteuert, einschließlich Leitbaken, Beschilderung und gelber Markierung aufbauen und abbauen.
+1.2.30 | 120 d | Halbseitige Sperrung mit LSA vorhalten | Verkehrssicherung der Position 1.2.20 vorhalten, betreiben und täglich kontrollieren, auch an Wochenenden und Feiertagen, einschließlich Energieversorgung der Lichtsignalanlage, Wartung und Kontrollbuch.
+1.2.40 | - St | Verkehrssicherung umsetzen | Verkehrssicherung der Position 1.2.20 bei Wechsel des Bauabschnitts umsetzen und neu einmessen. Anzahl und Lage der Bauabschnitte nach Wahl des AG.
+1.2.50 | 30 d | Sicherung wie Position 1.2.30, jedoch Vollsperrung | Verkehrssicherung wie Position 1.2.30, jedoch als Vollsperrung der L 113 mit ausgeschilderter Umleitung über die K 22 und die L 75 für den Einbau der Asphaltschichten, einschließlich Umleitungsbeschilderung auf ca. 9 km. | E
+1.2.60 | 1150 m | Fußgängernotweg sichern | Notweg für Fußgänger entlang des Baufeldes mit Absperrschrankengittern nach TL-Absperrschranken sichern, Mindestbreite 1,30 m, einschließlich Überfahrbrücken an Grundstückszufahrten, vorhalten für die Bauzeit.
+# 2 | Oberboden- und Erdarbeiten
+# 2.1 | Vorarbeiten
+2.1.10 | 3100 m2 | Aufwuchs entfernen | Aufwuchs aus Gras, Stauden und Gehölzen bis 10 cm Stammdurchmesser einschließlich Wurzelstöcken auf der Trasse entfernen und entsorgen.
+2.1.20 | 14 St | Baum fällen, Stammdurchmesser 30 bis 50 cm | Baum fällen, Stammdurchmesser über 30 bis 50 cm in 1 m Höhe gemessen, Stamm und Krone aufarbeiten, Wurzelstock roden, Material wird Eigentum des AN und ist zu verwerten.
+2.1.30 | 1210 m | Asphalt schneiden | Asphaltbefestigung der Fahrbahn bis 25 cm Dicke entlang des neuen Bordes geradlinig schneiden.
+2.1.40 | 620 m2 | Asphaltbefestigung des Fahrbahnrandes aufbrechen | Asphaltbefestigung des Fahrbahnrandes in einer Breite von im Mittel 0,50 m, Dicke 18 bis 25 cm, aufbrechen, laden und verwerten. // Verwertung unabhängig von der Belastungsklasse und Verwertungsklasse des Ausbauasphalts.
+2.1.50 | 185 m | Vorhandene Borde und Rinnenplatten aufnehmen | Borde aus Beton und Rinnenplatten einschließlich Bettung und Rückenstütze aufnehmen, laden und verwerten.
+2.1.60 | 9 St | Grundstückszufahrt aufnehmen | Befestigung vorhandener Grundstückszufahrten aus Pflaster oder Asphalt bis 20 m2 je Zufahrt aufnehmen, Pflaster seitlich für den Wiedereinbau lagern.
+# 2.2 | Oberbodenarbeiten
+2.2.10 | 3450 m2 | Oberboden abtragen | Oberboden in einer Dicke von 20 bis 35 cm abtragen und getrennt von anderen Böden auf Mieten bis 2 m Höhe im Baufeld lagern, nach DIN 18915.
+2.2.20 | 610 m3 | Überschüssigen Oberboden abfahren | Überschüssigen Oberboden laden und abfahren, wird Eigentum des AN.
+2.2.30 | 1380 m2 | Oberboden andecken | Gelagerten Oberboden auf Banketten, Mulden und Böschungen in einer Dicke von 15 cm andecken und profilieren.
+# 2.3 | Erdbau
+2.3.10 | 1720 m3 | Boden lösen und laden | Boden der Homogenbereiche B1 und B2 profilgerecht lösen und laden, für die Herstellung des Planums von Geh- und Radweg, Fahrbahnrand und Mulden.
+2.3.20 | 2750 t | Boden verwerten, bis BM-0* | Ausgehobenen Boden abfahren und verwerten, Materialklasse BM-0 bis BM-0* nach Ersatzbaustoffverordnung, einschließlich Beprobung und Deklaration je 500 m3.
+2.3.30 | 950 t | Zulage Boden BM-F1 bis BM-F3 | Zulage zu Position 2.3.20 für Boden der Materialklassen BM-F1 bis BM-F3, Nachweis durch Wiegescheine und Annahmeerklärung. | E
+2.3.40 | 3350 m2 | Planum herstellen | Planum herstellen und verdichten, Verformungsmodul Ev2 mindestens 45 MN/m2, Abweichung von der Sollhöhe höchstens 3 cm, Querneigung 2,5 Prozent.
+2.3.50 | 1900 m3 | Bodenaustausch | Nicht ausreichend tragfähigen Boden unter dem Planum auf Anordnung des AG zusätzlich lösen, verwerten und durch frostunempfindliches Material der Frostempfindlichkeitsklasse F1 ersetzen, Dicke bis 50 cm. | E
+2.3.60 | 1 psch | Wasserhaltung | Offene Wasserhaltung für Schichten- und Tagwasser in allen Baugruben, Gräben und auf dem Planum für die gesamte Bauzeit betreiben, einschließlich Ableitung und Genehmigungen.
+# 3 | Entwässerung
+# 3.1 | Mulden
+3.1.10 | 680 m | Entwässerungsmulde profilieren | Entwässerungsmulde, Breite 1,50 m, Tiefe 30 cm, profilgerecht herstellen, Längsgefälle nach Plan, Aushub wird nach Position 2.3.20 vergütet.
+3.1.20 | 1020 m2 | Rasenansaat auf Mulden | Mulden mit Regel-Saatgut-Mischung RSM 7.1.2 Landschaftsrasen ansäen, 20 g/m2, einschließlich Fertigstellungspflege bis zur Abnahme.
+# 3.2 | Durchlässe
+3.2.10 | 54 m | Rohrdurchlass DN 400 aus Stahlbeton | Rohrdurchlass unter Grundstückszufahrten aus Stahlbetonrohren DN 400 nach DIN EN 1916, mit Rollringdichtung, auf Kies-Sand-Bettung 15 cm verlegen, einschließlich Aushub und Verfüllung.
+3.2.20 | 12 St | Böschungsstück DN 400 | Böschungsstück aus Stahlbeton für Rohr DN 400, Neigung 1:1,5, liefern und an den Durchlass anschließen, Sohlbefestigung mit Wasserbausteinen 1 m2.
+3.2.30 | 22 m | Vorhandenen Durchlass DN 300 ausbauen | Vorhandenen Rohrdurchlass aus Betonrohren DN 300 freilegen, ausbauen und verwerten.
+# 3.3 | Abläufe
+3.3.10 | 23 St | Straßenablauf 500 x 500 mm | Straßenablauf aus Betonfertigteilen nach DIN 4052 für Nassschlamm, mit Aufsatz 500 x 500 mm, Klasse D 400, Fabrikat Küstenguss Typ KG 500 Pultform, mit Eimer, höhengerecht in die Bordrinne setzen.
+3.3.20 | 168 m | Anschlussleitung DN 150 aus PP | Anschlussleitung aus PP-Rohren DN 150, SN 10, vom Straßenablauf zum vorhandenen Regenwasserkanal verlegen, einschließlich Bögen, Graben bis 1,75 m Tiefe ausheben und verfüllen.
+3.3.30 | 23 St | Anschluss an vorhandenen Regenwasserkanal DN 400 | Anschluss der Leitung DN 150 an den vorhandenen Betonkanal DN 400 durch Kernbohrung und Anschlussstutzen herstellen.
+3.3.40 | 6 St | Schachtabdeckung angleichen | Vorhandene Schachtabdeckung Klasse D 400 auf die neue Höhe angleichen, Ausgleichsringe und Mörtel liefern.
+# 4 | Oberbau
+# 4.1 | Schichten ohne Bindemittel
+4.1.10 | 3350 m2 | Frostschutzschicht 0/45, d = 24 cm | Frostschutzschicht aus Baustoffgemisch 0/45 nach TL SoB-StB 20, Dicke 24 cm, herstellen, Ev2 mindestens 100 MN/m2 auf der Oberfläche.
+4.1.20 | 2950 m2 | Schottertragschicht 0/32, d = 15 cm | Schottertragschicht aus gebrochenem Baustoffgemisch 0/32 nach TL SoB-StB 20, Dicke 15 cm, im Geh- und Radweg herstellen, Ev2 mindestens 120 MN/m2.
+4.1.30 | 2950 m2 | Schottertragschicht aus RC-Baustoff statt Pos. 4.1.20 | Wahlposition zu Position 4.1.20: Schottertragschicht wie vor, jedoch aus güteüberwachtem Recycling-Baustoff RC-1 nach Ersatzbaustoffverordnung. | A
+# 4.2 | Asphalt
+4.2.10 | 575 m2 | Asphalttragschicht AC 22 T S, d = 12 cm, Fahrbahnrand | Asphalttragschicht aus Asphalttragschichtmischgut AC 22 T S, Bindemittel 50/70, Dicke 12 cm, im Bereich der Fahrbahnrandangleichung in Breiten von 0,40 bis 0,60 m herstellen, Einbau von Hand oder mit Kleinfertiger.
+4.2.20 | 575 m2 | Asphaltbinderschicht AC 16 B S, d = 6 cm | Asphaltbinderschicht aus AC 16 B S, Bindemittel 25/55-55 A, Dicke 6 cm, im Bereich der Fahrbahnrandangleichung herstellen.
+4.2.30 | 575 m2 | Asphaltdeckschicht AC 11 D S, d = 4 cm | Asphaltdeckschicht aus Asphaltbeton AC 11 D S, Bindemittel 25/55-55 A, Dicke 4 cm, im Bereich der Fahrbahnrandangleichung herstellen, Oberfläche abstumpfen.
+4.2.40 | 2875 m2 | Asphalttragschicht AC 22 T N, d = 10 cm, Geh- und Radweg | Asphalttragschicht aus AC 22 T N, Bindemittel 70/100, Dicke 10 cm, im Geh- und Radweg in einer Breite von 2,50 m mit Fertiger herstellen.
+4.2.50 | 2875 m2 | Asphaltdeckschicht AC 8 D N, d = 3 cm, Geh- und Radweg | Asphaltdeckschicht aus Asphaltbeton AC 8 D N, Bindemittel 70/100, Dicke 3 cm, im Geh- und Radweg herstellen, Ebenheit höchstens 4 mm auf 4 m Messstrecke.
+4.2.60 | 3450 m2 | Bitumenemulsion aufsprühen | Unterlage reinigen und mit Bitumenemulsion C40BF1-S, 300 g/m2, ansprühen.
+4.2.70 | 1210 m2 | Fugenband an Nähten und Anschlüssen | Anschlüsse an den vorhandenen Asphalt, an Borde und Einbauten mit schmelzbarem Bitumenfugenband 40 x 10 mm nach TL Fug-StB herstellen.
+# 4.3 | Borde und Rinnen
+4.3.10 | 1105 m | Hochbordstein 15/30 aus Beton | Bordstein aus Beton nach DIN EN 1340 und DIN 483, Form HB 15 x 30, auf 20 cm Fundament aus Beton C 20/25 mit Rückenstütze setzen, Ansicht 12 cm, einschließlich Kurvensteinen.
+4.3.20 | 96 m | Bord wie Position 4.3.10, jedoch abgesenkt | Bordstein wie Position 4.3.10, jedoch an Grundstückszufahrten und Querungsstellen auf 3 cm Ansicht abgesenkt, einschließlich Übergangssteinen.
+4.3.30 | 1150 m | Tiefbordstein 8/25 als Wegeinfassung | Tiefbordstein aus Beton, Form TB 8 x 25, als rückwärtige Einfassung des Geh- und Radweges auf Betonfundament mit Rückenstütze setzen.
+4.3.40 | 1201 m | Bordrinne aus Betonpflaster, einzeilig | Rinne aus Betonpflastersteinen 16 x 16 x 14 cm, einzeilig, vor dem Hochbord in Beton C 20/25 versetzen, Fugen mit Pflasterfugenmörtel vergießen.
+4.3.50 | 180 m2 | Grundstückszufahrten in Betonpflaster | Grundstückszufahrten aus Betonpflaster 20 x 10 x 8 cm, grau, auf 4 cm Bettung herstellen, Verwendung des gelagerten Pflasters soweit möglich, Fehlmengen liefern.
+4.3.60 | 48 m2 | Bodenindikatoren an Querungsstellen | Noppen- und Rippenplatten 30 x 30 x 8 cm aus Beton, weiß, nach DIN 32984 an Querungsstellen und Bushaltestellen in Mörtelbettung verlegen.
+# 5 | Ausstattung und Nebenanlagen
+# 5.1 | Markierung
+5.1.10 | 1210 m | Fahrbahnrandmarkierung, Schmalstrich 12 cm | Fahrbahnbegrenzung als Schmalstrich 12 cm, durchgehend, in Kaltplastik als Typ-II-Markierung mit erhöhter Nachtsichtbarkeit bei Nässe nach ZTV M 13 herstellen.
+5.1.20 | 32 m2 | Radwegfurten und Sinnbilder | Furtmarkierungen an Einmündungen und Sinnbilder Fußgänger und Radfahrer in Kaltplastik, weiß, herstellen.
+5.1.30 | 1250 m | Gelbe Baustellenmarkierung aufbringen und entfernen | Vorübergehende Markierung als gelbe Markierungsfolie 12 cm für die Bauphasen aufbringen, unterhalten und rückstandsfrei entfernen.
+# 5.2 | Bankette
+5.2.10 | 340 m2 | Bankett herstellen | Bankett in einer Breite von 0,50 m aus Baustoffgemisch 0/32 mit Oberbodenanteil, Dicke 20 cm, standfest herstellen und verdichten, Querneigung 12 Prozent.
+5.2.20 | 1380 m2 | Oberboden auf Banketten und Mulden andecken | Oberboden aus dem Baufeld in einer Dicke von 15 cm auf Banketten, Mulden und Böschungen andecken, planieren und für die Ansaat vorbereiten.
+# 5.3 | Beschilderung
+5.3.10 | 18 St | Verkehrszeichen aufstellen | Verkehrszeichen nach StVO, Größe 2, Folie RA 2, einschließlich Rohrpfosten 60 mm und Fundament, nach Beschilderungsplan aufstellen, Zeichen 240 und Zusatzzeichen.
+5.3.20 | 11 St | Vorhandenes Verkehrszeichen versetzen | Vorhandenes Verkehrszeichen mit Pfosten abbauen, zwischenlagern und am neuen Standort mit neuem Fundament aufstellen.
+# 6 | Stundenlohnarbeiten
+# 6.1 | Stundenlohn
+6.1.10 | 80 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter nach Anordnung des AG, Nachweis durch Stundenlohnzettel.
+6.1.20 | 40 h | Mobilbagger bis 15 t mit Bediener | Stundenlohnarbeiten Mobilbagger bis 15 t einschließlich Bediener und Betriebsstoffen nach Anordnung des AG.
+"""
+
+[[doc]]
+key = "aufforderung"
+file = "LBSW-W-2026-0187_Aufforderung_Angebotsabgabe.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+text = """Formblatt 211 (VHB) – Öffentliche Ausschreibung nach VOB/A, Abschnitt 1
+Vergabenummer: LBSW-W-2026-0187
+Maßnahme: L 113, Ortsdurchfahrt Hemdingen, Neubau Geh- und Radweg, 2. Bauabschnitt
+Leistung: Straßenbauarbeiten
+
+Sehr geehrte Damen und Herren,
+
+es ist beabsichtigt, die in der beigefügten Leistungsbeschreibung bezeichneten Bauleistungen im Namen und für Rechnung des Landes zu vergeben. Sie werden aufgefordert, ein Angebot abzugeben.
+
+Termine
+Angebotsfrist: {+5}, 10:00 Uhr
+Eröffnungstermin: {+5}, 10:00 Uhr, Breitenburger Straße 37, 25524 Itzehoe, Raum 1.14 (Bieter sind nicht zugelassen)
+Bindefrist: {+50}
+Bieterfragen bis: {+1}
+Ausführungsbeginn: {+70}
+Fertigstellung: {+190}
+
+Form der Angebote
+Angebote sind ausschließlich elektronisch in Textform über die Vergabeplattform Vergabemarktplatz Nord einzureichen (eVergabe). Schriftliche Angebote sowie Angebote per E-Mail oder Telefax sind nicht zugelassen und werden ausgeschlossen.
+Das Leistungsverzeichnis liegt als GAEB-Datei (DA 83) bei; das Angebot ist als DA 84 zusammen mit dem unterschriebenen Angebotsschreiben (Formblatt 213) hochzuladen.
+
+Vergabeunterlagen
+Formblatt 211 Aufforderung zur Abgabe eines Angebots
+Formblatt 212 Bewerbungsbedingungen
+Formblatt 213 Angebotsschreiben
+Formblatt 214 Besondere Vertragsbedingungen
+Formblatt 221 oder 222 Preisermittlung (auf Verlangen)
+Formblatt 223 Aufgliederung der Einheitspreise (auf Verlangen)
+Formblatt 233 Verzeichnis der Nachunternehmerleistungen
+Formblatt 124 Eigenerklärung zur Eignung, soweit nicht präqualifiziert
+Baubeschreibung, Leistungsverzeichnis, Pläne 1 bis 12, Geotechnischer Bericht (Anlage 7)
+
+Wesentliche Vertragsbedingungen
+Vertragsstrafe bei Überschreitung der Fertigstellungsfrist: 0,1 Prozent der Auftragssumme je Werktag, höchstens 5 Prozent.
+Sicherheit für die Vertragserfüllung: 5 Prozent der Auftragssumme; für Mängelansprüche 3 Prozent der Abrechnungssumme.
+Eine Stoffpreisgleitklausel ist für Bitumen vereinbart (Formblatt 225), für weitere Stoffe nicht.
+Nebenangebote sind nicht zugelassen.
+Zuschlagskriterium: Preis 100 Prozent.
+
+Bieterfragen sind ausschließlich über die Vergabeplattform zu stellen. Antworten werden allen Bietern als Bieterinformation bekannt gegeben und sind Bestandteil der Vergabeunterlagen."""
+
+[[mail]]
+id = "aufforderung"
+day = -10
+time = "09:30"
+from = "lbk.vergabe"
+to = "us"
+subject = "Vergabe LBSW-W-2026-0187: L 113 OD Hemdingen, Geh- und Radweg 2. BA – Aufforderung zur Abgabe eines Angebots"
+body = """Sehr geehrte Damen und Herren,
+
+der Landesbetrieb Straßen und Wege Küste, Niederlassung West, schreibt die nachstehende Bauleistung öffentlich nach VOB/A aus:
+
+Vergabenummer: LBSW-W-2026-0187
+Maßnahme: L 113, Ortsdurchfahrt Hemdingen, Neubau eines Geh- und Radweges, 2. Bauabschnitt (Baulänge 1.150 m)
+Angebotsfrist und Eröffnungstermin: {+5}, 10:00 Uhr
+Bindefrist: {+50}
+Ausführungszeitraum: {+70} bis {+190}
+
+Da Ihr Unternehmen derzeit den Radweg K 22, Abschnitt Hemdingen, für uns ausführt und in unserer Bieterliste geführt wird, übersenden wir Ihnen die Aufforderung zur Abgabe eines Angebots (Formblatt 211 VHB) und das Leistungsverzeichnis als GAEB-Datei vorab zur Kenntnis. Die vollständigen Vergabeunterlagen mit den Formblättern 212 bis 214, 233, den Plänen und dem geotechnischen Bericht stehen auf dem Vergabemarktplatz Nord unter der oben genannten Vergabenummer zum Abruf bereit.
+
+Wir weisen darauf hin, dass Angebote ausschließlich elektronisch über die Vergabeplattform abgegeben werden können (eVergabe). Per E-Mail eingehende Angebote werden von der Wertung ausgeschlossen. Bieterfragen sind bis zum {+1} über die Plattform zu stellen."""
+attach = ["lv:radweg", "doc:aufforderung"]
+
+[[mail]]
+id = "bieterinfo1"
+day = -4
+time = "15:18"
+from = "lbk.vergabe"
+to = "us"
+subject = "Vergabe LBSW-W-2026-0187: L 113 OD Hemdingen – Bieterinformation 1"
+reply_to = "aufforderung"
+quote = false
+body = """Sehr geehrte Damen und Herren,
+
+zu dem oben genannten Vergabeverfahren geben wir allen Bietern die folgende Bieterinformation 1 bekannt. Sie wird Bestandteil der Vergabeunterlagen. Das Leistungsverzeichnis bleibt unverändert, eine neue GAEB-Datei wird nicht bereitgestellt.
+
+Frage 1:
+Nach der Baubeschreibung ist eine Vollsperrung der L 113 ausgeschlossen. Position 1.2.50 sieht jedoch eine Vollsperrung für den Asphalteinbau an 30 Tagen vor. Was gilt?
+
+Antwort 1:
+Es bleibt bei der Regelung der Baubeschreibung. Position 1.2.50 ist eine Bedarfsposition für den Fall, dass die Verkehrsbehörde des Kreises einer Vollsperrung an einzelnen Wochenenden zustimmt; ein Anspruch auf Ausführung besteht nicht. Die Position ist anzubieten und wird gewertet.
+
+Frage 2:
+In Position 2.3.20 wird der Boden nach Tonnen abgerechnet, der Aushub in Position 2.3.10 nach Kubikmetern. Mit welcher Dichte ist umzurechnen, und werden die Wiegescheine der Annahmestelle anerkannt?
+
+Antwort 2:
+Abgerechnet wird nach den Wiegescheinen der Annahmestelle. Eine Umrechnungsdichte wird nicht vorgegeben. Der Menge der Position 2.3.20 liegt eine Dichte von 1,6 t/m³ zugrunde.
+
+Die Angebotsfrist ({+5}, 10:00 Uhr) und alle übrigen Termine bleiben unverändert. Die Frist für Bieterfragen endet am {+1}."""

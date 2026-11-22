@@ -1,0 +1,609 @@
+# Recycling und Entsorgung Unterelbe GmbH (entsorg), Torben Voss: the history with our estimator. Prices per
+# tonne by Zuordnungsklasse, valid only with a declaration analysis, minimum load per transport, settled by
+# weighbridge tickets; raises prices when the landfill raises its fees. P1 with the PAK soil (> Z 2) from
+# his side, P2, P4 (clay and peat: the analysis changed the price), P5 quoted, P7 quoted.
+
+[[sheet]]
+key = "p1"
+file = "Anfrage_Bodenentsorgung_Muehlenstrasse.xlsx"
+items = """
+2.1.30 | 560 t | Asphaltaufbruch verwerten | 11,80 |  |  | teerfrei, mit Nachweis
+2.2.40 | 3100 t | Boden entsorgen, Zuordnung bis Z 1.2 | 22,50 |  |  | nur mit Deklarationsanalytik
+2.2.50 | 800 t | Boden entsorgen, Zuordnung Z 2 | 33,50 |  |  | nur Z 2, nichts darüber
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "30 Tage netto", valid_until = "{-326}" }
+
+[[sheet]]
+key = "p2"
+file = "Anfrage_Bodenentsorgung_Hauptstrasse_Brande.xlsx"
+items = """
+2.1.50 | 1650 t | Boden entsorgen bis Z 1.2 | 22,90 |  |  | nur mit Deklarationsanalytik, Mindestladung 24 t
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "30 Tage netto", valid_until = "{-326}" }
+
+[[sheet]]
+key = "p4"
+file = "Anfrage_Bodenentsorgung_Pumpwerk_Deichstrasse.xlsx"
+items = """
+2.1.60 | 520 t | Boden entsorgen, Klei und Torf | 41,50 |  |  | gilt bis TOC 6 %, darüber 58,00
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "30 Tage netto", valid_until = "{+39}" }
+
+[[sheet]]
+key = "p5"
+file = "Anfrage_Bodenentsorgung_Schulweg.xlsx"
+items = """
+2.1.40 | 2400 t | Boden entsorgen, bis Z 1.2 | 23,40 |  |  | nur mit Deklarationsanalytik, stichfest
+2.1.50 | 400 t | Boden entsorgen, Z 2 | 35,40 |  |  | nur Z 2
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "30 Tage netto", valid_until = "{+39}" }
+
+[[sheet]]
+key = "p7"
+file = "Anfrage_Entsorgung_ADL_Marschhof.xlsx"
+items = """
+2.1.30 | 180 t | Boden entsorgen, Klei | 43,00 |  |  | gilt bis TOC 6 %, darüber 59,50
+3.1.60 | 190 m3 | Bohrspülung und Bohrklein entsorgen | 74,00 |  |  | flüssig, Saugwagen, AVV 01 05 04
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "30 Tage netto", valid_until = "{+21}" }
+
+[[doc]]
+key = "p1_pak_angebot"
+file = "Angebot_REU_25-1187_Boden_groesser_Z2_Muehlenstrasse.pdf"
+title = "Angebot Nr. 25-1187: Übernahme und Entsorgung von Boden > Z 2"
+text = """An: Acme Tiefbau GmbH, Herrn Doe
+Bauvorhaben: Kanalerneuerung Mühlenstraße, Norderbek, Station 0+310 bis 0+395
+Abfall: Boden und Steine, die gefährliche Stoffe enthalten, AVV 17 05 03*
+Grundlage: Analyse der Mischprobe vom {-407}, PAK 16 nach EPA 186 mg/kg, Zuordnung > Z 2
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+E 1 | Boden > Z 2 übernehmen, befördern, auf Deponie DK I beseitigen | 418 | t | 64,80 | 27.086,40
+E 2 | Deklarationsanalytik je Haufwerk nach DepV | 2 | St | 345,00 | 690,00
+E 3 | Entsorgungsnachweis und Begleitscheine, elektronisch | 1 | psch | 280,00 | 280,00
+
+Summe netto: 28.056,40 EUR
+
+Bedingungen:
+1. Die Menge von 418 t beruht auf dem Haufwerksaufmaß Ihres Bauleiters (232 m3). Abgerechnet wird nach den Wiegescheinen der Deponiewaage.
+2. Der Preis gilt nur für Material, das der Deklarationsanalytik E 2 entspricht. Werden die Zuordnungswerte der Deponieklasse I überschritten, wird neu angeboten.
+3. Beförderung in abgedeckten Sattelzügen, Mindestladung 24 t je Transport. Minderlast: 95,00 EUR je Transport. Die letzte Restmenge ist ausgenommen.
+4. Laden bauseits. Wartezeit an der Ladestelle über 30 Minuten: 78,00 EUR je Stunde.
+5. Abfallerzeuger ist der Bauherr. Die Erzeugernummer der Stadt Norderbek und die Vollmacht für das Nachweisverfahren müssen vor dem ersten Transport vorliegen.
+6. Angebot gültig bis {-380}."""
+
+[[doc]]
+key = "p1_pak_rechnung"
+file = "Rechnung_REU_25-3391_Muehlenstrasse_Boden_groesser_Z2.pdf"
+title = "Rechnung Nr. 25-3391"
+text = """An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Bauvorhaben: Kanalerneuerung Mühlenstraße, Norderbek
+Ihr Auftrag vom {-398} zu unserem Angebot Nr. 25-1187, Leistungszeitraum {-388} bis {-382}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+E 1 | Boden > Z 2, AVV 17 05 03*, 18 Transporte | 421,74 | t | 64,80 | 27.328,75
+E 2 | Deklarationsanalytik je Haufwerk | 2 | St | 345,00 | 690,00
+E 3 | Entsorgungsnachweis und Begleitscheine | 1 | psch | 280,00 | 280,00
+E 4 | Minderlast unter 24 t, Transporte Nr. 9 und Nr. 18 | 2 | St | 95,00 | 190,00
+
+Summe netto: 28.488,75 EUR
+Umsatzsteuer 19 %: 5.412,86 EUR
+Summe brutto: 33.901,61 EUR
+
+Anlagen: 18 Wiegescheine der Deponiewaage, 18 Begleitscheine, Analysenberichte.
+Zahlbar innerhalb von 30 Tagen netto."""
+
+# ------------------------------------------------------------------ P1 Mühlenstraße (won)
+
+[[mail]]
+id = "p1_anfrage"
+day = -517
+time = "15:10"
+from = "us"
+to = "entsorg"
+subject = "Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung – Kanalerneuerung Mühlenstraße"
+body = """Guten Tag Herr Voss,
+
+wir kalkulieren ein Angebot für die Kanalerneuerung Mühlenstraße in Norderbek (TBA-SE-0318) und bitten um Ihre Preise für die Übernahme ab Baustelle, einschließlich Transport, Annahme und Nachweisen:
+
+Pos. 2.1.30 – 560 t – Asphaltaufbruch verwerten
+Pos. 2.2.40 – 3100 t – Boden entsorgen, Zuordnung bis Z 1.2
+Pos. 2.2.50 – 800 t – Boden entsorgen, Zuordnung Z 2
+
+Wir laden mit eigenem Gerät. Baugrund laut Gutachten: Auffüllungen bis 1,20 m, darunter Geschiebelehm und Sande. Belastungen oberhalb Z 2 sind nach dem Gutachten nicht zu erwarten. Der Langtext der Position 2.2.50 nennt allerdings „Z 2 und höher belasteten Boden“.
+
+Ausführung {-455} bis {-300}, Abfuhr laufend mit dem Grabenaushub, rund 60 bis 80 t am Tag. Die Positionen liegen als Excel-Datei bei. Bitte nennen Sie auch Ihre Bedingungen zu Analytik und Mindestmengen. Abgabe ist am {-500}, wir benötigen Ihre Preise bis {-505}. Der Auftrag ist uns noch nicht erteilt.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_angebot"
+day = -514
+time = "10:20"
+from = "entsorg"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Guten Tag Herr Doe,
+
+vielen Dank für die Anfrage. Die ausgefüllte Liste liegt bei. Unsere Preise je Tonne, ab Baustelle geladen, einschließlich Transport und Annahme:
+
+Asphaltaufbruch, teerfrei: 11,80 €/t
+Boden bis Z 1.2: 22,50 €/t
+Boden Z 2: 33,50 €/t
+
+Dazu unsere üblichen Bedingungen:
+- Die Preise gelten nur mit gültiger Deklarationsanalytik nach LAGA PN 98, eine Analyse je 500 m³ und je erkennbar anderem Material. Ohne Analyse nehmen wir nichts an. Analytik durch uns: 310,00 € je Probe, Ergebnis nach fünf Werktagen.
+- Mindestladung 24 t je Sattelzug. Minderlast 95,00 € je Transport.
+- Abgerechnet wird nach den Wiegescheinen unserer Waage in Tornesch.
+- Asphalt nur mit Nachweis der Teerfreiheit (PAK unter 25 mg/kg).
+
+Ein Hinweis zu Position 2.2.50: Unser Preis von 33,50 €/t gilt für Z 2 und für nichts darüber. Material über Z 2 ist je nach Befund gefährlicher Abfall, geht auf eine Deponie und kostet ein Mehrfaches. Das kann niemand anbieten, ohne die Belastung zu kennen. Wenn der Langtext „und höher“ so stehen bleibt, tragen Sie das Risiko. Ich würde das vor der Abgabe beim Auftraggeber klären.
+
+Gültig bis Jahresende."""
+attach = ["sheet:p1"]
+
+[[mail]]
+id = "p1_auftrag"
+day = -477
+time = "15:20"
+from = "us"
+to = "entsorg"
+cc = ["us.albers"]
+subject = "Mühlenstraße Norderbek – Auftrag Bodenentsorgung und Asphaltverwertung"
+reply_to = "p1_angebot"
+quote = false
+body = """Guten Tag Herr Voss,
+
+wir haben den Zuschlag für die Mühlenstraße erhalten. Ihr Hinweis zu 2.2.50 war übrigens Gold wert: Die Stadt hat auf unsere Frage klargestellt, dass die Position nur Z 2 umfasst und höher belastetes Material gesondert vergütet wird.
+
+Wir beauftragen Sie zu den Preisen Ihres Angebots vom {-514}:
+
+2.1.30 Asphaltaufbruch, teerfrei, rund 560 t zu 11,80 €/t
+2.2.40 Boden bis Z 1.2, rund 3.100 t zu 22,50 €/t
+2.2.50 Boden Z 2, rund 800 t zu 33,50 €/t
+
+Die Mengen sind die des Leistungsverzeichnisses, abgerechnet wird nach Wiegescheinen. Ihre Bedingungen (Analytik, Mindestladung 24 t, Minderlast) gelten. Die Deklarationsanalytik beauftragen wir bei Ihnen, die erste Probe aus den Suchschachtungen vor Baubeginn.
+
+Die Fahrzeuge ruft unser Bauleiter Herr Albers ab (in Kopie), in der Regel am Vortag bis 14 Uhr. Baubeginn ist am {-455}.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_pak"
+day = -407
+time = "14:50"
+from = "us.albers"
+to = "entsorg"
+cc = ["us"]
+subject = "EILT Mühlenstraße – schwarze, teerig riechende Schicht bei Station 0+310, was tun?"
+body = """Guten Tag Herr Voss,
+
+wir haben seit heute Morgen ein Problem. Zwischen Station 0+310 und 0+395 liegt unter der Auffüllung in 0,9 bis 1,6 m Tiefe eine schwarze Schicht, die nach Teer riecht, vermutlich eine alte Wegebefestigung. Ihr Fahrer hat die erste Mulde zu Recht stehen lassen.
+
+Die Schnellanalyse der Mischprobe von heute: PAK 16 nach EPA 186 mg/kg. Das Laborprotokoll schicke ich Ihnen gleich als Foto nach.
+
+Geschätzt sind es rund 230 m³, also um 420 t. Wir separieren und lagern auf Folie am Festplatz, abgedeckt.
+
+Meine Fragen:
+1. Als was gilt das, und wohin kann es?
+2. Was kostet es je Tonne, grob, damit Herr Doe einen Nachtrag stellen kann?
+3. Was brauchen Sie von uns, und wie schnell können Sie abfahren? Die Kolonne steht.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_pak_aw"
+day = -406
+time = "16:20"
+from = "entsorg"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: EILT Mühlenstraße – schwarze, teerig riechende Schicht bei Station 0+310, was tun?"
+reply_to = "p1_pak"
+body = """Guten Tag Herr Albers,
+
+richtig gehandelt: separieren, auf Folie, abdecken. Zu Ihren Fragen:
+
+1. Einstufung: Bei PAK 186 mg/kg liegt das Material weit über Z 2 (Grenze 30 mg/kg im Feststoff). Es ist als gefährlicher Abfall einzustufen, Abfallschlüssel 17 05 03*, Boden und Steine, die gefährliche Stoffe enthalten. Eine Verwertung scheidet aus. Es geht auf eine Deponie der Klasse I, sofern die übrigen Werte passen.
+
+2. Preis: Über unsere Position Z 2 mit 33,50 €/t läuft das nicht, das sage ich gleich dazu. Als Größenordnung für Ihren Nachtrag: 64 bis 68 €/t einschließlich Transport und Deponiegebühr, zuzüglich Analytik und Nachweisverfahren. Verbindlich wird der Preis erst mit der Deklarationsanalytik.
+
+3. Was wir brauchen:
+- Eine vollständige Deklarationsanalytik nach Deponieverordnung je Haufwerk, nicht nur PAK. Unser Probenehmer kann morgen kommen, Ergebnis in fünf Werktagen, im Eilverfahren in drei.
+- Abfallerzeuger ist die Stadt als Bauherrin. Wir brauchen ihre Erzeugernummer und eine Vollmacht, damit wir den Entsorgungsnachweis elektronisch führen können. Ohne Nachweis und Begleitscheine darf kein Fahrzeug fahren.
+- Danach: Abfuhr in abgedeckten Sattelzügen, 60 bis 80 t am Tag.
+
+Realistisch ist der erste Transport in zwei bis drei Wochen. Bis dahin bleibt das Material auf der Folie liegen. Den unbelasteten Aushub aus den anderen Abschnitten fahren wir wie gewohnt weiter ab."""
+
+[[mail]]
+id = "p1_pak_angebot"
+day = -401
+time = "11:15"
+from = "entsorg"
+to = "us"
+cc = ["us.albers"]
+subject = "Mühlenstraße – Angebot Nr. 25-1187: Boden > Z 2, AVV 17 05 03*"
+body = """Guten Tag Herr Doe,
+
+die Deklarationsanalytik der beiden Haufwerke liegt im Eilverfahren vor. Ergebnis: PAK 16 nach EPA 171 und 194 mg/kg, alle übrigen Werte innerhalb der Deponieklasse I. Das Material ist auf der Deponie angemeldet und angenommen.
+
+Unser Angebot Nr. 25-1187 liegt bei:
+- Übernahme, Beförderung und Beseitigung: 64,80 €/t, bei 418 t nach dem Aufmaß von Herrn Albers 27.086,40 €
+- Deklarationsanalytik: 2 Haufwerke zu je 345,00 €
+- Entsorgungsnachweis und Begleitscheine: pauschal 280,00 €
+Summe 28.056,40 € netto, Abrechnung nach Wiegescheinen der Deponiewaage.
+
+Die Deponiegebühr allein macht davon 46,00 €/t aus. Sie sehen daran, warum das mit dem Z-2-Preis nichts zu tun hat. Sie dürfen das Angebot gern Ihrem Auftraggeber vorlegen.
+
+Vor dem ersten Transport brauchen wir die Erzeugernummer und die Vollmacht der Stadt. Das Angebot gilt bis {-380}."""
+attach = ["doc:p1_pak_angebot"]
+
+[[mail]]
+id = "p1_pak_auftrag"
+day = -398
+time = "08:40"
+from = "us"
+to = "entsorg"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße – Angebot Nr. 25-1187: Boden > Z 2, AVV 17 05 03*"
+reply_to = "p1_pak_angebot"
+body = """Guten Tag Herr Voss,
+
+danke für das schnelle und klare Angebot. Wir beauftragen Sie hiermit nach Angebot Nr. 25-1187: Boden > Z 2 zu 64,80 €/t nach Wiegescheinen, zwei Analysen zu je 345,00 €, Nachweisverfahren pauschal 280,00 €. Ihre Bedingungen gelten, die letzte Restmenge ist von der Minderlast ausgenommen.
+
+Zum Stand, damit Sie planen können: Die Stadt bestreitet den Nachtrag bisher und will das Material über die Z-2-Position abrechnen. Ich habe Ihr Angebot gestern unserem Nachtragsangebot zugrunde gelegt, am {-397} wird darüber gesprochen. An unserem Auftrag an Sie ändert das nichts. Die Erzeugernummer und die Vollmacht fordert Herr Albers heute bei Herrn Hartwig von der Stadtentwässerung an.
+
+Bitte schicken Sie mir nach jedem Abfuhrtag die Wiegescheine als Scan. Ich brauche sie für die Abrechnung mit der Stadt.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_pak_rechnung"
+day = -374
+time = "10:10"
+from = "entsorg"
+to = "us"
+subject = "Mühlenstraße – Rechnung Nr. 25-3391, Boden > Z 2"
+body = """Guten Tag Herr Doe,
+
+anbei unsere Rechnung Nr. 25-3391 über 28.488,75 € netto für die Entsorgung des Bodens > Z 2 aus der Mühlenstraße. Gefahren wurde vom {-388} bis {-382}, nachdem die Erzeugernummer der Stadt am {-390} vorlag: 18 Transporte, 421,74 t nach den Wiegescheinen der Deponiewaage zu 64,80 €/t, zwei Analysen, das Nachweisverfahren und zwei Minderlasten (Transporte Nr. 9 und Nr. 18). Wiegescheine, Begleitscheine und Analysenberichte liegen der Papierrechnung bei."""
+attach = ["doc:p1_pak_rechnung"]
+
+[[mail]]
+id = "p1_pak_rechnung_aw"
+day = -370
+time = "14:30"
+from = "us"
+to = "entsorg"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße – Rechnung Nr. 25-3391, Boden > Z 2"
+reply_to = "p1_pak_rechnung"
+body = """Guten Tag Herr Voss,
+
+die Tonnage stimmt mit unseren Scans überein, 421,74 t, auch Analytik und Nachweisverfahren sind in Ordnung. Nicht anerkennen können wir die Position E 4, beide Minderlasten:
+
+- Transport Nr. 18 war die letzte Restmenge mit 11,62 t. Sie ist nach Bedingung 3 Ihres Angebots ausdrücklich ausgenommen.
+- Transport Nr. 9 hatte 21,38 t, weil Ihre Disposition an diesem Tag statt eines Sattelzugs einen Vierachser geschickt hat. Mehr ging nicht drauf. Der Wiegeschein nennt das Kennzeichen.
+
+Ohne E 4 ergeben sich 28.298,75 € netto. Bitte berichtigen Sie die Rechnung, dann zahlen wir innerhalb der Frist.
+
+Zur Information: Die Stadt hat den Nachtrag inzwischen dem Grunde nach anerkannt und rechnet die Entsorgung nach Ihren Wiegescheinen ab. Ihr Angebot und Ihre saubere Dokumentation haben dabei geholfen.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ P2 Hauptstraße Brande (won)
+
+[[mail]]
+id = "p2_anfrage"
+day = -406
+time = "11:30"
+from = "us"
+to = "entsorg"
+subject = "Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung – Trinkwasserleitung Hauptstraße"
+body = """Guten Tag Herr Voss,
+
+während in der Mühlenstraße der belastete Boden auf der Folie liegt, die nächste Anfrage. Wir kalkulieren die Trinkwasserleitung Hauptstraße in Brande-Hörnerkirchen für den Wasserverband Geestrand (WVG-N-2207) und bitten um Ihren Preis, ab Baustelle geladen, einschließlich Transport und Annahme:
+
+Pos. 2.1.50 – 1650 t – Boden entsorgen bis Z 1.2
+
+Aushub aus dem Rohrgraben im Gehweg und Fahrbahnrand, Tiefe bis 1,75 m, Sand und Lehm, Ortsdurchfahrt. Eine Position für höher belastetes Material gibt es im LV nicht. Bei Sand und Lehm im Dorf rechne ich nicht damit, im Auge behalte ich es nach dieser Woche trotzdem.
+
+Ausführung {-350} bis {-235}, Abfuhr 30 bis 40 t am Tag, also nicht jeden Tag ein voller Sattelzug. Die Position liegt als Excel-Datei bei. Abgabe am {-395}, Preis bitte bis {-400}. Der Auftrag ist uns noch nicht erteilt.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p2:blank"]
+
+[[mail]]
+id = "p2_angebot"
+day = -403
+time = "09:15"
+from = "entsorg"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung – Trinkwasserleitung Hauptstraße"
+reply_to = "p2_anfrage"
+body = """Guten Tag Herr Doe,
+
+Liste anbei. Boden bis Z 1.2 aus Brande: 22,90 €/t, ab Baustelle geladen, einschließlich Transport und Annahme. Der Weg ist etwas weiter als aus Norderbek, deshalb 0,40 € mehr.
+
+Bedingungen wie gehabt: nur mit Deklarationsanalytik (eine Probe je 500 m³, 310,00 €), Abrechnung nach Wiegescheinen, Mindestladung 24 t.
+
+Zu Ihren 30 bis 40 t am Tag: Dafür bieten sich zwei Wege an. Entweder Sie sammeln auf einer Zwischenlagerfläche und wir holen jeden zweiten Tag volle Züge. Oder wir stellen Abrollcontainer mit 12 m³, dann gilt statt der Mindestladung ein Zuschlag von 2,10 €/t. Sagen Sie mir im Auftragsfall, was Ihnen lieber ist.
+
+Falls doch Z 2 auftaucht: Der Preis dafür steht in Ihrem Angebot Mühlenstraße, 33,50 €/t, und alles darüber nur nach Analyse. Gültig bis Jahresende."""
+attach = ["sheet:p2"]
+
+[[mail]]
+id = "preise2026"
+day = -327
+time = "08:30"
+from = "entsorg"
+to = "us"
+subject = "Preisanpassung zum 1. Januar: Deponie- und Annahmegebühren"
+body = """Guten Tag Herr Doe,
+
+die Deponie und die Verfüllbetriebe, die wir beliefern, haben ihre Annahmegebühren zum 1. Januar erhöht, dazu kommt die höhere Maut. Wir müssen das weitergeben. Unsere Preise ab 1. Januar, je Tonne ab Baustelle geladen:
+
+Boden bis Z 1.1: 16,90 € (bisher 16,20 €)
+Boden bis Z 1.2: 23,40 € (bisher 22,50 €)
+Boden Z 2: 35,40 € (bisher 33,50 €)
+Boden > Z 2, DK I: 68,20 € (bisher 64,80 €)
+Asphaltaufbruch, teerfrei: 12,30 € (bisher 11,80 €)
+Deklarationsanalytik je Probe: 325,00 € (bisher 310,00 €)
+
+Am stärksten trifft es Z 2 und darüber, weil dort der Gebührenanteil am größten ist.
+
+Für Ihre laufenden Baustellen Mühlenstraße und Hauptstraße Brande gelten die vereinbarten Preise bis zum {-296} weiter. Was danach abgefahren wird, rechnen wir zu den neuen Preisen ab. Für Brande sind das nach unserem Stand noch rund 900 t."""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße (won): clay and peat
+
+[[mail]]
+id = "p4_anfrage"
+day = -205
+time = "10:10"
+from = "us"
+to = "entsorg"
+subject = "Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung Klei und Torf – Abwasserpumpwerk Deichstraße mit Druckleitung"
+body = """Guten Tag Herr Voss,
+
+wir kalkulieren den Neubau des Abwasserpumpwerks Deichstraße in Norderbek (TBA-SE-0402) und bitten um Ihren Preis, ab Baustelle geladen, einschließlich Transport und Annahme:
+
+Pos. 2.1.60 – 520 t – Boden entsorgen, Klei und Torf
+
+Das ist der Aushub der Pumpwerksbaugrube, 6,20 m tief im Spundwandkasten. Baugrund laut Gutachten: Klei und Torf bis 4,50 m unter Gelände, darunter Sande, Grundwasser bei 0,80 m. Das Material kommt nass aus der Grube. Eine Zuordnungsklasse nennt das LV nicht, eine Analyse liegt den Unterlagen nicht bei.
+
+Ausführung ab {-150}, der Aushub dauert etwa eine Woche. Die Position liegt als Excel-Datei bei. Abgabe am {-200}, Preis bitte bis {-203}. Der Auftrag ist uns noch nicht erteilt.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_angebot"
+day = -204
+time = "13:40"
+from = "entsorg"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung Klei und Torf – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_anfrage"
+body = """Guten Tag Herr Doe,
+
+Klei und Torf sind ein eigenes Thema, deshalb etwas ausführlicher.
+
+Das Material ist in der Regel nicht schadstoffbelastet, aber organisch. Maßgeblich ist der Gehalt an organischem Kohlenstoff (TOC). Mit den Zuordnungsklassen Z 0 bis Z 2 kommt man hier nicht weiter: Eine Verfüllung nimmt Boden mit mehr als 1 % TOC nicht an, die Deponie der Klasse I ohne Ausnahme nur bis 1 %, mit Zustimmung der Behörde bis 6 %. Darüber bleibt die Deponieklasse II oder eine Rekultivierungsmaßnahme, wenn gerade eine annimmt.
+
+Unser Preis, Liste liegt ausgefüllt bei:
+- 41,50 €/t, wenn die Deklarationsanalytik einen TOC bis 6 % ergibt
+- 58,00 €/t bei TOC über 6 %
+
+Ohne Analyse kann ich Ihnen nicht sagen, welcher Preis gilt. Reiner Klei liegt meist bei 3 bis 5 %, mit Torflagen schnell bei 10 % und mehr. Bei 4,50 m Klei und Torf im Wechsel rechne ich eher mit dem höheren Wert.
+
+Weitere Bedingungen: Das Material muss stichfest sein. Tropfnass aus der Grube nehmen wir es nicht, es muss einen bis zwei Tage abtropfen oder mit trockenem Boden vermischt werden. Mindestladung 24 t, Abrechnung nach Wiegescheinen, Analytik 325,00 € je Probe.
+
+Gültig bis Jahresende."""
+attach = ["sheet:p4"]
+
+[[mail]]
+id = "p4_auftrag"
+day = -171
+time = "11:50"
+from = "us"
+to = "entsorg"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Auftrag Entsorgung Klei und Torf"
+reply_to = "p4_angebot"
+quote = false
+body = """Guten Tag Herr Voss,
+
+wir haben den Auftrag für das Pumpwerk Deichstraße. Wir beauftragen Sie mit der Position 2.1.60, rund 520 t, zu Ihren Bedingungen vom {-204}: 41,50 €/t bei TOC bis 6 %, 58,00 €/t darüber, Abrechnung nach Wiegescheinen.
+
+Offen gesagt: Wir haben im Angebot an die Stadt einen Mischpreis aus beiden Werten angesetzt, weil vor der Abgabe keine Analyse zu bekommen war. Umso wichtiger ist mir die Deklarationsanalytik, sobald die Spundwand steht und der erste Aushub möglich ist. Bitte halten Sie dafür Ihren Probenehmer bereit; Herr Albers (in Kopie) ruft ihn ab. Für das Abtropfen richten wir neben der Baugrube eine Fläche mit Gefälle zum Pumpensumpf ein.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_analytik"
+day = -128
+time = "09:40"
+from = "entsorg"
+to = "us"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Ergebnis der Deklarationsanalytik: TOC 9,8 %"
+body = """Guten Tag Herr Doe,
+
+das Ergebnis der Deklarationsanalytik für den Baugrubenaushub liegt vor (Mischprobe aus drei Tiefen, Probenahme am {-134}):
+
+TOC 9,8 %, Glühverlust 17,4 %, Schadstoffe unauffällig, Sulfat erhöht, wie in der Marsch üblich.
+
+Damit gilt nach unserem Angebot der Preis von 58,00 €/t. Die Deponie der Klasse I nimmt das Material nicht an. Wir haben es bei einer Deponie der Klasse II angemeldet, die Annahmeerklärung liegt vor.
+
+Eine Möglichkeit, die Kosten zu senken: Wenn Sie den Sand aus dem unteren Teil der Baugrube (ab 4,50 m) getrennt ausheben und getrennt beproben lassen, läuft dieser Teil voraussichtlich als Z 1.1 für 16,90 €/t. Nach dem Gutachten wären das bei 1,70 m Sand etwa 140 der 520 t. Das Trennen lohnt sich."""
+
+[[mail]]
+id = "p4_analytik_aw"
+day = -126
+time = "15:00"
+from = "us"
+to = "entsorg"
+cc = ["us.albers"]
+subject = "AW: Pumpwerk Deichstraße – Ergebnis der Deklarationsanalytik: TOC 9,8 %"
+reply_to = "p4_analytik"
+body = """Guten Tag Herr Voss,
+
+danke, auch für den Vorschlag. So machen wir es:
+
+- Klei und Torf bis 4,50 m: 58,00 €/t, wie angeboten. Das hatten wir befürchtet.
+- Sand ab 4,50 m: Herr Albers lässt getrennt ausheben und auf der Abtropffläche getrennt lagern. Bitte beproben Sie das Haufwerk, sobald es liegt. Bei Z 1.1 nehmen wir Ihren Listenpreis von 16,90 €/t.
+
+Bitte führen Sie die beiden Stoffströme auf den Wiegescheinen getrennt, mit dem Vermerk „Klei/Torf“ und „Sand“. Die Stadt rechnet die Position nach Gewicht ab und wird die Scheine sehen wollen.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ P5 Schulweg (lost)
+
+[[mail]]
+id = "p5_anfrage"
+day = -147
+time = "15:45"
+from = "us"
+to = "entsorg"
+subject = "Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung – Regenwasserkanal Schulweg"
+body = """Guten Tag Herr Voss,
+
+wir kalkulieren den Regenwasserkanal Schulweg in Norderbek (TBA-SE-0431) und bitten um Ihre Preise, ab Baustelle geladen, einschließlich Transport und Annahme:
+
+Pos. 2.1.40 – 2400 t – Boden entsorgen, bis Z 1.2
+Pos. 2.1.50 – 400 t – Boden entsorgen, Z 2
+
+Aushub aus dem Rohrgraben bis 3,80 m Tiefe: Auffüllung, darunter Sande mit Schluffbändern. Grundwasser bei 1,90 m, es wird mit Vakuumanlage abgesenkt, das Grundwasser ist eisenhaltig. Diesmal ist die Z-2-Position sauber auf Z 2 begrenzt.
+
+Ausführung {-90} bis {+30}. Die Positionen liegen als Excel-Datei bei. Abgabe am {-138}, Preise bitte bis {-142}. Der Auftrag ist uns noch nicht erteilt.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_angebot"
+day = -145
+time = "16:30"
+from = "entsorg"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Bodenentsorgung – Regenwasserkanal Schulweg"
+reply_to = "p5_anfrage"
+body = """Guten Tag Herr Doe,
+
+Liste anbei, Preise nach unserer Liste vom 1. Januar:
+
+Boden bis Z 1.2: 23,40 €/t
+Boden Z 2: 35,40 €/t
+
+Bedingungen unverändert: Deklarationsanalytik je 500 m³ (325,00 € je Probe), Mindestladung 24 t, Minderlast 95,00 €, Wiegescheine unserer Waage.
+
+Zwei Hinweise zur Baustelle:
+- Trotz Absenkung kommt Sand mit Schluffbändern unter dem Grundwasserspiegel oft fließend aus dem Graben. Wir nehmen nur stichfestes Material. Was vom Fahrzeug läuft, geht zurück, die Fahrt wird berechnet.
+- Eisenhaltiges Grundwasser färbt den Boden rostbraun. Das ist kein Schadstoff und ändert die Zuordnung nicht, führt aber an der Annahme regelmäßig zu Rückfragen. Bitte in der Analytik Eisen mit bestimmen lassen, dann ist das Thema erledigt.
+
+Gültig bis Jahresende."""
+attach = ["sheet:p5"]
+
+# ------------------------------------------------------------------ P7 Marschhof (quoted, result open)
+
+[[mail]]
+id = "p7_anfrage"
+day = -40
+time = "10:30"
+from = "us"
+to = "entsorg"
+subject = "Angebotsanfrage Nachunternehmerleistung – Entsorgung Klei und Bohrspülung – Abwasserdruckleitung Marschhof"
+body = """Guten Tag Herr Voss,
+
+der Schulweg ist im Sommer an einen Mitbewerber gegangen, Ihr Angebot dazu ist erledigt. Jetzt kalkulieren wir für den Wasserverband Geestrand die Abwasserdruckleitung Marschhof (WVG-A-2431), rund 1.140 m Spülbohrung durch die Marsch, und bitten um Ihre Preise einschließlich Transport und Annahme:
+
+Pos. 2.1.30 – 180 t – Boden entsorgen, Klei
+Pos. 3.1.60 – 190 m3 – Bohrspülung und Bohrklein entsorgen
+
+Zu 2.1.30: Aushub aus vier Start- und Zielgruben im Grünland. Baugrund Klei 2,5 bis 4,0 m, darunter Torf und Mudde. Nach der Deichstraße weiß ich, worauf es ankommt; eine Analyse gibt es auch hier vor der Abgabe nicht. Bitte wieder beide Preise, bis und über 6 % TOC.
+
+Zu 3.1.60: Bentonitspülung mit Bohrklein aus den Gruben, flüssig. Die Menge hat der Verband gestern mit 190 m3 festgelegt, abgerechnet wird nach Lieferscheinen des Entsorgers. Unser Bohrunternehmen bietet die Entsorgung selbst an; ich möchte Ihren Preis daneben legen.
+
+Die Flächen sind nur über Lastverteilplatten befahrbar, Sattelzüge kommen bis an die K 18, nicht an die Gruben. Ausführung {+35} bis {+110}. Abgabe am {-36}, Preise bitte bis {-38}. Der Auftrag ist uns noch nicht erteilt.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p7:blank"]
+
+[[mail]]
+id = "p7_angebot"
+day = -38
+time = "14:20"
+from = "entsorg"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Entsorgung Klei und Bohrspülung – Abwasserdruckleitung Marschhof"
+reply_to = "p7_anfrage"
+body = """Guten Tag Herr Doe,
+
+Liste anbei.
+
+Pos. 2.1.30, Klei: 43,00 €/t bei TOC bis 6 %, 59,50 €/t darüber, jeweils nur mit Deklarationsanalytik. Das sind 1,50 € mehr als an der Deichstraße, der Weg aus der Marsch ist weiter. In der Liste steht der niedrigere Preis mit dem Vermerk. Da die Sattelzüge nur bis zur K 18 kommen, müssen Sie das Material dorthin vorfahren oder wir stellen Abrollcontainer auf Ihre Platten (Zuschlag 2,30 €/t, keine Mindestladung). 180 t aus vier Gruben sind ohnehin ein Containergeschäft.
+
+Pos. 3.1.60, Bohrspülung: 74,00 €/m3 mit Saugwagen ab Grube, Abfallschlüssel 01 05 04, einschließlich Annahme in der Behandlungsanlage. Voraussetzung: Sicherheitsdatenblätter der Spülungszusätze vor dem ersten Transport, keine Polymere mit Wassergefährdungsklasse 2 oder höher. Saugwagen 14 m3, Wartezeit an der Grube über 45 Minuten 96,00 € je Stunde. Abrechnung nach den Lieferscheinen des Saugwagens und dem Wiegeschein der Anlage; bei Abweichung gilt die Waage.
+
+Das Angebot gilt bis zum Ablauf Ihrer Bindefrist."""
+attach = ["sheet:p7"]
+
+[[mail]]
+id = "p7_bindefrist"
+day = -18
+time = "10:40"
+from = "us"
+to = "entsorg"
+subject = "Marschhof – Bindefrist bis {+21} verlängert, gilt Ihr Angebot weiter?"
+reply_to = "p7_angebot"
+quote = false
+body = """Guten Tag Herr Voss,
+
+beim Marschhof liegen wir nach der Eröffnung an zweiter Stelle, entschieden ist noch nichts. Der Verband hat alle Bieter gebeten, die Bindefrist bis {+21} zu verlängern, wir haben zugestimmt.
+
+Bleibt Ihr Angebot vom {-38} bis dahin gültig, also Klei 43,00 beziehungsweise 59,50 €/t und Bohrspülung 74,00 €/m3? Die Ausführung läge, wenn wir den Auftrag bekommen, im ersten Quartal.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p7_bindefrist_aw"
+day = -17
+time = "11:25"
+from = "entsorg"
+to = "us"
+subject = "AW: Marschhof – Bindefrist bis {+21} verlängert, gilt Ihr Angebot weiter?"
+reply_to = "p7_bindefrist"
+body = """Guten Tag Herr Doe,
+
+für die Bohrspülung ja: 74,00 €/m3 halten wir bis {+21} und bei Auftrag bis dahin auch für die Ausführung im ersten Quartal.
+
+Für den Klei kann ich das nur mit einem Vorbehalt zusagen. Die Deponie der Klasse II hat eine Gebührenerhöhung zum 1. Januar angekündigt, die Höhe steht noch nicht fest. 43,00 und 59,50 €/t gelten bis {+21} für die Auftragserteilung. Für Mengen, die nach dem 1. Januar angeliefert werden, geben wir die Erhöhung der Deponiegebühr in nachgewiesener Höhe weiter, nicht mehr und nicht weniger. Sobald ich die Zahl habe, bekommen Sie sie."""
+
+# ------------------------------------------------------------------ now
+
+[[mail]]
+id = "preise2027"
+day = -4
+time = "09:10"
+from = "entsorg"
+to = "us"
+subject = "Deponiegebühren ab 1. Januar: neue Preise, Annahmepause über den Jahreswechsel"
+body = """Guten Tag Herr Doe,
+
+die angekündigte Zahl ist da. Die Deponie erhöht zum 1. Januar die Gebühr für die Klasse I um 2,80 €/t und für die Klasse II um 3,60 €/t; die Verfüllbetriebe ziehen mit 0,80 €/t nach. Unsere Preise ab 1. Januar, je Tonne ab Baustelle geladen:
+
+Boden bis Z 1.1: 17,60 € (bisher 16,90 €)
+Boden bis Z 1.2: 24,40 € (bisher 23,40 €)
+Boden Z 2: 36,90 € (bisher 35,40 €)
+Boden > Z 2, DK I: 71,20 € (bisher 68,20 €)
+Klei und Torf, TOC bis 6 %: 45,80 €; über 6 %, DK II: 63,10 €
+Deklarationsanalytik je Probe: 335,00 €
+
+Für Ihr Angebot Marschhof heißt das, wie am {-17} geschrieben: Klei, der nach dem 1. Januar angeliefert wird, kostet 45,80 beziehungsweise 63,10 €/t statt 43,00 und 59,50 €/t. Die Bohrspülung bleibt bei 74,00 €/m3.
+
+Für die Deichstraße sind alle Mengen abgefahren und abgerechnet, dort ändert sich nichts.
+
+Außerdem: Die Deponien nehmen vom {+31} bis {+41} nichts an, unsere Waage in Tornesch ist in dieser Zeit geschlossen. Die letzte Anlieferung ist am {+30} bis 12 Uhr möglich. Deklarationsanalysen, die bis {+18} bei uns eingehen, sind vor der Pause fertig.
+
+Alle Preise gelten weiterhin nur mit gültiger Deklarationsanalytik, Mindestladung 24 t, Abrechnung nach Wiegescheinen."""

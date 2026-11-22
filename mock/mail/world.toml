@@ -1,0 +1,406 @@
+# The parties of the mock world and their people (see README.md). Everything is made up; the domains end in
+# .test and reach nobody. Every address gets a mailbox on the demo mail server, password "demo".
+# The first person of a party is the one a bare party key means ("tba" = "tba.meyer").
+
+# ------------------------------------------------------------------ our firm
+
+[[party]]
+key = "us"
+kind = "us"
+name = "Acme Tiefbau GmbH"
+domain = "polier.test"
+street = "Schnackenburgallee 114"
+place = "22525 Hamburg"
+phone = "+49 40 5550 300"
+own_trades = "Tiefbau, Kanalbau, Rohrleitungsbau, Erdarbeiten, Straßen- und Wegebau"
+  [[party.person]]
+  key = "doe"
+  name = "John Doe"
+  email = "kalkulation"
+  sign = "John Doe\nKalkulation\nAcme Tiefbau GmbH · Schnackenburgallee 114 · 22525 Hamburg\nTel. +49 40 5550 300 · kalkulation@polier.test"
+  [[party.person]]
+  key = "albers"
+  name = "Jonas Albers"
+  email = "albers"
+  sign = "Jonas Albers\nBauleitung\nAcme Tiefbau GmbH\nMobil +49 171 5550 318"
+
+# ------------------------------------------------------------------ clients: who sends tenders
+
+[[party]]
+key = "tba"
+kind = "client"
+name = "Stadt Norderbek, Fachdienst Tiefbau"
+domain = "norderbek.test"
+street = "Rathausplatz 1"
+place = "25499 Norderbek"
+phone = "+49 4122 5550 0"
+  [[party.person]]
+  key = "meyer"
+  name = "Katrin Meyer"
+  email = "vergabe"
+  sign = "Mit freundlichen Grüßen\nIm Auftrag\n\nKatrin Meyer\nStadt Norderbek · Zentrale Vergabestelle\nRathausplatz 1 · 25499 Norderbek\nTel. +49 4122 5550 142"
+  [[party.person]]
+  key = "hartwig"
+  name = "Sven Hartwig"
+  email = "s.hartwig"
+  sign = "Dipl.-Ing. Sven Hartwig\nStadt Norderbek · Fachdienst Tiefbau, Stadtentwässerung\nTel. +49 4122 5550 167"
+
+[[party]]
+key = "wvg"
+kind = "client"
+name = "Wasserverband Geestrand"
+domain = "wv-geestrand.test"
+street = "Am Wasserwerk 3"
+place = "25364 Brande-Hörnerkirchen"
+phone = "+49 4127 5550 20"
+  [[party.person]]
+  key = "luehrs"
+  name = "Petra Lührs"
+  email = "p.luehrs"
+  sign = "Freundliche Grüße\nPetra Lührs\nTechnik / Netzbau\nWasserverband Geestrand\nTel. +49 4127 5550 24"
+
+[[party]]
+key = "arch"
+kind = "client"
+name = "Ohlsen + Partner Ingenieure PartG mbB"
+domain = "ohlsen-partner.test"
+street = "Kaiserstraße 18"
+place = "25524 Itzehoe"
+phone = "+49 4821 5550 60"
+  [[party.person]]
+  key = "ohlsen"
+  name = "Maren Ohlsen"
+  email = "m.ohlsen"
+  sign = "Mit freundlichen Grüßen\nDipl.-Ing. Maren Ohlsen\nOhlsen + Partner Ingenieure PartG mbB\nKaiserstraße 18 · 25524 Itzehoe\nTel. +49 4821 5550 61"
+  [[party.person]]
+  key = "kroeger"
+  name = "Tim Kröger"
+  email = "t.kroeger"
+  sign = "Viele Grüße\nTim Kröger, B. Eng.\nOhlsen + Partner Ingenieure\nTel. +49 4821 5550 66"
+
+[[party]]
+key = "gu"
+kind = "client"
+name = "Nordhanse Bau GmbH & Co. KG"
+domain = "nordhanse-bau.test"
+street = "Überseering 40"
+place = "22297 Hamburg"
+phone = "+49 40 5550 7700"
+  [[party.person]]
+  key = "witt"
+  name = "Lars Witt"
+  email = "einkauf"
+  sign = "Mit freundlichen Grüßen\nLars Witt\nEinkauf Nachunternehmer\nNordhanse Bau GmbH & Co. KG\nTel. +49 40 5550 7714"
+
+[[party]]
+key = "ind"
+kind = "client"
+name = "Hansa Logistikpark Verwaltungs GmbH"
+domain = "hansa-logistikpark.test"
+street = "Containerstraße 9"
+place = "21129 Hamburg"
+phone = "+49 40 5550 4410"
+  [[party.person]]
+  key = "schuett"
+  name = "Andrea Schütt"
+  email = "a.schuett"
+  sign = "Beste Grüße\nAndrea Schütt\nTechnisches Objektmanagement\nHansa Logistikpark Verwaltungs GmbH\nTel. +49 40 5550 4416"
+
+[[party]]
+key = "swn"
+kind = "client"
+name = "Stadtwerke Norderbek GmbH"
+domain = "stadtwerke-norderbek.test"
+street = "Gasstraße 12"
+place = "25499 Norderbek"
+phone = "+49 4122 5550 900"
+  [[party.person]]
+  key = "reimers"
+  name = "Michael Reimers"
+  email = "netzbau"
+  sign = "Mit freundlichen Grüßen\ni. A. Michael Reimers\nNetzbau Gas / Wasser\nStadtwerke Norderbek GmbH\nTel. +49 4122 5550 931"
+
+[[party]]
+key = "lbk"
+kind = "client"
+name = "Landesbetrieb Straßen und Wege Küste, Niederlassung West"
+domain = "lbsw-kueste.test"
+street = "Breitenburger Straße 37"
+place = "25524 Itzehoe"
+phone = "+49 4821 5550 800"
+  [[party.person]]
+  key = "vergabe"
+  name = "Vergabestelle LBSW Küste"
+  email = "vergabe-west"
+  sign = "Mit freundlichen Grüßen\nIm Auftrag\nDr. Ute Carstens\nLandesbetrieb Straßen und Wege Küste · Niederlassung West · Vergabestelle\nTel. +49 4821 5550 812"
+
+# ------------------------------------------------------------------ suppliers
+
+[[party]]
+key = "rohr"
+kind = "supplier"
+name = "Nordrohr Handel GmbH"
+domain = "nordrohr.test"
+street = "Billbrookdeich 210"
+place = "22113 Hamburg"
+phone = "+49 40 5550 110"
+contact = "Herr Brodersen"
+groups = ["Kanalrohre", "PE-Rohre", "Formstücke", "Schächte", "Hausanschlussmaterial"]
+customer_no = "K-20417"
+preferred = true
+  [[party.person]]
+  key = "brodersen"
+  name = "Jan Brodersen"
+  email = "anfrage"
+  sign = "Gruß\nJan"
+  [[party.person]]
+  key = "yildiz"
+  name = "Selin Yıldız"
+  email = "s.yildiz"
+  sign = "Viele Grüße\nSelin Yıldız\nVertriebsinnendienst\nNordrohr Handel GmbH · Tel. +49 40 5550 113"
+
+[[party]]
+key = "beton"
+kind = "supplier"
+name = "Betonwerk Störtal GmbH & Co. KG"
+domain = "betonwerk-stoertal.test"
+street = "Zementweg 4"
+place = "25524 Itzehoe"
+phone = "+49 4821 5550 230"
+contact = "Frau Thomsen"
+groups = ["Transportbeton", "Betonfertigteile", "Schachtringe", "Stahlbetonrohre"]
+customer_no = "110388"
+  [[party.person]]
+  key = "thomsen"
+  name = "Birgit Thomsen"
+  email = "vertrieb"
+  sign = "Mit freundlichen Grüßen\ni. A. Birgit Thomsen\nVertrieb Tiefbau\nBetonwerk Störtal GmbH & Co. KG\nZementweg 4 · 25524 Itzehoe · Tel. +49 4821 5550 233"
+
+[[party]]
+key = "kies"
+kind = "supplier"
+name = "Kieswerk Heidkamp GmbH"
+domain = "kieswerk-heidkamp.test"
+street = "Heidkamp 1"
+place = "25485 Hemdingen"
+phone = "+49 4123 5550 45"
+contact = "Disposition"
+groups = ["Sand", "Kies", "Schotter", "Frostschutzmaterial", "RC-Baustoffe", "Bodenannahme"]
+  [[party.person]]
+  key = "dispo"
+  name = "Kieswerk Heidkamp Disposition"
+  email = "dispo"
+  sign = "mfg\ndispo heidkamp\ntel 04123 5550 45 (6-16 uhr)"
+
+[[party]]
+key = "armat"
+kind = "supplier"
+name = "Hanse Armaturen Vertrieb GmbH"
+domain = "hanse-armaturen.test"
+street = "Hafenrandstraße 77"
+place = "28217 Bremen"
+phone = "+49 421 5550 771"
+contact = "Herr Kowalski"
+groups = ["Armaturen", "Schieber", "Hydranten", "Gussformstücke", "Anbohrarmaturen"]
+  [[party.person]]
+  key = "kowalski"
+  name = "Marek Kowalski"
+  email = "angebote"
+  sign = "Freundliche Grüße\nMarek Kowalski\nTechnischer Vertrieb Wasser / Gas\nHanse Armaturen Vertrieb GmbH\nHafenrandstraße 77 · 28217 Bremen\nTel. +49 421 5550 774"
+
+[[party]]
+key = "baust"
+kind = "supplier"
+name = "Baustoff-Union Elbe GmbH"
+domain = "baustoff-union-elbe.test"
+street = "Industriestraße 52"
+place = "25421 Pinneberg"
+phone = "+49 4101 5550 500"
+contact = "Herr Dierks"
+groups = ["Pflaster", "Bordsteine", "Entwässerungsrinnen", "Straßenabläufe", "Geotextil", "Baustoffe allgemein"]
+customer_no = "448120"
+  [[party.person]]
+  key = "dierks"
+  name = "Olaf Dierks"
+  email = "tiefbau"
+  sign = "Mit besten Grüßen\nOlaf Dierks\nFachberater Tiefbau / GaLaBau\nBaustoff-Union Elbe GmbH · Niederlassung Pinneberg\nTel. +49 4101 5550 512 · Mobil +49 172 5550 512"
+  [[party.person]]
+  key = "news"
+  name = "Baustoff-Union Elbe"
+  email = "newsletter"
+  sign = "Ihre Baustoff-Union Elbe\n\nSie erhalten diese E-Mail als Kunde der Baustoff-Union Elbe GmbH."
+
+[[party]]
+key = "verbau"
+kind = "supplier"
+name = "Verbautechnik Nord Mietservice GmbH"
+domain = "verbautechnik-nord.test"
+street = "Gewerbering 8"
+place = "24539 Neumünster"
+phone = "+49 4321 5550 88"
+contact = "Frau Jessen"
+groups = ["Grabenverbau", "Verbauboxen", "Spundwände", "Baugrubenverbau", "Mietgeräte"]
+  [[party.person]]
+  key = "jessen"
+  name = "Nele Jessen"
+  email = "miete"
+  sign = "Viele Grüße aus Neumünster\nNele Jessen\nVermietung / Anwendungstechnik\nVerbautechnik Nord Mietservice GmbH\nTel. +49 4321 5550 88"
+
+[[party]]
+key = "pumpen"
+kind = "supplier"
+name = "Aquatec Pumpen und Anlagenbau GmbH"
+domain = "aquatec-pumpen.test"
+street = "Otto-Hahn-Straße 15"
+place = "22941 Bargteheide"
+phone = "+49 4532 5550 310"
+contact = "Herr Dr. Behrens"
+groups = ["Abwasserpumpen", "Pumpwerke", "Fertigpumpstationen", "Schaltanlagen"]
+  [[party.person]]
+  key = "behrens"
+  name = "Dr. Ralf Behrens"
+  email = "projekte"
+  sign = "Mit freundlichen Grüßen\nDr.-Ing. Ralf Behrens\nProjektvertrieb Abwassertechnik\nAquatec Pumpen und Anlagenbau GmbH\nTel. +49 4532 5550 312"
+
+# ------------------------------------------------------------------ subcontractors
+
+[[party]]
+key = "asph"
+kind = "subcontractor"
+name = "Asphaltbau Holsten GmbH"
+domain = "asphaltbau-holsten.test"
+street = "Hamburger Straße 201"
+place = "25337 Elmshorn"
+phone = "+49 4121 5550 64"
+contact = "Herr Yilmaz"
+groups = ["Asphaltarbeiten", "Straßenbau", "Fräsarbeiten", "Markierung"]
+preferred = true
+  [[party.person]]
+  key = "yilmaz"
+  name = "Serkan Yilmaz"
+  email = "kalkulation"
+  sign = "Viele Grüße\nS. Yilmaz\nAsphaltbau Holsten GmbH\n04121 5550 64"
+
+[[party]]
+key = "hdd"
+kind = "subcontractor"
+name = "Bohrtechnik Wattenmeer GmbH"
+domain = "bohrtechnik-wattenmeer.test"
+street = "Deichweg 30"
+place = "25761 Büsum"
+phone = "+49 4834 5550 12"
+contact = "Herr Clausen"
+groups = ["Horizontalspülbohrung", "Rohrvortrieb", "Pressbohrung", "Grabenlose Verlegung"]
+  [[party.person]]
+  key = "clausen"
+  name = "Hauke Clausen"
+  email = "info"
+  sign = "Mit freundlichem Gruß\nHauke Clausen\nGeschäftsführer\nBohrtechnik Wattenmeer GmbH\nMobil +49 170 5550 120"
+
+[[party]]
+key = "tv"
+kind = "subcontractor"
+name = "KanalCheck Nord GmbH"
+domain = "kanalcheck-nord.test"
+street = "Borsigstraße 6"
+place = "25451 Quickborn"
+phone = "+49 4106 5550 90"
+contact = "Frau Arslan"
+groups = ["Kanal-TV-Inspektion", "Dichtheitsprüfung", "Kanalreinigung", "Kanalsanierung grabenlos"]
+  [[party.person]]
+  key = "arslan"
+  name = "Elif Arslan"
+  email = "auftrag"
+  sign = "Beste Grüße\nElif Arslan\nAuftragsabwicklung\nKanalCheck Nord GmbH · Tel. +49 4106 5550 90"
+
+[[party]]
+key = "gala"
+kind = "subcontractor"
+name = "Grünwerk Garten- und Landschaftsbau"
+domain = "gruenwerk-galabau.test"
+street = "Dorfstraße 44"
+place = "22880 Wedel"
+phone = "+49 4103 5550 18"
+contact = "Herr Matthiesen"
+groups = ["Landschaftsbau", "Rasen", "Pflanzarbeiten", "Zaunbau", "Pflasterarbeiten"]
+  [[party.person]]
+  key = "matthiesen"
+  name = "Knut Matthiesen"
+  email = "buero"
+  sign = "Gruß\nKnut Matthiesen\nGrünwerk GaLaBau, Wedel"
+
+[[party]]
+key = "emsr"
+kind = "subcontractor"
+name = "EMT Elektro- und Messtechnik Nord GmbH"
+domain = "emt-nord.test"
+street = "Robert-Koch-Straße 21"
+place = "22851 Norderstedt"
+phone = "+49 40 5550 932"
+contact = "Frau Dr. Lang"
+groups = ["Elektrotechnik", "MSR-Technik", "Schaltanlagenbau", "Kabelverlegung"]
+  [[party.person]]
+  key = "lang"
+  name = "Dr. Susanne Lang"
+  email = "angebot"
+  sign = "Mit freundlichen Grüßen\nDr. Susanne Lang\nLeitung Angebotswesen\nEMT Elektro- und Messtechnik Nord GmbH\nTel. +49 40 5550 932"
+
+[[party]]
+key = "vs"
+kind = "subcontractor"
+name = "Verkehrssicherung Nordmark GmbH"
+domain = "vs-nordmark.test"
+street = "An der Autobahn 2"
+place = "24558 Henstedt-Ulzburg"
+phone = "+49 4193 5550 70"
+contact = "Herr Petrovic"
+groups = ["Verkehrssicherung", "Baustellenbeschilderung", "Lichtsignalanlagen mobil", "Verkehrszeichenpläne"]
+  [[party.person]]
+  key = "petrovic"
+  name = "Dragan Petrovic"
+  email = "dispo"
+  sign = "MfG\nD. Petrovic\nVerkehrssicherung Nordmark GmbH\nTel. 04193 5550 70 · 24h-Notdienst 04193 5550 79"
+
+[[party]]
+key = "entsorg"
+kind = "subcontractor"
+name = "Recycling und Entsorgung Unterelbe GmbH"
+domain = "reu-unterelbe.test"
+street = "Deponiestraße 1"
+place = "25436 Tornesch"
+phone = "+49 4122 5550 610"
+contact = "Herr Voss"
+groups = ["Bodenentsorgung", "Bauschuttrecycling", "Deklarationsanalytik", "Containerdienst"]
+  [[party.person]]
+  key = "voss"
+  name = "Torben Voss"
+  email = "vertrieb"
+  sign = "Mit freundlichen Grüßen\nTorben Voss\nVertrieb Stoffstrommanagement\nRecycling und Entsorgung Unterelbe GmbH\nTel. +49 4122 5550 612"
+
+# ------------------------------------------------------------------ others: mail that is no business of the estimator
+
+[[party]]
+key = "portal"
+kind = "other"
+name = "Vergabemarktplatz Nord"
+domain = "vergabemarktplatz-nord.test"
+mailbox = false
+  [[party.person]]
+  key = "noreply"
+  name = "Vergabemarktplatz Nord"
+  email = "noreply"
+  sign = "Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.\nVergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"
+
+[[party]]
+key = "miete"
+kind = "other"
+name = "Baumaschinen Lorenzen Vermietung GmbH"
+domain = "lorenzen-baumaschinen.test"
+street = "Kieler Straße 590"
+place = "22525 Hamburg"
+phone = "+49 40 5550 660"
+  [[party.person]]
+  key = "buchhaltung"
+  name = "Baumaschinen Lorenzen Buchhaltung"
+  email = "rechnung"
+  sign = "Freundliche Grüße\nIhre Buchhaltung\nBaumaschinen Lorenzen Vermietung GmbH"

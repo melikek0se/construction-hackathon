@@ -1,0 +1,437 @@
+# EMT Elektro- und Messtechnik Nord GmbH (emsr), Dr. Susanne Lang: the history with our estimator. Formal,
+# declines often for lack of capacity, quotes only with complete circuit diagrams and data point list,
+# long conditions on validity, everything in writing. P3: declined. P4 electrics: declined first, quoted on
+# the second request, the telecontrol change order (52 instead of 40 data points), the loan pumps.
+
+[[sheet]]
+key = "p3"
+file = "Anfrage_Erdung_Gewerbegebiet_Sued.xlsx"
+items = """
+5.1.50 | 1380 m² | Banderder verlegen
+"""
+
+[[sheet]]
+key = "p4"
+file = "Anfrage_EMSR_Pumpwerk_Deichstrasse.xlsx"
+items = """
+4.1.10 | 1 St | Schaltanlage im Freiluftschrank | 2850,00 |  |  | Schaltanlage beigestellt, nur Aufstellen und Anschließen
+4.1.20 | 1 St | Füllstandsmessung | 3480,00
+4.1.30 | 1 St | Fernwirkanlage, Anbindung Leitsystem | 18900,00 |  |  | 40 Datenpunkte, 1 Prozessbild
+4.1.40 | 85 m | Kabel und Kabelschutzrohre | 38,50
+4.1.50 | 1 psch | Netzanschluss mit Zähleranschlusssäule | 6900,00
+4.1.60 | 1 psch | Inbetriebnahme, Probebetrieb, Dokumentation | 5400,00
+"""
+
+[[doc]]
+key = "p4_angebot"
+file = "Angebot_EMT_2026-0388_Pumpwerk_Deichstrasse.pdf"
+title = "Angebot Nr. 2026-0388"
+text = """An: Acme Tiefbau GmbH, Herrn John Doe, Schnackenburgallee 114, 22525 Hamburg
+Bauvorhaben: Neubau Abwasserpumpwerk Deichstraße mit Druckleitung, Norderbek (TBA-SE-0402)
+Ihre Anfrage vom {-207}, Titel 4.1 Elektro- und MSR-Technik
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+4.1.10 | Schaltanlage (beigestellt) aufstellen und anschließen | 1 | St | 2.850,00 | 2.850,00
+4.1.20 | Füllstandsmessung, hydrostatisch, mit 2 Schwimmerschaltern | 1 | St | 3.480,00 | 3.480,00
+4.1.30 | Fernwirkunterstation, 40 Datenpunkte, 1 Prozessbild | 1 | St | 18.900,00 | 18.900,00
+4.1.40 | Kabel und Kabelschutzrohre | 85 | m | 38,50 | 3.272,50
+4.1.50 | Netzanschluss mit Zähleranschlusssäule | 1 | psch | 6.900,00 | 6.900,00
+4.1.60 | Inbetriebnahme, Probebetrieb 14 Tage, Dokumentation | 1 | psch | 5.400,00 | 5.400,00
+
+Summe netto: 40.802,50 EUR
+
+Grundlagen und Bedingungen dieses Angebots:
+1. Die Schaltanlage zu Position 4.1.10 wird vom Pumpenlieferanten verdrahtet und stückgeprüft geliefert. Unsere Leistung umfasst Aufstellen, Anschließen und Prüfung nach DIN VDE 0100-600.
+2. Position 4.1.30 beruht auf 40 Datenpunkten und einem Prozessbild. Je weiterem Datenpunkt 165,00 EUR, je weiterem Prozessbild 1.450,00 EUR. Eingriffe am Prozessleitsystem des Auftraggebers durch dessen Systemlieferanten sind mit 16 Stunden zu 138,00 EUR enthalten; Mehrstunden nach Nachweis.
+3. Das Fabrikat der Fernwirkunterstation ist nicht bekannt. Angeboten ist ein marktübliches Gerät. Schreibt der Auftraggeber ein anderes Fabrikat vor, wird der Preis angepasst.
+4. Voraussetzung für Fertigung und Programmierung sind freigegebene Stromlaufpläne und eine verbindliche Datenpunktliste, spätestens 10 Wochen vor der Inbetriebnahme.
+5. Erd- und Tiefbauarbeiten für Kabelgräben und Fundamente sind bauseits. Die Gebühren des Netzbetreibers sind nicht enthalten.
+6. Ausführung nicht vor dem 4. Quartal. Wartezeiten, die wir nicht zu vertreten haben: 138,00 EUR je Stunde und Monteur.
+7. Dieses Angebot ist bis {-161} gültig. Es verlängert sich nicht stillschweigend. Nach Ablauf behalten wir uns eine Neukalkulation der Materialpreise vor.
+8. Zahlung: 30 % bei Auftrag, 60 % nach Inbetriebnahme, 10 % nach Abnahme, jeweils 14 Tage netto."""
+
+[[doc]]
+key = "p4_nachtrag"
+file = "Nachtragsangebot_EMT_2026-0388-N1_Fernwirktechnik.pdf"
+title = "Nachtragsangebot Nr. 2026-0388-N1: Fernwirkanbindung, 52 statt 40 Datenpunkte"
+text = """An: Acme Tiefbau GmbH, Herrn John Doe
+Bauvorhaben: Abwasserpumpwerk Deichstraße, Norderbek
+Unser Auftrag 2026-0388 vom {-173}, Position 4.1.30
+Grundlage: Datenpunktliste des Auftraggebers, übergeben in der Bauanlaufbesprechung am {-163}, Stand Index b
+
+Die übergebene Liste enthält 52 Datenpunkte und zwei Prozessbilder. Angeboten und beauftragt sind 40 Datenpunkte und ein Prozessbild (Angebot Nr. 2026-0388, Bedingung 2).
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+N1.1 | Zusätzliche Datenpunkte projektieren, programmieren, prüfen | 12 | St | 165,00 | 1.980,00
+N1.2 | Zweites Prozessbild (Übersicht Druckleitung) | 1 | St | 1.450,00 | 1.450,00
+N1.3 | Systemlieferant Leitsystem, Mehrstunden | 16 | h | 138,00 | 2.208,00
+
+Summe netto: 5.638,00 EUR
+
+Die Stunden des Systemlieferanten zu N1.3 sind geschätzt und werden nach Nachweis abgerechnet.
+Ohne schriftliche Beauftragung bis {-75} projektieren wir den beauftragten Umfang von 40 Datenpunkten. Eine spätere Erweiterung erfordert eine erneute Prüfung der Signale und verschiebt die Inbetriebnahme.
+Dieses Nachtragsangebot ist bis {-75} gültig."""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (declined)
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "14:30"
+from = "us"
+to = "emsr"
+subject = "Angebotsanfrage Nachunternehmerleistung – Erdungsanlage Straßenbeleuchtung – Erschließung Gewerbegebiet Süd, 1. BA"
+body = """Sehr geehrte Frau Dr. Lang,
+
+wir kalkulieren ein Angebot für die Erschließung Gewerbegebiet Süd, 1. Bauabschnitt, in Itzehoe (OP-ITZ-417). Kabelgräben, Leerrohre und Mastfundamente für die Straßenbeleuchtung führen wir selbst aus. Für die Erdungsanlage bitten wir um Ihr Angebot als Nachunternehmer, einschließlich Material, Lohn und Messung:
+
+Pos. 5.1.50 – 1380 m² – Banderder verlegen
+
+Die Einheit m² im Leistungsverzeichnis halten wir für einen Fehler; gemeint sind nach dem Lageplan 1.380 m Bandstahl 30 x 3,5 mm, feuerverzinkt, im offenen Kabelgraben, mit Anschlussfahnen an 34 Mastfundamenten. Bitte bieten Sie je Meter an und nennen Sie den Preis für das Erdungsmessprotokoll.
+
+Ausführung ab {-235}, abschnittsweise mit dem Kabelgraben. Die Position liegt als Excel-Datei bei. Wir benötigen Ihr Angebot bis {-290}. Der Auftrag ist uns noch nicht erteilt.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_absage"
+day = -293
+time = "10:40"
+from = "emsr"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Erdungsanlage Straßenbeleuchtung – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihre Anfrage vom {-296}.
+
+Nach Prüfung müssen wir Ihnen mitteilen, dass wir für diese Maßnahme kein Angebot abgeben. Unsere Montagekapazitäten sind im angefragten Ausführungszeitraum durch laufende Aufträge im Anlagenbau gebunden. Hinzu kommt, dass wir reine Verlegeleistungen ohne Schaltanlagen- oder MSR-Anteil grundsätzlich nicht anbieten; der mehrfache Abruf einer Kolonne für jeweils wenige Stunden ist für uns nicht wirtschaftlich darstellbar.
+
+Wir empfehlen, den Banderder durch Ihre eigene Kolonne im offenen Graben verlegen zu lassen und lediglich die Messung an ein Elektrofachunternehmen zu vergeben.
+
+Bei Vorhaben mit Schaltanlagen, Pumpensteuerungen oder Fernwirktechnik stehen wir Ihnen gern zur Verfügung. Bitte übersenden Sie uns in diesem Fall mit der Anfrage das R+I-Schema, die Stromlaufpläne und die Datenpunktliste; ohne diese Unterlagen ist uns eine Kalkulation nicht möglich."""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße (won)
+
+[[mail]]
+id = "p4_anfrage"
+day = -213
+time = "09:10"
+from = "us"
+to = "emsr"
+subject = "Angebotsanfrage Nachunternehmerleistung – Elektro- und MSR-Technik – Abwasserpumpwerk Deichstraße mit Druckleitung"
+body = """Sehr geehrte Frau Dr. Lang,
+
+Sie hatten uns im Winter geschrieben, dass Sie bei Vorhaben mit Pumpensteuerung und Fernwirktechnik gern anbieten. Ein solches liegt jetzt vor: Die Stadt Norderbek schreibt den Ersatzneubau des Abwasserpumpwerks Deichstraße aus (TBA-SE-0402), Fertigteilpumpwerk mit zwei Tauchmotorpumpen, Schaltanlage im Freiluftschrank und Fernwirktechnik. Die Leistung wird als Gesamtleistung vergeben; wir bieten als Hauptunternehmer an und bitten um Ihr Angebot als Nachunternehmer für den Titel 4.1, einschließlich Material, Lohn und Gerät:
+
+Pos. 4.1.10 – 1 St – Schaltanlage im Freiluftschrank
+Pos. 4.1.20 – 1 St – Füllstandsmessung
+Pos. 4.1.30 – 1 St – Fernwirkanlage, Anbindung Leitsystem
+Pos. 4.1.40 – 85 m – Kabel und Kabelschutzrohre
+Pos. 4.1.50 – 1 psch – Netzanschluss mit Zähleranschlusssäule
+Pos. 4.1.60 – 1 psch – Inbetriebnahme, Probebetrieb, Dokumentation
+
+Das Leistungsverzeichnis liegt nur als PDF vor; den Titel 4.1 mit Langtexten, das R+I-Schema und die Baubeschreibung, Abschnitt 6, stellen wir Ihnen über den Link bereit, den Sie mit getrennter Mail erhalten. Stromlaufpläne und eine Datenpunktliste enthält die Ausschreibung nicht.
+
+Ausführungsbeginn der Gesamtmaßnahme ist der {-150}, die Inbetriebnahme liegt im Herbst. Die Positionen liegen als Excel-Datei bei. Angebotsabgabe ist am {-200}; wir benötigen Ihr Angebot bis {-205} und sind gegenüber der Stadt bis {-165} gebunden. Der Auftrag ist uns noch nicht erteilt.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_absage"
+day = -211
+time = "11:25"
+from = "emsr"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Elektro- und MSR-Technik – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+wir danken für Ihre Anfrage und haben die bereitgestellten Unterlagen geprüft. In der vorliegenden Form können wir kein Angebot abgeben. Die Gründe:
+
+1. Kapazität: Unser Schaltanlagenbau ist bis zum Ende des dritten Quartals ausgelastet. Die Fertigung einer Schaltanlage mit zwei Pumpenabgängen und Sanftanlauf können wir innerhalb der von Ihnen genannten Fristen nicht zusagen.
+
+2. Unterlagen: Für die Position 4.1.30 fehlen das Fabrikat und die Version des vorhandenen Prozessleitsystems, das vorgeschriebene Fabrikat der Fernwirkunterstation, die Zahl der Datenpunkte und der Prozessbilder. Die Formulierung, Anpassungen am Leitsystem seien ohne gesonderte Vergütung auszuführen, ist auf dieser Grundlage nicht kalkulierbar. Für die Position 4.1.10 fehlen Stromlaufpläne oder zumindest eine Verbraucherliste.
+
+Wir bitten um Verständnis, dass wir unter diesen Voraussetzungen keinen Festpreis nennen."""
+
+[[mail]]
+id = "p4_anfrage2"
+day = -207
+time = "14:40"
+from = "us"
+to = "emsr"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – Elektro- und MSR-Technik – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_absage"
+body = """Sehr geehrte Frau Dr. Lang,
+
+vielen Dank für die offene Antwort. Beide Gründe verstehen wir, und zu beiden hat sich etwas geändert. Wir bitten Sie deshalb, die Anfrage in geändertem Umfang noch einmal zu prüfen.
+
+Zu 1, Kapazität: Die Schaltanlage der Position 4.1.10 liefert der Pumpenhersteller zusammen mit den Pumpen, fertig verdrahtet und stückgeprüft. Bei Ihnen verbleiben das Aufstellen und Anschließen des Freiluftschranks, die Füllstandsmessung, die Fernwirkunterstation, Kabel, Netzanschluss und Inbetriebnahme. Eine Fertigung in Ihrem Schaltanlagenbau entfällt. Die Montage liegt nach unserem Bauablauf im vierten Quartal.
+
+Zu 2, Unterlagen: Wir haben die Stadt am {-209} als Bieterfrage um genau die Angaben gebeten, die Sie nennen. Die Antwort steht aus, und ob sie die Angaben enthält, ist offen. Damit Sie dennoch rechnen können, schlagen wir vor, dass Sie die Position 4.1.30 auf folgenden, im Angebot offen genannten Annahmen anbieten: 40 Datenpunkte, ein Prozessbild, Eingriffe am Leitsystem durch den Systemlieferanten der Stadt in Ihrem Auftrag. Preise für jeden weiteren Datenpunkt und jedes weitere Prozessbild nennen Sie bitte gesondert. Dieselben Annahmen legen wir der Stadt gegenüber offen. Eine Verbraucherliste des Pumpenherstellers (2 Pumpen je 7,5 kW mit Sanftanlauf, Heizung, Beleuchtung, Messung) liegt jetzt unter dem Link.
+
+Abgabe bleibt der {-200}. Ihr Angebot benötigen wir bis {-203}.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_angebot"
+day = -203
+time = "16:50"
+from = "emsr"
+to = "us"
+subject = "Angebot Nr. 2026-0388 – Elektro- und MSR-Technik Abwasserpumpwerk Deichstraße"
+reply_to = "p4_anfrage2"
+quote = false
+body = """Sehr geehrter Herr Doe,
+
+auf Ihre erneute Anfrage vom {-207} überreichen wir Ihnen in der Anlage unser Angebot Nr. 2026-0388 für den geänderten Leistungsumfang. Die Angebotssumme beträgt 40.802,50 EUR netto.
+
+Wir bitten um Beachtung der im Angebot genannten Grundlagen, insbesondere:
+- Position 4.1.10 umfasst nur das Aufstellen und Anschließen der beigestellten Schaltanlage.
+- Position 4.1.30 gilt für 40 Datenpunkte und ein Prozessbild; jeder weitere Datenpunkt 165,00 EUR, jedes weitere Prozessbild 1.450,00 EUR, Stunden des Systemlieferanten über 16 Stunden hinaus nach Nachweis.
+- Freigegebene Stromlaufpläne und eine verbindliche Datenpunktliste müssen spätestens zehn Wochen vor der Inbetriebnahme vorliegen.
+- Das Angebot ist bis {-161} gültig und verlängert sich nicht stillschweigend.
+
+Ihr Excel-Formular haben wir nicht ausgefüllt; maßgeblich ist allein das beigefügte Angebot mit seinen Bedingungen."""
+attach = ["doc:p4_angebot"]
+
+[[mail]]
+id = "p4_auftrag"
+day = -173
+time = "10:15"
+from = "us"
+to = "emsr"
+cc = ["us.albers"]
+subject = "Auftrag zu Ihrem Angebot Nr. 2026-0388 – Abwasserpumpwerk Deichstraße"
+reply_to = "p4_angebot"
+quote = false
+body = """Sehr geehrte Frau Dr. Lang,
+
+die Stadt Norderbek hat uns den Zuschlag erteilt. Innerhalb der Gültigkeit Ihres Angebots Nr. 2026-0388 beauftragen wir Sie hiermit mit den Positionen 4.1.10 bis 4.1.60 zur Angebotssumme von 40.802,50 EUR netto. Ihre Grundlagen 1 bis 6 werden Vertragsbestandteil. Zu Nr. 8 (Zahlung) schlagen wir vor: 30 % nach Lieferung der Fernwirkunterstation auf die Baustelle statt bei Auftrag, im Übrigen wie angeboten. Im Verhältnis zur Stadt gelten die VOB/B und deren Vertragsbedingungen, die wir Ihnen mit dem Nachunternehmervertrag übersenden.
+
+Termine:
+- Bauanlaufbesprechung am {-163}, 13:00 Uhr, Kläranlage Norderbek. Die Stadt bittet ausdrücklich um die Teilnahme der Nachunternehmer für die EMSR-Technik. Dort werden auch das Fabrikat der Fernwirkunterstation und die Datenpunktliste bekannt gegeben.
+- Einzelfrist der Stadt: Pumpwerk betriebsbereit zum Umschluss bis {-40}.
+
+Für unsere Unterlagen bitten wir um Ihre Freistellungsbescheinigung nach § 48b EStG, die Unbedenklichkeitsbescheinigungen und Ihren Präqualifikationsnachweis. Bauleiter ist Herr Jonas Albers (in Kopie).
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_bestaetigung"
+day = -169
+time = "09:30"
+from = "emsr"
+to = "us"
+cc = ["us.albers"]
+subject = "Auftragsbestätigung Nr. 2026-0388 – Abwasserpumpwerk Deichstraße"
+reply_to = "p4_auftrag"
+body = """Sehr geehrter Herr Doe,
+
+wir bedanken uns für den Auftrag und bestätigen ihn zu den Bedingungen unseres Angebots Nr. 2026-0388. Der von Ihnen vorgeschlagenen Zahlungsweise (30 % nach Lieferung der Fernwirkunterstation) stimmen wir zu.
+
+Projektleiter in unserem Haus ist Herr Dipl.-Ing. Brandt; er nimmt an der Bauanlaufbesprechung am {-163} teil.
+
+Die erbetenen Nachweise erhalten Sie mit gesonderter Post: Freistellungsbescheinigung nach § 48b EStG, Unbedenklichkeitsbescheinigungen des Finanzamts, der Krankenkasse und der Berufsgenossenschaft sowie die Präqualifikationsurkunde (PQ-VOB, Registernummer 010.117302).
+
+Wir weisen vorsorglich darauf hin, dass der Termin {-40} nur gehalten werden kann, wenn uns die freigegebenen Stromlaufpläne des Pumpenlieferanten und die verbindliche Datenpunktliste bis {-140} vorliegen. Weicht das Fabrikat der Fernwirkunterstation von unserer Kalkulation ab oder überschreitet die Datenpunktliste 40 Punkte, zeigen wir die Mehrkosten nach Bedingung 2 und 3 unseres Angebots an."""
+
+[[mail]]
+id = "p4_mehrkosten"
+day = -125
+time = "15:20"
+from = "emsr"
+to = "us"
+cc = ["us.albers"]
+subject = "Mehrkostenanzeige und Nachtragsangebot Nr. 2026-0388-N1 – Fernwirkanbindung Pumpwerk Deichstraße"
+body = """Sehr geehrter Herr Doe,
+
+in der Bauanlaufbesprechung am {-163} hat uns der Auftraggeber die Datenpunktliste und das Fabrikat der Fernwirkunterstation übergeben. Die inzwischen abgestimmte Liste (Index b) umfasst 52 Datenpunkte und zwei Prozessbilder. Unser Auftrag beruht auf 40 Datenpunkten und einem Prozessbild.
+
+Wir zeigen hiermit die Mehrkosten an und überreichen unser Nachtragsangebot Nr. 2026-0388-N1 über 5.638,00 EUR netto:
+- 12 zusätzliche Datenpunkte zu je 165,00 EUR: 1.980,00 EUR
+- ein zweites Prozessbild: 1.450,00 EUR
+- Mehrstunden des Systemlieferanten des Leitsystems, geschätzt 16 Stunden zu 138,00 EUR: 2.208,00 EUR, Abrechnung nach Nachweis
+
+Das vorgeschriebene Fabrikat der Unterstation entspricht in Preis und Lieferzeit unserem kalkulierten Gerät; hieraus entstehen keine Mehrkosten.
+
+Wir bitten um schriftliche Beauftragung. Ohne diese projektieren wir den beauftragten Umfang. Auf die Folgen für den Inbetriebnahmetermin weist das Nachtragsangebot hin."""
+attach = ["doc:p4_nachtrag"]
+
+[[mail]]
+id = "p4_mehrkosten_aw"
+day = -121
+time = "11:05"
+from = "us"
+to = "emsr"
+cc = ["us.albers"]
+subject = "AW: Mehrkostenanzeige und Nachtragsangebot Nr. 2026-0388-N1 – Fernwirkanbindung Pumpwerk Deichstraße"
+reply_to = "p4_mehrkosten"
+body = """Sehr geehrte Frau Dr. Lang,
+
+Ihre Mehrkostenanzeige und das Nachtragsangebot N1 haben wir erhalten. Der Sache nach ist die Forderung berechtigt: Wir haben der Stadt die Annahme von 40 Datenpunkten und einem Prozessbild schon in der Bieterfrage vom {-209} offengelegt, und Ihre Einheitspreise für den Mehrumfang standen im Angebot.
+
+Wir reichen den Mehraufwand morgen als eigenen Nachtrag bei der Stadt ein. Beauftragen können wir Sie erst, wenn die Stadt dem Grunde nach zugestimmt hat; wir bitten Sie, das Nachtragsangebot bis dahin aufrechtzuerhalten.
+
+Eine Bitte im Interesse des Termins: Projektieren Sie die Unterstation bitte von Anfang an mit der Hardware für 52 Signale (Baugruppen, Klemmen), auch wenn die Programmierung des Mehrumfangs noch ruht. Die Mehrkosten der Baugruppen tragen wir in jedem Fall. So muss später nichts umgebaut werden.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_mehrkosten_aw2"
+day = -118
+time = "09:40"
+from = "emsr"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Mehrkostenanzeige und Nachtragsangebot Nr. 2026-0388-N1 – Fernwirkanbindung Pumpwerk Deichstraße"
+reply_to = "p4_mehrkosten_aw"
+body = """Sehr geehrter Herr Doe,
+
+wir danken für Ihre Stellungnahme und halten fest:
+
+1. Die Unterstation wird mit Ein- und Ausgangsbaugruppen für 52 Signale zuzüglich Reserve bestückt. Die Mehrkosten der Baugruppen von 640,00 EUR netto sind in Position N1.1 enthalten und werden von Ihnen unabhängig von der Entscheidung der Stadt getragen. Wir bitten, dies kurz in Textform zu bestätigen.
+
+2. Die Programmierung der zwölf zusätzlichen Datenpunkte, das zweite Prozessbild und die Mehrstunden des Systemlieferanten ruhen bis zu Ihrer schriftlichen Beauftragung.
+
+3. Das Nachtragsangebot bleibt bis {-75} gültig. Geht die Beauftragung später ein, können wir die Signalprüfung des Mehrumfangs nicht mehr vor dem Umschluss zusagen.
+
+Die Stromlaufpläne des Pumpenlieferanten liegen uns seit dem {-139} freigegeben vor; die Montage der Füllstandsmessung und der Kabelwege ist für KW {kw-58} eingeplant."""
+
+[[mail]]
+id = "p4_leihpumpen"
+day = -62
+time = "13:30"
+from = "us"
+to = "emsr"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Lieferverzug der Pumpen, Inbetriebnahme mit Leihpumpen: bitte Preis für zweite Parametrierung"
+body = """Sehr geehrte Frau Dr. Lang,
+
+der Pumpenhersteller kann die beiden Tauchmotorpumpen 7,5 kW nicht wie bestätigt liefern, sie kommen erst in KW {kw+2}. Die Einzelfrist der Stadt für den Umschluss bleibt bestehen, das alte Pumpwerk hält den Winter nicht durch. Wir schlagen der Stadt deshalb vor, das Pumpwerk zunächst mit zwei Leihpumpen derselben Baureihe mit 5,5 kW in Betrieb zu nehmen und die endgültigen Pumpen später zu tauschen.
+
+Für Sie bedeutet das zwei Einsätze statt einem:
+- vor dem Umschluss: Motorschutz und Sanftanlauf auf 5,5 kW einstellen, Inbetriebnahme mit den Leihpumpen, Anwesenheit eines Inbetriebnehmers in der Umschlussnacht zum {-42} ab 22:00 Uhr
+- nach dem Pumpentausch in KW {kw+2}: Einstellung auf 7,5 kW, erneute Funktionsprüfung, danach der Probebetrieb der Position 4.1.60
+
+Bitte nennen Sie uns kurzfristig Ihren Preis für den zusätzlichen Aufwand und Ihre Voraussetzungen. Die Datenblätter der Leihpumpen fordern wir beim Hersteller an.
+
+Die Stadt hat sich zum Nachtrag Fernwirktechnik noch nicht geäußert. Uns ist bewusst, dass Ihre Frist am {-75} abgelaufen ist; wir bitten, das Nachtragsangebot N1 bis zur Entscheidung, die wir in den nächsten Tagen erwarten, noch einmal zu verlängern.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_leihpumpen_aw"
+day = -61
+time = "15:10"
+from = "emsr"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Pumpwerk Deichstraße – Lieferverzug der Pumpen, Inbetriebnahme mit Leihpumpen: bitte Preis für zweite Parametrierung"
+reply_to = "p4_leihpumpen"
+body = """Sehr geehrter Herr Doe,
+
+zu Ihrer Anfrage vom {-62} bieten wir an:
+
+Zusätzliche Parametrierung und Inbetriebnahme für den Betrieb mit Leihpumpen 5,5 kW, bestehend aus zwei Einsätzen eines Inbetriebnehmers einschließlich Nachtzuschlag für die Umschlussnacht, Anpassung der Motorschutz- und Sanftanlaufparameter, Funktionsprüfung, Nachführen der Dokumentation: pauschal 1.960,00 EUR netto.
+
+Voraussetzungen:
+- Datenblätter der Leihpumpen mit Nennstrom, Anlaufstrom und Ex-Kennzeichnung liegen uns spätestens fünf Werktage vor dem ersten Einsatz vor.
+- Die Leihpumpen sind beim Eintreffen unseres Inbetriebnehmers eingebaut und angeklemmt.
+- Wartezeiten in der Umschlussnacht, die wir nicht zu vertreten haben, über zwei Stunden hinaus: 138,00 EUR je Stunde zuzüglich 50 % Nachtzuschlag.
+
+Dieses Angebot gilt bis {-50}.
+
+Das Nachtragsangebot N1 verlängern wir letztmalig bis {-50}. Wir weisen darauf hin, dass die Signalprüfung des Mehrumfangs bei einer Beauftragung nach diesem Tag erst nach dem Umschluss erfolgen kann; bis dahin würden zwölf Meldungen im Leitsystem fehlen."""
+
+[[mail]]
+id = "p4_nachtrag_ok"
+day = -55
+time = "14:45"
+from = "us"
+to = "emsr"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Beauftragung Nachtrag N1 (Fernwirktechnik) und Parametrierung Leihpumpen"
+reply_to = "p4_leihpumpen_aw"
+quote = false
+body = """Sehr geehrte Frau Dr. Lang,
+
+die Stadt hat gestern entschieden: Die zwölf zusätzlichen Datenpunkte und das zweite Prozessbild sind als Mehrleistung anerkannt, die Stunden des Systemlieferanten werden gegen Nachweis vergütet. Die Inbetriebnahme mit Leihpumpen ist genehmigt.
+
+Wir beauftragen Sie hiermit innerhalb Ihrer Fristen:
+
+1. Nachtragsangebot Nr. 2026-0388-N1 über 5.638,00 EUR netto. Position N1.3 rechnen Sie bitte nach den tatsächlichen Stunden ab und fügen den Stundennachweis des Systemlieferanten bei; die Stadt prüft ihn.
+
+2. Zusätzliche Parametrierung für die Leihpumpen, pauschal 1.960,00 EUR netto, nach Ihrem Schreiben vom {-61}.
+
+Der Umschluss ist für die Nacht zum {-42} festgelegt, Beginn 22:00 Uhr. Die Stadt macht zur Bedingung, dass die Störmeldungen in dieser Nacht auf dem Leitsystem ankommen. Die Datenblätter der Leihpumpen mit Ex-Bescheinigung hat Herr Albers Ihrem Herrn Brandt heute gesendet.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_nachtrag_ok_aw"
+day = -54
+time = "15:30"
+from = "emsr"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Pumpwerk Deichstraße – Beauftragung Nachtrag N1 (Fernwirktechnik) und Parametrierung Leihpumpen"
+reply_to = "p4_nachtrag_ok"
+body = """Sehr geehrter Herr Doe,
+
+wir bestätigen den Eingang beider Beauftragungen und nehmen sie an.
+
+Terminlich ergibt sich daraus:
+- Die Schaltanlage steht seit KW {kw-52}; der Anschluss und die Prüfung nach DIN VDE 0100-600 sind bis {-47} abgeschlossen.
+- Die Signalprüfung aller 52 Datenpunkte mit dem Systemlieferanten des Leitsystems ist für den {-45} und {-44} vereinbart.
+- In der Umschlussnacht zum {-42} sind Herr Brandt und ein Inbetriebnehmer vor Ort.
+
+Die Datenblätter der Leihpumpen liegen vor; der Nennstrom von 11,8 A liegt im Einstellbereich der eingebauten Sanftanlaufgeräte, ein Umbau ist nicht erforderlich."""
+
+[[mail]]
+id = "p4_bericht"
+day = -38
+time = "09:15"
+from = "emsr"
+to = "us"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Inbetriebnahmebericht Umschluss, Stundennachweis Systemlieferant"
+body = """Sehr geehrter Herr Doe,
+
+zur Inbetriebnahme in der Nacht zum {-42} berichten wir:
+
+1. Die Anlage fördert seit 03:40 Uhr mit Leihpumpe 1; Leihpumpe 2 wurde im Wechselbetrieb geprüft. Motorschutz und Sanftanlauf sind auf 5,5 kW eingestellt und plombiert.
+
+2. Von 52 Datenpunkten sind 49 bis zum Leitsystem geprüft und in Ordnung. Drei Meldungen (Leckage Ölkammer Pumpe 1 und 2, Betriebsstunden Pumpe 2) können erst mit den endgültigen Pumpen geprüft werden, weil die Leihpumpen diese Signale nicht liefern. Die Sammelstörmeldung und die Meldungen Hochwasser, Trockenlauf und Netzausfall kommen an; die Bedingung der Stadt ist damit erfüllt.
+
+3. Der Systemlieferant des Leitsystems hat für den Mehrumfang 19 Stunden aufgewendet, drei mehr als geschätzt; Ursache war die Namenskonvention der Stadt für die Datenpunkte, die erst am {-45} übergeben wurde. Der unterschriebene Stundennachweis geht Ihnen mit der Abschlagsrechnung zu. Position N1.3 beträgt damit 2.622,00 EUR statt 2.208,00 EUR netto.
+
+Unsere Wartezeit in der Umschlussnacht lag unter zwei Stunden; es entstehen keine weiteren Kosten.
+
+Offen sind der Einsatz nach dem Pumpentausch und der Probebetrieb der Position 4.1.60."""
+
+# ------------------------------------------------------------------ now
+
+[[mail]]
+id = "jahresende"
+day = -5
+time = "10:30"
+from = "emsr"
+to = "us"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Terminbindung Pumpentausch KW {kw+2}; Betriebsruhe und Kapazitäten zum Jahreswechsel"
+body = """Sehr geehrter Herr Doe,
+
+zum Pumpwerk Deichstraße und zu unserer Planung teilen wir Ihnen mit:
+
+1. Pumpentausch: Für den Einsatz nach dem Tausch der Leihpumpen gegen die endgültigen Pumpen haben wir unseren Inbetriebnehmer für KW {kw+2} vorgemerkt. Wir benötigen bis zum {+3} Ihre verbindliche Bestätigung des Tages sowie die Bestätigung des Pumpenlieferanten, dass die Pumpen 7,5 kW tatsächlich geliefert sind. Ohne diese Bestätigung geben wir den Termin frei. Ein Ersatztermin ist dann erst nach unserer Betriebsruhe möglich.
+
+2. Betriebsruhe: Unser Haus ist vom {+30} bis einschließlich {+44} geschlossen. Der 14-tägige Probebetrieb der Position 4.1.60 kann in dieser Zeit laufen, wird von uns aber nur über die Fernwirkanlage beobachtet; Einsätze vor Ort sind in diesen Tagen nicht möglich.
+
+3. Kapazitäten: Montage und Inbetriebnahme sind im ersten Quartal durch Aufträge der Wasserwirtschaft weitgehend gebunden. Neue Anfragen können wir nur für eine Ausführung ab KW {kw+110} annehmen und nur, wenn R+I-Schema, Stromlaufpläne und Datenpunktliste der Anfrage beiliegen.
+
+4. Verrechnungssätze: Ab dem 1. Januar gelten 144,00 EUR je Stunde für Monteure und Inbetriebnehmer (bisher 138,00 EUR). Laufende Aufträge werden zu den vereinbarten Sätzen abgerechnet."""

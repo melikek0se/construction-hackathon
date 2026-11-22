@@ -1,0 +1,502 @@
+# KanalCheck Nord GmbH (tv), Elif Arslan: the history with our estimator. Quick and tidy, answers the same
+# day, standard prices per metre and per test, an offer as PDF plus our sheet filled in, a price list every
+# January, protocols and videos by download. Did P1; quoted P3 and P5 (both lost by us).
+
+[[sheet]]
+key = "p1"
+file = "Anfrage_TV_Dichtheit_Muehlenstrasse.xlsx"
+items = """
+3.3.20 | 860 m | TV-Inspektion des neuen Kanals | 2,70 |  |  | Kanal gereinigt übergeben
+3.3.30 | 19 St | Dichtheitsprüfung Haltung | 172,00 |  |  | Luft, Verfahren LC
+3.3.40 | 19 St | Dichtheitsprüfung Schacht | 98,00 |  |  | Wasser
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "14 Tage netto", valid_until = "{-326}" }
+
+[[sheet]]
+key = "p3"
+file = "Anfrage_TV_Dichtheit_Gewerbegebiet_Sued.xlsx"
+items = """
+3.2.50 | 1850 m | TV-Inspektion und Dichtheitsprüfung | 11,65 |  |  | Mischpreis je m, 52 Haltungen und 52 Schächte, 6 Einsätze
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "14 Tage netto", valid_until = "{+39}" }
+
+[[sheet]]
+key = "p5"
+file = "Anfrage_TV_Dichtheit_Schulweg.xlsx"
+items = """
+3.3.10 | 420 m | TV-Inspektion | 3,10 |  |  | DN 500 bis DN 600, Großprofilzuschlag
+3.3.20 | 9 St | Dichtheitsprüfung Haltung DN 500 bis DN 600 | 255,00 |  |  | Luft, Verfahren LC
+"""
+terms = { basis = "ja", freight = 0, discount_pct = 0, skonto = "14 Tage netto", valid_until = "{+39}" }
+
+[[doc]]
+key = "p1_angebot"
+file = "Angebot_A-25-0612_Muehlenstrasse.pdf"
+title = "Angebot A-25-0612"
+text = """An: Acme Tiefbau GmbH, Herrn Doe
+Bauvorhaben: Kanalerneuerung Mühlenstraße, Norderbek (TBA-SE-0318)
+Ihre Anfrage vom {-517}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.3.20 | TV-Inspektion DN 300 und DN 400 nach DIN EN 13508-2 | 860 | m | 2,70 | 2.322,00
+3.3.30 | Dichtheitsprüfung Haltung mit Luft, DIN EN 1610 | 19 | St | 172,00 | 3.268,00
+3.3.40 | Dichtheitsprüfung Schacht mit Wasser | 19 | St | 98,00 | 1.862,00
+A 1 | An- und Abfahrt je Einsatz, 4 Einsätze angenommen | 4 | St | 145,00 | 580,00
+
+Summe netto: 8.032,00 EUR
+
+Preise nach unserer Preisliste 2025. Abrechnung nach tatsächlich befahrenen Metern und geprüften Objekten.
+Voraussetzungen: Haltungen gereinigt und frei von Bauwasser, Schächte zugänglich, Wasserentnahme bauseits.
+Wiederholungsprüfung nach Mängelbeseitigung: 50 % des Einheitspreises.
+Hochdruckreinigung, falls gewünscht: 1,25 EUR/m.
+Protokolle, Haltungsberichte und Videos als Download innerhalb von 3 Werktagen nach dem Einsatz.
+Abruf mit 5 Werktagen Vorlauf. Angebot gültig bis {-326}."""
+
+[[doc]]
+key = "p1_rechnung"
+file = "Rechnung_R-26-0031_Muehlenstrasse.pdf"
+title = "Schlussrechnung R-26-0031"
+text = """An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Bauvorhaben: Kanalerneuerung Mühlenstraße, Norderbek
+Auftrag vom {-477}, Einsätze am {-411}, {-381}, {-352}, {-349} und {-324}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.3.20 | TV-Inspektion DN 300 und DN 400 | 858,6 | m | 2,70 | 2.318,22
+3.3.30 | Dichtheitsprüfung Haltung | 19 | St | 172,00 | 3.268,00
+3.3.30 W | Wiederholungsprüfung Haltung S4 bis S5 | 1 | St | 86,00 | 86,00
+3.3.40 | Dichtheitsprüfung Schacht | 19 | St | 98,00 | 1.862,00
+A 1 | An- und Abfahrt je Einsatz | 5 | St | 145,00 | 725,00
+
+Summe netto: 8.259,22 EUR
+Steuerschuldnerschaft des Leistungsempfängers (§ 13b UStG).
+Zahlbar innerhalb von 14 Tagen netto."""
+
+[[doc]]
+key = "preisliste2026"
+file = "KanalCheck_Nord_Preisliste_2026.pdf"
+title = "Preisliste 2026 für Bauunternehmen, gültig ab 1. Januar"
+text = """Alle Preise netto in EUR, je Einsatz zuzüglich An- und Abfahrt.
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | TV-Inspektion DN 150 bis DN 400 | 1 | m | 2,80
+2 | TV-Inspektion DN 500 bis DN 800 | 1 | m | 3,10
+3 | Dichtheitsprüfung Haltung bis DN 400 | 1 | St | 178,00
+4 | Dichtheitsprüfung Haltung DN 500 bis DN 800 | 1 | St | 255,00
+5 | Dichtheitsprüfung Schacht DN 1000 | 1 | St | 102,00
+6 | Dichtheitsprüfung Schacht DN 1200 | 1 | St | 118,00
+7 | Hochdruckreinigung bis DN 400 | 1 | m | 1,30
+8 | Anschlussleitung DN 150 befahren, Satellit | 1 | St | 46,00
+9 | An- und Abfahrt je Einsatz, bis 50 km | 1 | St | 150,00
+10 | Wartezeit je angefangene halbe Stunde | 1 | St | 62,00
+
+Wiederholungsprüfung nach Mängelbeseitigung: 50 % des Einheitspreises.
+Mindestumsatz je Einsatz: 450,00 EUR.
+Protokolle und Videos als Download, Datenformat nach Wunsch des Auftraggebers.
+Die Preisliste 2025 verliert am 31. Dezember ihre Gültigkeit. Bestätigte Aufträge werden zu den vereinbarten Preisen abgerechnet."""
+
+[[doc]]
+key = "p3_angebot"
+file = "Angebot_A-26-0048_Gewerbegebiet_Sued.pdf"
+title = "Angebot A-26-0048"
+text = """An: Acme Tiefbau GmbH, Herrn Doe
+Bauvorhaben: Erschließung Gewerbegebiet Süd, 1. BA, Itzehoe (OP-ITZ-417)
+Ihre Anfrage vom {-297}, Position 3.2.50, 1.850 m, ein Einheitspreis je m Kanal
+
+Der Mischpreis setzt sich nach unserer Preisliste 2026 so zusammen:
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | TV-Inspektion DN 200 bis DN 600 | 1.850 | m | 2,80 | 5.180,00
+2 | Dichtheitsprüfung Haltung bis DN 400 | 40 | St | 178,00 | 7.120,00
+3 | Dichtheitsprüfung Haltung DN 600 | 12 | St | 255,00 | 3.060,00
+4 | Dichtheitsprüfung Schacht | 52 | St | 102,00 | 5.304,00
+5 | An- und Abfahrt, 6 Einsätze | 6 | St | 150,00 | 900,00
+
+Summe netto: 21.564,00 EUR, das sind 11,65 EUR je m bei 1.850 m.
+
+Angeboten wird Position 3.2.50 zu 11,65 EUR/m. Angenommen sind 52 Haltungen und 52 Schächte nach Ihrer Angabe. Ändert sich die Zahl der Haltungen um mehr als 10 %, rechnen wir nach Einzelpreisen ab.
+Für die Stahlbetonrohre DN 600 haben wir den Preis für DN 500 bis DN 800 nicht bei der Inspektion, sondern nur bei der Prüfung angesetzt.
+Angebot gültig bis {+39}."""
+
+[[doc]]
+key = "p5_angebot"
+file = "Angebot_A-26-0391_Schulweg.pdf"
+title = "Angebot A-26-0391"
+text = """An: Acme Tiefbau GmbH, Herrn Doe
+Bauvorhaben: Neubau Regenwasserkanal Schulweg, Norderbek (TBA-SE-0431)
+Ihre Anfrage vom {-148}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.3.10 | TV-Inspektion DN 500 bis DN 600, Stahlbeton | 420 | m | 3,10 | 1.302,00
+3.3.20 | Dichtheitsprüfung Haltung DN 500 bis DN 600, Luft | 9 | St | 255,00 | 2.295,00
+A 1 | An- und Abfahrt, 2 Einsätze | 2 | St | 150,00 | 300,00
+
+Summe netto: 3.897,00 EUR
+
+Preise nach Preisliste 2026. Voraussetzung für die Luftprüfung: Grundwasserabsenkung in Betrieb oder Grundwasserstand dokumentiert, sonst Prüfung mit Wasser gegen Mehrpreis von 60,00 EUR je Haltung.
+Mindestumsatz je Einsatz 450,00 EUR. Angebot gültig bis {+39}."""
+
+# ------------------------------------------------------------------ P1 Mühlenstraße (won)
+
+[[mail]]
+id = "p1_anfrage"
+day = -517
+time = "10:05"
+from = "us"
+to = "tv"
+subject = "Angebotsanfrage Nachunternehmerleistung – TV-Inspektion und Dichtheitsprüfung – Kanalerneuerung Mühlenstraße"
+body = """Guten Tag Frau Arslan,
+
+wir kalkulieren ein Angebot für die Kanalerneuerung Mühlenstraße in Norderbek (TBA-SE-0318) und bitten um Ihr Angebot als Nachunternehmer für die Abnahmeprüfungen, einschließlich Personal, Fahrzeug und Dokumentation:
+
+Pos. 3.3.20 – 860 m – TV-Inspektion des neuen Kanals
+Pos. 3.3.30 – 19 St – Dichtheitsprüfung Haltung
+Pos. 3.3.40 – 19 St – Dichtheitsprüfung Schacht
+
+Neu verlegt werden 612 m PP DN 300 und 248 m PP DN 400 mit 19 Schächten DN 1000. Gebaut wird in vier Abschnitten, geprüft wird also in mehreren Einsätzen, jeweils bevor der Abschnitt überbaut wird. Ausführung {-455} bis {-300}.
+
+Die Positionen liegen als Excel-Datei bei. Bitte nennen Sie auch Ihre Anfahrt je Einsatz, den Vorlauf für einen Abruf und bis wann Ihr Angebot gilt. Der Auftrag ist uns noch nicht erteilt. Abgabe ist am {-500}, wir benötigen Ihr Angebot bis {-505}.
+
+Vielen Dank und freundliche Grüße"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_angebot"
+day = -517
+time = "14:20"
+from = "tv"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – TV-Inspektion und Dichtheitsprüfung – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Guten Tag Herr Doe,
+
+vielen Dank für Ihre Anfrage. Unser Angebot A-25-0612 finden Sie als PDF im Anhang, Ihre Excel-Liste habe ich zusätzlich ausgefüllt.
+
+Kurzfassung:
+- TV-Inspektion 2,70 €/m
+- Dichtheitsprüfung Haltung 172,00 €/St
+- Dichtheitsprüfung Schacht 98,00 €/St
+- An- und Abfahrt 145,00 € je Einsatz, bei vier Abschnitten also viermal
+- Abruf mit 5 Werktagen Vorlauf, Protokolle und Videos nach 3 Werktagen als Download
+
+Das sind unsere Listenpreise 2025, gültig bis Jahresende. Die Haltungen müssen gereinigt übergeben werden. Wenn wir spülen sollen, kostet das 1,25 €/m."""
+attach = ["doc:p1_angebot", "sheet:p1"]
+
+[[mail]]
+id = "p1_auftrag"
+day = -477
+time = "09:45"
+from = "us"
+to = "tv"
+cc = ["us.albers"]
+subject = "Mühlenstraße Norderbek – Auftrag TV-Inspektion und Dichtheitsprüfung (Ihr Angebot A-25-0612)"
+reply_to = "p1_angebot"
+quote = false
+body = """Guten Tag Frau Arslan,
+
+wir haben den Zuschlag für die Mühlenstraße erhalten und beauftragen Sie auf der Grundlage Ihres Angebots A-25-0612 vom {-517} mit den Positionen 3.3.20, 3.3.30 und 3.3.40 zu den angebotenen Einheitspreisen, Anfahrt 145,00 € je Einsatz. Abgerechnet wird nach befahrenen Metern und geprüften Objekten.
+
+Die Einsätze ruft unser Bauleiter Herr Albers ab (in Kopie). Die Stadt verlangt die Haltungsberichte nach DIN EN 13508-2 und die Videos je Haltung; bitte benennen Sie die Dateien nach den Schachtnummern des Lageplans, den Herr Albers Ihnen schickt.
+
+Für unsere Nachunternehmerakte benötigen wir Ihre Freistellungsbescheinigung nach § 48b EStG, die Unbedenklichkeitsbescheinigungen und den Nachweis der Sachkunde Ihrer Prüfer.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_auftrag_aw"
+day = -477
+time = "11:30"
+from = "tv"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße Norderbek – Auftrag TV-Inspektion und Dichtheitsprüfung (Ihr Angebot A-25-0612)"
+reply_to = "p1_auftrag"
+body = """Guten Tag Herr Doe,
+
+vielen Dank für den Auftrag, den ich hiermit bestätige. Er läuft bei uns unter der Nummer 25-0612, bitte bei jedem Abruf angeben.
+
+Die Nachweise stehen für Sie in unserem Kundenbereich im Ordner Nachweise bereit: Freistellungsbescheinigung, Unbedenklichkeitsbescheinigungen von Finanzamt, Krankenkasse und Berufsgenossenschaft, Zertifikate der Inspekteure (KI-Schein) und das Gütezeichen Kanalbau für Inspektion und Dichtheitsprüfung. Die Zugangsdaten bekommen Sie gleich in einer eigenen Mail.
+
+Herr Albers, für die Dateinamen brauche ich den Lageplan mit den Schachtnummern einmal als PDF."""
+
+[[mail]]
+id = "p1_abruf"
+day = -418
+time = "13:15"
+from = "us.albers"
+to = "tv"
+cc = ["us"]
+subject = "Mühlenstraße, Auftrag 25-0612 – Abruf Abschnitt 1 (S1 bis S6)"
+body = """Guten Tag Frau Arslan,
+
+der erste Abschnitt am Bahnübergang ist verlegt: fünf Haltungen von Schacht S1 bis S6, zusammen 228 m DN 400, dazu sechs Schächte. Wir spülen am {-412} selbst.
+
+Können Sie am {-411} prüfen? TV, Haltungen mit Luft, Schächte mit Wasser. Wasser kommt aus dem Hydranten an der Marktstraße, Standrohr ist da. Zufahrt über die gesperrte Spur, bitte beim Polier melden.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_abruf_aw"
+day = -418
+time = "15:02"
+from = "tv"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Mühlenstraße, Auftrag 25-0612 – Abruf Abschnitt 1 (S1 bis S6)"
+reply_to = "p1_abruf"
+body = """Guten Tag Herr Albers,
+
+der {-411} ist für Sie eingeplant, das Fahrzeug ist um 7:30 Uhr vor Ort. Bitte beachten Sie:
+
+- Die Haltungen müssen leer sein, kein stehendes Bauwasser.
+- Anschlussleitungen bitte an den Abzweigen verschließen, sonst hält die Luftprüfung nicht.
+- Schachtabdeckungen lose aufgelegt, nicht vergossen.
+
+Die Ergebnisse sagt Ihnen der Inspekteur sofort vor Ort, die Protokolle folgen."""
+
+[[mail]]
+id = "p1_protokoll"
+day = -408
+time = "08:30"
+from = "tv"
+to = "us.albers"
+cc = ["us"]
+subject = "Mühlenstraße, Auftrag 25-0612 – Protokolle Abschnitt 1, eine Haltung nicht bestanden"
+body = """Guten Tag Herr Albers,
+
+die Unterlagen vom Einsatz am {-411} stehen im Kundenbereich unter Auftrag 25-0612, Ordner Abschnitt 1, zum Herunterladen bereit: fünf Haltungsberichte, fünf Videos, elf Prüfprotokolle. Der Link bleibt 90 Tage gültig, danach schicken wir die Daten auf Wunsch auf einem Datenträger.
+
+Ergebnis:
+- TV: 228,4 m befahren, keine Schäden. In der Haltung S4 nach S5 sitzt bei 23,4 m eine Muffe nicht ganz, der Spalt ist im Video gut zu sehen.
+- Dichtheit: Vier Haltungen und alle sechs Schächte bestanden. Die Haltung S4 nach S5 hat die Luftprüfung nicht bestanden, Druckabfall 28 mbar bei zulässigen 15 mbar.
+
+Nach der Nachbesserung prüfen wir die Haltung erneut. Die Wiederholungsprüfung berechnen wir mit 50 %, also 86,00 €. Am günstigsten ist es, wenn wir sie beim Einsatz für Abschnitt 2 mitmachen, dann fällt keine zusätzliche Anfahrt an."""
+
+[[mail]]
+id = "p1_protokoll_aw"
+day = -407
+time = "16:40"
+from = "us.albers"
+to = "tv"
+cc = ["us"]
+subject = "AW: Mühlenstraße, Auftrag 25-0612 – Protokolle Abschnitt 1, eine Haltung nicht bestanden"
+reply_to = "p1_protokoll"
+body = """Guten Tag Frau Arslan,
+
+danke, das Video hat uns die Suche erspart. Die Muffe bei 23,4 m war beim Verfüllen verrutscht, wir legen sie morgen frei und setzen sie neu.
+
+Wiederholungsprüfung bitte wie vorgeschlagen zusammen mit Abschnitt 2. Den Termin kann ich noch nicht nennen, wir haben in Abschnitt 2 seit heute ein Problem mit belastetem Boden und stehen dort. Ich melde mich mit fünf Tagen Vorlauf.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "preisliste2026"
+day = -320
+time = "08:00"
+from = "tv"
+to = "us"
+subject = "KanalCheck Nord: Preisliste 2026"
+body = """Guten Tag Herr Doe,
+
+wie jedes Jahr im Januar erhalten Sie unsere neue Preisliste, sie gilt seit dem 1. Januar. Die wichtigsten Änderungen gegenüber 2025:
+
+- TV-Inspektion bis DN 400: 2,80 €/m (bisher 2,70)
+- Dichtheitsprüfung Haltung bis DN 400: 178,00 €/St (bisher 172,00)
+- Dichtheitsprüfung Schacht DN 1000: 102,00 €/St (bisher 98,00)
+- An- und Abfahrt: 150,00 € je Einsatz (bisher 145,00)
+
+Neu ist ein Mindestumsatz von 450,00 € je Einsatz. Ihr laufender Auftrag Mühlenstraße wird zu den vereinbarten Preisen von 2025 fertig abgerechnet."""
+attach = ["doc:preisliste2026"]
+
+[[mail]]
+id = "p1_rechnung"
+day = -318
+time = "09:10"
+from = "tv"
+to = "us"
+subject = "Mühlenstraße, Auftrag 25-0612 – Schlussrechnung R-26-0031"
+body = """Guten Tag Herr Doe,
+
+mit dem Einsatz am {-324} sind alle 19 Haltungen und 19 Schächte der Mühlenstraße geprüft und bestanden. Die vollständige Dokumentation mit der Übersichtstabelle für die Stadt steht im Kundenbereich im Ordner Gesamt.
+
+Im Anhang unsere Schlussrechnung R-26-0031 über 8.259,22 € netto. Abgerechnet sind 858,6 m nach Kameraprotokoll, 19 Haltungen, 19 Schächte, eine Wiederholungsprüfung und fünf Anfahrten."""
+attach = ["doc:p1_rechnung"]
+
+[[mail]]
+id = "p1_rechnung_aw"
+day = -314
+time = "11:20"
+from = "us"
+to = "tv"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße, Auftrag 25-0612 – Schlussrechnung R-26-0031"
+reply_to = "p1_rechnung"
+body = """Guten Tag Frau Arslan,
+
+vielen Dank für die Rechnung und die saubere Dokumentation, die Stadt hat sie ohne Rückfrage angenommen.
+
+Eine Position können wir nicht anerkennen: die fünfte Anfahrt. Angeboten und vereinbart waren vier Einsätze für vier Abschnitte. Der zusätzliche Einsatz am {-349} war nötig, weil Ihr Kamerafahrzeug am {-352} nach zwei Haltungen mit einem Defekt abbrechen musste; so steht es auch in Ihrem Tagesbericht. Diese Anfahrt liegt nicht bei uns.
+
+Die Meter nach Kameraprotokoll und die Wiederholungsprüfung S4 bis S5 sind in Ordnung. Wir kommen damit auf 8.114,22 € netto und bitten um eine berichtigte Rechnung.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_rechnung_ok"
+day = -314
+time = "13:05"
+from = "tv"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße, Auftrag 25-0612 – Schlussrechnung R-26-0031"
+reply_to = "p1_rechnung_aw"
+body = """Guten Tag Herr Doe,
+
+Sie haben recht, das ist bei der Abrechnung durchgerutscht, bitte entschuldigen Sie. Die Anfahrt vom {-349} geht auf uns. Die berichtigte Rechnung über 8.114,22 € netto kommt heute Nachmittag aus der Buchhaltung, die alte Rechnung stornieren wir."""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (lost)
+
+[[mail]]
+id = "p3_anfrage"
+day = -297
+time = "09:30"
+from = "us"
+to = "tv"
+subject = "Angebotsanfrage Nachunternehmerleistung – TV-Inspektion und Dichtheitsprüfung – Erschließung Gewerbegebiet Süd, 1. BA"
+body = """Guten Tag Frau Arslan,
+
+wir kalkulieren die Erschließung Gewerbegebiet Süd, 1. BA, in Itzehoe (OP-ITZ-417) und bitten um Ihr Angebot für die Abnahmeprüfungen der neuen Kanäle. Das Leistungsverzeichnis hat dafür nur eine Position mit einem Preis je Meter Kanal:
+
+Pos. 3.2.50 – 1850 m – TV-Inspektion und Dichtheitsprüfung
+
+Nach dem Langtext sind darin die Inspektion aller Haltungen und die Dichtheitsprüfung aller Haltungen und Schächte enthalten. Damit Sie rechnen können, der Umfang:
+- Regenwasser: 420 m Stahlbeton DN 600, 380 m PP DN 400, 290 m PP DN 300, 24 Schächte DN 1000 und 6 Schächte DN 1200
+- Schmutzwasser: 760 m PP DN 200, 22 Schächte DN 1000
+Das sind 52 Schächte und etwa ebenso viele Haltungen.
+
+Uns ist klar, dass das nicht zu Ihrer Preisliste passt. Bitte bilden Sie einen Mischpreis je Meter und legen Sie offen, wie er sich zusammensetzt. Ausführung ab {-235}, in mehreren Einsätzen. Die Position liegt als Excel-Datei bei. Abgabe ist am {-286}, wir benötigen Ihr Angebot bis {-291}. Der Auftrag ist uns noch nicht erteilt.
+
+Vielen Dank und freundliche Grüße"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_angebot"
+day = -297
+time = "11:48"
+from = "tv"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – TV-Inspektion und Dichtheitsprüfung – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_anfrage"
+body = """Guten Tag Herr Doe,
+
+danke für die genauen Angaben, damit ließ es sich gleich rechnen. Unser Angebot A-26-0048 hängt als PDF an, die Excel-Liste ist ausgefüllt.
+
+Mischpreis für Position 3.2.50: 11,65 €/m.
+
+Er ergibt sich aus der Preisliste 2026: 1.850 m Inspektion, 40 Haltungen bis DN 400, 12 Haltungen DN 600, 52 Schächte und sechs Anfahrten, zusammen 21.564,00 €, geteilt durch 1.850 m. Die Aufstellung steht im Angebot.
+
+Ein Hinweis: Der Preis hängt an der Zahl der Haltungen, nicht an den Metern. Weicht sie um mehr als 10 % ab, möchten wir nach Einzelpreisen abrechnen. Wenn Sie das gegenüber dem Auftraggeber nicht weitergeben können, sagen Sie es bitte, dann lasse ich die Klausel weg und runde auf 11,90 €/m."""
+attach = ["doc:p3_angebot", "sheet:p3"]
+
+[[mail]]
+id = "p3_verloren"
+day = -258
+time = "10:05"
+from = "us"
+to = "tv"
+subject = "Gewerbegebiet Süd Itzehoe (Ihr Angebot A-26-0048) – Auftrag nicht erhalten"
+body = """Guten Tag Frau Arslan,
+
+zu Ihrer Information: Die Erschließung Gewerbegebiet Süd haben wir nicht bekommen, wir lagen an zweiter Stelle. Ihr Angebot A-26-0048 können Sie schließen. An Ihrem Preis lag es nicht, die Kanaltitel waren bei uns in Ordnung.
+
+Im Herbst soll der zweite Bauabschnitt kommen, wir fragen dann wieder an.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "nachweise"
+day = -232
+time = "08:20"
+from = "tv"
+to = "us"
+subject = "KanalCheck Nord: neue Freistellungsbescheinigung und Unbedenklichkeitsbescheinigungen im Kundenbereich"
+body = """Guten Tag Herr Doe,
+
+unsere Freistellungsbescheinigung nach § 48b EStG ist vom Finanzamt verlängert worden und gilt jetzt drei weitere Jahre. Die neue Bescheinigung und die aktuellen Unbedenklichkeitsbescheinigungen von Krankenkasse und Berufsgenossenschaft (Stand dieses Quartals) liegen wie gewohnt im Kundenbereich im Ordner Nachweise. Sie müssen nichts anfordern, wir tauschen die Dateien dort jedes Quartal aus.
+
+Bei dieser Gelegenheit: Wir haben seit diesem Monat ein zweites Kamerafahrzeug mit Satellitenkamera für Anschlussleitungen bis 30 m. Kurzfristige Abrufe sind damit meist innerhalb von drei Werktagen möglich."""
+
+# ------------------------------------------------------------------ P5 Schulweg (lost)
+
+[[mail]]
+id = "p5_anfrage"
+day = -148
+time = "14:10"
+from = "us"
+to = "tv"
+subject = "Angebotsanfrage Nachunternehmerleistung – TV-Inspektion und Dichtheitsprüfung – Regenwasserkanal Schulweg"
+body = """Guten Tag Frau Arslan,
+
+wir kalkulieren den Neubau des Regenwasserkanals im Schulweg in Norderbek (TBA-SE-0431) und bitten um Ihr Angebot als Nachunternehmer:
+
+Pos. 3.3.10 – 420 m – TV-Inspektion
+Pos. 3.3.20 – 9 St – Dichtheitsprüfung Haltung DN 500 bis DN 600
+
+Verlegt werden 286 m Stahlbetonrohr DN 500 und 134 m DN 600 mit neun Schächten DN 1200. Schachtprüfungen sind nicht ausgeschrieben. Das Grundwasser steht bei 1,90 m unter Gelände, während des Baus wird abgesenkt.
+
+Ausführung {-90} bis {+30}, voraussichtlich zwei Einsätze. Die Positionen liegen als Excel-Datei bei. Abgabe ist am {-138}, wir benötigen Ihr Angebot bis {-142}. Der Auftrag ist uns noch nicht erteilt.
+
+Vielen Dank und freundliche Grüße"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_angebot"
+day = -148
+time = "16:35"
+from = "tv"
+to = "us"
+subject = "AW: Angebotsanfrage Nachunternehmerleistung – TV-Inspektion und Dichtheitsprüfung – Regenwasserkanal Schulweg"
+reply_to = "p5_anfrage"
+body = """Guten Tag Herr Doe,
+
+anbei unser Angebot A-26-0391 als PDF und Ihre ausgefüllte Liste.
+
+- TV-Inspektion DN 500 bis DN 600: 3,10 €/m
+- Dichtheitsprüfung Haltung DN 500 bis DN 600: 255,00 €/St
+- An- und Abfahrt 150,00 € je Einsatz, zwei Einsätze
+
+Das sind die Listenpreise 2026 für die größeren Nennweiten. Zum Grundwasser: Die Luftprüfung setzt voraus, dass die Absenkung beim Prüfen noch läuft oder der Grundwasserstand über dem Rohrscheitel dokumentiert ist. Sonst prüfen wir mit Wasser, das kostet 60,00 € je Haltung mehr und Sie müssen etwa 40 m³ Wasser je Haltung DN 600 bereitstellen. Bitte planen Sie die Prüfung deshalb vor dem Abschalten der Wasserhaltung ein."""
+attach = ["doc:p5_angebot", "sheet:p5"]
+
+[[mail]]
+id = "p5_verloren"
+day = -117
+time = "09:20"
+from = "us"
+to = "tv"
+subject = "Regenwasserkanal Schulweg (Ihr Angebot A-26-0391) – Auftrag nicht erhalten"
+body = """Guten Tag Frau Arslan,
+
+der Schulweg ist an einen Mitbewerber gegangen, wir waren Vierter. Ihr Angebot A-26-0391 können Sie schließen. Der Abstand kam aus Verbau und Wasserhaltung, nicht aus den Prüfungen.
+
+Ihr Hinweis zur Luftprüfung bei laufender Absenkung war trotzdem hilfreich, den übernehmen wir in unsere Bauablaufplanung für ähnliche Baustellen.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ now
+
+[[mail]]
+id = "ausblick"
+day = -6
+time = "08:15"
+from = "tv"
+to = "us"
+subject = "KanalCheck Nord: freie Termine, Betriebsferien, Preise 2027 vorab"
+body = """Guten Tag Herr Doe,
+
+drei kurze Informationen zum Jahresende:
+
+1. Termine: Beide Kamerafahrzeuge sind bis KW {kw+5} ausgebucht. Ab KW {kw+6} haben wir wieder freie Tage, Abrufe dafür bitte bis Ende dieser Woche.
+
+2. Betriebsferien: vom {+31} bis einschließlich {+41}. Für Notfälle ist in dieser Zeit ein Fahrzeug in Rufbereitschaft, Dichtheitsprüfungen machen wir in den Ferien nicht.
+
+3. Preise 2027: Die neue Preisliste kommt wie immer in der ersten Januarwoche als PDF. Vorab, damit Sie laufende Kalkulationen richtig ansetzen: TV-Inspektion bis DN 400 2,90 €/m, Dichtheitsprüfung Haltung bis DN 400 185,00 €/St, Schacht DN 1000 106,00 €/St, Anfahrt 155,00 €. Angebote, die Sie bis zum Jahresende anfragen und die im ersten Quartal ausgeführt werden, rechnen wir noch nach der Liste 2026 ab."""

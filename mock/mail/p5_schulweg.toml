@@ -1,0 +1,361 @@
+# P5: Regenwasserkanal Schulweg (Stadt Norderbek). Estimated day -150 … -138, lost: fourth of six.
+# The client's side of the job as it lies in our estimator's mailbox.
+
+[[lv]]
+key = "rwkanal"
+file = "LV_Regenwasserkanal_Schulweg"
+format = "xlsx"
+client = "tba"
+name = "Regenwasserkanal Schulweg"
+project = "Neubau Regenwasserkanal Schulweg, Norderbek"
+number = "TBA-SE-0431"
+remarks = """Vorbemerkungen
+Bauvorhaben: Neubau eines Regenwasserkanals DN 500 bis DN 600 aus Stahlbetonrohren im Schulweg zwischen Grundschule und Einleitung in den vorhandenen Sammler Am Bleichgraben, Länge rund 420 m, einschließlich neun Schächten DN 1200, Straßenabläufen und Wiederherstellung der Fahrbahn.
+Vergabeart: Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {-138}, 10:00 Uhr
+Bindefrist: {-108}
+Bieterfragen bis: {-144}
+Ausführungsbeginn: {-90}
+Fertigstellung: {+30}
+Gebaut wird unter abschnittsweiser Vollsperrung. Der Schulweg ist Zugang zur Grundschule Norderbek-Süd; die sichere Führung der Schulkinder hat Vorrang vor dem Baufortschritt.
+Baugrund: Auffüllung, darunter Sande mit Schluffbändern; Grundwasser bei 1,90 m unter Gelände, Grabensohle bis 3,80 m. Eine Grundwasserabsenkung ist erforderlich; das Grundwasser ist eisenhaltig. Siehe Baugrundgutachten und wasserrechtliche Erlaubnis.
+Es gelten VOB/B und VOB/C, DIN EN 1610, DWA-A 139, DIN 4124, ZTV E-StB, ZTV Asphalt-StB."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Einrichtung und Verkehr
+1.1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle für sämtliche Leistungen einrichten, für die Bauzeit vorhalten und räumen. Lagerfläche auf dem Parkplatz der Sporthalle, Entfernung bis 250 m.
+1.1.20 | 1 psch | Verkehrssicherung und Schulwegsicherung | Verkehrssicherung nach RSA 21 für abschnittsweise Vollsperrung mit Umleitungsbeschilderung einrichten, vorhalten, umsetzen und räumen. // Schulwegsicherung nach Vorgabe der Schulleitung und der Verkehrsbehörde, einschließlich Sicherungsposten zu den Schulzeiten.
+1.1.30 | 320 m | Fußgängernotweg mit Absperrschranken | Fußgängernotweg, Breite mindestens 1,50 m, mit beidseitigen Absperrschrankengittern und Grabenbrücken an den Hauszugängen herstellen, vorhalten und umsetzen.
+# 2 | Erdarbeiten, Verbau, Wasserhaltung
+# 2.1 | Aufbruch und Rohrgraben
+2.1.10 | 1650 m² | Asphaltbefestigung aufbrechen | Asphaltbefestigung, Dicke bis 16 cm, schneiden, aufbrechen, laden und verwerten. Teerfrei nach Untersuchung des AG.
+2.1.20 | 3400 m³ | Rohrgraben ausheben, Tiefe bis 3,80 m | Boden der Homogenbereiche B1 bis B3 für Rohrgraben lösen und laden, Grabentiefe bis 3,80 m, Grabenbreite nach DIN EN 1610 und DIN 4124.
+2.1.30 | 3300 m² | Grabenverbau | Grabenverbau, Tiefe bis 3,80 m, einbauen, vorhalten und zurückbauen. Art des Verbaus nach Wahl des AG. Abrechnung nach verbauter Grabenwandfläche.
+2.1.40 | 2400 t | Boden entsorgen, bis Z 1.2 | Überschüssigen Aushub der Zuordnung bis Z 1.2 nach LAGA M 20 abfahren und verwerten. Abrechnung nach Wiegescheinen.
+2.1.50 | 400 t | Boden entsorgen, Z 2 | Aushub der Zuordnung Z 2 nach LAGA M 20 abfahren und entsorgen, einschließlich Gebühren. Abrechnung nach Wiegescheinen.
+2.1.60 | 1500 m³ | Leitungszone mit Füllsand | Füllsand 0/2 liefern, als Bettung Typ 1 und Seitenverfüllung bis 30 cm über Rohrscheitel lagenweise einbauen und verdichten.
+2.1.70 | 1700 m² | Rohrgraben verfüllen | Rohrgraben oberhalb der Leitungszone mit geeignetem Aushub lagenweise verfüllen und verdichten, DPr mindestens 98 %. Abrechnung nach Raummaß im eingebauten Zustand.
+# 2.2 | Wasserhaltung
+2.2.10 | 1 psch | Grundwasserabsenkung einrichten | Vakuumanlage mit Spülfiltern für abschnittsweise Grundwasserabsenkung bis 0,50 m unter Grabensohle einrichten und räumen, einschließlich Pumpen, Sammelleitungen und Ableitung zum Bleichgraben.
+2.2.20 | 420 m | Spülfilter setzen und umsetzen | Spülfilter beidseitig des Grabens im Abstand von 1,50 m einspülen, anschließen und nach Baufortschritt umsetzen. Abrechnung je Meter Grabenlänge.
+2.2.30 | 1800 h | Vakuumanlage betreiben | Vakuumanlage betreiben und überwachen, einschließlich Energie und Bereitschaft. Abrechnung nach Betriebsstunden. | E
+2.2.40 | - Wo | Enteisenungsanlage vorhalten | Enteisenungsanlage mit Absetzbecken nach den Auflagen der wasserrechtlichen Erlaubnis vorhalten und betreiben, Einleitwert Eisen gesamt höchstens 2 mg/l, einschließlich wöchentlicher Analytik.
+# 3 | Kanalbau
+# 3.1 | Rohrleitungen und Abläufe
+3.1.10 | 286 m | Stahlbetonrohr DN 500 verlegen | Stahlbetonrohr DN 500 nach DIN EN 1916 und DIN V 1201, Typ 2, Wandverstärkung B, mit Gleitringdichtung, Baulänge 2,50 m, liefern und nach DIN EN 1610 verlegen.
+3.1.20 | 134 m | Stahlbetonrohr DN 600 verlegen | Wie Position 3.1.10, jedoch DN 600.
+3.1.30 | 95 m | Anschlussleitung PP DN 150 | Anschlussleitung PP DN 150 SN 10 für Straßenabläufe liefern und verlegen, Anschluss an das Stahlbetonrohr mit Anbohrstutzen.
+3.1.40 | 22 St | Straßenablauf setzen | Straßenablauf 500 x 500 mm nach DIN 4052, mit Aufsatz Klasse D 400 und Schlammeimer, liefern und setzen.
+# 3.2 | Schächte
+3.2.10 | 9 St | Schachtunterteil DN 1200 | Schachtunterteil aus Stahlbeton DN 1200 nach DIN EN 1917, mit werkseitigem Gerinne für Rohr DN 500 oder DN 600, liefern und auf Sauberkeitsschicht versetzen.
+3.2.20 | 21 St | Schachtring DN 1200, h = 500 mm | Schachtring aus Beton DN 1200, Bauhöhe 500 mm, mit Steigbügeln und Gleitringdichtung, liefern und versetzen.
+3.2.30 | 9 St | Abdeckplatte DN 1200/625 | Abdeckplatte aus Stahlbeton DN 1200 mit Einstiegsöffnung 625 mm, befahrbar, liefern und versetzen, einschließlich Auflageringen.
+3.2.40 | 9 St | Schachtabdeckung Klasse D 400 | Schachtabdeckung nach DIN EN 124, Klasse D 400, lichte Weite 625 mm, mit Lüftungsöffnungen und Schmutzfänger, liefern und einbauen.
+3.2.50 | 1 St | Anschluss an vorhandenen Sammler | Neuen Kanal DN 600 an den vorhandenen Schacht des Sammlers Am Bleichgraben anschließen: Kernbohrung, Anschlussstück, Gerinne anpassen.
+# 3.3 | Prüfungen
+3.3.10 | 420 m | TV-Inspektion | Optische Inspektion des neuen Kanals nach DIN EN 13508-2 nach vorheriger Reinigung, mit Bericht und Datenübergabe.
+3.3.20 | 9 St | Dichtheitsprüfung Haltung DN 500 bis DN 600 | Dichtheitsprüfung der Haltungen einschließlich Schächten nach DIN EN 1610 mit Protokoll.
+# 4 | Straßenwiederherstellung
+# 4.1 | Oberbau
+4.1.10 | 1650 m² | Frostschutzschicht 0/32, 30 cm | Frostschutzschicht 0/32 nach TL SoB-StB liefern und in 30 cm Dicke einbauen, EV2 mindestens 120 MN/m².
+4.1.20 | 1650 m² | Asphalttragschicht AC 22 T S, 10 cm | Asphalttragschicht AC 22 T S, Einbaudicke 10 cm, liefern und einbauen.
+4.1.30 | 1650 m² | Asphaltdeckschicht AC 11 D S, 4 cm | Asphaltdeckschicht AC 11 D S, Einbaudicke 4 cm, liefern und einbauen, einschließlich Ansprühen und Nahtband.
+4.1.40 | 240 m | Hochbord aufnehmen und neu setzen | Vorhandenen Hochbord 15/30 aufnehmen, reinigen und auf neuem Fundament mit Rückenstütze aus Beton C20/25 wieder setzen. Bruch bis 10 % durch neue Steine ersetzen.
+# 5 | Stundenlohnarbeiten
+# 5.1 | Stundenlohn
+5.1.10 | 60 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter, nur auf schriftliche Anordnung des AG.
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "Aufforderung_Angebotsabgabe_Schulweg.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0431
+Maßnahme: Neubau Regenwasserkanal Schulweg, Norderbek
+Vergabeart: Öffentliche Ausschreibung nach VOB/A, Abschnitt 1
+
+Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek beabsichtigt, die oben genannte Bauleistung zu vergeben. Sie werden gebeten, ein Angebot abzugeben.
+
+Ablauf der Angebotsfrist und Eröffnungstermin: {-138|long}, 10:00 Uhr
+Ablauf der Bindefrist: {-108}
+Fragen zu den Vergabeunterlagen: in Textform bis {-144} an die Zentrale Vergabestelle
+Ausführungsfristen: Beginn {-90}, Fertigstellung bis {+30}
+
+Angebote sind elektronisch in Textform über den Vergabemarktplatz Nord einzureichen. Nebenangebote sind nicht zugelassen.
+
+Mit dem Angebot vorzulegen: Angebotsschreiben (Formblatt 213), Leistungsverzeichnis mit Preisen, Eigenerklärung zur Eignung (Formblatt 124) oder Präqualifikation, Formblatt 221 oder 222, Verzeichnis der Nachunternehmerleistungen (Formblatt 233).
+Zuschlagskriterium: Preis 100 %.
+Sicherheiten: Vertragserfüllungsbürgschaft 5 %, Mängelansprüchebürgschaft 3 %.
+
+Hinweis: Wegen einer Umstellung des AVA-Programms im Fachdienst wird das Leistungsverzeichnis bei dieser Vergabe als Excel-Datei ausgegeben. Die Preise sind in die Spalten EP und GP einzutragen; Änderungen an Texten und Mengen sind unzulässig.
+
+Anlagen: Leistungsverzeichnis (Excel), Baubeschreibung, Lageplan, Längsschnitt, Baugrundgutachten, wasserrechtliche Erlaubnis."""
+
+[[doc]]
+key = "niederschrift"
+file = "Submissionsergebnis_TBA-SE-0431.pdf"
+title = "Mitteilung über das Ergebnis der Angebotseröffnung"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0431
+Maßnahme: Neubau Regenwasserkanal Schulweg, Norderbek
+Eröffnungstermin: {-138}, 10:00 Uhr, Rathaus Norderbek, Zimmer 2.14
+Zahl der eingegangenen Angebote: 6, davon verspätet: 0. Nebenangebote: keine.
+
+Ungeprüfte Angebotsendsummen (netto, ohne Umsatzsteuer):
+
+Rang | Bieter | Summe netto
+1 | Bieter 4 | 712.480,15
+2 | Bieter 1 | 728.905,60
+3 | Bieter 6 | 741.230,00
+4 | Bieter 3 | 756.118,40
+5 | Bieter 2 | 803.544,90
+6 | Bieter 5 | 861.002,35
+
+Ihr Angebot ist in dieser Aufstellung als Bieter 3 geführt.
+
+Die Summen sind rechnerisch noch nicht geprüft. Die Mitteilung erfolgt nach § 14a Abs. 7 VOB/A."""
+
+[[doc]]
+key = "absage"
+file = "Absage_Paragraf_19_VOB-A_TBA-SE-0431.pdf"
+title = "Mitteilung nach § 19 Abs. 1 VOB/A: Ihr Angebot wird nicht berücksichtigt"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0431
+Maßnahme: Neubau Regenwasserkanal Schulweg, Norderbek
+An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+
+Sehr geehrte Damen und Herren,
+
+zu der oben genannten Vergabe wird Ihnen nach § 19 Abs. 1 VOB/A mitgeteilt, dass Ihr Angebot vom {-139} nicht berücksichtigt wird.
+
+Grund der Nichtberücksichtigung: Es lagen wirtschaftlichere Angebote vor. Zuschlagskriterium war allein der Preis.
+
+Ihr Angebot: geprüfte Endsumme 756.118,40 EUR netto, Rang 4 von 6 gewerteten Angeboten.
+Niedrigstes gewertetes Angebot: 712.480,15 EUR netto. Abstand: 43.638,25 EUR, das sind 6,1 %.
+
+Es ist beabsichtigt, den Zuschlag am {-112} auf das Angebot mit der niedrigsten Endsumme zu erteilen.
+
+Auf Verlangen in Textform werden Ihnen die Merkmale und Vorteile des Angebots des erfolgreichen Bieters sowie dessen Name mitgeteilt (§ 19 Abs. 2 VOB/A).
+
+Für Ihre Beteiligung am Vergabeverfahren wird gedankt.
+
+Stadt Norderbek
+Der Bürgermeister
+Im Auftrag
+Meyer"""
+
+[[mail]]
+id = "einladung"
+day = -150
+time = "11:26"
+from = "tba.meyer"
+to = "us"
+subject = "Aufforderung zur Angebotsabgabe – Neubau Regenwasserkanal Schulweg (TBA-SE-0431)"
+body = """Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek schreibt den Neubau des Regenwasserkanals im Schulweg öffentlich aus. Als in unserer Bieterdatei geführtes Unternehmen erhalten Sie die Unterlagen zusätzlich zur Bekanntmachung auf dem Vergabemarktplatz Nord.
+
+Vergabenummer: TBA-SE-0431
+Ablauf der Angebotsfrist: {-138|long}, 10:00 Uhr
+Bindefrist: {-108}
+Bieterfragen: in Textform bis {-144} an die Zentrale Vergabestelle
+
+Beigefügt sind die Aufforderung zur Angebotsabgabe und das Leistungsverzeichnis. Es wird wegen einer Programmumstellung ausnahmsweise als Excel-Datei ausgegeben; es wird gebeten, dies zu entschuldigen. Baubeschreibung, Pläne, Baugrundgutachten und die wasserrechtliche Erlaubnis stehen auf dem Vergabemarktplatz bereit."""
+attach = ["doc:anschreiben", "lv:rwkanal"]
+
+[[mail]]
+id = "fragen"
+day = -146
+time = "16:04"
+from = "us"
+to = "tba.meyer"
+subject = "Bieterfragen zu TBA-SE-0431 – Neubau Regenwasserkanal Schulweg"
+body = """Sehr geehrte Frau Meyer,
+
+zum Leistungsverzeichnis Regenwasserkanal Schulweg bitten wir um Beantwortung der folgenden Fragen:
+
+1. Position 2.2.40 „Enteisenungsanlage vorhalten“
+In der Excel-Datei ist die Mengenspalte leer (Einheit Wo). Für wie viele Wochen ist die Anlage vorzuhalten? Aus dem Bauablauf (420 m Kanal, Absenkung abschnittsweise) schätzen wir 14 Wochen.
+
+2. Position 2.1.30 „Grabenverbau“, 3300 m²
+Im Langtext heißt es „Art des Verbaus nach Wahl des AG“. Zwischen einem Gleitschienenverbau und einem Spundwandverbau liegt bei 3,80 m Tiefe und Grundwasserabsenkung ein Vielfaches im Preis. Die Baubeschreibung nennt keinen Verbau. Wir gehen davon aus, dass ein Linearverbau (Gleitschienen, Doppelgleitschiene ab 3,00 m) zugrunde zu legen ist und ein vom AG verlangter anderer Verbau gesondert vergütet wird. Bitte bestätigen Sie das oder legen Sie die Verbauart fest.
+
+3. Position 1.1.20 „Verkehrssicherung und Schulwegsicherung“, 1 psch
+Die Pauschale enthält „Sicherungsposten zu den Schulzeiten“ nach Vorgabe der Schulleitung. Zu welchen Uhrzeiten, an wie vielen Stellen und über wie viele Schultage sind Posten zu stellen? Wir nehmen an: zwei Posten, an Schultagen 7:15 bis 8:15 Uhr und 12:30 bis 13:45 Uhr, über die gesamte Bauzeit außerhalb der Ferien.
+
+4. Position 2.1.70 „Rohrgraben verfüllen“, 1700 m²
+Der Text sagt „Abrechnung nach Raummaß im eingebauten Zustand“, die Einheit ist m². Wir gehen von 1700 m³ aus.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "antwort"
+day = -142
+time = "10:38"
+from = "tba.meyer"
+to = "us"
+subject = "AW: Bieterfragen zu TBA-SE-0431 – Neubau Regenwasserkanal Schulweg (Bieterinformation Nr. 1)"
+reply_to = "fragen"
+body = """Sehr geehrter Herr Doe,
+
+zu Ihren Fragen vom {-146} ergeht nach Rücksprache mit dem Fachdienst Tiefbau die Bieterinformation Nr. 1. Sie wird allen Bietern bekannt gegeben und ist Bestandteil der Vergabeunterlagen.
+
+Zu 1 (Position 2.2.40): Die Menge beträgt 16 Wo. Die Excel-Datei wird berichtigt neu eingestellt.
+
+Zu 2 (Position 2.1.30): Der Verbau ist nach den statischen und örtlichen Erfordernissen so zu wählen, dass Setzungen an der angrenzenden Bebauung und am Schulgebäude ausgeschlossen sind. Die sich daraus ergebende Verbauart ist einzukalkulieren. Der Wortlaut der Position bleibt unverändert.
+
+Zu 3 (Position 1.1.20): Sicherungsposten sind an Schultagen von 7:15 bis 8:15 Uhr und von 12:30 bis 13:45 Uhr an zwei Stellen (Querung Am Bleichgraben, Zugang Schulhof) zu stellen. Innerhalb der Ausführungsfrist liegen nach dem Ferienkalender 128 Schultage.
+
+Zu 4 (Position 2.1.70): Die Mengeneinheit ist m³. Menge unverändert 1.700.
+
+Die Angebotsfrist bleibt unverändert."""
+
+[[mail]]
+id = "eingang"
+day = -139
+time = "14:09"
+from = "portal.noreply"
+to = "us"
+subject = "Eingangsbestätigung: Ihr Angebot zu TBA-SE-0431 wurde übermittelt"
+body = """Guten Tag,
+
+Ihr Angebot wurde verschlüsselt an die Vergabestelle übermittelt.
+
+Vergabestelle: Stadt Norderbek, Zentrale Vergabestelle
+Vergabenummer: TBA-SE-0431
+Bezeichnung: Neubau Regenwasserkanal Schulweg, Norderbek
+Bieter: Acme Tiefbau GmbH, Hamburg
+Eingang auf dem Server: {-139}, 14:08:33 Uhr
+Ablauf der Angebotsfrist: {-138}, 10:00 Uhr
+Übermittelte Dateien: 6
+
+Das Angebot kann bis zum Ablauf der Angebotsfrist zurückgezogen und neu eingereicht werden. Diese Bestätigung dient als Nachweis des fristgerechten Eingangs."""
+
+[[mail]]
+id = "angebot"
+day = -139
+time = "14:19"
+from = "us"
+to = "tba.meyer"
+cc = ["us"]
+subject = "Angebot TBA-SE-0431 – zur Information: wie eben über die Vergabeplattform eingereicht"
+body = """Sehr geehrte Frau Meyer,
+
+zu Ihrer Information: Unser Angebot zur Vergabe TBA-SE-0431 haben wir soeben vollständig über den Vergabemarktplatz Nord eingereicht; die Eingangsbestätigung liegt uns vor. Maßgeblich ist allein das dort eingereichte Angebot.
+
+Anbei erhalten Sie vorab das Leistungsverzeichnis mit unseren Preisen als Excel-Datei, wie ausgegeben, damit es Ihnen für die Prüfung auch unmittelbar vorliegt. Die Angebotssumme beträgt 756.118,40 EUR netto. Die Bieterinformation Nr. 1 vom {-142} ist berücksichtigt (Position 2.2.40 mit 16 Wochen, Position 2.1.70 in m³).
+
+Mit freundlichen Grüßen"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "niederschrift"
+day = -135
+time = "08:48"
+from = "tba.meyer"
+to = "us"
+subject = "TBA-SE-0431 – Mitteilung über das Ergebnis der Angebotseröffnung"
+body = """Sehr geehrte Damen und Herren,
+
+die Angebote zur oben genannten Vergabe wurden am {-138} um 10:00 Uhr geöffnet. Die Mitteilung über die ungeprüften Angebotsendsummen nach § 14a Abs. 7 VOB/A ist beigefügt.
+
+Es sind sechs Angebote eingegangen. Ihr Angebot liegt nach der ungeprüften Endsumme an vierter Stelle. Die Prüfung und Wertung steht noch aus."""
+attach = ["doc:niederschrift"]
+
+[[mail]]
+id = "absage"
+day = -119
+time = "09:52"
+from = "tba.meyer"
+to = "us"
+subject = "TBA-SE-0431 – Mitteilung nach § 19 Abs. 1 VOB/A"
+body = """Sehr geehrter Herr Doe,
+
+zu der Vergabe Neubau Regenwasserkanal Schulweg wird Ihnen mitgeteilt, dass Ihr Angebot nicht berücksichtigt wird, weil wirtschaftlichere Angebote vorlagen. Ihr Angebot belegt mit 756.118,40 EUR netto Rang 4. Die förmliche Mitteilung nach § 19 Abs. 1 VOB/A ist beigefügt.
+
+Es wird gebeten, von Rückfragen zur Wertung bei der Vergabestelle abzusehen und ein Verlangen nach § 19 Abs. 2 VOB/A in Textform zu stellen."""
+attach = ["doc:absage"]
+
+[[mail]]
+id = "nachfrage"
+day = -116
+time = "08:35"
+from = "us"
+to = "tba.hartwig"
+cc = ["tba.meyer"]
+subject = "Regenwasserkanal Schulweg (TBA-SE-0431) – Bitte um Rückmeldung zu unserem Angebot"
+body = """Sehr geehrter Herr Hartwig,
+
+Frau Meyer hat uns die Absage zum Schulweg geschickt, Rang 4 mit 6,1 % Abstand. Das Verlangen nach § 19 Abs. 2 VOB/A stellen wir hiermit in Textform (Frau Meyer in Kopie).
+
+Darüber hinaus eine Bitte von Fachmann zu Fachmann: Nach der Mühlenstraße und dem Pumpwerk hatten wir gedacht, Ihre Baustellen gut einschätzen zu können. Können Sie uns sagen, wo wir beim Schulweg danebenlagen? Wir vermuten Wasserhaltung und Verbau, weil wir dort nach der Bieterinformation Nr. 1 vorsichtig gerechnet haben.
+
+Vielen Dank und viele Grüße"""
+
+[[mail]]
+id = "nachfrage_aw"
+day = -112
+time = "07:26"
+from = "tba.hartwig"
+to = "us"
+cc = ["tba.meyer"]
+subject = "AW: Regenwasserkanal Schulweg (TBA-SE-0431) – Bitte um Rückmeldung zu unserem Angebot"
+reply_to = "nachfrage"
+body = """Hallo Herr Doe,
+
+den Zuschlag hat heute die Firma Geestland Kanal- und Rohrleitungsbau aus Barmstedt bekommen, 712.480,15 EUR netto. Vorteil: der Preis, sonst nichts.
+
+Zu Ihrer Frage, ohne Einheitspreise: Ihre Vermutung stimmt. Im Kanalbau (Titel 3) und bei der Straße (Titel 4) lagen Sie im Feld, bei den Rohren sogar unter dem Ersten. Der Abstand kommt aus Titel 2:
+- Verbau 2.1.30: Sie haben erkennbar einen schweren Verbau gerechnet. Die drei vor Ihnen haben Gleitschienen angesetzt. Das ist deren Risiko, nicht meins, die Position sagt, was sie sagt.
+- Wasserhaltung 2.2.10 bis 2.2.40: Da lagen Sie rund 30 T EUR über dem Ersten. Der hat eine eigene Vakuumanlage und kein Fremdgerät.
+- Schulwegsicherung 1.1.20: Bei Ihnen fast doppelt so teuer wie beim Ersten. Sie haben die 128 Schultage offenbar voll durchgerechnet, andere nicht.
+
+Kurz: sauber kalkuliert, aber auf der sicheren Seite, und das hat diesmal nicht gereicht. In ein paar Monaten kommt die Erneuerung Mischwasserkanal Birkenweg, 2. BA, in die Ausschreibung. Da sehe ich Sie gern wieder im Feld.
+
+Mit freundlichen Grüßen"""
+
+# Our bid: the tender LV with the quantities and units of the client's answers and our unit prices.
+[[lv]]
+key = "angebot"
+base = "rwkanal"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_RW-Kanal_Schulweg"
+set = [
+  "2.2.40 | 16 Wo | Enteisenungsanlage vorhalten | Enteisenungsanlage mit Absetzbecken nach den Auflagen der wasserrechtlichen Erlaubnis vorhalten und betreiben, Einleitwert Eisen gesamt höchstens 2 mg/l, einschließlich wöchentlicher Analytik.",
+  "2.1.70 | 1700 m³ | Rohrgraben verfüllen | Rohrgraben oberhalb der Leitungszone mit geeignetem Aushub lagenweise verfüllen und verdichten, DPr mindestens 98 %. Abrechnung nach Raummaß im eingebauten Zustand.",
+]
+prices = """
+1.1.10 | 38035,54
+1.1.20 | 45100,00
+1.1.30 | 23,53
+2.1.10 | 7,06
+2.1.20 | 16,18
+2.1.30 | 31,38
+2.1.40 | 24,02
+2.1.50 | 37,75
+2.1.60 | 33,83
+2.1.70 | 12,55
+2.2.10 | 26000,00
+2.2.20 | 66,68
+2.2.30 | 14,22
+2.2.40 | 1420,00
+3.1.10 | 210,81
+3.1.20 | 262,78
+3.1.30 | 56,87
+3.1.40 | 627,53
+3.2.10 | 2400,00
+3.2.20 | 338,28
+3.2.30 | 764,81
+3.2.40 | 470,65
+3.2.50 | 4705,00
+3.3.10 | 4,51
+3.3.20 | 279,45
+4.1.10 | 13,53
+4.1.20 | 27,94
+4.1.30 | 17,16
+4.1.40 | 41,18
+5.1.10 | 56,87
+"""

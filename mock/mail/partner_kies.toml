@@ -1,0 +1,396 @@
+# Kieswerk Heidkamp GmbH (kies): die Disposition. Alles klein geschrieben, zwei, drei Zeilen, Preise je Tonne in der
+# Mail, ab Werk plus Fracht je Tonne, füllt keine Tabelle aus, will bei allem Schwierigen angerufen werden, schnell.
+# Jobs: P1 Mühlenstraße (geliefert), P2 Hauptstraße Brande (geliefert), P3 Gewerbegebiet Süd (verloren),
+# P5 Schulweg (verloren), P6 Radweg K 22 (läuft, das Werk liegt drei Kilometer von der Baustelle).
+
+# ------------------------------------------------------------------ P1 Mühlenstraße
+
+[[sheet]]
+key = "p1"
+file = "Preisanfrage_Sand_Frostschutz_Schotter_Muehlenstrasse.xlsx"
+items = """
+2.2.60 | 2900 m³ | Leitungszone mit Füllsand herstellen
+4.1.10 | 2150 m² | Frostschutzschicht 0/32, Dicke 30 cm
+4.1.20 | 2150 m² | Schottertragschicht 0/45, Dicke 15 cm
+"""
+
+[[mail]]
+id = "p1_anfrage"
+day = -516
+time = "07:40"
+from = "us"
+to = "kies"
+subject = "Preisanfrage – Füllsand, Frostschutz, Schotter – Kanalerneuerung Mühlenstraße Norderbek"
+body = """Guten Morgen,
+
+wir rechnen die Kanalerneuerung Mühlenstraße in Norderbek und brauchen Preise frei Baustelle für:
+
+Pos. 2.2.60 – 2900 m³ – Füllsand 0/2 für die Leitungszone
+Pos. 4.1.10 – 2150 m² – Frostschutzschicht 0/32, 30 cm, nach TL SoB-StB
+Pos. 4.1.20 – 2150 m² – Schottertragschicht 0/45, 15 cm, nach TL SoB-StB
+
+Mengen sind LV-Mengen, eingebaut. Tabelle anbei, bitte bis {-506}. Bauzeit wäre {-455} bis {-300}.
+
+Viele Grüße"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_preise"
+day = -516
+time = "10:15"
+from = "kies"
+to = "us"
+subject = "AW: Preisanfrage – Füllsand, Frostschutz, Schotter – Kanalerneuerung Mühlenstraße Norderbek"
+reply_to = "p1_anfrage"
+body = """moin,
+
+wir rechnen nur in tonnen, tabelle füllen wir nicht aus.
+füllsand 0/2 4,80/t, frostschutz 0/32 9,60/t, schotter 0/45 11,65/t. ab werk, fracht 4,40/t bis 30 km, norderbek ist drin. sattel 27 t, vierachser 18 t.
+preise bis jahresende."""
+
+[[mail]]
+id = "p1_menge"
+day = -515
+time = "10:40"
+from = "us"
+to = "kies"
+subject = "AW: Preisanfrage – Füllsand, Frostschutz, Schotter – Kanalerneuerung Mühlenstraße Norderbek"
+reply_to = "p1_preise"
+body = """Danke. In Tonnen sind das bei uns rund 5.200 t Füllsand, 1.350 t Frostschutz und 710 t Schotter. Geht bei der Sandmenge noch etwas am Preis? Und gibt es den Eignungsnachweis für 0/32 und 0/45 als PDF?
+
+Viele Grüße"""
+
+[[mail]]
+id = "p1_menge_aw"
+day = -515
+time = "11:32"
+from = "kies"
+to = "us"
+subject = "AW: Preisanfrage – Füllsand, Frostschutz, Schotter – Kanalerneuerung Mühlenstraße Norderbek"
+reply_to = "p1_menge"
+body = """ab 5000 t sand 4,60/t, rest bleibt. nachweise schickt das labor, dauert 2 tage. wegen abruf und fahrzeugen bitte anrufen wenn es soweit ist, per mail wird das nix."""
+
+[[mail]]
+id = "p1_abruf"
+day = -453
+time = "06:50"
+from = "us.albers"
+to = "kies"
+cc = ["us"]
+subject = "Mühlenstraße Norderbek – Abruf Füllsand ab {-450}"
+body = """Moin,
+
+wie eben am Telefon: Ab {-450} täglich zwei Sattel Füllsand 0/2 an den Bahnübergang Mühlenstraße, Kippstelle ist ausgeschildert, erste Fuhre 7:00 Uhr. Preis laut Angebot an Herrn Doe: 4,60/t ab Werk plus 4,40/t Fracht. Wenn wir mehr brauchen, rufe ich bis 14 Uhr für den nächsten Tag an. Lieferscheine bitte mit Baustelle „Mühlenstraße“, sonst kann ich sie der Stadt nicht vorlegen.
+
+Gruß"""
+
+# ------------------------------------------------------------------ P2 Hauptstraße Brande
+
+[[sheet]]
+key = "p2"
+file = "Preisanfrage_Sand_Schotter_Hauptstrasse_Brande.xlsx"
+items = """
+2.1.60 | 780 m3 | Leitungszone mit Sand herstellen
+2.1.70 | 1500 m3 | Rohrgraben verfüllen
+2.2.10 | 1480 m2 | Schottertragschicht 0/45, 20 cm
+"""
+
+[[mail]]
+id = "p2_anfrage"
+day = -406
+time = "07:35"
+from = "us"
+to = "kies"
+subject = "Preisanfrage – Sand und Schotter – Trinkwasserleitung Hauptstraße Brande"
+body = """Guten Morgen,
+
+Trinkwasserleitung Hauptstraße in Brande-Hörnerkirchen, Bauzeit {-350} bis {-235}. Bitte Preise je Tonne ab Werk und die Fracht nach Brande:
+
+Pos. 2.1.60 – 780 m3 – steinfreier Sand 0/2, Leitungszone
+Pos. 2.1.70 – 1500 m3 – Füllsand zum Verfüllen
+Pos. 2.2.10 – 1480 m2 – Schottertragschicht 0/45, 20 cm
+
+Umgerechnet rund 4.100 t Sand und 650 t Schotter. Tabelle hängt der Ordnung halber an. Bis {-399} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p2:blank"]
+
+[[mail]]
+id = "p2_preise"
+day = -406
+time = "09:20"
+from = "kies"
+to = "us"
+subject = "AW: Preisanfrage – Sand und Schotter – Trinkwasserleitung Hauptstraße Brande"
+reply_to = "p2_anfrage"
+body = """moin,
+
+sand 0/2 4,90/t, schotter 0/45 11,85/t, ab werk. fracht brande 4,40/t. für die leitungszone ist unser 0/2 steinfrei, gewaschen brauchst du nicht.
+gilt bis ende der bauzeit wenn der diesel nicht verrückt spielt."""
+
+[[mail]]
+id = "p2_abruf"
+day = -351
+time = "07:05"
+from = "us.albers"
+to = "kies"
+cc = ["us"]
+subject = "Hauptstraße Brande – Abruf Sand ab {-348}"
+body = """Moin,
+
+wir fangen am {-350} in Brande an der Kirchenstraße an. Ab {-348} bitte jeden Tag einen Sattel Sand 0/2, ab der zweiten Woche zwei. Preis wie an Herrn Doe genannt, 4,90/t plus 4,40/t Fracht. Die Ortsdurchfahrt ist halbseitig gesperrt, der Fahrer soll von Norden kommen, von Süden kommt er mit dem Sattel nicht um die Ampel. Genaue Zeiten wie immer per Telefon.
+
+Gruß"""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (verloren)
+
+[[sheet]]
+key = "p3"
+file = "Preisanfrage_Frostschutz_Schotter_RC_Gewerbegebiet_Sued.xlsx"
+items = """
+1.1.40 | 650 m | Baustraße herstellen und zurückbauen
+4.1.10 | 12400 m² | Frostschutzschicht 0/32, 35 cm
+4.1.20 | 10900 m² | Schottertragschicht 0/45, 20 cm
+"""
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "07:30"
+from = "us"
+to = "kies"
+subject = "Preisanfrage – Frostschutz, Schotter, RC 0/45 – Erschließung Gewerbegebiet Süd Itzehoe"
+body = """Guten Morgen,
+
+große Mengen diesmal, Erschließung Gewerbegebiet Süd in Itzehoe:
+
+Pos. 4.1.10 – 12400 m² – Frostschutzschicht 0/32, 35 cm, rund 9.100 t
+Pos. 4.1.20 – 10900 m² – Schottertragschicht 0/45, 20 cm, rund 4.800 t
+Pos. 1.1.40 – 650 m – Baustraße aus RC 0/45, 40 cm, rund 2.000 t
+
+Preise je Tonne und Fracht nach Itzehoe-Süd, Lise-Meitner-Straße. Schaffen Sie 400 t am Tag? Bis {-290} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_preise"
+day = -296
+time = "13:48"
+from = "kies"
+to = "us"
+subject = "AW: Preisanfrage – Frostschutz, Schotter, RC 0/45 – Erschließung Gewerbegebiet Süd Itzehoe"
+reply_to = "p3_anfrage"
+body = """moin,
+
+frostschutz 0/32 9,85/t, schotter 0/45 11,95/t, rc 0/45 5,40/t (güteüberwacht, rc-1). ab werk.
+itzehoe ist über 30 km, fracht 6,20/t. 400 t am tag geht mit fremdfahrzeugen, dafür bitte anrufen, das müssen wir zusammen planen."""
+
+[[mail]]
+id = "p3_absage"
+day = -264
+time = "12:05"
+from = "us"
+to = "kies"
+subject = "AW: Preisanfrage – Frostschutz, Schotter, RC 0/45 – Erschließung Gewerbegebiet Süd Itzehoe"
+reply_to = "p3_preise"
+body = """Kurz zur Info: Itzehoe haben wir nicht bekommen, Rang 2. Danke für die Preise.
+
+Viele Grüße"""
+
+# ------------------------------------------------------------------ P5 Schulweg (verloren)
+
+[[sheet]]
+key = "p5"
+file = "Preisanfrage_Fuellsand_Frostschutz_Schulweg.xlsx"
+items = """
+2.1.60 | 1500 m³ | Leitungszone mit Füllsand
+4.1.10 | 1650 m² | Frostschutzschicht 0/32, 30 cm
+"""
+
+[[mail]]
+id = "p5_anfrage"
+day = -147
+time = "07:45"
+from = "us"
+to = "kies"
+subject = "Preisanfrage – Füllsand und Frostschutz – Regenwasserkanal Schulweg Norderbek"
+body = """Guten Morgen,
+
+Regenwasserkanal Schulweg in Norderbek, wieder Preise je Tonne ab Werk plus Fracht:
+
+Pos. 2.1.60 – 1500 m³ – Füllsand 0/2, rund 2.700 t
+Pos. 4.1.10 – 1650 m² – Frostschutzschicht 0/32, 30 cm, rund 1.040 t
+
+Bis {-142} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_preise"
+day = -147
+time = "08:52"
+from = "kies"
+to = "us"
+subject = "AW: Preisanfrage – Füllsand und Frostschutz – Regenwasserkanal Schulweg Norderbek"
+reply_to = "p5_anfrage"
+body = """moin,
+
+füllsand 0/2 5,00/t, frostschutz 0/32 10,05/t. ab werk, fracht 4,60/t bis 30 km. schulweg ist eng, wenn nur dreiachser reinkommen 0,90/t mehr fracht."""
+
+# ------------------------------------------------------------------ P6 Radweg K 22
+
+[[sheet]]
+key = "p6"
+file = "Preisanfrage_Frostschutz_Schotter_Bankett_Radweg_K22.xlsx"
+items = """
+3.1.10 | 4700 m² | Frostschutzschicht 0/32, 30 cm
+3.1.20 | 4300 m² | Schottertragschicht 0/32, 15 cm
+3.3.10 | 3280 m | Bankett herstellen, Breite 0,50 m
+"""
+
+[[mail]]
+id = "p6_anfrage"
+day = -92
+time = "07:25"
+from = "us"
+to = "kies"
+subject = "Preisanfrage – Frostschutz, Schotter, Bankettmaterial – Radweg K 22 Hemdingen"
+body = """Guten Morgen,
+
+der Radweg an der K 22 liegt bei Ihnen vor der Tür. Preise je Tonne ab Werk und Fracht bitte für:
+
+Pos. 3.1.10 – 4700 m² – Frostschutzschicht 0/32, 30 cm, rund 2.950 t
+Pos. 3.1.20 – 4300 m² – Schottertragschicht 0/32, 15 cm, rund 1.400 t
+Pos. 3.3.10 – 3280 m – Bankettmaterial 0/32 mit Oberbodenanteil, rund 500 t
+
+Dazu die Frage, ob Sie Boden annehmen (Pos. 2.1.60, Überschussboden Z 0). Bis {-86} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p6:blank"]
+
+[[mail]]
+id = "p6_preise"
+day = -92
+time = "09:02"
+from = "kies"
+to = "us"
+subject = "AW: Preisanfrage – Frostschutz, Schotter, Bankettmaterial – Radweg K 22 Hemdingen"
+reply_to = "p6_anfrage"
+body = """moin,
+
+frostschutz 0/32 10,20/t, schotter 0/32 12,60/t, bankettmaterial 0/32 mit 15 % oberboden 9,40/t.
+ab werk, fracht 4,80/t bis 30 km. k 22 sind 3 km, dafür 2,90/t.
+boden nehmen wir an, dazu anrufen."""
+
+[[mail]]
+id = "p6_boden"
+day = -85
+time = "08:30"
+from = "us"
+to = "kies"
+subject = "AW: Preisanfrage – Frostschutz, Schotter, Bankettmaterial – Radweg K 22 Hemdingen"
+reply_to = "p6_preise"
+body = """Danke. Am Telefon habe ich gestern niemanden erreicht, daher kurz schriftlich: Die Menge für den Boden ist jetzt da, 3.900 t, Z 0, Oberboden und Sand-Schluff aus dem Koffer. Was kostet die Annahme je Tonne, und brauchen Sie eine Analyse? Wir würden mit den Fahrzeugen kippen, die bei Ihnen Frostschutz laden.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p6_boden_aw"
+day = -85
+time = "10:11"
+from = "kies"
+to = "us"
+subject = "AW: Preisanfrage – Frostschutz, Schotter, Bankettmaterial – Radweg K 22 Hemdingen"
+reply_to = "p6_boden"
+body = """annahme z 0 6,50/t, oberboden sauber ohne grassoden 3,00/t. analyse je 500 m³ brauchen wir vorher, ohne papier kein kippen. rückfracht mit unseren zügen 1,50/t. rest am telefon, chef ist ab 6 da."""
+
+[[mail]]
+id = "p6_abruf"
+day = -44
+time = "06:45"
+from = "us.albers"
+to = "kies"
+cc = ["us"]
+subject = "Radweg K 22 – Abruf Frostschutz ab {-36}, Eignungsnachweise"
+body = """Moin,
+
+wir haben den Radweg K 22. Für die Bauüberwachung brauche ich bis {-42} die Eignungsnachweise für Frostschutz 0/32, Schotter 0/32 und das Bankettmaterial als PDF.
+
+Abruf: ab {-36} Frostschutz 0/32 in Abschnitt 1 (Bau-km 0+000 bis 0+400), etwa 250 t am Tag, drei Tage. Danach Schotter. Preise laut Mail an Herrn Doe vom {-92}: 10,20 / 12,60 / 9,40 ab Werk, Fracht 2,90/t. Bodenannahme 6,50/t, die erste Analyse bringe ich mit.
+
+Gruß"""
+
+[[mail]]
+id = "p6_abruf_aw"
+day = -44
+time = "08:14"
+from = "kies"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Radweg K 22 – Abruf Frostschutz ab {-36}, Eignungsnachweise"
+reply_to = "p6_abruf"
+body = """geht klar. nachweise kommen vom labor per mail. 250 t am tag mit zwei zügen im umlauf, erster zug 6:30. halbseitige sperrung beachten, unsere fahrer warten nicht an der ampel, sag deinem sicherer bescheid."""
+
+[[mail]]
+id = "p6_kiessand"
+day = -19
+time = "07:55"
+from = "us"
+to = "kies"
+cc = ["us.albers"]
+subject = "Radweg K 22 – zusätzlich Kiessand 0/32 für Bodenaustausch, rund 500 t"
+body = """Guten Morgen,
+
+zwischen Bau-km 0+850 und 1+020 ist ein Bodenaustausch angeordnet, 40 cm Kiessand 0/32, rund 240 m³, also etwa 500 t zusätzlich. Bleibt es dafür beim Preis für den Frostschutz, 10,20/t plus 2,90/t Fracht? Ich muss morgen den Nachtrag einreichen. Lieferung ab übermorgen, Herr Albers ruft ab.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p6_kiessand_aw"
+day = -19
+time = "08:40"
+from = "kies"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Radweg K 22 – zusätzlich Kiessand 0/32 für Bodenaustausch, rund 500 t"
+reply_to = "p6_kiessand"
+body = """ja, gleiches material gleicher preis, 10,20 + 2,90. 500 t haben wir liegen."""
+
+[[mail]]
+id = "p6_rechnung"
+day = -11
+time = "09:25"
+from = "us"
+to = "kies"
+subject = "Radweg K 22 – Ihre Rechnung 4417: Fracht 4,80 statt 2,90 je Tonne"
+body = """Guten Tag,
+
+in der Rechnung 4417 über die Lieferungen der KW {kw-25} bis {kw-18} sind 612 t Frostschutz mit 4,80/t Fracht berechnet. Vereinbart sind für die K 22 2,90/t (Ihre Mail vom {-92}). Die Differenz beträgt 1.162,80 EUR netto. Bitte um Gutschrift oder eine berichtigte Rechnung, dann geben wir sie zur Zahlung frei. Die Tonnagen stimmen mit unseren Lieferscheinen überein.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p6_rechnung_aw"
+day = -11
+time = "11:03"
+from = "kies"
+to = "us"
+subject = "AW: Radweg K 22 – Ihre Rechnung 4417: Fracht 4,80 statt 2,90 je Tonne"
+reply_to = "p6_rechnung"
+body = """stimmt, buchhaltung hat den standardsatz genommen. gutschrift 1.162,80 kommt diese woche mit der post. sorry."""
+
+# ------------------------------------------------------------------ ohne Anfrage
+
+[[mail]]
+id = "preise_januar"
+day = -4
+time = "06:38"
+from = "kies"
+to = "us"
+subject = "preise ab januar / winterpause"
+body = """moin,
+
+an alle kunden: ab 1.1. frostschutz und schotter +0,40/t, sand +0,25/t, fracht 5,10/t bis 30 km (bisher 4,80). laufende baustellen mit festem preis bleiben bis ende märz, k 22 also wie gehabt.
+winterpause 21.12. bis 8.1., waage zu, keine bodenannahme. bei frost vorher anrufen ob verladen wird."""

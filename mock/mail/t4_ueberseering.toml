@@ -1,0 +1,98 @@
+# T4: a general contractor asks for a subcontractor price on drywall and painting. Not our trade.
+
+[[lv]]
+key = "trockenbau"
+file = "NU-Anfrage_Ueberseering40_Trockenbau_Maler"
+format = "xlsx"
+client = "gu"
+name = "Trockenbau- und Malerarbeiten"
+project = "Bürogebäude Überseering 40: Trockenbau- und Malerarbeiten"
+number = "NHB-4471-NU-039"
+remarks = """Vorbemerkungen zur Nachunternehmeranfrage NHB-4471-NU-039
+Bauvorhaben: Neubau Bürogebäude Überseering 40, 22297 Hamburg, 5 Vollgeschosse und Staffelgeschoss, BGF ca. 6.900 m2.
+Gewerk: Trockenbauarbeiten nach DIN 18340 und Maler- und Lackierarbeiten nach DIN 18363, Geschosse EG bis 5. OG.
+Angebotsfrist: {+6}, 12:00 Uhr, per E-Mail an einkauf@nordhanse-bau.test
+Bindefrist: {+48}
+Ausführungsbeginn: {+62}
+Fertigstellung: {+175}
+Lichte Rohbauhöhe der Regelgeschosse 3,25 m, im EG 4,10 m. Arbeitsgerüste bis 4,50 m Arbeitshöhe sind in die Einheitspreise einzurechnen.
+Alle Flurtrennwände sind als Brandschutzkonstruktion F 90-A auszuführen, Nachweis durch allgemeines bauaufsichtliches Prüfzeugnis.
+Oberflächengüte aller sichtbaren Wand- und Deckenflächen: Q3 nach Merkblatt Nr. 2 des Bundesverbandes der Gipsindustrie.
+Die Abrechnung erfolgt nach Aufmaß gemäß VOB/C; Öffnungen bis 2,5 m2 werden übermessen.
+Material wird über den Bauaufzug des AG transportiert, Nutzung nach Einteilung durch die Bauleitung des AG. Wartezeiten werden nicht vergütet.
+Baustrom und Bauwasser stellt der AG gegen 1,2 % der Abrechnungssumme, Bauwesenversicherung 0,35 %.
+Schutz- und Abdeckmaßnahmen an Bauteilen anderer Gewerke sind in die Einheitspreise einzurechnen.
+Es gelten die Verhandlungsprotokolle und die Nachunternehmerbedingungen der Nordhanse Bau GmbH & Co. KG, Stand 01/2026."""
+items = """
+# 1 | Baustelleneinrichtung und Allgemeines
+1.10 | 1 psch | Baustelle einrichten und räumen | Baustelleneinrichtung für die Trockenbau- und Malerarbeiten einrichten, über die gesamte Bauzeit vorhalten und nach Abschluss räumen. // Einschließlich Lagercontainer, Materialtransporte in alle Geschosse und tägliche Reinigung der Arbeitsbereiche.
+1.20 | 1 psch | Werk- und Montageplanung | Werk- und Montageplanung für alle Trockenbaukonstruktionen einschließlich Detailzeichnungen für Wandanschlüsse, Bewegungsfugen und Brandschutzdetails erstellen und dem AG in 3-facher Ausfertigung sowie digital zur Freigabe vorlegen.
+1.30 | 1 psch | Anpassarbeiten an Bestand und Fremdgewerke | Sämtliche Anpass- und Beiarbeiten an Bauteilen anderer Gewerke, Schließen von Durchbrüchen und Restöffnungen der Haustechnik in Trockenbauwänden und Decken aller Geschosse, Umfang nach örtlichem Erfordernis. // Einschließlich aller Nebenleistungen, Material und Gerüste.
+# 2 | Metallständerwände
+2.10 | 2850 m2 | Metallständerwand d = 125 mm, CW 75, 2-lagig | Nichttragende Trennwand als Metallständerwand nach DIN 18183-1, Wanddicke 125 mm, Unterkonstruktion CW/UW 75, Achsabstand 62,5 cm, beidseitig 2 x 12,5 mm Gipsplatten Typ A nach DIN EN 520, Dämmung Mineralwolle 60 mm, Schalldämmmaß R'w mindestens 52 dB. // Wandhöhe bis 3,25 m, Fugen verspachtelt in Q2, Anschlüsse an Massivbauteile mit Anschlussdichtung.
+2.20 | 640 m2 | Metallständerwand d = 150 mm, CW 100, 2-lagig | Nichttragende Trennwand als Metallständerwand, Wanddicke 150 mm, Unterkonstruktion CW/UW 100, beidseitig 2 x 12,5 mm Gipsplatten, Dämmung Mineralwolle 80 mm, Schalldämmmaß R'w mindestens 55 dB. // Wandhöhe bis 4,10 m im Erdgeschoss, Fugen verspachtelt in Q2.
+2.30 | 1120 m2 | Flurtrennwand F 30-A, d = 125 mm | Flurtrennwand als Metallständerwand in Brandschutzausführung F 30-A, Unterkonstruktion CW/UW 75, beidseitig 2 x 12,5 mm Gipsplatten Typ DF, Dämmung Mineralwolle 60 mm, Schmelzpunkt über 1000 Grad C. // Wandhöhe bis 3,25 m, einschließlich gleitendem Deckenanschluss und Prüfzeugnis.
+2.40 | 380 m2 | Wand wie Position 2.10, jedoch imprägnierte Platten | Metallständerwand wie Position 2.10, jedoch Beplankung auf der Nassraumseite mit imprägnierten Gipsplatten Typ H2 für die Sanitärkerne.
+2.50 | - m2 | Installationswand als Doppelständerwand | Installationswand als Doppelständerwand, 2 x CW 75 mit Laschen verbunden, Wanddicke nach Erfordernis der Haustechnik 220 bis 300 mm, beidseitig 2 x 12,5 mm imprägnierte Gipsplatten, Dämmung 60 mm. // Einschließlich Aussparungen für Sanitärgegenstände ohne gesonderte Vergütung.
+2.60 | 265 St | Türöffnung in Metallständerwand herstellen | Wandöffnung für Türen bis 1,01 x 2,135 m in Metallständerwänden herstellen, mit UA-Aussteifungsprofilen 2 mm und Türsturzprofil, Anschlusswinkel an Boden und Decke gedübelt.
+2.70 | 96 m | Bewegungsfuge in Metallständerwand | Bewegungsfuge in Metallständerwänden im Bereich der Gebäudefugen herstellen, mit Fugenprofil und Hinterlegung, in Brandschutzwänden mit Plattenstreifen nach Prüfzeugnis.
+2.80 | 420 m2 | Freie Wandenden und Wandecken, Kantenschutz | Außenecken und freie Wandenden der Metallständerwände mit verzinkten Kantenschutzprofilen einspachteln, Profilhöhe bis 3,25 m.
+# 3 | Vorsatzschalen und Bekleidungen
+3.10 | 910 m2 | Vorsatzschale freistehend, CW 50, 2-lagig | Freistehende Vorsatzschale vor Stahlbetonwänden, Unterkonstruktion CW/UW 50, einseitig 2 x 12,5 mm Gipsplatten, Dämmung Mineralwolle 40 mm, Höhe bis 3,25 m, Fugen verspachtelt in Q2.
+3.20 | 340 m2 | Schachtwand F 90-A, einseitig beplankt | Schachtwand als einseitig beplankte Metallständerwand F 90-A, Unterkonstruktion CW 75, Beplankung 2 x 20 mm Feuerschutzplatten Fabrikat Nordgips Typ Massiv 20, Verarbeitung nach Herstellerrichtlinie. // Höhe bis 3,25 m, einschließlich Revisionsöffnungsauswechslungen.
+3.30 | 780 m | Stützen- und Unterzugbekleidung | Bekleidung von Stahlbetonstützen und Unterzügen mit 12,5 mm Gipsplatten auf Unterkonstruktion aus CD-Profilen, Abwicklung bis 1,20 m, Kanten mit Kantenschutz.
+3.40 | 185 St | Revisionsklappe 30 x 30 cm in Wand | Revisionsklappe 30 x 30 cm mit Aluminiumrahmen und Gipsplatteneinlage 12,5 mm in Wand oder Vorsatzschale einbauen, Verschluss mit Schnappverschluss, einschließlich Auswechslung der Unterkonstruktion.
+3.50 | 54 St | Revisionsklappe 60 x 60 cm, F 90 | Revisionsklappe 60 x 60 cm in Brandschutzausführung F 90 mit Zulassung in Schachtwand einbauen, mit Vierkantverschluss.
+# 4 | Abgehängte Decken
+4.10 | 4350 m2 | Abgehängte Gipsplattendecke, 1-lagig | Abgehängte Decke nach DIN 18181, Unterkonstruktion aus CD 60/27 als Grund- und Tragprofil, Abhängehöhe bis 60 cm mit Noniusabhängern, Beplankung 1 x 12,5 mm Gipsplatten. // Einschließlich Randanschluss mit Schattenfuge 15 mm.
+4.20 | 620 m2 | Unterdecke F 30 von unten, Flure | Selbständige Brandschutzunterdecke F 30-A bei Brandbeanspruchung von unten, Beplankung 2 x 12,5 mm Gipsplatten Typ DF, Unterkonstruktion nach Prüfzeugnis, Abhängehöhe bis 80 cm.
+4.30 | 1850 m2 | Akustikdecke aus Gipslochplatten | Akustikdecke aus Gipslochplatten 12,5 mm, Rundlochung 8/18, rückseitig mit Akustikvlies, auf Unterkonstruktion CD 60/27, Mineralwollauflage 40 mm, Schallabsorptionsgrad alpha w mindestens 0,60. Farbton der Sichtseite nach Wahl des AG.
+4.40 | 1850 m2 | Mineralfaserdecke 62,5 x 62,5 cm statt Pos. 4.30 | Wahlposition zu Position 4.30: Abgehängte Rasterdecke aus Mineralfaserplatten 62,5 x 62,5 cm, 19 mm, auf sichtbarem Schienensystem weiß, Schallabsorptionsgrad alpha w mindestens 0,70. | A
+4.50 | 4970 m2 | Deckenflächen spachteln Q3 | Deckenflächen der Positionen 4.10 und 4.20 vollflächig in Oberflächengüte Q3 spachteln und schleifen, einschließlich Grundierung der Spachtelflächen.
+4.60 | 310 St | Einbauöffnung für Leuchten und Luftauslässe | Ausschnitte für Einbauleuchten, Lautsprecher und Luftauslässe bis 0,10 m2 in abgehängten Decken nach Angabe der Haustechnik herstellen, einschließlich Auswechslung.
+4.70 | 140 St | Revisionsklappe 30 x 30 cm in Decke | Revisionsklappe 30 x 30 cm mit Aluminiumrahmen und Gipsplatteneinlage in abgehängte Decke einbauen, einschließlich Auswechslung der Unterkonstruktion.
+# 5 | Türzargen und Einbauten
+5.10 | 214 St | Stahlumfassungszarge 885 x 2135 mm | Stahlumfassungszarge nach DIN 18111, 1,5 mm, grundiert, für Wanddicke 125 mm, lichtes Durchgangsmaß 885 x 2135 mm, mit Dämpfungsprofil, in Metallständerwand einbauen und hinterfüllen.
+5.20 | 51 St | Stahlumfassungszarge 1010 x 2135 mm | Stahlumfassungszarge wie Position 5.10, jedoch lichtes Durchgangsmaß 1010 x 2135 mm für Wanddicke 150 mm.
+5.30 | 128 St | Traverse für Sanitärgegenstände | Traversen und Tragständer für wandhängende WC, Waschtische und Urinale in Installationswände einbauen, Lastklasse bis 1,5 kN/m.
+# 6 | Spachtel- und Malerarbeiten
+6.10 | 9800 m2 | Wandflächen spachteln Q3 | Wandflächen aus Gipsplatten vollflächig in Oberflächengüte Q3 spachteln und schleifen, Höhe bis 3,25 m.
+6.20 | 4970 m2 | Deckenflächen aus Gipsplatten spachteln Q3 | Gipsplattendecken vollflächig in Q3 spachteln, schleifen und entstauben, Arbeitshöhe bis 3,50 m.
+6.30 | 9800 m2 | Dispersionsanstrich auf Wandflächen | Anstrich auf Wandflächen mit Dispersionsfarbe nach DIN EN 13300, Nassabriebklasse 2, Deckvermögen Klasse 1, stumpfmatt, ein Zwischen- und ein Schlussanstrich, Farbton weiß ähnlich RAL 9010.
+6.40 | 6820 m2 | Dispersionsanstrich auf Deckenflächen | Anstrich auf Gipsplattendecken und Akustikdecken mit Dispersionsfarbe, Nassabriebklasse 3, stumpfmatt, weiß, ein Zwischen- und ein Schlussanstrich. Lochplatten im Rollverfahren, Lochung ist freizuhalten.
+6.50 | 1400 m2 | Zulage Farbton nach Wahl des AG | Zulage zu Position 6.30 für Anstrich in Volltönen oder Sonderfarbtönen nach Wahl des AG, Farbtonkollektion und Anzahl der Farbtöne werden zur Ausführung festgelegt.
+6.60 | 12400 m2 | Spachtelung Q4 statt Q3 | Zulage für vollflächiges Überziehen und Glätten der Wand- und Deckenflächen in Oberflächengüte Q4 statt Q3, Schichtdicke mindestens 1 mm, Ausführung nur auf Anordnung des AG. | E
+6.70 | 265 St | Stahlzargen lackieren | Stahlzargen anschleifen, entfetten und mit Kunstharzlack seidenglänzend beschichten, ein Zwischen- und ein Schlussanstrich, Farbton RAL 7016.
+6.80 | 2150 m | Acrylfuge an Anschlüssen | Anschlussfugen zwischen Trockenbau und Massivbauteilen, Zargen und Fensterlaibungen mit überstreichbarem Acryldichtstoff schließen.
+# 7 | Stundenlohnarbeiten
+7.10 | 120 h | Facharbeiter Trockenbau | Stundenlohnarbeiten Facharbeiter, nur auf schriftliche Anordnung der Bauleitung des AG, Nachweis durch täglich gegengezeichnete Stundenzettel.
+"""
+
+[[mail]]
+id = "anfrage"
+day = -1
+time = "07:52"
+from = "gu.witt"
+to = "us"
+subject = "NU-Anfrage 4471-039 Überseering 40 – Trockenbau/Maler – Abgabe {+6}"
+body = """Sehr geehrte Damen und Herren,
+
+für unser BV Bürogebäude Überseering 40 (Neubau, 6 Ebenen, ca. 6.900 m² BGF) vergeben wir die Trockenbau- und Malerarbeiten als ein Paket. LV als Excel anbei, bitte EP direkt in Spalte F eintragen und die Datei zurücksenden, kein eigenes Formular.
+
+Eckdaten:
+- Abgabe: {+6}, 12:00 Uhr, nur per Mail an mich
+- Volumen nach unserer Kalkulation ca. 1,1 Mio. € netto
+- ca. 3.850 m² Ständerwände, 6.800 m² Decken, 9.800 m² Anstrich Wand
+- Ausführung ab {+62}, geschossweise von unten nach oben, 16 Wochen
+
+Konditionen (nicht verhandelbar, bitte so kalkulieren):
+- Zahlungsziel 30 Tage netto nach Rechnungsprüfung, 21 Tage mit 3 % Skonto
+- 5 % Sicherheitseinbehalt auf die Abschlagszahlungen, 5 % Gewährleistungseinbehalt über 5 Jahre + 1 Monat, ablösbar durch Bürgschaft
+- Umlage Baustrom/Bauwasser 1,2 %, Bauwesenversicherung 0,35 %
+- Vertragsstrafe 0,2 % je Werktag, max. 5 %
+- Pauschalierung nach Verhandlung vorbehalten
+
+Wir erwarten einen Nachlass auf die Angebotssumme, bitte gleich mit ausweisen. Nebenangebote sind erwünscht, soweit das Hauptangebot vollständig ist. Vergabegespräche in KW {kw+9}.
+
+Pläne (Grundrisse, Wandtypenplan, Deckenspiegel) schicke ich bei Interesse per Downloadlink. Kurze Rückmeldung bis {+2}, ob Sie anbieten, wäre gut."""
+attach = ["lv:trockenbau"]

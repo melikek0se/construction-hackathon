@@ -1,0 +1,437 @@
+# P2: Trinkwasserleitung DN 200 Hauptstraße, Brande (Wasserverband Geestrand). Estimated day -410 … -395, won.
+# The client's side of the job as it lies in our estimator's mailbox.
+
+[[lv]]
+key = "wasser"
+file = "LV_TWL_Hauptstrasse_Brande"
+format = "d83"
+client = "wvg"
+name = "Trinkwasserleitung Hauptstraße"
+project = "Erneuerung Trinkwasserleitung DN 200 Hauptstraße, Brande"
+number = "WVG-N-2207"
+remarks = """Vorbemerkungen
+Bauvorhaben: Erneuerung der Trinkwasserleitung in der Hauptstraße in Brande-Hörnerkirchen zwischen Kirchenstraße und Ortsausgang Richtung Lutzhorn, Länge rund 1.240 m. Die vorhandene Graugussleitung DN 200 aus den 1960er Jahren wird durch eine Leitung PE 100 RC da 225 ersetzt, 46 Hausanschlüsse werden erneuert und umgebunden.
+Vergabeart: Beschränkte Ausschreibung nach VOB/A.
+Angebotsfrist: {-395}, 11:00 Uhr
+Bindefrist: {-365}
+Bieterfragen bis: {-401}
+Ausführungsbeginn: {-350}
+Fertigstellung: {-235}
+Die neue Leitung liegt im südlichen Gehweg und im Fahrbahnrand, Regelüberdeckung 1,30 m. Gebaut wird in Abschnitten von höchstens 150 m unter halbseitiger Sperrung.
+Der AN muss ein nach DVGW GW 301 zertifiziertes Rohrleitungsbauunternehmen sein, mindestens Gruppe W 3 mit Zusatz pe. Schweißer mit gültiger Prüfung nach DVGW GW 330.
+Es gelten VOB/B und VOB/C, DVGW W 400-1 bis W 400-3, DVGW W 291, DIN EN 805, ZTV A-StB."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Einrichtung und Verkehr
+1.1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle für sämtliche Leistungen einrichten, für die Bauzeit vorhalten und nach Abschluss räumen. // Lagerplatz für Rohre und Baustoffe am Wasserwerk, Am Wasserwerk 3, Entfernung rund 1,5 km.
+1.1.20 | 1 psch | Verkehrssicherung Ortsdurchfahrt | Verkehrssicherung nach RSA 21 für halbseitige Sperrung der Ortsdurchfahrt einrichten, je Bauabschnitt umsetzen und räumen, einschließlich Verkehrszeichenplan und Antrag auf verkehrsrechtliche Anordnung. Fußgängerführung mit Notwegen und Grabenbrücken.
+1.1.30 | 18 Wo | Lichtsignalanlage vorhalten | Mobile Lichtsignalanlage für Engstellenregelung vorhalten und betreiben einschließlich Wartung und Akkuwechsel. Abrechnung je Kalenderwoche.
+1.1.40 | 12 St | Suchschachtung | Suchschachtung von Hand zur Feststellung der Lage kreuzender Leitungen, Tiefe bis 1,50 m, Größe bis 1,0 x 1,5 m, einschließlich Wiederverfüllen.
+# 2 | Erd- und Oberflächenarbeiten
+# 2.1 | Aufbruch und Rohrgraben
+2.1.10 | 1480 m2 | Asphaltbefestigung aufbrechen | Asphaltbefestigung von Gehweg und Fahrbahnrand, Dicke bis 14 cm, schneiden, aufbrechen, laden und verwerten. Teerfrei nach Untersuchung des AG.
+2.1.20 | 620 m2 | Betonpflaster aufnehmen und lagern | Betonsteinpflaster 8 cm und Gehwegplatten aufnehmen, reinigen und zur Wiederverwendung seitlich lagern. Bruch bis 5 % ist einzurechnen.
+2.1.30 | 2350 m3 | Rohrgraben ausheben, Tiefe bis 1,75 m | Boden der Homogenbereiche A und B für Rohrgraben lösen und laden, Grabentiefe bis 1,75 m, Sohlbreite nach DIN 4124. Handschachtung an kreuzenden Leitungen eingeschlossen.
+2.1.40 | 2600 m2 | Grabenverbau | Grabenverbau mit Leichtverbauplatten, Tiefe bis 1,75 m, einbauen, vorhalten und umsetzen. Abrechnung nach verbauter Grabenwandfläche.
+2.1.50 | 1650 t | Boden entsorgen bis Z 1.2 | Überschüssigen Aushub der Zuordnung bis Z 1.2 nach LAGA abfahren und verwerten. Abrechnung nach Wiegescheinen.
+2.1.60 | 780 m3 | Leitungszone mit Sand herstellen | Steinfreien Sand 0/2 liefern, als Bettung 10 cm und Umhüllung bis 20 cm über Rohrscheitel einbauen und verdichten.
+2.1.70 | 1500 m3 | Rohrgraben verfüllen | Rohrgraben oberhalb der Leitungszone mit geliefertem Füllsand lagenweise verfüllen und verdichten, DPr mindestens 98 %.
+2.1.80 | 650 m3 | Bodenaustausch bei nicht tragfähiger Sohle | Nicht tragfähigen Boden unter der Grabensohle zusätzlich ausheben, entsorgen und durch Kiessand 0/32 ersetzen. Nur auf Anordnung der Bauleitung. | E
+# 2.2 | Wiederherstellung
+2.2.10 | 1480 m2 | Schottertragschicht 0/45, 20 cm | Schottertragschicht 0/45 liefern und in 20 cm Dicke einbauen, EV2 mindestens 120 MN/m2.
+2.2.20 | 1480 m2 | Asphalttragschicht AC 22 T N, 10 cm | Asphalttragschicht AC 22 T N, Einbaudicke 10 cm, in Graben- und Randbereichen liefern und einbauen, auch im Handeinbau.
+2.2.30 | 1480 t | Asphaltdeckschicht AC 8 D N, 3 cm | Asphaltdeckschicht AC 8 D N, Einbaudicke 3 cm, liefern und einbauen einschließlich Nahtband an den Anschlüssen. Abrechnung nach Fläche.
+2.2.40 | 620 m2 | Pflaster wieder verlegen | Gelagertes Betonpflaster und Gehwegplatten auf 4 cm Brechsand-Splitt-Bettung wieder verlegen, einsanden und abrütteln. Fehlende Steine liefern.
+# 3 | Rohrleitungsbau
+# 3.1 | Rohre und Formstücke
+3.1.10 | 1240 m | Druckrohr PE 100 RC da 225 SDR 11 | Trinkwasserdruckrohr PE 100 RC, da 225 x 20,5 mm, SDR 11, PN 16, mit DVGW-Zulassung nach GW 335-A2, in Stangen von 12 m liefern, durch Heizelementstumpfschweißen verbinden und im Graben verlegen. Schweißprotokolle sind zu übergeben.
+3.1.20 | 34 St | Formstücke PE da 225 | Formstücke PE 100 da 225 (Bögen 11 bis 90 Grad, T-Stücke, Reduzierungen, Vorschweißbunde mit Losflansch) liefern und einschweißen. Art und Aufteilung der Formstücke nach Wahl des AG.
+3.1.30 | 1240 m | Trassenwarnband und Ortungsdraht | Trassenwarnband blau, Aufdruck Trinkwasser, 30 cm über Rohrscheitel, und Ortungsdraht Cu 2,5 mm2 am Rohr liefern und einlegen.
+# 3.2 | Armaturen und Einbindungen
+3.2.10 | 9 St | Absperrschieber DN 200 PN 16 | Weichdichtender Keil-Flachschieber DN 200, PN 16, GGG, innen und außen epoxidbeschichtet, nach DIN EN 1074, mit Einbaugarnitur, Tragplatte und Straßenkappe liefern und einbauen.
+3.2.20 | 4 St | Absperrschieber DN 100 PN 16 | Wie Position 3.2.10, jedoch DN 100 für Abgänge in Seitenstraßen.
+3.2.30 | 7 St | Unterflurhydrant DN 80 | Unterflurhydrant DN 80, PN 16, Rohrdeckung 1,25 m, mit doppelter Absperrung, nach DIN EN 14339, einschließlich Fußkrümmer, Straßenkappe, Tragplatte und Hinweisschild liefern und einbauen.
+3.2.40 | 6 St | Einbindung in vorhandene Leitung | Einbindung der neuen Leitung in die vorhandene Graugussleitung DN 200 oder DN 100 mit zugfesten Kupplungen und Flanschformstücken, einschließlich Trennen und Entleeren der Altleitung. Ausführung zum Teil nachts.
+# 3.3 | Hausanschlüsse
+3.3.10 | 46 St | Anbohrarmatur da 225 mit Absperrung | Anbohrarmatur für PE-Rohr da 225 mit Betriebsabsperrung, Abgang da 40, mit Einbaugarnitur und Straßenkappe liefern und unter Druck anbohren.
+3.3.20 | 410 m | Hausanschlussleitung PE da 40 | Hausanschlussleitung PE 100 RC da 40 SDR 11 liefern und im offenen Graben oder mit Erdrakete bis zur Grundstücksgrenze verlegen. Erdarbeiten sind einzurechnen.
+3.3.30 | 46 St | Hausanschluss umbinden | Vorhandene Hausanschlussleitung an der Grundstücksgrenze freilegen, trennen und mit Klemmverbinder an die neue Leitung anschließen. Abstimmung mit den Anliegern durch den AN.
+3.3.40 | - m | Hausanschlussleitung PE da 63 | Wie Position 3.3.20, jedoch da 63 für Gewerbeanschlüsse.
+# 3.4 | Prüfung und Inbetriebnahme
+3.4.10 | 1 psch | Druckprüfung | Druckprüfung der Leitung in Abschnitten nach DVGW W 400-2 im Kontraktionsverfahren, Prüfdruck 15 bar, einschließlich Protokollen.
+3.4.20 | 1 psch | Spülen, Desinfektion, Probenahme | Leitung abschnittsweise spülen und nach DVGW W 291 desinfizieren, Probenahme und mikrobiologische Untersuchung durch ein akkreditiertes Labor. Wiederholungen bis zur Freigabe ohne gesonderte Vergütung.
+3.4.30 | 1240 m | Einmessung und Bestandsplan | Leitung, Armaturen und Hausanschlüsse am offenen Graben einmessen und als Bestandsplan in digitaler Form (DXF, Lage im ETRS89) übergeben.
+3.4.40 | 1 psch | Provisorische Wasserversorgung | Provisorische Versorgung der Anlieger während der Umbindungen mit oberirdischer Notleitung herstellen, vorhalten und zurückbauen. Anzahl der zu versorgenden Anschlüsse und Dauer nach Bauablauf.
+# 4 | Stundenlohnarbeiten
+# 4.1 | Stundenlohn
+4.1.10 | 60 h | Facharbeiter Rohrleitungsbau | Stundenlohnarbeiten Rohrleitungsbauer, nur auf Anordnung des AG.
+4.1.20 | 30 h | Minibagger mit Bediener | Minibagger bis 5 t mit Bediener, nur auf Anordnung des AG.
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "Angebotsaufforderung_WVG-N-2207.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "wvg"
+text = """Vergabenummer: WVG-N-2207
+Maßnahme: Erneuerung Trinkwasserleitung DN 200 Hauptstraße, Brande-Hörnerkirchen
+Vergabeart: Beschränkte Ausschreibung nach VOB/A
+
+Sehr geehrte Damen und Herren,
+
+der Wasserverband Geestrand bittet Sie um ein Angebot für die oben genannte Leistung.
+
+Angebotsfrist und Eröffnungstermin: {-395|long}, 11:00 Uhr, Geschäftsstelle Am Wasserwerk 3
+Bindefrist: {-365}
+Fragen zu den Unterlagen: bis {-401} per E-Mail an Frau Lührs
+Ausführung: Beginn {-350}, Fertigstellung {-235}
+
+Angebote können schriftlich im verschlossenen Umschlag oder elektronisch in Textform per E-Mail an angebote@wv-geestrand.test abgegeben werden. Nebenangebote sind nur zusammen mit einem Hauptangebot zugelassen.
+
+Mit dem Angebot vorzulegen: ausgefülltes Leistungsverzeichnis, DVGW-Zertifikat GW 301 (W 3 pe), Liste der vorgesehenen Fabrikate für Rohre und Armaturen, Verzeichnis der Nachunternehmer.
+Zuschlagskriterium: Preis.
+Sicherheit: Vertragserfüllungsbürgschaft 5 % der Auftragssumme.
+
+Anlagen: Leistungsverzeichnis (GAEB 90, D83), Lagepläne 1:250 Blatt 1 bis 5, Regelgraben, Leitungsauskünfte."""
+
+[[doc]]
+key = "ergebnis"
+file = "Submissionsergebnis_WVG-N-2207.pdf"
+title = "Ergebnis der Angebotseröffnung"
+from = "wvg"
+text = """Vergabenummer: WVG-N-2207
+Maßnahme: Erneuerung Trinkwasserleitung DN 200 Hauptstraße, Brande-Hörnerkirchen
+Eröffnung: {-395}, 11:00 Uhr
+Aufgefordert: 6 Unternehmen. Eingegangen: 5 Angebote, 1 Absage.
+
+Angebotsendsummen netto, ungeprüft:
+
+Rang | Bieter | Summe netto
+1 | Bieter 3 | 902.615,30
+2 | Bieter 1 | 918.240,85
+3 | Bieter 5 | 947.108,00
+4 | Bieter 2 | 981.566,40
+5 | Bieter 4 | 1.036.920,15
+
+Ihr Angebot: Bieter 3.
+
+Die Angebote werden jetzt rechnerisch und technisch geprüft. Die Vergabeentscheidung trifft der Verbandsvorstand."""
+
+[[doc]]
+key = "auftrag"
+file = "Auftragsschreiben_WVG-N-2207.pdf"
+title = "Auftragserteilung"
+from = "wvg"
+text = """Vergabenummer: WVG-N-2207
+Maßnahme: Erneuerung Trinkwasserleitung DN 200 Hauptstraße, Brande-Hörnerkirchen
+An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+
+Sehr geehrte Damen und Herren,
+
+der Verbandsvorstand hat in seiner Sitzung am {-382} beschlossen, Ihnen auf Ihr Angebot vom {-395} den Auftrag zu erteilen.
+
+Auftragssumme netto: 902.615,30 EUR
+Umsatzsteuer 19 %: 171.496,91 EUR
+Auftragssumme brutto: 1.074.112,21 EUR
+
+Grundlage sind das Leistungsverzeichnis mit Vorbemerkungen, unsere Antworten auf die Bieterfragen vom {-400}, die Pläne sowie VOB/B und VOB/C.
+Ausführung: Beginn {-350}, Fertigstellung {-235} (Vertragsfrist).
+Vertragserfüllungsbürgschaft: 45.130,77 EUR, vorzulegen bis zur Bauanlaufbesprechung.
+
+Rohre, Formstücke und Armaturen dürfen erst nach schriftlicher Freigabe der Fabrikate durch den Verband bestellt werden.
+
+Wasserverband Geestrand
+Der Verbandsvorsteher"""
+
+[[mail]]
+id = "einladung"
+day = -410
+time = "10:08"
+from = "wvg.luehrs"
+to = "us"
+subject = "Angebotsaufforderung Trinkwasserleitung Hauptstraße Brande (WVG-N-2207)"
+body = """Guten Tag Herr Doe,
+
+wir erneuern in diesem Jahr die alte Graugussleitung in der Hauptstraße in Brande, rund 1.240 m PE da 225 mit 46 Hausanschlüssen, und schreiben das beschränkt aus. Sie stehen mit Ihrer GW-301-Zertifizierung auf unserer Liste, deshalb bekommen Sie die Unterlagen.
+
+Im Anhang: die Angebotsaufforderung und das LV als D83. Die Lagepläne sind zu groß für die Mail, die liegen unter dem Link, den ich gleich hinterherschicke.
+
+Das Wichtigste:
+Angebotsfrist: {-395|long}, 11:00 Uhr
+Fragen bitte bis {-401} an mich
+Bauzeit: {-350} bis {-235}
+
+Eine Ortsbesichtigung ist jederzeit möglich, die Trasse ist frei zugänglich. Wenn Sie in die Schieberschächte an der Kirchenstraße schauen wollen, rufen Sie kurz vorher an, dann kommt unser Wassermeister dazu."""
+attach = ["doc:anschreiben", "lv:wasser"]
+
+[[mail]]
+id = "fragen"
+day = -404
+time = "09:20"
+from = "us"
+to = "wvg.luehrs"
+subject = "Bieterfragen zu WVG-N-2207 – Trinkwasserleitung Hauptstraße Brande"
+body = """Sehr geehrte Frau Lührs,
+
+vielen Dank für die Unterlagen. Wir waren am {-406} vor Ort und haben zum Leistungsverzeichnis vier Fragen:
+
+1. Position 3.4.40 „Provisorische Wasserversorgung“, 1 psch
+Der Langtext lässt offen: „Anzahl der zu versorgenden Anschlüsse und Dauer nach Bauablauf“. Für eine Pauschale brauchen wir einen Rahmen. Wir nehmen an, dass je Bauabschnitt (bis 150 m) die dort liegenden Anschlüsse für längstens zwei Wochen über eine Notleitung da 63 versorgt werden, insgesamt 46 Anschlüsse. Ist das so richtig, und ist die Notleitung zu desinfizieren und zu beproben?
+
+2. Position 3.3.40 „Hausanschlussleitung PE da 63“
+Die Position hat keine Menge. Wie viele Meter sind für die Gewerbeanschlüsse vorgesehen?
+
+3. Position 3.4.20 „Spülen, Desinfektion, Probenahme“, 1 psch
+„Wiederholungen bis zur Freigabe ohne gesonderte Vergütung“: Ein schlechter Befund kann auch aus dem Bestandsnetz oder aus der Probenahme stammen. Wir gehen davon aus, dass eine Wiederholung je Abschnitt im Preis liegt und weitere Wiederholungen nur dann zu unseren Lasten gehen, wenn die Ursache bei uns liegt.
+
+4. Position 2.2.30 „Asphaltdeckschicht AC 8 D N, 3 cm“, 1480 t
+Der Langtext sagt „Abrechnung nach Fläche“, die Einheit ist t. Bei 1.480 m² und 3 cm wären es rund 110 t. Wir gehen von 1.480 m² aus.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "antwort"
+day = -400
+time = "15:32"
+from = "wvg.luehrs"
+to = "us"
+subject = "AW: Bieterfragen zu WVG-N-2207 – Trinkwasserleitung Hauptstraße Brande"
+reply_to = "fragen"
+body = """Hallo Herr Doe,
+
+danke fürs genaue Lesen, da waren tatsächlich zwei Fehler drin. Die Antworten gehen gleichlautend an alle Bieter.
+
+Zu 1 (Pos. 3.4.40): Ihre Annahme stimmt. Abschnittsweise Notversorgung über eine oberirdische Leitung da 63, insgesamt 46 Anschlüsse, je Abschnitt höchstens zwei Wochen, acht Abschnitte. Die Notleitung ist vor Inbetriebnahme zu spülen und zu desinfizieren, eine Probe je Abschnitt. Die Standrohre mit Zähler stellen wir.
+
+Zu 2 (Pos. 3.3.40): Da ist die Menge beim Export verloren gegangen. Es sind 35 m (zwei Anschlüsse: Meierei und Landhandel).
+
+Zu 3 (Pos. 3.4.20): Die Position bleibt, wie sie ist. Das Risiko von Wiederholungen ist einzukalkulieren. Bei sauberer Arbeit ist das nach unserer Erfahrung kein Thema.
+
+Zu 4 (Pos. 2.2.30): Richtig, die Einheit ist m2. Menge 1.480 m2. Bitte den Einheitspreis je m2 anbieten, wir werten so.
+
+Die Frist bleibt beim {-395}, 11:00 Uhr."""
+
+[[mail]]
+id = "abgabe"
+day = -395
+time = "08:47"
+from = "us"
+to = "wvg.luehrs"
+cc = ["us"]
+subject = "Angebot WVG-N-2207 Trinkwasserleitung Hauptstraße Brande – fristgerecht eingereicht"
+body = """Sehr geehrte Frau Lührs,
+
+unser Angebot zur Vergabe WVG-N-2207 haben wir heute um 08:41 Uhr elektronisch in Textform an angebote@wv-geestrand.test gesendet (Angebotsschreiben, LV als P84 und PDF, DVGW-Zertifikat GW 301 W 3 pe, Fabrikatsliste, Nachunternehmerverzeichnis). Die Antworten vom {-400} sind berücksichtigt (Position 3.3.40 mit 35 m, Position 2.2.30 in m2).
+
+Zu Ihrer Erleichterung hängt das Angebot als GAEB-Datei (D84) auch an dieser Mail an. Angebotssumme: 902.615,30 EUR netto.
+
+Bitte bestätigen Sie kurz den Eingang.
+
+Mit freundlichen Grüßen"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "ergebnis"
+day = -394
+time = "13:15"
+from = "wvg.luehrs"
+to = "us"
+subject = "AW: Angebot WVG-N-2207 Trinkwasserleitung Hauptstraße Brande – fristgerecht eingereicht"
+reply_to = "abgabe"
+body = """Hallo Herr Doe,
+
+Ihr Angebot war rechtzeitig da. Wir haben am {-395} um 11 Uhr geöffnet, das Ergebnis hängt an. Fünf Angebote, Sie liegen ungeprüft vorn, mit rund 15.600 EUR Abstand zum Zweiten.
+
+Jetzt wird gerechnet und geprüft. Der Vorstand tagt am {-382}, vorher kann ich Ihnen nichts Verbindliches sagen. Eine Frage schon jetzt: Welches Rohrfabrikat steckt hinter „PE 100 RC Typ 2“ in Ihrer Fabrikatsliste? Wir brauchen für die Freigabe das DVGW-Baumusterprüfzertifikat."""
+attach = ["doc:ergebnis"]
+
+[[mail]]
+id = "zuschlag"
+day = -380
+time = "09:40"
+from = "wvg.luehrs"
+to = "us"
+subject = "Auftragserteilung Trinkwasserleitung Hauptstraße Brande (WVG-N-2207)"
+body = """Hallo Herr Doe,
+
+gute Nachrichten: Der Vorstand hat am {-382} zugestimmt, Sie bekommen den Auftrag. Das Auftragsschreiben hängt an, das Original mit Unterschrift des Verbandsvorstehers ist in der Post.
+
+Auftragssumme 902.615,30 EUR netto. Das Auftrags-LV hängt als D86 mit an, es entspricht Position für Position Ihrem Angebot.
+
+Bitte schicken Sie mir den Namen Ihres Bauleiters und bestellen Sie noch kein Material: Rohre und Armaturen geben wir erst nach Vorlage der Zertifikate frei, siehe letzter Absatz im Schreiben. Termin für die Bauanlaufbesprechung schlage ich in den nächsten Tagen vor."""
+attach = ["doc:auftrag", "lv:auftrag"]
+
+[[mail]]
+id = "bestaetigung"
+day = -377
+time = "11:02"
+from = "us"
+to = "wvg.luehrs"
+cc = ["us.albers"]
+subject = "AW: Auftragserteilung Trinkwasserleitung Hauptstraße Brande (WVG-N-2207)"
+reply_to = "zuschlag"
+body = """Sehr geehrte Frau Lührs,
+
+vielen Dank für den Auftrag, dessen Empfang wir hiermit bestätigen. Wir freuen uns auf die Zusammenarbeit.
+
+Bauleiter ist Herr Jonas Albers (in Kopie, Mobil +49 171 5550 318). Die Vertragserfüllungsbürgschaft über 45.130,77 EUR bringen wir zur Bauanlaufbesprechung mit. Material wird erst nach Ihrer Freigabe bestellt; die Zertifikate für Rohr, Schieber, Hydranten und Anbohrarmaturen stellt Herr Albers bis Ende nächster Woche zusammen.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "anlauf"
+day = -371
+time = "14:18"
+from = "wvg.luehrs"
+to = "us"
+cc = ["us.albers"]
+subject = "Hauptstraße Brande: Bauanlaufbesprechung am {-362}, Materialfreigabe"
+body = """Hallo Herr Doe, hallo Herr Albers,
+
+die Bauanlaufbesprechung machen wir am {-362|long} um 10:00 Uhr bei uns im Wasserwerk. Dabei sind die Gemeinde, die Verkehrsaufsicht des Kreises, unser Wassermeister und der Netzbetreiber Strom / Gas.
+
+Bitte bringen Sie mit:
+- die Bürgschaft im Original
+- den Bauzeitenplan mit den acht Abschnitten (wir möchten an der Kirchenstraße anfangen, weil dort die Einbindung nachts gemacht werden muss)
+- den Entwurf des Verkehrszeichenplans
+- die Schweißerzeugnisse GW 330 der Leute, die tatsächlich auf die Baustelle kommen
+
+Zur Materialfreigabe brauche ich vorab per Mail: Rohr da 225 und da 40 / da 63 mit DVGW-Zertifikat und Werkszeugnis 3.1, Schieber DN 200 und DN 100, Unterflurhydranten DN 80, Anbohrarmaturen. Bei den Schiebern legen wir Wert auf die GSK-Beschichtung, bitte das Gütezeichen mitschicken. Hydranten bitte in der Ausführung mit doppelter Absperrung, wie ausgeschrieben, da hatten wir bei der letzten Baustelle Ärger."""
+
+[[mail]]
+id = "anlauf_aw"
+day = -366
+time = "16:25"
+from = "us.albers"
+to = "wvg.luehrs"
+cc = ["us"]
+subject = "AW: Hauptstraße Brande: Bauanlaufbesprechung am {-362}, Materialfreigabe"
+reply_to = "anlauf"
+body = """Sehr geehrte Frau Lührs,
+
+der Termin am {-362} um 10:00 Uhr passt, Herr Doe und ich kommen.
+
+Zur Freigabe vorab:
+- Rohr PE 100 RC da 225 SDR 11 und da 40 / da 63: Hersteller-Datenblatt, DVGW-Zertifikat und Muster-Werkszeugnis 3.1 kommen morgen mit getrennter Mail, die Dateien sind zu groß
+- Schieber DN 200 (9 Stück) und DN 100 (4 Stück): weichdichtend, GSK-beschichtet, Gütezeichen liegt bei
+- Unterflurhydranten DN 80 (7 Stück): mit doppelter Absperrung, Rohrdeckung 1,25 m
+- Anbohrarmaturen da 225 / da 40 (46 Stück) mit Betriebsabsperrung
+
+Lieferzeit für die Schieber DN 200 nennt der Händler mit vier Wochen ab Bestellung. Wenn die Freigabe bis zur Besprechung da ist, halten wir den Beginn am {-350}.
+
+Bauzeitenplan und Verkehrszeichenplan bringe ich mit. Beginn an der Kirchenstraße ist eingeplant, Nachteinbindung in der zweiten Bauwoche.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "nachtrag_anfrage"
+day = -318
+time = "08:36"
+from = "wvg.luehrs"
+to = "us.albers"
+cc = ["us"]
+subject = "Hauptstraße Brande: zusätzlicher Hydrant und vier Hausanschlüsse Nr. 61–67, bitte Preis"
+body = """Hallo Herr Albers,
+
+zwei Dinge, die nicht im LV stehen:
+
+1. Die Feuerwehr möchte vor dem Landhandel (Station 0+940) einen zusätzlichen Unterflurhydranten DN 80. Der Abstand zum nächsten wäre sonst 190 m.
+
+2. Die Häuser Nr. 61 bis 67 hängen bisher an einer Sammelleitung über ein Privatgrundstück. Die Eigentümer haben jetzt zugestimmt, dass jedes Haus einen eigenen Anschluss bekommt. Das sind vier zusätzliche Anschlüsse mit zusammen etwa 46 m Leitung da 40.
+
+Für den Hydranten und die Anschlüsse gibt es LV-Preise, das läuft als Mehrmenge. Was nicht drin ist: Bei Nr. 65 und 67 muss die Leitung unter einer Natursteinmauer durch, etwa 6 m, das geht nur mit der Erdrakete und zwei Kopflöchern im Vorgarten. Dafür bräuchte ich einen Preis von Ihnen, gern kurz per Mail an Herrn Doe und mich."""
+
+[[mail]]
+id = "nachtrag_angebot"
+day = -314
+time = "10:50"
+from = "us"
+to = "wvg.luehrs"
+cc = ["us.albers"]
+subject = "AW: Hauptstraße Brande: zusätzlicher Hydrant und vier Hausanschlüsse Nr. 61–67, bitte Preis"
+reply_to = "nachtrag_anfrage"
+body = """Sehr geehrte Frau Lührs,
+
+gern. Unser Vorschlag:
+
+Zu LV-Preisen (Mehrmengen):
+- Position 3.2.30 Unterflurhydrant DN 80: 1 St zusätzlich, dazu ein T-Stück da 225 aus Position 3.1.20
+- Position 3.3.10 Anbohrarmatur: 4 St zusätzlich
+- Position 3.3.20 Hausanschlussleitung da 40: 46 m zusätzlich
+- Position 3.3.30 Umbinden: 4 St zusätzlich
+
+Nachtrag N 1, neue Leistungen (netto):
+- N1.1 Unterquerung Natursteinmauer mit Erdrakete, da 40 im Schutzrohr da 63, je Querung bis 6 m, einschließlich zwei Kopflöchern in Handschachtung und Wiederherstellen des Vorgartens: 2 St zu je 1.180,00 EUR = 2.360,00 EUR
+- N1.2 Hydrant nachträglich in die bereits geprüfte Leitung einbinden (Abschnitt 6 ist seit {-325} in Betrieb): Absperren, Entleeren, Einschweißen des T-Stücks, erneute Desinfektion und Probe für den Abschnitt: 1 psch 1.940,00 EUR
+
+Summe Nachtrag N 1: 4.300,00 EUR netto. Die Preise sind aus der Urkalkulation entwickelt. Ausführung in den Kalenderwochen nach Ihrer Freigabe, die Bauzeit bleibt unverändert. Den Hydranten müssen wir nachbestellen, Lieferzeit etwa zwei Wochen.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "nachtrag_ok"
+day = -311
+time = "09:12"
+from = "wvg.luehrs"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Hauptstraße Brande: zusätzlicher Hydrant und vier Hausanschlüsse Nr. 61–67, bitte Preis"
+reply_to = "nachtrag_angebot"
+body = """Hallo Herr Doe,
+
+passt so, der Nachtrag N 1 über 4.300,00 EUR netto ist hiermit beauftragt, die Mehrmengen laufen über das Aufmaß. Bitte den Hydranten gleich bestellen.
+
+Eine Bitte an Herrn Albers: Die Absperrung für das Einschweißen bitte zwei Tage vorher mit unserem Wassermeister abstimmen, wir müssen die Anlieger per Handzettel informieren."""
+
+# Our bid: the tender LV with the quantities and units of the client's answers and our unit prices.
+[[lv]]
+key = "angebot"
+base = "wasser"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_TWL_Hauptstrasse"
+set = [
+  "3.3.40 | 35 m | Hausanschlussleitung PE da 63 | Wie Position 3.3.20, jedoch da 63 für Gewerbeanschlüsse.",
+  "2.2.30 | 1480 m2 | Asphaltdeckschicht AC 8 D N, 3 cm | Asphaltdeckschicht AC 8 D N, Einbaudicke 3 cm, liefern und einbauen einschließlich Nahtband an den Anschlüssen. Abrechnung nach Fläche.",
+]
+prices = """
+1.1.10 | 57941,46
+1.1.20 | 26250,00
+1.1.30 | 678,04
+1.1.40 | 202,32
+2.1.10 | 8,53
+2.1.20 | 10,28
+2.1.30 | 26,25
+2.1.40 | 12,58
+2.1.50 | 25,70
+2.1.60 | 37,73
+2.1.70 | 34,78
+2.1.80 | 52,49
+2.2.10 | 15,09
+2.2.20 | 39,37
+2.2.30 | 21,33
+2.2.40 | 37,18
+3.1.10 | 172,79
+3.1.20 | 459,32
+3.1.30 | 2,02
+3.2.10 | 2135,00
+3.2.20 | 787,40
+3.2.30 | 2350,00
+3.2.40 | 4595,00
+3.3.10 | 612,43
+3.3.20 | 69,99
+3.3.30 | 459,32
+3.3.40 | 85,30
+3.4.10 | 5250,00
+3.4.20 | 7545,00
+3.4.30 | 3,50
+3.4.40 | 28450,00
+4.1.10 | 63,43
+4.1.20 | 67,80
+"""
+
+# The award: equal to the bid.
+[[lv]]
+key = "auftrag"
+base = "angebot"
+phase = "86"
+file = "Auftrags-LV_TWL_Hauptstrasse"

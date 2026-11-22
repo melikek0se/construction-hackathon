@@ -1,0 +1,567 @@
+# Hanse Armaturen Vertrieb GmbH (armat): Marek Kowalski. Genau, technisch, Sie; fragt zurück, bevor er anbietet
+# (PN, Baulänge, Betätigung), nummerierte Angebote als PDF, Lieferzeiten in Wochen, 5 % Projektrabatt auf Nachfrage.
+# Jobs: P1 Mühlenstraße (Absage, nicht sein Programm), P2 Hauptstraße Brande (geliefert, Lieferzeit Schieber DN 200),
+# P4 Pumpwerk Deichstraße (Armaturen geliefert), P7 Marschhof (Angebot offen).
+
+# ------------------------------------------------------------------ P1 Mühlenstraße: Absage
+
+[[sheet]]
+key = "p1"
+file = "Preisanfrage_Schachtabdeckungen_Muehlenstrasse.xlsx"
+items = """
+3.2.40 | 19 St | Schachtabdeckung Klasse D 400
+"""
+
+[[mail]]
+id = "p1_anfrage"
+day = -516
+time = "08:50"
+from = "us"
+to = "armat"
+subject = "Preisanfrage – Schachtabdeckungen D 400 – Kanalerneuerung Mühlenstraße"
+body = """Sehr geehrte Damen und Herren,
+
+die Acme Tiefbau GmbH kalkuliert ein Angebot für die Kanalerneuerung Mühlenstraße der Stadt Norderbek (TBA-SE-0318) und bittet um Ihren Preis für:
+
+Pos. 3.2.40 – 19 St – Schachtabdeckung nach DIN EN 124, Klasse D 400, lichte Weite 625 mm, Rahmen Guss/Beton, mit Dämpfungseinlage
+
+Bitte nennen Sie den Einheitspreis netto frei Baustelle, das Fabrikat und die Lieferzeit. Die Position liegt als Excel-Datei bei. Wir benötigen Ihr Angebot bis {-506}.
+
+Wir sind über Ihren Katalog für Gussformstücke auf Sie gekommen und arbeiten bisher nicht zusammen; für Wasserleitungsbau werden wir künftig häufiger Armaturen anfragen.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_absage"
+day = -514
+time = "10:42"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Schachtabdeckungen D 400 – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihre Anfrage. Schachtabdeckungen nach DIN EN 124 führen wir nicht; aus Guss liefern wir im Straßenbereich ausschließlich Straßenkappen und Tragplatten für Armaturen und Hydranten. Für die Position 3.2.40 kann ich Ihnen daher kein Angebot machen. Abdeckungen erhalten Sie beim Rohr- oder Baustoffhandel.
+
+Unser Programm für die Wasserversorgung: Schieber DN 40 bis DN 600, Hydranten, Anbohrarmaturen, Gussformstücke, Be- und Entlüftungsventile, jeweils mit DVGW-Zulassung. Für Anfragen dazu bin ich Ihr Ansprechpartner. Hilfreich sind dann vorab: Nennweite und Druckstufe, Baulänge, Art der Betätigung und die Rohrdeckung."""
+
+# ------------------------------------------------------------------ P2 Hauptstraße Brande
+
+[[sheet]]
+key = "p2"
+file = "Preisanfrage_Armaturen_Hauptstrasse_Brande.xlsx"
+items = """
+3.2.10 | 9 St | Absperrschieber DN 200 PN 16
+3.2.20 | 4 St | Absperrschieber DN 100 PN 16
+3.2.30 | 7 St | Unterflurhydrant DN 80
+3.3.10 | 46 St | Anbohrarmatur da 225 mit Absperrung
+"""
+
+[[doc]]
+key = "p2_angebot"
+file = "Angebot_11482_Armaturen_Hauptstrasse_Brande.pdf"
+title = "Angebot 11482"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg
+Bauvorhaben: Erneuerung Trinkwasserleitung DN 200 Hauptstraße, Brande-Hörnerkirchen (WVG-N-2207)
+Ihre Anfrage vom {-406}, Ihre Angaben vom {-404}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.2.10 | Keilflachschieber DN 200 PN 16, GSK, Garnitur, Kappe | 9 | St | 745,00 | 6.705,00
+3.2.20 | Keilflachschieber DN 100 PN 16, GSK, Garnitur, Kappe | 4 | St | 306,00 | 1.224,00
+3.2.30 | Unterflurhydrant DN 80, doppelte Absperrung, RD 1,25 | 7 | St | 662,00 | 4.634,00
+3.3.10 | Anbohrarmatur da 225 / da 40, Betriebsabsperrung | 46 | St | 118,00 | 5.428,00
+
+Summe netto: 17.991,00 EUR
+
+Technische Angaben:
+Schieber: weichdichtend, Gehäuse EN-GJS-400 (GGG), epoxidbeschichtet innen und außen nach GSK, Baulänge nach DIN EN 558 Grundreihe 14 (kurz, F4), Flansche gebohrt PN 16, Keil EPDM mit Trinkwasserzulassung. Betätigung über teleskopierbare Einbaugarnitur für Rohrdeckung 1,30 bis 1,80 m mit Straßenkappe und Tragplatte.
+Hydranten: Unterflurhydrant DN 80 PN 16 nach DIN EN 14339, mit doppelter Absperrung und selbsttätiger Entleerung, Rohrdeckung 1,25 m, mit Straßenkappe oval und Tragplatte.
+Anbohrarmaturen: für PE-Rohr da 225, Abgang da 40 mit Steckverbindung, Betriebsabsperrung, Einbaugarnitur und Straßenkappe.
+
+Lieferzeit: Positionen 3.2.20, 3.2.30 und 3.3.10 ab Lager Bremen, 1 Woche. Position 3.2.10 (DN 200): 4 Wochen ab Bestellung.
+Lieferung frei Baustelle ab 1.500,00 EUR Auftragswert. Zahlung 30 Tage netto, 2 % Skonto innerhalb 10 Tagen.
+Gültig bis {-365}. DVGW-Baumusterprüfzertifikate und das GSK-Gütezeichen senden wir auf Anforderung."""
+
+[[mail]]
+id = "p2_anfrage"
+day = -406
+time = "07:55"
+from = "us"
+to = "armat"
+subject = "Preisanfrage – Schieber, Hydranten, Anbohrarmaturen – Trinkwasserleitung Hauptstraße Brande"
+body = """Guten Tag Herr Kowalski,
+
+Sie hatten uns im Frühjahr Ihr Programm für die Wasserversorgung genannt, jetzt haben wir die passende Anfrage. Wir kalkulieren für den Wasserverband Geestrand die Erneuerung der Trinkwasserleitung in der Hauptstraße in Brande (WVG-N-2207), 1.240 m PE da 225, Angebotsfrist {-395}:
+
+Pos. 3.2.10 – 9 St – Absperrschieber DN 200 PN 16, weichdichtend, GGG, innen und außen beschichtet
+Pos. 3.2.20 – 4 St – Absperrschieber DN 100 PN 16, wie vor
+Pos. 3.2.30 – 7 St – Unterflurhydrant DN 80, PN 16, Rohrdeckung 1,25 m, mit doppelter Absperrung
+Pos. 3.3.10 – 46 St – Anbohrarmatur für PE-Rohr da 225 mit Betriebsabsperrung, Abgang da 40
+
+Bitte je Position Einheitspreis netto frei Baustelle, Fabrikat und Typ, Lieferzeit, dazu Rabatt, Skonto und Gültigkeit. Der Verband gibt Fabrikate erst nach Vorlage der DVGW-Zertifikate frei. Bindefrist {-365}. Die Positionen liegen als Excel-Datei bei.
+
+Wir benötigen Ihr Angebot bis {-399}.
+
+Freundliche Grüße"""
+attach = ["sheet:p2:blank"]
+
+[[mail]]
+id = "p2_rueckfrage"
+day = -405
+time = "11:20"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Schieber, Hydranten, Anbohrarmaturen – Trinkwasserleitung Hauptstraße Brande"
+reply_to = "p2_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihre Anfrage. Bevor ich anbiete, benötige ich einige Angaben, damit das Angebot zu dem passt, was der Verband später freigibt:
+
+1. Schieber DN 200 und DN 100: Baulänge kurz (F4, DIN EN 558 Grundreihe 14) oder lang (F5, Grundreihe 15)? Im Bestand an Grauguss finden sich oft F5; für die Einbindungen ist das wichtig.
+2. Betätigung: Einbaugarnitur starr oder teleskopierbar, und für welche Rohrdeckung? Sind Straßenkappe und Tragplatte in der Position enthalten oder gesondert ausgeschrieben?
+3. Beschichtung: Epoxid nach GSK-Gütegemeinschaft gefordert oder genügt Epoxid nach DIN 30677?
+4. Hydranten: Bestätigen Sie bitte Rohrdeckung 1,25 m und Anschlussflansch DN 80. Mit oder ohne Straßenkappe?
+5. Anbohrarmaturen: Abgang da 40 als Schweißende oder mit Steckverbindung? Anbohrung unter Druck (mit Schleuse) oder drucklos?
+
+Sobald mir die Angaben vorliegen, erhalten Sie das Angebot innerhalb von zwei Arbeitstagen."""
+
+[[mail]]
+id = "p2_antwort"
+day = -404
+time = "11:50"
+from = "us"
+to = "armat"
+subject = "AW: Preisanfrage – Schieber, Hydranten, Anbohrarmaturen – Trinkwasserleitung Hauptstraße Brande"
+reply_to = "p2_rueckfrage"
+body = """Guten Tag Herr Kowalski,
+
+danke für die genauen Fragen. Nach LV und Rückfrage beim Verband:
+
+1. Baulänge: kurz, F4. Die neuen Schieber sitzen in der neuen PE-Leitung zwischen Flanschübergängen; die Einbindungen in den Grauguss-Bestand sind eine eigene Position mit Formstücken.
+2. Betätigung: Einbaugarnitur teleskopierbar, Rohrdeckung 1,50 m (Graben bis 1,75 m). Straßenkappe und Tragplatte sind in der Position enthalten, bitte einrechnen.
+3. Beschichtung: GSK. Der Verband verlangt das Gütezeichen zur Freigabe.
+4. Hydranten: Rohrdeckung 1,25 m, Flansch DN 80, mit Straßenkappe und Tragplatte. Die doppelte Absperrung ist dem Verband wichtig.
+5. Anbohrarmaturen: Abgang da 40 mit Steckverbindung, Anbohrung drucklos, die Leitung ist neu.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p2_angebot"
+day = -402
+time = "14:30"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Schieber, Hydranten, Anbohrarmaturen – Trinkwasserleitung Hauptstraße Brande – Angebot 11482"
+reply_to = "p2_antwort"
+body = """Sehr geehrter Herr Doe,
+
+im Anhang erhalten Sie unser Angebot 11482 auf der Grundlage Ihrer Angaben vom {-404}.
+
+Zur Lieferzeit: Die Schieber DN 100, die Hydranten und die Anbohrarmaturen liegen in Bremen am Lager, 1 Woche. Die Schieber DN 200 in F4 mit GSK-Beschichtung fertigt das Werk auftragsbezogen, 4 Wochen ab Bestellung. Bitte berücksichtigen Sie das in Ihrem Terminplan.
+
+Ihre Excel-Datei habe ich nicht ausgefüllt, da die technischen Angaben dort keinen Platz haben; maßgeblich ist das Angebot."""
+attach = ["doc:p2_angebot"]
+
+[[mail]]
+id = "p2_rabatt"
+day = -401
+time = "15:10"
+from = "us"
+to = "armat"
+subject = "AW: Preisanfrage – Schieber, Hydranten, Anbohrarmaturen – Trinkwasserleitung Hauptstraße Brande – Angebot 11482"
+reply_to = "p2_angebot"
+body = """Guten Tag Herr Kowalski,
+
+vielen Dank für das Angebot 11482, technisch ist das genau, was ausgeschrieben ist.
+
+Bei knapp 18.000 EUR Auftragswert und 66 Armaturen in einem Projekt: Gewähren Sie einen Projektrabatt? Bei den Schiebern DN 200 liege ich mit Ihrem Preis etwa 4 % über dem, was ich für den Wettbewerb brauche.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p2_rabatt_aw"
+day = -400
+time = "16:05"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Schieber, Hydranten, Anbohrarmaturen – Trinkwasserleitung Hauptstraße Brande – Angebot 11482"
+reply_to = "p2_rabatt"
+body = """Sehr geehrter Herr Doe,
+
+für dieses Projekt gewähre ich Ihnen 5 % Projektrabatt auf alle Positionen des Angebots 11482, sofern der Auftrag geschlossen an uns geht. Damit ergibt sich:
+
+Pos. 3.2.10 Schieber DN 200: 707,75 EUR/St
+Pos. 3.2.20 Schieber DN 100: 290,70 EUR/St
+Pos. 3.2.30 Unterflurhydrant DN 80: 628,90 EUR/St
+Pos. 3.3.10 Anbohrarmatur da 225 / da 40: 112,10 EUR/St
+Summe netto: 17.091,45 EUR
+
+Lieferzeiten, Zahlungsbedingungen und Gültigkeit bis {-365} bleiben unverändert. Der Projektrabatt gilt auch für Mehrmengen, die innerhalb der Bauzeit bestellt werden."""
+
+[[mail]]
+id = "p2_bestellung"
+day = -361
+time = "08:20"
+from = "us"
+to = "armat"
+cc = ["us.albers"]
+subject = "Bestellung zu Angebot 11482 – Armaturen Hauptstraße Brande"
+body = """Guten Tag Herr Kowalski,
+
+wir haben den Auftrag des Wasserverbands erhalten, und der Verband hat gestern in der Bauanlaufbesprechung Ihre Fabrikate freigegeben (danke für die Zertifikate und das GSK-Gütezeichen, die Sie Herrn Albers geschickt haben). Wir bestellen zu Angebot 11482 mit 5 % Projektrabatt laut Ihrer Mail vom {-400}:
+
+9 Keilflachschieber DN 200 PN 16, F4, GSK, mit Einbaugarnitur und Straßenkappe
+4 Keilflachschieber DN 100 PN 16, wie vor
+7 Unterflurhydranten DN 80, doppelte Absperrung, Rohrdeckung 1,25 m
+46 Anbohrarmaturen da 225 / da 40 mit Betriebsabsperrung
+Summe netto 17.091,45 EUR, frei Baustelle
+
+Baubeginn ist am {-350} an der Kirchenstraße; dort sitzen die ersten zwei Schieber DN 200, die Nachteinbindung ist in der zweiten Bauwoche. Die vier Wochen Lieferzeit für DN 200 sind damit schon knapp. Bitte bestätigen Sie den Liefertermin; Abrufe und Anlieferung stimmt Herr Albers (in Kopie) mit Ihnen ab.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p2_ab"
+day = -360
+time = "10:40"
+from = "armat"
+to = "us"
+cc = ["us.albers"]
+subject = "Auftragsbestätigung 11482-A – Armaturen Hauptstraße Brande"
+reply_to = "p2_bestellung"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihren Auftrag, den ich unter der Nummer 11482-A bestätige, Auftragswert 17.091,45 EUR netto.
+
+Liefertermine:
+- Schieber DN 100 (4 St), Hydranten (7 St), Anbohrarmaturen (46 St): Versand in KW {kw-353}, Anlieferung auf einer Palette, Entladung mit Stapler oder Bagger.
+- Schieber DN 200 (9 St): Fertigung im Werk eingeplant, Auslieferung in KW {kw-333}. Das entspricht den zugesagten 4 Wochen ab Bestellung. Eine Teillieferung von zwei Stück für die Kirchenstraße habe ich im Werk angefragt und melde mich dazu.
+
+Die Werkszeugnisse 3.1 liegen der Lieferung bei."""
+
+[[mail]]
+id = "p2_verzug"
+day = -338
+time = "09:12"
+from = "armat"
+to = "us.albers"
+cc = ["us"]
+subject = "Auftrag 11482-A Hauptstraße Brande – Liefertermin Schieber DN 200: Teillieferung"
+body = """Sehr geehrter Herr Albers,
+
+zum Stand der Schieber DN 200 muss ich Sie über eine Änderung informieren.
+
+Das Werk hat bei der Endprüfung der Beschichtung an vier der neun Gehäuse Poren festgestellt (Prüfung nach GSK mit 3 kV); diese Gehäuse werden neu beschichtet. Daraus folgt:
+
+- 5 Schieber DN 200 werden wie bestätigt in KW {kw-333} geliefert, davon die zwei für die Kirchenstraße vorab per Kurier am {-336}.
+- 4 Schieber DN 200 folgen in KW {kw-326}, eine Woche später als bestätigt.
+
+Mir ist bewusst, dass der Termin für Sie eng ist. Bitte teilen Sie mir mit, in welcher Reihenfolge Sie die Schieber nach Bauabschnitten benötigen; ich lasse die Garnituren entsprechend zuordnen. Sollte die spätere Teillieferung einen Abschnitt aufhalten, kann ich leihweise zwei Schieber DN 200 in F5 mit Passstück aus dem Lager stellen."""
+
+[[mail]]
+id = "p2_verzug_aw"
+day = -338
+time = "12:36"
+from = "us.albers"
+to = "armat"
+cc = ["us"]
+subject = "AW: Auftrag 11482-A Hauptstraße Brande – Liefertermin Schieber DN 200: Teillieferung"
+reply_to = "p2_verzug"
+body = """Guten Tag Herr Kowalski,
+
+danke für die frühe Nachricht. Damit kann ich leben, wenn es bei den Terminen bleibt:
+
+Abschnitt 1 Kirchenstraße: 2 Schieber, kommen per Kurier am {-336}, passt, die Nachteinbindung ist am {-334}.
+Abschnitte 2 bis 4: 3 Schieber, brauche ich in KW {kw-333}.
+Abschnitte 5 bis 8: 4 Schieber, frühestens in KW {kw-322} dran, die Nachlieferung in KW {kw-326} reicht also.
+
+Leihschieber in F5 brauche ich nicht, der Verband würde ein anderes Baumaß ohnehin nicht einbauen lassen. Wichtig: Jede weitere Verschiebung bitte sofort melden, ich habe dem Verband vier Wochen Lieferzeit genannt.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p2_hydrant"
+day = -311
+time = "13:10"
+from = "us"
+to = "armat"
+cc = ["us.albers"]
+subject = "Nachbestellung zu Auftrag 11482-A – 1 Unterflurhydrant DN 80, 4 Anbohrarmaturen"
+body = """Guten Tag Herr Kowalski,
+
+der Verband hat heute Mehrmengen beauftragt. Wir bestellen zu den Bedingungen des Auftrags 11482-A nach (Projektrabatt gilt laut Ihrer Mail auch für Mehrmengen):
+
+1 Unterflurhydrant DN 80, doppelte Absperrung, Rohrdeckung 1,25 m, mit Straßenkappe, zu 628,90 EUR
+4 Anbohrarmaturen da 225 / da 40 mit Betriebsabsperrung, zu 112,10 EUR
+
+Der Hydrant wird nachträglich in den Abschnitt 6 eingebunden. Ich habe dem Verband etwa zwei Wochen Lieferzeit genannt, bitte bestätigen Sie das.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p2_hydrant_aw"
+day = -310
+time = "14:25"
+from = "armat"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Nachbestellung zu Auftrag 11482-A – 1 Unterflurhydrant DN 80, 4 Anbohrarmaturen"
+reply_to = "p2_hydrant"
+body = """Sehr geehrter Herr Doe,
+
+die Nachbestellung ist unter 11482-B angelegt, Preise wie von Ihnen genannt, zusammen 1.077,30 EUR netto.
+
+Die Anbohrarmaturen gehen morgen in den Versand. Der Hydrant mit Rohrdeckung 1,25 m ist derzeit nicht am Lager; Lieferzeit 2 Wochen, Auslieferung in KW {kw-296}. Für das T-Stück da 225 mit Flanschabgang DN 80 benötigen Sie einen Einflanschstutzen mit Losflansch; falls er nicht vorhanden ist, kann ich ihn für 84,00 EUR netto mitliefern."""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße
+
+[[sheet]]
+key = "p4"
+file = "Preisanfrage_Armaturen_Pumpwerk_Deichstrasse.xlsx"
+items = """
+2.2.40 | 2 St | Rückflussverhinderer DN 100
+2.2.50 | 2 St | Absperrschieber DN 100
+2.2.70 | 1 St | Zulaufschacht DN 1000 mit Absperrschieber
+"""
+
+[[doc]]
+key = "p4_angebot"
+file = "Angebot_12871_Armaturen_Pumpwerk_Deichstrasse.pdf"
+title = "Angebot 12871"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg
+Bauvorhaben: Abwasserpumpwerk Deichstraße mit Druckleitung, Norderbek (TBA-SE-0402)
+Ihre Anfrage vom {-211}, Ihre Angaben vom {-209}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+2.2.40 | Kugelrückschlagventil DN 100 PN 10, GGG, EKB | 2 | St | 286,00 | 572,00
+2.2.50 | Keilflachschieber DN 100 PN 10, Handrad, NBR | 2 | St | 312,00 | 624,00
+2.2.70 | Spindelschieber DN 300, Edelstahl, Wandmontage | 1 | St | 2.340,00 | 2.340,00
+
+Zwischensumme: 3.536,00 EUR
+Projektrabatt 5 %: 176,80 EUR
+Summe netto: 3.359,20 EUR
+
+Technische Angaben:
+Kugelrückschlagventil: Gehäuse EN-GJS-400, epoxidbeschichtet, Kugel NBR-ummantelt, Flansche PN 10, Baulänge 300 mm, Einbau waagerecht oder senkrecht mit Durchfluss von unten, mit Reinigungsdeckel.
+Keilflachschieber: weichdichtend, für Abwasser, Keil NBR, Baulänge F4 (190 mm), Flansche PN 10/16, Handrad 250 mm, nicht steigende Spindel aus Edelstahl 1.4021.
+Spindelschieber DN 300: Absperrschieber für Wandmontage vor Rohröffnung DN 300, Rahmen und Platte Edelstahl 1.4571, vierseitig dichtend bis 6 m Wassersäule, nicht steigende Spindel, Spindelverlängerung 4,20 m mit Führungen und Bedienvierkant unter Straßenkappe. Dübel und Dichtmasse im Lieferumfang.
+
+Lieferzeit: Positionen 2.2.40 und 2.2.50 ab Lager, 1 Woche. Position 2.2.70: 6 Wochen ab Bestellung und Maßfreigabe.
+Lieferung frei Baustelle. Zahlung 30 Tage netto, 2 % Skonto innerhalb 10 Tagen. Gültig bis {-165}."""
+
+[[mail]]
+id = "p4_anfrage"
+day = -211
+time = "08:05"
+from = "us"
+to = "armat"
+subject = "Preisanfrage – Armaturen DN 100 und Spindelschieber DN 300 – Abwasserpumpwerk Deichstraße"
+body = """Guten Tag Herr Kowalski,
+
+nach der Hauptstraße in Brande diesmal Abwasser: Wir kalkulieren das Pumpwerk Deichstraße der Stadt Norderbek (TBA-SE-0402), Angebotsfrist {-200}. Für die Verrohrung im Pumpschacht (Edelstahl DN 100) und den Zulaufschacht brauche ich:
+
+Pos. 2.2.40 – 2 St – Rückflussverhinderer DN 100, Kugelrückschlagventil, PN 10, GGG epoxidbeschichtet
+Pos. 2.2.50 – 2 St – Absperrschieber DN 100, weichdichtender Keilflachschieber, PN 10, mit Handrad, für Abwasser
+Pos. 2.2.70 – 1 St – aus dem Zulaufschacht DN 1000 nur der Spindelschieber DN 300 im Zulauf, Schachttiefe 4,20 m
+
+Ich nehme Ihre Fragen vorweg, so gut ich kann: Druckstufe PN 10, Baulänge kurz, Betätigung der DN 100 mit Handrad im Schacht, Medium kommunales Abwasser. Wenn es wieder 5 % Projektrabatt gibt, rechnen Sie ihn bitte gleich ein. Bindefrist {-165}; die Excel-Datei liegt bei.
+
+Wir benötigen Ihr Angebot bis {-204}.
+
+Freundliche Grüße"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_rueckfrage"
+day = -210
+time = "09:48"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Armaturen DN 100 und Spindelschieber DN 300 – Abwasserpumpwerk Deichstraße"
+reply_to = "p4_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank, mit Ihren Vorabangaben sind die Positionen 2.2.40 und 2.2.50 klar. Zwei Punkte zum Spindelschieber DN 300 muss ich dennoch klären, da es hier drei grundverschiedene Bauarten gibt:
+
+1. Einbau: Flanschschieber in der Rohrleitung DN 300 oder Wandschieber (Absperrschütz) vor der Rohröffnung an der Schachtwand? Bei einem Betonschacht DN 1000 ist die Wand gekrümmt; ein Wandschieber braucht dort eine ebene Anschlussfläche oder eine Ausgleichsplatte.
+2. Betätigung: von oben über Spindelverlängerung mit Bedienschlüssel unter einer Straßenkappe, oder mit Handrad auf einer Flursäule? Steigende oder nicht steigende Spindel?
+
+Außerdem: Welcher Wasserstand ist vor dem Schieber höchstens zu erwarten (Dichtheit ein- oder beidseitig)?"""
+
+[[mail]]
+id = "p4_antwort"
+day = -209
+time = "12:40"
+from = "us"
+to = "armat"
+subject = "AW: Preisanfrage – Armaturen DN 100 und Spindelschieber DN 300 – Abwasserpumpwerk Deichstraße"
+reply_to = "p4_rueckfrage"
+body = """Guten Tag Herr Kowalski,
+
+das LV sagt dazu nur „Spindelschieber DN 300 im Zulauf“. Nach dem Schnitt des Fachplaners und einem Telefonat mit dem Betonwerk:
+
+1. Wandschieber vor der Rohröffnung DN 300. Das Betonwerk gießt im Schachtunterteil eine ebene Anschlussfläche 600 x 600 mm an.
+2. Betätigung von oben über eine Spindelverlängerung, Bedienvierkant unter einer Straßenkappe in der Schachtabdeckung, nicht steigende Spindel. Schachttiefe 4,20 m.
+3. Wasserstand: Rückstau aus dem Pumpschacht bis höchstens 3,50 m über Rohrsohle, Druck von der Rückseite ist also möglich. Bitte beidseitig dicht.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p4_angebot"
+day = -207
+time = "14:15"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Armaturen DN 100 und Spindelschieber DN 300 – Abwasserpumpwerk Deichstraße – Angebot 12871"
+reply_to = "p4_antwort"
+body = """Sehr geehrter Herr Doe,
+
+anbei unser Angebot 12871. Den Projektrabatt von 5 % habe ich, wie gewünscht, bereits ausgewiesen.
+
+Hinweis zur Position 2.2.70: Der Wandschieber wird nach Maß gefertigt (Spindellänge, Lage der Führungen). Die Lieferzeit von 6 Wochen beginnt mit Ihrer Maßfreigabe; dazu benötige ich die Werkzeichnung des Schachtunterteils mit der Anschlussfläche. Die beiden Positionen DN 100 sind Lagerware."""
+attach = ["doc:p4_angebot"]
+
+[[mail]]
+id = "p4_bestellung"
+day = -150
+time = "08:35"
+from = "us"
+to = "armat"
+cc = ["us.albers"]
+subject = "Bestellung zu Angebot 12871 – Armaturen Pumpwerk Deichstraße"
+body = """Guten Tag Herr Kowalski,
+
+wir bestellen zu Ihrem Angebot 12871 (Summe netto 3.359,20 EUR einschließlich 5 % Projektrabatt, frei Baustelle):
+
+2 Kugelrückschlagventile DN 100 PN 10
+2 Keilflachschieber DN 100 PN 10 mit Handrad
+1 Spindelschieber DN 300 für Wandmontage, Edelstahl, mit Spindelverlängerung 4,20 m
+
+Die Werkzeichnung des Zulaufschachts mit der Anschlussfläche liegt bei Herrn Albers (in Kopie), er sendet sie Ihnen heute für die Maßfreigabe. Die Verrohrung im Pumpschacht wird ab KW {kw-100} montiert; die Armaturen DN 100 bitte bis dahin, der Wandschieber wird mit dem Zulaufschacht gesetzt.
+
+Freundliche Grüße"""
+
+# ------------------------------------------------------------------ P7 Marschhof (Ergebnis offen)
+
+[[sheet]]
+key = "p7"
+file = "Preisanfrage_Schieber_Entlueftungsventile_Marschhof.xlsx"
+items = """
+3.2.30 | 3 St | Absperrschieber DN 150
+3.2.40 | 2 St | Be- und Entlüftungsventil im Schacht DN 1000
+"""
+
+[[doc]]
+key = "p7_angebot"
+file = "Angebot_13964_Armaturen_Marschhof.pdf"
+title = "Angebot 13964"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg
+Bauvorhaben: Abwasserdruckleitung Marschhof (WVG-A-2431)
+Ihre Anfrage vom {-45}, Ihre Angaben vom {-43}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.2.30 | Keilflachschieber DN 150 PN 10, Abwasser, Garnitur | 3 | St | 548,00 | 1.644,00
+3.2.40 | Be- und Entlüftungsventil DN 80 PN 10, Abwasser | 2 | St | 1.480,00 | 2.960,00
+
+Zwischensumme: 4.604,00 EUR
+Projektrabatt 5 %: 230,20 EUR
+Summe netto: 4.373,80 EUR
+
+Technische Angaben:
+Keilflachschieber DN 150: weichdichtend, für Abwasser, Keil NBR, Gehäuse EN-GJS-400 epoxidbeschichtet, Baulänge F4 (210 mm), Flansche PN 10/16, mit teleskopierbarer Einbaugarnitur für Rohrdeckung 1,30 bis 1,80 m, Straßenkappe und Tragplatte. Für den Anschluss an PE da 180 sind Vorschweißbunde mit Losflansch DN 150 erforderlich (nicht im Angebot).
+Be- und Entlüftungsventil DN 80: automatisches Ventil für Abwasser, dreifache Funktion (Entlüften beim Füllen, Belüften beim Entleeren, Betriebsentlüftung unter Druck), Gehäuse Edelstahl, Flansch DN 80 PN 10, Bauhöhe 620 mm, mit Spülanschluss und vorgeschaltetem Absperrschieber DN 80.
+
+Lieferzeit: Position 3.2.30 ab Lager, 1 Woche. Position 3.2.40: 5 Wochen ab Bestellung.
+Lieferung frei Baustelle. Zahlung 30 Tage netto, 2 % Skonto innerhalb 10 Tagen. Gültig bis {-8}."""
+
+[[mail]]
+id = "p7_anfrage"
+day = -45
+time = "08:15"
+from = "us"
+to = "armat"
+subject = "Preisanfrage – Schieber DN 150 und Be-/Entlüftungsventile – Abwasserdruckleitung Marschhof"
+body = """Guten Tag Herr Kowalski,
+
+der Wasserverband Geestrand schreibt die Abwasserdruckleitung Marschhof aus (WVG-A-2431), 1.210 m PE da 180, Angebotsfrist {-36}. Ich brauche:
+
+Pos. 3.2.30 – 3 St – Absperrschieber DN 150, weichdichtender Keilflachschieber, PN 10, für Abwasser, mit Einbaugarnitur und Straßenkappe
+Pos. 3.2.40 – 2 St – automatisches Be- und Entlüftungsventil für Abwasser DN 80, Einbau im Schacht DN 1000 an den Hochpunkten
+
+Vorab: PN 10, Baulänge kurz, Rohrdeckung 1,50 m, Betätigung über Einbaugarnitur. Bitte wieder mit 5 % Projektrabatt, Fabrikat, Lieferzeit. Bindefrist {-8}. Excel-Datei anbei.
+
+Wir benötigen Ihr Angebot bis {-40}.
+
+Freundliche Grüße"""
+attach = ["sheet:p7:blank"]
+
+[[mail]]
+id = "p7_rueckfrage"
+day = -44
+time = "10:05"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Schieber DN 150 und Be-/Entlüftungsventile – Abwasserdruckleitung Marschhof"
+reply_to = "p7_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+danke für die vollständigen Angaben zu den Schiebern, dazu habe ich keine Fragen. Zum Be- und Entlüftungsventil benötige ich noch:
+
+1. Betriebsdruck an den Hochpunkten und Prüfdruck der Leitung. Ventile für Abwasser schließen erst ab einem Mindestdruck sicher (üblich 0,2 bar); liegt der Hochpunkt nahe der Drucklinie, ist eine andere Bauart nötig.
+2. Anschluss: Flansch DN 80 auf einem T-Stück da 180 mit Flanschabgang, oder Gewinde?
+3. Ist ein vorgeschalteter Absperrschieber DN 80 in der Position enthalten? Ohne ihn lässt sich das Ventil nicht warten, ohne die Leitung außer Betrieb zu nehmen."""
+
+[[mail]]
+id = "p7_antwort"
+day = -43
+time = "11:48"
+from = "us"
+to = "armat"
+subject = "AW: Preisanfrage – Schieber DN 150 und Be-/Entlüftungsventile – Abwasserdruckleitung Marschhof"
+reply_to = "p7_rueckfrage"
+body = """Guten Tag Herr Kowalski,
+
+1. Laut Längsschnitt liegt der Betriebsdruck an den beiden Hochpunkten bei 0,8 und 1,4 bar, der Prüfdruck der Leitung ist 10 bar.
+2. Flansch DN 80 auf T-Stück da 180 mit Flanschabgang.
+3. Der Langtext nennt den Absperrschieber nicht ausdrücklich, verlangt aber „wartungsfähigen Einbau“. Bitte rechnen Sie ihn in den Stückpreis ein und weisen Sie ihn im Angebot aus.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p7_angebot"
+day = -41
+time = "13:30"
+from = "armat"
+to = "us"
+subject = "AW: Preisanfrage – Schieber DN 150 und Be-/Entlüftungsventile – Abwasserdruckleitung Marschhof – Angebot 13964"
+reply_to = "p7_antwort"
+body = """Sehr geehrter Herr Doe,
+
+anbei das Angebot 13964 mit 5 % Projektrabatt. Bei 0,8 bar am niedrigeren Hochpunkt ist die angebotene Bauart geeignet; der Absperrschieber DN 80 ist im Stückpreis der Position 3.2.40 enthalten.
+
+Bitte beachten Sie die Lieferzeit der Ventile von 5 Wochen und den Hinweis zu den Vorschweißbunden DN 150 für den Übergang auf PE da 180; diese beziehen Sie zweckmäßig mit dem Rohr."""
+attach = ["doc:p7_angebot"]
+
+# ------------------------------------------------------------------ ohne Anfrage
+
+[[mail]]
+id = "preise_januar"
+day = -7
+time = "11:26"
+from = "armat"
+to = "us"
+subject = "Preisanpassung Gussarmaturen zum 1. Januar – Ihr Angebot 13964 bleibt gültig"
+body = """Sehr geehrter Herr Doe,
+
+unsere Hersteller haben für Gussarmaturen und Hydranten eine Preisanpassung zum 1. Januar angekündigt. Für Ihre Kalkulation:
+
+- Keilflachschieber DN 80 bis DN 300 und Hydranten: plus 4,5 %
+- Anbohrarmaturen und Einbaugarnituren: plus 3,0 %
+- Be- und Entlüftungsventile, Edelstahlschieber: unverändert
+
+Beispiel: Der Keilflachschieber DN 150 PN 10 mit Einbaugarnitur kostet ab Januar 572,00 EUR statt 548,00 EUR netto vor Rabatt.
+
+Ihr Angebot 13964 (Marschhof) ist davon nicht betroffen: Auf Ihre telefonische Bitte vom {-18} habe ich die Gültigkeit bis zum {+21} verlängert; bei Bestellung bis zu diesem Tag gelten die angebotenen Preise. Neue Anfragen biete ich ab sofort zu den neuen Preisen an, wenn die Lieferung nach dem 1. Januar liegt.
+
+Zwischen dem 24. Dezember und dem 2. Januar ist unser Lager in Bremen geschlossen; ich bin in dieser Zeit per E-Mail erreichbar."""

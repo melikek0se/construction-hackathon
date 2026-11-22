@@ -62,6 +62,8 @@ put in automatically. The six dataset projects go in only on request: `docker co
    → runtime *Docker*, instance *Free*, region *Frankfurt*, health check path `/api/health`.
    Environment: `DATABASE_URL`, `ANTHROPIC_API_KEY`, `BOQ_PASSWORD` (anyone with the link could otherwise
    spend API credit on the AI review), later `ELEVENLABS_API_KEY` / `ELEVENLABS_AGENT_ID`.
+   (With `DEMO_MAIL=1` the mailboxes are also filled with the mock world of `mock/mail/` at every start;
+   the app then reads about ten invitations with Claude, once. `DEMO_MAIL_FILL=0` leaves the mailboxes empty.)
    For the mail features add `DEMO_MAIL=1`: the container then runs its own mail server and webmail
    (`/webmail/`, behind the same password). Its mail is kept in Neon, in a database `<name>_mail` it makes
    itself with the role of `DATABASE_URL`; sleeping and redeploying lose nothing. About 135 MB more memory

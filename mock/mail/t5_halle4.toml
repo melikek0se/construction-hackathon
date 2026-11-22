@@ -1,0 +1,109 @@
+# T5: a private client (logistics park) asks for an offer on yard drainage and paving; the LV is a PDF an engineer made.
+
+[[lv]]
+key = "hof"
+file = "LV_Hofentwaesserung_Pflaster_Halle4"
+format = "pdf"
+client = "ind"
+name = "Hofentwässerung und Pflasterarbeiten Halle 4"
+project = "Hofentwässerung und Pflasterarbeiten Halle 4, Containerstraße"
+number = "HLP-H4-2026-03"
+remarks = """Vorbemerkungen
+Bauvorhaben: Erneuerung der Hofentwässerung und der Hofbefestigung vor Halle 4, Containerstraße 9, 21129 Hamburg.
+Aufgestellt im Auftrag der Hansa Logistikpark Verwaltungs GmbH durch ein beauftragtes Ingenieurbüro.
+Angebotsfrist: {+10}, 16:00 Uhr
+Bindefrist: {+45}
+Ausführungsbeginn: {+60}
+Fertigstellung: {+130}
+Die Hoffläche von ca. 2.400 m2 wird von Sattelzügen und Containerstaplern befahren, Belastungsklasse Bk3,2 nach RStO 12.
+Geplanter Aufbau: Betonsteinpflaster 10 cm auf 4 cm Bettung, Schottertragschicht 30 cm, Frostschutzschicht 31 cm, Gesamtdicke 75 cm.
+Entwässerungsrinnen und Abdeckungen im gesamten Hof in Klasse E 600 nach DIN EN 1433 bzw. DIN EN 124.
+Die Arbeiten sind werktags von Montag bis Freitag zwischen 7:00 und 17:00 Uhr auszuführen. Der Hallenbetrieb läuft während der Bauzeit weiter, die Tore 1 bis 6 müssen jederzeit anfahrbar sein.
+Die Ausführung erfolgt in mindestens drei Bauabschnitten nach Wahl des AG. Mehrkosten aus der abschnittsweisen Ausführung sind in die Einheitspreise einzurechnen.
+Ein Baugrundgutachten liegt nicht vor. Nach Angabe des Betreibers steht unter der Asphaltbefestigung aufgefüllter Boden an.
+Das Niederschlagswasser der Hoffläche wird über einen Leichtflüssigkeitsabscheider in den vorhandenen Regenwasserkanal DN 400 in der Containerstraße eingeleitet.
+Vertragsgrundlage ist die VOB/B in der bei Vertragsschluss gültigen Fassung. Gewährleistung 5 Jahre.
+Abrechnung nach Aufmaß. Stundenlohnarbeiten nur nach vorheriger schriftlicher Freigabe."""
+items = """
+# 1 | Baustelleneinrichtung
+1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle für sämtliche Leistungen einrichten, für die Dauer der Bauzeit vorhalten und räumen. // Einschließlich mehrfachem Umsetzen der Einrichtung zwischen den Bauabschnitten, Bauzaun und Absperrung gegen den Staplerverkehr.
+1.20 | 1 psch | Bestandsaufnahme und Absteckung | Höhenaufmaß der vorhandenen Hoffläche im Raster 10 x 10 m, Absteckung der Rinnen- und Kanaltrassen, Bestandsplan nach Fertigstellung im Maßstab 1:200 als PDF und DWG.
+1.30 | 1 psch | Sichern und Umverlegen vorhandener Leitungen | Vorhandene Leitungen und Kabel im Baufeld (Hofbeleuchtung, Torsteuerung, Löschwasser, Datenkabel) orten, sichern und soweit erforderlich umverlegen. Lage und Anzahl sind nicht bekannt, Bestandspläne liegen nicht vor. // Einschließlich aller Nebenleistungen.
+# 2 | Aufbruch- und Abbrucharbeiten
+2.10 | 2400 m2 | Asphaltbefestigung aufbrechen | Asphaltbefestigung der Hoffläche, Dicke 12 bis 18 cm, aufbrechen, laden und einer Verwertung zuführen. // Entsorgung unabhängig von der Belastungsklasse des Ausbauasphalts einschließlich aller Gebühren und Nachweise.
+2.20 | 186 m | Asphalt schneiden | Asphaltbefestigung bis 18 cm Dicke im Anschluss an verbleibende Flächen und entlang der Hallenwand geradlinig schneiden.
+2.30 | 92 m | Vorhandene Kastenrinne ausbauen | Vorhandene Kastenrinne aus Beton einschließlich Gussrosten und Betonummantelung ausbauen, laden und entsorgen.
+2.40 | 8 St | Hofablauf ausbauen | Vorhandenen Hofablauf aus Betonteilen einschließlich Aufsatz ausbauen, Anschlussleitung verschließen, Material entsorgen.
+2.50 | 168 m | Bordsteine aufnehmen | Bordsteine aus Beton einschließlich Rückenstütze aufnehmen, laden und entsorgen.
+2.60 | 120 m | Vorhandene Betonrohrleitung DN 200 ausbauen | Vorhandene Entwässerungsleitung aus Betonrohren DN 200 in 1,20 bis 1,80 m Tiefe im Zuge des Grabenaushubs ausbauen und entsorgen.
+# 3 | Erdarbeiten
+3.10 | 1380 m3 | Boden der Hoffläche lösen und laden | Boden und ungebundene Tragschichten unter der Asphaltbefestigung bis auf Planumshöhe profilgerecht lösen und laden, Homogenbereich nach örtlicher Feststellung, Abtragstiefe im Mittel 57 cm.
+3.20 | 345 m3 | Boden für Leitungsgräben ausheben | Boden für Leitungsgräben profilgerecht ausheben, Grabentiefe 1,25 bis 2,50 m, Sohlbreite nach DIN EN 1610, Aushub seitlich lagern oder laden. Wasserhaltung ist ohne gesonderte Vergütung einzurechnen.
+3.30 | 1725 m2 | Boden abfahren und entsorgen | Ausgehobenen Boden der Positionen 3.10 und 3.20 abfahren und einer geordneten Verwertung oder Beseitigung zuführen, Deklaration nach Ersatzbaustoffverordnung durch den AN, Zuordnung bis einschließlich BM-F2.
+3.40 | 2400 m2 | Planum herstellen | Planum profilgerecht herstellen und verdichten, Verformungsmodul Ev2 mindestens 45 MN/m2, Abweichung von der Sollhöhe höchstens 3 cm.
+3.50 | 850 m3 | Bodenaustausch bei nicht tragfähigem Planum | Nicht tragfähigen Boden unter dem Planum zusätzlich ausheben, entsorgen und durch Frostschutzmaterial 0/45 ersetzen, lagenweise verdichten. Ausführung nur auf Anordnung. | E
+3.60 | 310 m3 | Leitungsgräben verfüllen | Leitungsgräben oberhalb der Leitungszone mit geliefertem Füllsand lagenweise verfüllen und verdichten, Verdichtungsgrad DPr mindestens 98 Prozent.
+# 4 | Entwässerung
+4.10 | 96 m | Entwässerungsrinne NW 300, Klasse E 600 | Entwässerungsrinne aus Polymerbeton, Nennweite 300, mit Gusszarge und verschraubtem Gussrost Klasse E 600 nach DIN EN 1433, Fabrikat Hansadrain Typ HD 300 E, auf Betonfundament C 30/37 mit beidseitiger Ummantelung nach Einbauanleitung des Herstellers versetzen. // Einschließlich Stirnwänden und Fugenabdichtung.
+4.20 | 6 St | Einlaufkasten zu Rinne NW 300 | Einlaufkasten mit Schlammeimer und Anschlussstutzen DN 200 zur Rinne der Position 4.10 liefern und einbauen, Klasse E 600.
+4.30 | 142 m | Kanalrohr PP DN 200, SN 10 | Abwasserkanal aus Polypropylen-Vollwandrohren DN 200, SN 10, mit Steckmuffe und Dichtring nach DIN EN 1852, in vorhandenem Graben auf Sandbettung verlegen, Leitungszone mit Sand 0/2 herstellen und verdichten.
+4.40 | 86 m | Kanalrohr wie Position 4.30, jedoch DN 300 | Abwasserkanal wie Position 4.30, jedoch DN 300.
+4.50 | 7 St | Straßenablauf Klasse D 400 | Straßenablauf aus Betonfertigteilen nach DIN 4052 für Trockenschlamm, mit Aufsatz 500 x 500 mm Klasse D 400 und Eimer, einschließlich Anschluss an die Leitung DN 200.
+4.60 | 4 St | Kontrollschacht DN 1000 | Schacht aus Betonfertigteilen DN 1000 nach DIN 4034-1, Tiefe bis 2,50 m, mit Schachtunterteil, Gerinne, Schachtringen, Konus und Abdeckung Klasse E 600 mit Lüftungsöffnungen.
+4.70 | 1 St | Leichtflüssigkeitsabscheider NS 10 | Abscheideranlage für Leichtflüssigkeiten Klasse I mit Koaleszenzstufe und integriertem Schlammfang 2500 l nach DIN EN 858, Nenngröße NS 10, Fabrikat Oelstop Typ K 10-2500, aus Stahlbeton, mit selbsttätigem Abschluss, Abdeckung Klasse D 400. // Liefern, in Baugrube versetzen und anschließen, einschließlich Baugrube und Verfüllung.
+4.80 | 1 psch | Anschluss an vorhandenen Regenwasserkanal | Anschluss der neuen Leitung DN 300 an den vorhandenen Regenwasserkanal DN 400 in der Containerstraße herstellen, einschließlich aller dazu erforderlichen Erd-, Aufbruch- und Wiederherstellungsarbeiten im öffentlichen Straßenraum sowie der Genehmigungen.
+4.90 | 14 St | Formstücke DN 200 und DN 300 | Bögen und Abzweige aus PP DN 200 und DN 300, SN 10, als Zulage zu den Rohrpositionen liefern und einbauen.
+# 5 | Tragschichten
+5.10 | 2400 m2 | Planum nachverdichten und profilieren | Planum der Hoffläche profilgerecht herstellen und nachverdichten, Verformungsmodul Ev2 mindestens 45 MN/m2.
+5.20 | 2400 m2 | Frostschutzschicht 0/45, d = 31 cm | Frostschutzschicht aus Kies-Sand-Gemisch 0/45 nach TL SoB-StB, Dicke 31 cm, liefern, einbauen und verdichten, Ev2 mindestens 120 MN/m2.
+5.30 | 2400 m2 | Schottertragschicht 0/32, d = 25 cm | Schottertragschicht aus gebrochenem Naturstein 0/32 nach TL SoB-StB, Dicke 25 cm, liefern, einbauen und verdichten, Ev2 mindestens 180 MN/m2, Nachweis durch Plattendruckversuche.
+5.40 | 6 St | Plattendruckversuch | Statischer Plattendruckversuch nach DIN 18134 auf Planum und Tragschichten durch ein anerkanntes Prüfinstitut, einschließlich Auswertung.
+# 6 | Pflaster und Borde
+6.10 | 2350 m2 | Betonsteinpflaster 20/10/10 cm, grau | Pflasterdecke aus Betonpflastersteinen nach DIN EN 1338, 20 x 10 x 10 cm, grau, mit Verbundwirkung für Schwerverkehr, im Fischgrätverband auf 4 cm Bettung aus Brechsand-Splitt-Gemisch 0/5 verlegen, abrütteln und mit Fugenmaterial 0/2 einschlämmen.
+6.20 | 2350 m2 | Betonsteinpflaster wie vor, jedoch d = 8 cm | Wahlposition zu Position 6.10: Pflasterdecke wie vor, jedoch Steindicke 8 cm. | A
+6.30 | 124 m2 | Zulage Pflaster anthrazit für Torzufahrten | Zulage zu Position 6.10 für Steine in Anthrazit zur Kennzeichnung der Torzufahrten und Stellplätze, Verlegemuster und Format nach Wahl des AG.
+6.40 | 172 m | Hochbordstein 15/30 aus Beton | Hochbordstein aus Beton nach DIN EN 1340, 15 x 30 x 100 cm, auf 20 cm Betonbettung C 20/25 mit Rückenstütze setzen, Ansicht 12 cm, einschließlich Kurven- und Passsteinen.
+6.50 | 64 m | Tiefbordstein 10/25 aus Beton | Tiefbordstein aus Beton 10 x 25 x 100 cm als Einfassung auf Betonbettung mit Rückenstütze setzen.
+6.60 | 96 m | Pflaster an Rinnen anarbeiten | Pflaster beidseitig an die Entwässerungsrinnen anarbeiten, Steine nass schneiden, Anschlussfuge mit Fugenverguss schließen.
+# 7 | Sonstiges
+7.10 | 1 psch | Dichtheitsprüfung und Kamerabefahrung | Dichtheitsprüfung der neuen Leitungen und Schächte nach DIN EN 1610 sowie optische Inspektion mit Dokumentation.
+7.20 | 40 h | Stundenlohn Facharbeiter | Stundenlohnarbeiten Facharbeiter auf Anordnung.
+"""
+
+[[mail]]
+id = "anfrage"
+day = -5
+time = "14:26"
+from = "ind.schuett"
+to = "us"
+subject = "Anfrage Hofentwässerung und Pflaster Halle 4, Containerstraße"
+body = """Guten Tag Herr Doe,
+
+Ihre Firma wurde uns von einem Nachbarbetrieb hier im Hafen empfohlen, deshalb schreibe ich Sie direkt an.
+
+Wir bräuchten ein Angebot für die Erneuerung unseres Hofs vor Halle 4. Der Asphalt ist dort ziemlich am Ende, bei Regen steht das Wasser vor den Toren und die alten Rinnen sind zum Teil gebrochen. Die Fläche ist ungefähr 2.400 m² groß. Der Hof soll komplett neu entwässert und dann gepflastert werden, dazu kommt ein Ölabscheider, den verlangt wohl die Behörde.
+
+Damit die Angebote vergleichbar sind, hat uns ein Ingenieur ein Leistungsverzeichnis vorbereitet, das hänge ich als PDF an. Ich bin selbst keine Bauingenieurin, bei fachlichen Fragen zum LV müsste ich also erst bei ihm nachfragen. Pläne gibt es bisher nur einen Lageplan, den kann ich Ihnen gern nachreichen.
+
+Wir fragen insgesamt drei Firmen an. Schön wäre, wenn wir Ihr Angebot bis zum {+10} hätten, dann können wir das noch vor der Gesellschafterrunde besprechen. Die Arbeiten sollten möglichst im ersten Quartal laufen.
+
+Falls Sie nicht anbieten möchten, geben Sie mir bitte kurz Bescheid."""
+attach = ["lv:hof"]
+
+[[mail]]
+id = "nachtrag"
+day = -3
+time = "15:05"
+from = "ind.schuett"
+to = "us"
+subject = "AW: Anfrage Hofentwässerung und Pflaster Halle 4, Containerstraße"
+reply_to = "anfrage"
+body = """Guten Tag Herr Doe,
+
+noch zwei Punkte zu meiner Anfrage von neulich, die unser Lagerleiter mir mitgegeben hat:
+
+1. Die Halle bleibt die ganze Zeit in Betrieb. Wir haben dort täglich 30 bis 40 Lkw, die Tore 1 bis 6 müssen also immer erreichbar sein. Der Bereich direkt vor den Toren (etwa 12 m tief über die ganze Hallenlänge) kann deshalb nur am Wochenende gemacht werden, also Samstag ab 6 Uhr bis Sonntagabend. Montag früh um 5 Uhr kommt der erste Lkw, bis dahin muss die Fläche wieder befahrbar sein. Im LV steht das meines Wissens noch anders, bitte berücksichtigen Sie es trotzdem im Preis.
+
+2. Der Mieter in Halle 4 möchte außerdem wissen, wie lange das Ganze ungefähr dauert. Wenn Sie dazu im Angebot etwas schreiben könnten, wäre das hilfreich.
+
+Wäre es Ihnen recht, wenn wir uns die Fläche gemeinsam ansehen? Ich würde den {+3} um 10:00 Uhr vorschlagen, Treffpunkt am Pförtner, Containerstraße 9. Die anderen Firmen kommen an anderen Tagen. Passt Ihnen das? Sonst nennen Sie mir gern einen anderen Termin in der Woche."""

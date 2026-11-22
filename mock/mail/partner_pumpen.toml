@@ -1,0 +1,576 @@
+# Aquatec Pumpen und Anlagenbau GmbH (pumpen): Dr. Ralf Behrens. Förmlicher Ingenieur, lange, genaue Mails,
+# Angebote als PDF mit Angebotsnummer. Lieferant der Pumpen und der Schaltanlage für P4 Pumpwerk Deichstraße:
+# Angebot, Bestellung, Lieferverzug der Ex-Motoren, Leihpumpen (wie im P4-Bündel erzählt). Davor ein Angebot für
+# eine kleine private Pumpstation, die nicht zustande kam; zuletzt ein offenes Richtpreisangebot für eine Kleinstation.
+
+# ------------------------------------------------------------------ früher: private Pumpstation, nicht beauftragt
+
+[[sheet]]
+key = "halle"
+file = "Preisanfrage_Pumpstation_Logistikhalle_Tornesch.xlsx"
+items = """
+1.10 | 1 St | Fertigpumpstation DN 1500 mit zwei Tauchmotorpumpen
+1.20 | 1 St | Schaltgerät mit Störmeldung
+"""
+
+[[doc]]
+key = "halle_angebot"
+file = "Angebot_P-4471_Pumpstation_Logistikhalle_Tornesch.pdf"
+title = "Angebot P-4471"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg
+Projekt: Schmutzwasserpumpstation Neubau Logistikhalle, Tornesch (privater Bauherr)
+Ihre Anfrage vom {-352}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1.10 | Fertigpumpstation PE DN 1500, T = 3,60 m, 2 Pumpen | 1 | St | 14.850,00 | 14.850,00
+1.20 | Schaltgerät Doppelpumpwerk, GSM-Störmeldung | 1 | St | 3.960,00 | 3.960,00
+1.30 | Inbetriebnahme und Einweisung, 1 Tag | 1 | psch | 780,00 | 780,00
+
+Summe netto: 19.590,00 EUR
+
+Auslegung: Zufluss 6 l/s, Druckleitung da 90, Länge 210 m, geodätische Höhe 4,5 m. Zwei Tauchmotorpumpen AT 80-9, je 2,2 kW, 9 l/s bei 8 m, freier Durchgang 80 mm, im Wechselbetrieb. Schacht aus PE mit Auftriebskragen, begehbare Abdeckung Klasse B 125, Verrohrung Edelstahl DN 80 mit Kugelrückschlagventilen und Schiebern, Kupplungsfüße, Führungsrohre, Niveaumessung hydrostatisch.
+Nicht enthalten: Erd- und Betonarbeiten, Versetzen des Schachts, Elektroanschluss bis zum Schaltgerät.
+Lieferzeit: 6 Wochen nach Auftragseingang und technischer Klärung.
+Lieferung frei Baustelle, unabgeladen. Zahlung: 30 % bei Auftrag, 60 % bei Lieferung, 10 % nach Inbetriebnahme, jeweils 14 Tage netto.
+Gültig bis {-316}."""
+
+[[mail]]
+id = "halle_anfrage"
+day = -352
+time = "08:40"
+from = "us"
+to = "pumpen"
+subject = "Preisanfrage – Fertigpumpstation für Schmutzwasser – Neubau Logistikhalle Tornesch"
+body = """Sehr geehrte Damen und Herren,
+
+die Acme Tiefbau GmbH bietet einem Generalunternehmer die Entwässerung und die Außenanlagen für den Neubau einer Logistikhalle in Tornesch an (privater Bauherr, keine öffentliche Vergabe). Dazu gehört eine kleine Schmutzwasserpumpstation, für die wir Ihr Angebot erbitten:
+
+Pos. 1.10 – 1 St – Fertigpumpstation DN 1500 mit zwei Tauchmotorpumpen, Schachttiefe 3,60 m, Zufluss 6 l/s, Druckleitung PE da 90, Länge 210 m, geodätische Höhe 4,5 m
+Pos. 1.20 – 1 St – Schaltgerät für Doppelpumpwerk mit Störmeldung über Mobilfunk
+
+Bitte nennen Sie Preis, Fabrikat und Typ, Lieferzeit und den Umfang dessen, was bauseits zu leisten ist. Die Positionen liegen als Excel-Datei bei. Wir geben unser Angebot am {-340} ab und benötigen Ihres bis {-344}.
+
+Wir arbeiten bisher nicht zusammen; Sie wurden uns vom Betriebsleiter einer Kläranlage empfohlen.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:halle:blank"]
+
+[[mail]]
+id = "halle_angebot"
+day = -346
+time = "16:20"
+from = "pumpen"
+to = "us"
+subject = "AW: Preisanfrage – Fertigpumpstation für Schmutzwasser – Neubau Logistikhalle Tornesch – Angebot P-4471"
+reply_to = "halle_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihre Anfrage und für die Empfehlung. Ich bin im Projektvertrieb Abwassertechnik für Schleswig-Holstein und Hamburg zuständig und künftig Ihr Ansprechpartner.
+
+Unser Angebot P-4471 erhalten Sie als PDF im Anhang. Zur Auslegung einige Erläuterungen, damit Sie es mit anderen Angeboten vergleichen können:
+
+1. Aus Ihren Angaben (6 l/s Zufluss, 210 m Druckleitung da 90, 4,5 m geodätische Höhe) ergibt sich bei einer Mindestfließgeschwindigkeit von 0,7 m/s ein Betriebspunkt von rund 9 l/s bei 8 m Förderhöhe. Darauf sind die beiden Pumpen AT 80-9 mit je 2,2 kW ausgelegt. Eine Pumpe fördert den gesamten Zufluss, die zweite ist Reserve; sie laufen im Wechsel.
+2. Der freie Durchgang beträgt 80 mm. Für eine Logistikhalle mit Sozialräumen ist das angemessen; Schneidradpumpen wären billiger, verstopfen bei Feuchttüchern jedoch erfahrungsgemäß.
+3. Der Schacht ist aus PE mit Auftriebskragen. Ob der Auftrieb bei Ihrem Grundwasserstand nachzuweisen ist, bitte ich Sie zu prüfen; den Nachweis erstellen wir auf Wunsch.
+
+Die Excel-Datei habe ich nicht ausgefüllt, da eine Station aus mehreren Komponenten in zwei Zeilen nicht sachgerecht darstellbar ist.
+
+Für technische Rückfragen stehe ich Ihnen jederzeit zur Verfügung."""
+attach = ["doc:halle_angebot"]
+
+[[mail]]
+id = "halle_absage"
+day = -327
+time = "10:15"
+from = "us"
+to = "pumpen"
+subject = "Ihr Angebot P-4471 – Pumpstation Logistikhalle Tornesch: nicht beauftragt"
+reply_to = "halle_angebot"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+ich möchte Ihnen eine Rückmeldung geben: Der Generalunternehmer hat die Entwässerung der Logistikhalle an einen Mitbewerber vergeben. Soweit wir erfahren haben, wurde dort eine Kompaktstation mit Schneidradpumpen für rund 13.000 EUR angesetzt; mit Ihrem Angebot lagen wir bei der Station deutlich darüber, haben es aus den von Ihnen genannten Gründen aber bewusst so angeboten.
+
+Ihr Angebot P-4471 kommt damit nicht zum Tragen. Vielen Dank für die sorgfältige Ausarbeitung; bei der nächsten Anlage fragen wir Sie wieder an.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße
+
+[[sheet]]
+key = "p4"
+file = "Preisanfrage_Pumpen_Schaltanlage_Pumpwerk_Deichstrasse.xlsx"
+items = """
+2.2.20 | 2 St | Tauchmotorpumpe Q = 28 l/s, H = 14 m
+4.1.10 | 1 St | Schaltanlage im Freiluftschrank
+4.1.20 | 1 St | Füllstandsmessung
+"""
+
+[[doc]]
+key = "p4_angebot"
+file = "Angebot_P-5102_Pumpwerk_Deichstrasse.pdf"
+title = "Angebot P-5102"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg
+Projekt: Abwasserpumpwerk Deichstraße mit Druckleitung, Stadt Norderbek (TBA-SE-0402)
+Ihre Anfrage vom {-211}, Ihre Angaben vom {-209}
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+2.2.20 | Tauchmotorpumpe AT 100-28 Ex, 7,5 kW, 28 l/s, 14 m | 2 | St | 8.940,00 | 17.880,00
+2.2.20 | Kupplungsfuß DN 100, Führungsrohre, Kette, je Pumpe | 2 | St | 1.160,00 | 2.320,00
+4.1.10 | Schaltanlage 2 x 7,5 kW, Sanftanlauf, SPS, Freiluft | 1 | St | 18.600,00 | 18.600,00
+4.1.20 | Füllstandssonde 0 bis 4 m Ex, 2 Schwimmerschalter | 1 | St | 1.480,00 | 1.480,00
+4.1.60 | Inbetriebnahme, Einweisung, Dokumentation, 2 Tage | 1 | psch | 2.200,00 | 2.200,00
+
+Summe netto: 42.480,00 EUR
+
+Pumpen: Abwasser-Tauchmotorpumpe AT 100-28 Ex in Nassaufstellung, Einkanalrad, freier Durchgang 100 mm, Motor 7,5 kW, 400 V, explosionsgeschützt (Zone 1), Wicklungstemperatur- und Dichtungsüberwachung, 10 m Kabel. Betriebspunkt 28 l/s bei 14 m, Wirkungsgrad 71 %.
+Schaltanlage: Freiluftschrank doppelwandig, zwei Abgänge 7,5 kW mit Sanftanlauf, speicherprogrammierbare Steuerung, Bedienfeld, Betriebsstundenzähler, Störmeldekontakte, Ex-Trennbarrieren für Sonde und Schwimmer, vorbereitete Schnittstelle für eine Fernwirkunterstation.
+Nicht enthalten: Fernwirkunterstation und Anbindung an das Leitsystem (Position 4.1.30), Kabel und Schutzrohre zwischen Schrank und Schacht (4.1.40), Netzanschluss (4.1.50), Edelstahlverrohrung (2.2.30), Probebetrieb über 14 Tage.
+Lieferzeit ab technischer Freigabe: Pumpen 10 Wochen, Schaltanlage 12 Wochen.
+Lieferung frei Baustelle, unabgeladen. Zahlung: 30 % bei Auftrag, 60 % bei Lieferung, 10 % nach Inbetriebnahme, jeweils 14 Tage netto. Gewährleistung 24 Monate ab Inbetriebnahme, längstens 30 Monate ab Lieferung.
+Gültig bis {-165}."""
+
+[[doc]]
+key = "p4_verzug"
+file = "Aquatec_Mitteilung_Lieferverzug_Auftrag_P-5102.pdf"
+title = "Mitteilung über die Verschiebung des Liefertermins, Auftrag P-5102"
+text = """An: Acme Tiefbau GmbH, Herrn John Doe, Schnackenburgallee 114, 22525 Hamburg
+Projekt: Abwasserpumpwerk Deichstraße, Stadt Norderbek
+Ihr Auftrag vom {-139}, unsere Auftragsbestätigung vom {-137}
+
+Sehr geehrter Herr Doe,
+
+zu unserem Bedauern müssen wir Ihnen mitteilen, dass wir den mit Auftragsbestätigung vom {-137} genannten Liefertermin KW {kw-58} für die beiden Tauchmotorpumpen AT 100-28 Ex (Position 2.2.20) nicht einhalten können.
+
+Ursache: Die explosionsgeschützten Motoren der Leistungsstufe 7,5 kW werden von unserem Vorlieferanten bezogen. Dieser hat uns am {-69} mitgeteilt, dass die Motoren dieser Baureihe wegen eines Engpasses bei den druckfest gekapselten Gehäusen derzeit nicht verfügbar sind. Betroffen ist die gesamte Baureihe, nicht nur Ihr Auftrag. Eine Lieferung aus anderen Quellen ist wegen der Baumusterprüfung der Ex-Ausführung nicht zulässig.
+
+Neuer Liefertermin: KW {kw+2}. Dieser Termin beruht auf der schriftlichen Zusage des Vorlieferanten.
+
+Nicht betroffen sind die Schaltanlage (Aufstellung wie geplant in KW {kw-52}), die Füllstandsmessung sowie Kupplungsfüße und Führungsrohre, die bereits geliefert sind.
+
+Wir sind uns bewusst, dass Ihnen aus der Verschiebung Nachteile entstehen können, und werden Ihnen kurzfristig einen Vorschlag zur Überbrückung unterbreiten.
+
+Aquatec Pumpen und Anlagenbau GmbH
+Projektvertrieb Abwassertechnik
+Dr.-Ing. Ralf Behrens"""
+
+[[doc]]
+key = "p4_bestaetigung"
+file = "Aquatec_Bestaetigung_Leihpumpen_und_Liefertermin_P-5102.pdf"
+title = "Bestätigung: Leihpumpen und verbindlicher Liefertermin, Auftrag P-5102"
+text = """An: Acme Tiefbau GmbH, Herrn John Doe
+Zur Vorlage bei der Stadt Norderbek, Fachdienst Tiefbau, Herrn Dipl.-Ing. Hartwig
+Projekt: Abwasserpumpwerk Deichstraße
+
+1. Leihpumpen
+Wir stellen ab KW {kw-48} zwei Tauchmotorpumpen AT 100-24 Ex als Leihgeräte kostenfrei zur Verfügung, einschließlich An- und Abtransport. Daten: Motor 5,5 kW, 400 V, explosionsgeschützt (Zone 1), Einkanalrad, freier Durchgang 100 mm, Betriebspunkt 24 l/s bei 14 m. Die Pumpen gehören zur selben Baureihe wie die bestellten und passen ohne Umbau auf die eingebauten Kupplungsfüße DN 100 und Führungsrohre. Kennlinien und die EU-Baumusterprüfbescheinigung der Ex-Ausführung liegen dieser Bestätigung bei.
+
+2. Liefertermin der bestellten Pumpen
+Die beiden Tauchmotorpumpen AT 100-28 Ex, 7,5 kW, werden in KW {kw+2} auf die Baustelle geliefert. Diesen Termin bestätigen wir verbindlich.
+
+3. Austausch
+Der Austausch erfolgt Pumpe für Pumpe ohne Unterbrechung des Betriebs. Unser Servicetechniker ist beim Austausch anwesend und nimmt die Parametrierung von Motorschutz und Sanftanlauf auf 7,5 kW vor.
+
+4. Gewährleistung
+Die Gewährleistungsfrist für die bestellten Pumpen beginnt mit der Abnahme nach dem Probebetrieb, nicht mit dem Einbau der Leihpumpen.
+
+Aquatec Pumpen und Anlagenbau GmbH
+Dr.-Ing. Ralf Behrens"""
+
+[[mail]]
+id = "p4_anfrage"
+day = -211
+time = "08:10"
+from = "us"
+to = "pumpen"
+subject = "Preisanfrage – Tauchmotorpumpen und Schaltanlage – Abwasserpumpwerk Deichstraße mit Druckleitung"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+wie angekündigt melden wir uns mit der nächsten Anlage, diesmal einer öffentlichen: Die Stadt Norderbek schreibt den Ersatzneubau des Abwasserpumpwerks Deichstraße aus (TBA-SE-0402), Angebotsfrist {-200}. Wir bitten um Ihr Angebot für die maschinelle und elektrische Ausrüstung:
+
+Pos. 2.2.20 – 2 St – Abwasser-Tauchmotorpumpe in Nassaufstellung, Förderstrom 28 l/s bei 14 m Förderhöhe, Ex-Ausführung
+Pos. 4.1.10 – 1 St – Schaltanlage im Freiluftschrank für zwei Pumpen 7,5 kW mit Sanftanlauf und speicherprogrammierbarer Steuerung
+Pos. 4.1.20 – 1 St – hydrostatische Füllstandssonde 0 bis 4 m, Ex-Ausführung, und zwei Schwimmerschalter
+
+Das LV liegt nur als PDF vor; den Auszug der Titel 2.2 und 4 sende ich Ihnen mit getrennter Nachricht. Der Pumpschacht ist ein Stahlbetonfertigteil DN 2500, die Verrohrung im Schacht Edelstahl DN 100, die Druckleitung PE da 160, rund 690 m.
+
+Bitte nennen Sie Fabrikat und Typ, die Lieferzeiten ab Freigabe und was aus Ihrer Sicht in den Positionen nicht enthalten ist. Die Stadt hat für die Betriebsbereitschaft eine Einzelfrist gesetzt ({-40}); die Lieferzeiten sind für uns daher so wichtig wie der Preis. Bindefrist {-165}. Die Positionen liegen als Excel-Datei bei.
+
+Wir benötigen Ihr Angebot bis {-204}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_rueckfrage"
+day = -210
+time = "11:40"
+from = "pumpen"
+to = "us"
+subject = "AW: Preisanfrage – Tauchmotorpumpen und Schaltanlage – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihre Anfrage und den LV-Auszug, den ich erhalten habe. Die Anlage ist für uns von Interesse. Vor der Ausarbeitung bitte ich um Klärung folgender Punkte:
+
+1. Betriebspunkt. Das LV nennt 28 l/s bei 14 m. Bei 690 m Druckleitung da 160 (Innendurchmesser 130,8 mm) ergibt sich bei 28 l/s eine Fließgeschwindigkeit von 2,1 m/s und ein Reibungsverlust von rund 19 m; zusammen mit der geodätischen Höhe läge die Förderhöhe damit deutlich über 14 m. Entweder ist die geodätische Höhe negativ (Gefälle zur Kläranlage), oder der Betriebspunkt gilt für den Parallelbetrieb. Kennen Sie die geodätische Höhe und die Anlagenkennlinie des Planers?
+2. Freier Durchgang. Gefordert sind vermutlich 100 mm; bitte bestätigen Sie dies aus dem Langtext.
+3. Explosionsschutz. Welche Zone weist das Explosionsschutzdokument des Betreibers für den Pumpensumpf aus (Zone 1 oder Zone 2)?
+4. Abgrenzung. Sind Kupplungsfüße und Führungsrohre in der Position 2.2.20 oder in der Rohrinstallation 2.2.30 enthalten? Wir bieten sie üblicherweise mit den Pumpen an.
+5. Fernwirktechnik (Position 4.1.30). Diese Position können wir nicht anbieten, solange Fabrikat und Leitsystem nicht benannt sind. Unsere Schaltanlage erhält eine vorbereitete Schnittstelle.
+
+Nach Eingang Ihrer Antworten erhalten Sie das Angebot innerhalb von drei Arbeitstagen."""
+
+[[mail]]
+id = "p4_antwort"
+day = -209
+time = "16:55"
+from = "us"
+to = "pumpen"
+subject = "AW: Preisanfrage – Tauchmotorpumpen und Schaltanlage – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_rueckfrage"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+vielen Dank für die gründliche Durchsicht. Wir waren gestern bei der Ortsbesichtigung und haben den Fachplaner gefragt:
+
+1. Betriebspunkt: Die Druckleitung fällt zur Kläranlage, die geodätische Höhe beträgt minus 3,5 m; der Übergabeschacht liegt tiefer als das Pumpwerk. Der Planer bestätigt 28 l/s bei 14 m für den Betrieb einer Pumpe. Die Anlagenkennlinie liegt den Vergabeunterlagen nicht bei.
+2. Freier Durchgang: 100 mm, steht im Langtext.
+3. Explosionsschutz: Zone 1 im Pumpensumpf, so die Baubeschreibung.
+4. Abgrenzung: Der Langtext der 2.2.20 nennt „einschließlich Kupplungsfuß und Führungsrohren“. Bitte bei den Pumpen anbieten.
+5. Fernwirktechnik: verstanden. Die Position fragen wir bei einer Elektrofirma an; zum Fabrikat haben wir eine Bieterfrage gestellt.
+
+Inbetriebnahme, Einweisung und Dokumentation (Position 4.1.60) bitten wir, für Ihren Lieferumfang mit anzubieten.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_angebot"
+day = -205
+time = "15:30"
+from = "pumpen"
+to = "us"
+subject = "AW: Preisanfrage – Tauchmotorpumpen und Schaltanlage – Abwasserpumpwerk Deichstraße mit Druckleitung – Angebot P-5102"
+reply_to = "p4_antwort"
+body = """Sehr geehrter Herr Doe,
+
+anbei erhalten Sie unser Angebot P-5102 über 42.480,00 EUR netto.
+
+Zur Auslegung: Mit der geodätischen Höhe von minus 3,5 m ist der Betriebspunkt schlüssig. Angeboten ist die Tauchmotorpumpe AT 100-28 Ex mit 7,5 kW, Einkanalrad, freier Durchgang 100 mm, Ex-Ausführung für Zone 1. Im Parallelbetrieb fördern beide Pumpen zusammen rund 39 l/s.
+
+Zur Abgrenzung bitte ich Sie, den Abschnitt „Nicht enthalten“ im Angebot genau zu lesen. Insbesondere die Fernwirkunterstation mit der Anbindung an das Leitsystem und der 14-tägige Probebetrieb sind nicht Teil unseres Angebots; für die Inbetriebnahme haben wir zwei Technikertage angesetzt.
+
+Zu den Lieferzeiten: Pumpen 10 Wochen, Schaltanlage 12 Wochen, jeweils ab technischer Freigabe durch Sie, das heißt ab Freigabe der Kennlinien und der Stromlaufpläne durch den Auftraggeber. Vor der Freigabe fertigen wir nicht. Wenn die Einzelfrist am {-40} gehalten werden soll, muss die Freigabe nach unserer Rechnung spätestens am {-140} vorliegen; dann verbleiben für Montage und Inbetriebnahme rund zwei Wochen Reserve.
+
+Ihre Excel-Datei sende ich nicht zurück; maßgeblich ist das Angebot."""
+attach = ["doc:p4_angebot"]
+
+[[mail]]
+id = "p4_verhandlung"
+day = -204
+time = "16:10"
+from = "us"
+to = "pumpen"
+subject = "AW: Preisanfrage – Tauchmotorpumpen und Schaltanlage – Abwasserpumpwerk Deichstraße mit Druckleitung – Angebot P-5102"
+reply_to = "p4_angebot"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+vielen Dank für das Angebot P-5102; die Abgrenzung ist klar und hilft uns.
+
+Zwei Bitten vor der Abgabe:
+
+1. Preis. Für die Schaltanlage liegt uns ein Vergleichsangebot einer Elektrofirma vor, das rund 1.500 EUR niedriger ist. Wir würden Pumpen und Schaltanlage gern aus einer Hand beziehen, weil dann die Verantwortung für das Zusammenspiel bei Ihnen liegt. Können Sie uns bei geschlossener Vergabe entgegenkommen?
+2. Zahlungsplan. 30 % bei Auftrag ist bei einem öffentlichen Auftraggeber für uns schwierig. Wäre 30 % bei technischer Freigabe möglich?
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_nachlass"
+day = -203
+time = "17:05"
+from = "pumpen"
+to = "us"
+subject = "AW: Preisanfrage – Tauchmotorpumpen und Schaltanlage – Abwasserpumpwerk Deichstraße mit Druckleitung – Angebot P-5102"
+reply_to = "p4_verhandlung"
+body = """Sehr geehrter Herr Doe,
+
+nach Rücksprache mit unserer Geschäftsleitung kann ich Ihnen Folgendes zusagen:
+
+1. Bei geschlossener Beauftragung aller Positionen des Angebots P-5102 gewähren wir einen Nachlass von 3 % auf die Angebotssumme. Die Auftragssumme beträgt dann 41.205,60 EUR netto. Ein Herauslösen der Schaltanlage ist zu diesem Preis nicht möglich.
+2. Die erste Rate von 30 % wird mit der technischen Freigabe fällig, nicht mit dem Auftrag.
+
+Alle übrigen Bedingungen, insbesondere die Lieferzeiten ab Freigabe und die Gültigkeit bis zum {-165}, bleiben unverändert. Ich wünsche Ihnen für die Submission viel Erfolg."""
+
+[[mail]]
+id = "p4_bestellung"
+day = -139
+time = "08:25"
+from = "us"
+to = "pumpen"
+cc = ["us.albers"]
+subject = "Bestellung zu Angebot P-5102 – Pumpen und Schaltanlage, Pumpwerk Deichstraße"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+die Stadt Norderbek hat gestern die Pumpenkennlinien, die Datenblätter mit Ex-Bescheinigung und die Stromlaufpläne freigegeben. Damit erteilen wir Ihnen den Auftrag auf der Grundlage Ihres Angebots P-5102 und Ihrer Zusage vom {-203}:
+
+2 Tauchmotorpumpen AT 100-28 Ex, 7,5 kW, mit Kupplungsfüßen und Führungsrohren
+1 Schaltanlage im Freiluftschrank für zwei Pumpen 7,5 kW
+1 Füllstandsmessung mit zwei Schwimmerschaltern
+Inbetriebnahme, Einweisung, Dokumentation
+Auftragssumme 41.205,60 EUR netto, erste Rate mit dieser Freigabe
+
+Die Freigabe ist zugleich die technische Freigabe im Sinne Ihres Angebots. Die Stadt hat die Fernwirkunterstation inzwischen festgelegt; Typ und Datenpunktliste (52 Punkte) erhalten Sie von Herrn Albers (in Kopie), damit die Schnittstelle in der Schaltanlage dazu passt.
+
+Maßgeblich für uns ist die Einzelfrist: Das Pumpwerk muss am {-40} betriebsbereit sein, der Umschluss vom alten Pumpwerk ist für die Nacht zum {-42} vorgesehen. Bitte bestätigen Sie die Liefertermine für Pumpen und Schaltanlage verbindlich.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_ab"
+day = -137
+time = "14:50"
+from = "pumpen"
+to = "us"
+cc = ["us.albers"]
+subject = "Auftragsbestätigung P-5102 – Pumpen und Schaltanlage, Pumpwerk Deichstraße"
+reply_to = "p4_bestellung"
+body = """Sehr geehrter Herr Doe,
+
+wir danken für Ihren Auftrag und bestätigen ihn unter der Nummer P-5102 mit einer Auftragssumme von 41.205,60 EUR netto.
+
+Liefertermine ab der technischen Freigabe vom {-139}:
+- Kupplungsfüße, Führungsrohre und Füllstandsmessung: KW {kw-110}, damit sie mit der Edelstahlverrohrung montiert werden können
+- Tauchmotorpumpen AT 100-28 Ex: KW {kw-58}. Die rechnerische Lieferzeit von 10 Wochen endet eine Woche früher; wegen der Werksferien unseres Motorenlieferanten nenne ich Ihnen den Termin, den ich halten kann.
+- Schaltanlage: Aufstellung und Anschluss in KW {kw-52}
+
+Damit verbleiben bis zum Umschluss in der Nacht zum {-42} rund zwei Wochen für den Einbau der Pumpen und die Inbetriebnahme. Das ist ausreichend, lässt jedoch keine Reserve für Verzögerungen bei den bauseitigen Leistungen (Netzanschluss, Kabelwege).
+
+Die Datenpunktliste der Fernwirkunterstation habe ich von Herrn Albers erhalten; die Schnittstelle wird mit 52 Datenpunkten ausgeführt. Der Mehraufwand gegenüber der angebotenen Standardschnittstelle beträgt 640,00 EUR netto; ich bitte um Ihre Bestätigung."""
+
+[[mail]]
+id = "p4_verzug"
+day = -67
+time = "15:35"
+from = "pumpen"
+to = "us"
+cc = ["us.albers"]
+subject = "Auftrag P-5102 Pumpwerk Deichstraße – Verschiebung des Liefertermins der Tauchmotorpumpen auf KW {kw+2}"
+body = """Sehr geehrter Herr Doe, sehr geehrter Herr Albers,
+
+ich muss Ihnen heute eine Nachricht übermitteln, die ich Ihnen gern erspart hätte. Das förmliche Schreiben finden Sie im Anhang; hier das Wesentliche.
+
+Die beiden Tauchmotorpumpen AT 100-28 Ex können nicht wie bestätigt in KW {kw-58} geliefert werden. Die explosionsgeschützten Motoren der Leistungsstufe 7,5 kW sind bei unserem Vorlieferanten nicht verfügbar. Der Engpass betrifft die druckfest gekapselten Gehäuse und damit die gesamte Baureihe. Neuer Liefertermin ist KW {kw+2}; hierfür liegt mir die schriftliche Zusage des Vorlieferanten vor.
+
+Ein Ausweichen auf Motoren anderer Herkunft ist nicht möglich: Die EU-Baumusterprüfbescheinigung der Ex-Ausführung gilt für die Kombination aus Pumpe und diesem Motor. Eine Pumpe ohne gültige Bescheinigung dürften Sie in Zone 1 nicht einbauen, und der Betreiber dürfte sie nicht abnehmen.
+
+Nicht betroffen: Die Schaltanlage wird wie geplant in KW {kw-52} aufgestellt. Kupplungsfüße, Führungsrohre und Füllstandsmessung sind geliefert und montiert.
+
+Mir ist bewusst, was dieser Termin für Ihre Einzelfrist am {-40} bedeutet. Ich prüfe derzeit mit unserem Mietpark und dem Service, wie wir den Zeitraum überbrücken können, und melde mich dazu in den nächsten Tagen mit einem konkreten Vorschlag."""
+attach = ["doc:p4_verzug"]
+
+[[mail]]
+id = "p4_verzug_aw"
+day = -66
+time = "17:20"
+from = "us"
+to = "pumpen"
+cc = ["us.albers"]
+subject = "AW: Auftrag P-5102 Pumpwerk Deichstraße – Verschiebung des Liefertermins der Tauchmotorpumpen auf KW {kw+2}"
+reply_to = "p4_verzug"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+Ihre Mitteilung haben wir erhalten. Dass der Engpass beim Vorlieferanten liegt, nehmen wir zur Kenntnis; an unserer Lage ändert es nichts. Sie haben den Termin KW {kw-58} am {-137} bestätigt, und wir haben ihn so an die Stadt weitergegeben.
+
+Zur Einordnung: Die Einzelfrist am {-40} ist Vertragsfrist mit Vertragsstrafe. Das alte Pumpwerk läuft nach Auskunft der Stadt nur noch mit einer Pumpe ohne Reserve und soll keinen weiteren Winter in Betrieb bleiben. Herr Albers hat der Stadt heute vorsorglich Behinderung angezeigt; wir rechnen damit, dass die Stadt sie zurückweist, weil der Verzug aus unserer Sphäre kommt.
+
+Wir brauchen deshalb bis spätestens {-62} von Ihnen eine Lösung, mit der das Pumpwerk zur Nacht zum {-42} fördert. Konkret fragen wir:
+
+1. Können Sie Leihpumpen stellen, die auf die eingebauten Kupplungsfüße passen, in Ex-Ausführung, mit der nächstkleineren oder nächstgrößeren Motorleistung, für die Motoren verfügbar sind?
+2. Wer trägt Miete, Transport, den zweimaligen Ein- und Ausbau und die zweite Parametrierung der Schaltanlage?
+3. Bestätigen Sie den neuen Termin KW {kw+2} verbindlich?
+
+Ich bin morgen ab 7:30 Uhr telefonisch erreichbar.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_leihpumpen"
+day = -62
+time = "10:10"
+from = "pumpen"
+to = "us"
+cc = ["us.albers"]
+subject = "Auftrag P-5102 Pumpwerk Deichstraße – Vorschlag: zwei Leihpumpen 5,5 kW Ex ab KW {kw-48}"
+reply_to = "p4_verzug_aw"
+body = """Sehr geehrter Herr Doe,
+
+wie gestern telefonisch besprochen, bestätige ich unseren Vorschlag schriftlich.
+
+1. Leihpumpen. Wir stellen Ihnen ab KW {kw-48} zwei Tauchmotorpumpen derselben Baureihe mit dem nächstkleineren Motor zur Verfügung: AT 100-24 Ex, 5,5 kW, explosionsgeschützt für Zone 1, 24 l/s bei 14 m. Motoren dieser Leistungsstufe sind vom Engpass nicht betroffen; die Pumpen stammen aus unserem Mietpark. Sie passen ohne Umbau auf die eingebauten Kupplungsfüße DN 100 und die Führungsrohre.
+
+2. Hydraulik. Der Trockenwetterzufluss beträgt nach den Unterlagen 11 l/s. Eine Leihpumpe fördert 24 l/s, die zweite steht als Reserve bereit; bei Regenwetter laufen beide parallel und fördern zusammen rund 34 l/s. Gegenüber der endgültigen Ausrüstung fehlen im Parallelbetrieb etwa 5 l/s. Für einen Zeitraum von wenigen Wochen halte ich das für vertretbar; die Entscheidung liegt beim Betreiber.
+
+3. Kosten. Miete sowie An- und Abtransport der Leihpumpen tragen wir. Den zweimaligen Aus- und Einbau und die zweite Parametrierung bitte ich Sie zunächst selbst zu veranschlagen; über eine Beteiligung sprechen wir, wenn die Zahlen vorliegen. Unser Servicetechniker kommt zum Einbau der Leihpumpen und zum späteren Austausch ohne Berechnung.
+
+4. Schaltanlage. Motorschutz und Sanftanlauf werden für 5,5 kW parametriert und beim Austausch auf 7,5 kW umgestellt. An der Hardware ändert sich nichts.
+
+5. Liefertermin. KW {kw+2} für die endgültigen Pumpen bestätige ich; eine förmliche Bestätigung zur Vorlage bei der Stadt erstelle ich, sobald Sie mir mitteilen, dass die Stadt dem Vorgehen zustimmt.
+
+Der Austausch kann Pumpe für Pumpe im laufenden Betrieb erfolgen."""
+
+[[mail]]
+id = "p4_bedingungen"
+day = -55
+time = "08:45"
+from = "us"
+to = "pumpen"
+cc = ["us.albers"]
+subject = "AW: Auftrag P-5102 Pumpwerk Deichstraße – Vorschlag: zwei Leihpumpen 5,5 kW Ex ab KW {kw-48}"
+reply_to = "p4_leihpumpen"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+die Stadt hat dem Vorgehen gestern zugestimmt: Inbetriebnahme mit den Leihpumpen, die Einzelfrist gilt als gewahrt, wenn das Pumpwerk am {-42} fördert. Dafür stellt die Stadt Bedingungen, die Sie betreffen:
+
+1. Kennlinien und Ex-Bescheinigung der Leihpumpen müssen vor dem Einbau bei Herrn Hartwig vorliegen.
+2. Sie bestätigen schriftlich den Liefertermin KW {kw+2} für die endgültigen Pumpen.
+3. Die Gewährleistung für die Pumpen beginnt mit der Abnahme nach dem Probebetrieb, nicht mit dem Einbau der Leihpumpen. Bitte bestätigen Sie auch das.
+
+Bitte senden Sie mir die Bestätigung als PDF, ich lege sie der Stadt vor.
+
+Zu den Kosten: Für den zweimaligen Aus- und Einbau und die zweite Parametrierung und Inbetriebnahme entstehen uns 6.480,00 EUR netto. Die Stadt übernimmt davon die Hälfte, mehr nicht. Die verbleibenden 3.240,00 EUR sind Folge Ihres Lieferverzugs. Wir bitten Sie, diesen Betrag als Gutschrift auf die Schlussrate zu übernehmen.
+
+Die Leihpumpen bitte am Montag der KW {kw-48} bis 9:00 Uhr auf die Baustelle; Herr Albers baut sie mit Ihrem Techniker am selben Tag ein.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_bestaetigung"
+day = -53
+time = "13:30"
+from = "pumpen"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Auftrag P-5102 Pumpwerk Deichstraße – Bestätigung Leihpumpen und Liefertermin KW {kw+2}"
+reply_to = "p4_bedingungen"
+body = """Sehr geehrter Herr Doe,
+
+die erbetene Bestätigung erhalten Sie im Anhang als PDF zur Vorlage bei der Stadt. Sie enthält die Daten der Leihpumpen, den verbindlichen Liefertermin KW {kw+2} für die Pumpen AT 100-28 Ex und die Regelung zum Beginn der Gewährleistung. Kennlinien und EU-Baumusterprüfbescheinigung der Leihpumpen habe ich Herrn Hartwig zusätzlich unmittelbar zugesandt, Sie und Herr Albers stehen in Kopie.
+
+Zu den Kosten: Ihre Aufstellung über 6.480,00 EUR habe ich geprüft; sie ist nachvollziehbar. Wir übernehmen von dem bei Ihnen verbleibenden Betrag 2.400,00 EUR als Gutschrift auf die Schlussrate. Die Parametrierung durch unseren Techniker an beiden Terminen berechnen wir nicht, ebenso wenig Miete und Transport der Leihpumpen. Ich bitte um Verständnis, dass wir darüber nicht hinausgehen: Der Engpass liegt bei einem Vorlieferanten, den wir ebenso wenig beeinflussen können wie Sie.
+
+Die Leihpumpen werden am Montag der KW {kw-48} um 8:00 Uhr angeliefert. Unser Servicetechniker, Herr Wulf, ist ab 8:30 Uhr vor Ort."""
+attach = ["doc:p4_bestaetigung"]
+
+[[mail]]
+id = "p4_laeuft"
+day = -41
+time = "11:20"
+from = "us.albers"
+to = "pumpen"
+cc = ["us"]
+subject = "Pumpwerk Deichstraße – Umschluss erfolgt, Leihpumpen in Betrieb; Vorbereitung Tausch"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+zur Information: Der Umschluss ist heute Nacht ohne Zwischenfälle gelaufen. Seit 03:40 Uhr fördert das neue Pumpwerk mit Leihpumpe 1, Leihpumpe 2 ist im Wechselbetrieb getestet. Störmeldungen kommen auf dem Leitsystem der Stadt an. Danke an Herrn Wulf, der bis halb fünf geblieben ist.
+
+Zwei Beobachtungen für Ihren Service:
+- Leihpumpe 2 läuft beim Sanftanlauf etwas rau an, Stromaufnahme im Betrieb unauffällig (10,8 A). Bitte beim Tausch ansehen.
+- Die untere Führungsrohrhalterung von Pumpe 1 sitzt 2 cm höher als im Plan. Die Leihpumpe kuppelt sauber ein; ich nehme an, dass das für die 7,5-kW-Pumpe ebenso gilt.
+
+Für den Tausch in KW {kw+2} brauche ich von Ihnen eine Woche vorher den genauen Tag, damit der Betrieb der Stadt mit dem Saugwagen bereitsteht. Danach beginnt der Probebetrieb über 14 Tage.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ offen: Richtpreis für eine Kleinpumpstation
+
+[[sheet]]
+key = "klein"
+file = "Preisanfrage_Richtpreis_Kleinpumpstation.xlsx"
+items = """
+1 | 1 St | Kleinpumpstation DN 1200 mit zwei Pumpen, Druckentwässerung
+2 | 1 St | Schaltgerät mit Störmeldung
+"""
+
+[[doc]]
+key = "klein_angebot"
+file = "Richtpreisangebot_R-0718_Kleinpumpstation.pdf"
+title = "Richtpreisangebot R-0718"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg
+Projekt: Kleinpumpstation für die Druckentwässerung von sechs Grundstücken (Standort noch nicht benannt)
+Ihre Anfrage vom {-30}
+
+Richtpreise zur Budgetierung, unverbindlich:
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | Kleinpumpstation PE DN 1200, T = 3,00 m, 2 Pumpen | 1 | St | 11.900,00 | 11.900,00
+2 | Schaltgerät Doppelpumpwerk, GSM-Störmeldung | 1 | St | 2.950,00 | 2.950,00
+3 | Inbetriebnahme und Einweisung, 1 Tag | 1 | psch | 690,00 | 690,00
+
+Richtpreis netto: 15.540,00 EUR
+
+Annahmen: Zufluss bis 2 l/s, Druckleitung da 63, Länge bis 400 m, Förderhöhe bis 18 m. Zwei Pumpen mit Schneideinrichtung, je 1,5 kW, 2,5 l/s bei 18 m, im Wechselbetrieb. Schacht aus PE mit Auftriebskragen, Abdeckung Klasse B 125, Verrohrung Edelstahl DN 40.
+Dies ist kein verbindliches Angebot. Ein verbindliches Angebot erstellen wir nach Vorlage von Lageplan, Höhen, Leitungslänge und Grundwasserstand. Die Richtpreise gelten für Lieferungen bis {+40}; danach ist mit einer Anpassung von etwa 4 % zu rechnen.
+Lieferzeit derzeit 7 Wochen."""
+
+[[mail]]
+id = "klein_anfrage"
+day = -30
+time = "09:05"
+from = "us"
+to = "pumpen"
+subject = "Bitte um Richtpreis – Kleinpumpstation für Druckentwässerung, sechs Grundstücke"
+body = """Sehr geehrter Herr Dr. Behrens,
+
+unabhängig vom Pumpwerk Deichstraße eine kleine Bitte: Ein privater Auftraggeber möchte von uns ein Budget für den Anschluss von sechs Grundstücken im Außenbereich an eine Abwasserdruckleitung, bevor er entscheidet, ob er planen lässt. Dafür brauche ich einen Richtpreis:
+
+Pos. 1 – 1 St – Kleinpumpstation DN 1200 mit zwei Pumpen, Schachttiefe etwa 3,00 m, Druckleitung da 63, Länge etwa 400 m
+Pos. 2 – 1 St – Schaltgerät mit Störmeldung über Mobilfunk
+
+Genaue Höhen und einen Lageplan gibt es noch nicht; mir genügt eine Größenordnung mit Ihren Annahmen. Es eilt nicht, bis Ende nächster Woche wäre schön.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:klein:blank"]
+
+[[mail]]
+id = "klein_angebot"
+day = -27
+time = "14:40"
+from = "pumpen"
+to = "us"
+subject = "AW: Bitte um Richtpreis – Kleinpumpstation für Druckentwässerung, sechs Grundstücke – Richtpreisangebot R-0718"
+reply_to = "klein_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+gern. Im Anhang finden Sie das Richtpreisangebot R-0718 über 15.540,00 EUR netto für Station, Schaltgerät und Inbetriebnahme.
+
+Ich habe folgende Annahmen getroffen, die Sie Ihrem Auftraggeber bitte mitteilen: Zufluss bis 2 l/s, Druckleitung da 63 mit bis zu 400 m Länge, Förderhöhe bis 18 m. Bei einer so kleinen Nennweite sind Pumpen mit Schneideinrichtung erforderlich; anders als bei der Logistikhalle in Tornesch, wo ich davon abgeraten hatte, gibt es hier keine sinnvolle Alternative. Ihr Auftraggeber sollte wissen, dass Schneidwerke Verschleißteile sind und etwa alle drei bis fünf Jahre getauscht werden.
+
+Für die Tiefbauarbeiten (Aushub, Versetzen, Auftriebssicherung, Elektrozuleitung) rechnen andere Kunden erfahrungsgemäß mit dem Zwei- bis Dreifachen des Stationspreises; das können Sie besser beurteilen als ich.
+
+Das Richtpreisangebot ist unverbindlich. Für ein verbindliches Angebot benötige ich Lageplan, Höhen und den Grundwasserstand."""
+attach = ["doc:klein_angebot"]
+
+# ------------------------------------------------------------------ zuletzt, ohne Anhang
+
+[[mail]]
+id = "p4_tausch"
+day = -3
+time = "15:12"
+from = "pumpen"
+to = ["us", "us.albers"]
+subject = "Pumpwerk Deichstraße, Auftrag P-5102 – Pumpen 7,5 kW im Werk eingetroffen, Tausch in KW {kw+2}"
+body = """Sehr geehrter Herr Doe, sehr geehrter Herr Albers,
+
+ich kann Ihnen den zugesagten Termin bestätigen: Die beiden Ex-Motoren 7,5 kW sind bei uns im Werk eingetroffen, die Pumpen AT 100-28 Ex sind montiert und durchlaufen heute und morgen die Endprüfung (Kennlinienmessung, Isolations- und Dichtheitsprüfung). Die Prüfprotokolle erhalten Sie mit der Lieferung.
+
+Ablauf des Tauschs in KW {kw+2}, vorbehaltlich Ihrer Zustimmung:
+1. Anlieferung der Pumpen am ersten Tag bis 8:00 Uhr, zusammen mit unserem Servicetechniker Herrn Wulf.
+2. Tausch der Pumpe 2 (die Leihpumpe mit dem rauen Anlauf, den Herr Albers gemeldet hat), Parametrierung dieses Abgangs auf 7,5 kW, Probelauf. Währenddessen fördert Pumpe 1.
+3. Am Folgetag Tausch der Pumpe 1, danach Parallelbetrieb beider Pumpen und Messung des Betriebspunkts.
+4. Rücknahme der Leihpumpen mit demselben Fahrzeug.
+
+Den genauen Tag stimme ich morgen telefonisch mit Herrn Albers ab, damit der Betrieb der Stadt den Saugwagen bereitstellen kann. Mit dem Abschluss des Tauschs kann der 14-tägige Probebetrieb beginnen.
+
+Zwei weitere Punkte:
+- Die zugesagte Gutschrift über 2.400,00 EUR netto verrechnen wir mit der Schlussrate.
+- Ihr Richtpreisangebot R-0718 für die Kleinpumpstation ist noch offen. Die Richtpreise gelten für Lieferungen bis {+40}; zum Jahreswechsel passen wir die Preise für Kleinstationen um etwa 4 % an. Sobald Ihr Auftraggeber sich entschieden hat und Lageplan und Höhen vorliegen, erstelle ich das verbindliche Angebot.
+
+Am Fachtag Abwasserpumpwerke bei uns in Bargteheide würde ich mich freuen, Sie beide zu begrüßen."""

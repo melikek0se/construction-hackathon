@@ -1,0 +1,845 @@
+# The rest of the estimator's inbox: portal notifications, invoices, newsletters, internal mail, one forwarded
+# request, mail that is none of his business. In the order it was sent.
+
+# ------------------------------------------------------------------ files
+
+[[doc]]
+key = "re1"
+file = "Rechnung_RE-2025-08814.pdf"
+title = "Rechnung RE-2025-08814"
+text = """Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Kundennummer: 30772
+Rechnungsdatum: {-262}
+Leistungszeitraum: {-292} bis {-264}
+Baustelle: Brande-Hörnerkirchen, Hauptstraße (Trinkwasserleitung)
+Mietvertrag: MV-118204
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | Mobilbagger 15 t, Tieflöffel 800 mm, Schnellwechsler | 20 | Tag | 289,00 | 5.780,00
+2 | Grabenräumlöffel 1500 mm, hydraulisch schwenkbar | 20 | Tag | 14,50 | 290,00
+3 | Maschinenbruchversicherung 9 Prozent auf Pos. 1 und 2 | 1 | psch | 546,30 | 546,30
+4 | An- und Abtransport Tieflader, Zone 3 | 2 | St | 245,00 | 490,00
+5 | Dieselbetankung bei Rückgabe, 86 Liter | 86 | l | 1,89 | 162,54
+
+Nettobetrag: 7.268,84 EUR
+Umsatzsteuer 19 Prozent: 1.381,08 EUR
+Rechnungsbetrag: 8.649,92 EUR
+
+Zahlbar innerhalb von 14 Tagen ohne Abzug auf das Konto der Baumaschinen Lorenzen Vermietung GmbH.
+Es gelten unsere Allgemeinen Mietbedingungen."""
+
+[[doc]]
+key = "re2"
+file = "Rechnung_RE-2026-06127.pdf"
+title = "Rechnung RE-2026-06127"
+text = """Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Kundennummer: 30772
+Rechnungsdatum: {-75}
+Leistungszeitraum: {-106} bis {-78}
+Baustelle: Norderbek, Deichstraße (Abwasserpumpwerk)
+Mietvertrag: MV-126550
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | Kettenbagger 22 t, Tieflöffel 1000 mm | 21 | Tag | 342,00 | 7.182,00
+2 | Hydraulikhammer 1200 kg zu Pos. 1 | 6 | Tag | 118,00 | 708,00
+3 | Maschinenbruchversicherung 9 Prozent auf Pos. 1 und 2 | 1 | psch | 710,10 | 710,10
+4 | An- und Abtransport Tieflader, Zone 2 | 2 | St | 215,00 | 430,00
+5 | Reinigungspauschale, stark verschmutzt zurück | 1 | psch | 95,00 | 95,00
+
+Nettobetrag: 9.125,10 EUR
+Umsatzsteuer 19 Prozent: 1.733,77 EUR
+Rechnungsbetrag: 10.858,87 EUR
+
+Zahlbar innerhalb von 14 Tagen ohne Abzug.
+Es gelten unsere Allgemeinen Mietbedingungen."""
+
+[[doc]]
+key = "mahnung"
+file = "Zahlungserinnerung_RE-2026-06127.pdf"
+title = "Zahlungserinnerung"
+text = """Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Kundennummer: 30772
+Datum: {-44}
+
+Sehr geehrte Damen und Herren,
+
+bei der Durchsicht unserer Konten haben wir festgestellt, dass die folgende Rechnung noch nicht ausgeglichen ist. Sicher handelt es sich um ein Versehen.
+
+Beleg | Bezeichnung | Datum | Fällig | Betrag
+RE-2026-06127 | Miete Kettenbagger 22 t, Deichstraße | {-75} | {-61} | 10.858,87
+
+Offener Betrag: 10.858,87 EUR
+
+Wir bitten um Überweisung bis zum {-34}. Sollte sich Ihre Zahlung mit diesem Schreiben überschnitten haben, betrachten Sie es bitte als gegenstandslos.
+Bei Rückfragen zur Rechnung erreichen Sie uns unter rechnung@lorenzen-baumaschinen.test."""
+
+[[doc]]
+key = "re3"
+file = "Rechnung_RE-2026-09340.pdf"
+title = "Rechnung RE-2026-09340"
+text = """Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+Kundennummer: 30772
+Rechnungsdatum: {-11}
+Leistungszeitraum: {-41} bis {-13}
+Baustelle: Hemdingen, K 22 (Radweg)
+Mietvertrag: MV-129031
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | Minibagger 8 t, Verstellausleger, Tieflöffel 600 mm | 20 | Tag | 148,00 | 2.960,00
+2 | Walzenzug 7 t, Glattmantel | 12 | Tag | 126,00 | 1.512,00
+3 | Rüttelplatte 400 kg, reversierbar | 20 | Tag | 32,00 | 640,00
+4 | Maschinenbruchversicherung 9 Prozent auf Pos. 1 bis 3 | 1 | psch | 460,08 | 460,08
+5 | An- und Abtransport Tieflader, Zone 2 | 3 | St | 215,00 | 645,00
+
+Nettobetrag: 6.217,08 EUR
+Umsatzsteuer 19 Prozent: 1.181,25 EUR
+Rechnungsbetrag: 7.398,33 EUR
+
+Zahlbar innerhalb von 14 Tagen ohne Abzug.
+Hinweis: Ab 01.01.2027 gilt unsere neue Mietpreisliste, im Mittel plus 4,5 Prozent."""
+
+[[doc]]
+key = "preisliste"
+file = "Baustoff-Union_Preisliste_Tiefbau_GaLaBau.pdf"
+title = "Preisliste Tiefbau und GaLaBau, gültig ab {-190}"
+from = "baust"
+text = """Nettopreise in EUR ab Lager Pinneberg für gewerbliche Kunden, zuzüglich Umsatzsteuer. Fracht nach Zone, Kranentladung 48,00 EUR je Anlieferung. Preise freibleibend, gültig bis auf Widerruf.
+
+Art.-Nr. | Artikel | Einheit | Preis | ab Menge
+40110 | Betonpflaster grau 20/10/8, ohne Fase | m2 | 16,90 | 1 Palette
+40112 | Betonpflaster grau 20/10/10, Schwerlast | m2 | 21,40 | 1 Palette
+40130 | Betonpflaster anthrazit 20/10/8 | m2 | 19,80 | 1 Palette
+41205 | Tiefbordstein 8/25/100 grau | m | 7,60 | 20 St
+41210 | Tiefbordstein 10/25/100 grau | m | 8,90 | 20 St
+41320 | Hochbordstein 15/30/100 grau | m | 11,90 | 16 St
+41325 | Hochbordstein 15/30 Kurvenstein R 6 | St | 19,40 | 1 St
+42010 | Rinnenplatte 30/30/8 | St | 3,35 | 1 Palette
+44100 | Straßenablauf Betonteile, Satz Nassschlamm | St | 138,00 | 1 St
+44150 | Aufsatz 500 x 500 Klasse D 400, Pultform | St | 189,00 | 1 St
+45210 | Entwässerungsrinne NW 150, Klasse D 400, 1 m | St | 96,50 | 10 St
+45230 | Entwässerungsrinne NW 300, Klasse E 600, 1 m | St | 248,00 | 10 St
+47010 | Geotextil Vlies GRK 3, Rolle 2 x 50 m | m2 | 0,92 | 1 Rolle
+47020 | Geotextil Vlies GRK 4, Rolle 4 x 50 m | m2 | 1,34 | 1 Rolle
+48300 | Pflasterfugenmörtel, 25 kg | Sack | 31,50 | 1 Sack
+
+Mengenrabatte ab 5 Paletten auf Anfrage bei Ihrem Fachberater: Olaf Dierks, Tel. +49 4101 5550 512."""
+
+[[doc]]
+key = "schulung"
+file = "Seminarangebot_Sachkunde_Grabenverbau.pdf"
+title = "Seminar: Befähigte Person für Grabenverbau nach DIN 4124"
+text = """Termin: {+38}, 8:30 bis 16:00 Uhr
+Ort: Schulungszentrum Verbautechnik Nord, Gewerbering 8, 24539 Neumünster
+Teilnahmegebühr: 345,00 EUR je Person zuzüglich Umsatzsteuer, einschließlich Unterlagen, Mittagessen und Teilnahmebescheinigung
+
+Inhalte
+- Rechtliche Grundlagen: DIN 4124, DGUV Vorschrift 38, DGUV Regel 101-604
+- Böschungswinkel, Arbeitsraumbreiten, Lastabstände von Fahrzeugen und Geräten
+- Verbauarten: Grabenverbaugeräte, Gleitschienenverbau, Dielenkammerverbau
+- Einbau im Absenk- und Einstellverfahren, typische Fehler
+- Prüfung vor Einsatz und Dokumentation, Praxisteil auf dem Freigelände
+
+Teilnehmerkreis: Poliere, Vorarbeiter, Bauleiter, Sicherheitsfachkräfte
+Mindestteilnehmerzahl 8, höchstens 16 Personen. Anmeldung bis 14 Tage vor dem Termin.
+Mietkunden erhalten 10 Prozent Nachlass auf die Teilnahmegebühr."""
+
+[[doc]]
+key = "hausmesse"
+file = "Programm_Aquatec_Fachtag_Pumpwerke.pdf"
+title = "Fachtag Abwasserpumpwerke – Programm"
+text = """Datum: {+24}
+Ort: Aquatec Pumpen und Anlagenbau GmbH, Otto-Hahn-Straße 15, 22941 Bargteheide, Werkhalle 2
+
+Uhrzeit | Programmpunkt
+09:30 | Ankommen, Kaffee, Begrüßung
+10:00 | Fertigpumpstationen: Auftriebssicherung und Einbau
+10:45 | Energieeffizienz von Tauchmotorpumpen im Teillastbetrieb
+11:30 | Werksführung Schaltanlagenbau
+12:30 | Mittagsimbiss
+13:30 | Fernüberwachung und Störmeldewesen für Betreiber
+14:15 | Praxisbericht eines Abwasserzweckverbands
+15:00 | Ausklang
+
+Die Teilnahme ist kostenfrei. Der Fachtag richtet sich an Betreiber, Planer und Elektrofachkräfte.
+Anmeldung bis zum {+14} an projekte@aquatec-pumpen.test."""
+
+[[lv]]
+key = "reiterhof"
+file = "Reiterhof_Lueders_Positionen"
+format = "xlsx"
+client = "us"
+name = "Regenwasserkanal und Hofbefestigung Reiterhof Lüders"
+project = "Reiterhof Lüders: Regenwasserkanal und Hofbefestigung"
+number = ""
+remarks = """Positionsliste für die Preisanfrage, aufgestellt vom Bauherrn mit seinem Architekten.
+Bauherr: Reiterhof Lüders, Inhaber Henning Lüders, Bilsener Weg 21, 25485 Hemdingen. Die Acme Tiefbau GmbH ist nicht Auftraggeber; die Liste wurde von Jonas Albers weitergeleitet.
+Bauvorhaben: Regenwasserkanal vom Stallgebäude zum Vorfluter und Befestigung des Wirtschaftshofs, Fläche ca. 600 m2.
+Angebotsfrist: {+12}
+Ausführungsbeginn: {+95}
+Fertigstellung: {+125}
+Der Hof wird von Traktoren mit Anhänger und vom Futtermittel-Lkw (40 t) befahren.
+Die Einleitgenehmigung für den Graben liegt vor, Einleitmenge höchstens 15 l/s.
+Der Reitbetrieb läuft weiter, die Zufahrt zur Reithalle muss frei bleiben.
+Aushubboden kann auf der Koppel hinter der Reithalle eingebaut werden.
+Strom und Wasser stellt der Bauherr kostenlos.
+Abrechnung nach Aufmaß, Zahlung 14 Tage nach Rechnung."""
+items = """
+# 1 | Vorarbeiten
+1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle einrichten und räumen, einschließlich aller Nebenleistungen und Absperrung gegen den Reitbetrieb.
+1.20 | 600 m2 | Alte Hofbefestigung aufnehmen | Vorhandene Befestigung aus Betonplatten, Schotter und Asphaltresten aufnehmen und abfahren, Entsorgung unabhängig von der Belastung des Materials.
+# 2 | Regenwasserkanal
+2.10 | 118 m | Regenwasserkanal PP DN 300 verlegen | Kanalrohr PP DN 300, SN 8, im Graben bis 1,60 m Tiefe auf Sandbettung verlegen, einschließlich Aushub, Verfüllung und Verdichtung. Aushub auf der Koppel einbauen.
+2.20 | 36 m | Kanal wie Position 2.10, jedoch DN 200 | Anschlussleitungen wie Position 2.10, jedoch DN 200, von den Fallrohren und Hofabläufen zum Kanal.
+2.30 | 3 St | Kontrollschacht DN 1000 | Schacht aus Betonfertigteilen DN 1000, Tiefe bis 1,80 m, mit Abdeckung Klasse B 125.
+2.40 | 5 m2 | Hofablauf mit Schlammeimer | Hofablauf aus Beton mit Gussrost Klasse D 400 und Schlammeimer setzen und anschließen.
+2.50 | 1 psch | Auslauf in den Graben | Auslaufbauwerk in den Graben herstellen, Böschung und Sohle sichern, Ausführung nach Vorgabe der Wasserbehörde.
+# 3 | Hofbefestigung
+3.10 | 600 m2 | Tragschicht aus Schotter 0/45, 30 cm | Schottertragschicht 0/45, Dicke 30 cm, liefern, einbauen und verdichten.
+3.20 | 600 m2 | Betonpflaster 8 cm, Fabrikat Störtal Rustika | Betonpflaster 8 cm, Fabrikat Störtal Typ Rustika, Farbe nach Wahl des Bauherrn, auf Splittbettung verlegen, abrütteln und einsanden.
+3.30 | 600 m2 | Asphalt statt Pflaster | Alternativ zu Position 3.20: Asphalttragdeckschicht 10 cm. | A
+3.40 | - m | Einfassung aus Tiefbordsteinen | Tiefbordsteine 8/25 in Beton setzen.
+"""
+
+# ------------------------------------------------------------------ mail
+
+[[mail]]
+id = "p_brande"
+day = -408
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Bekanntmachung zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurde 1 neue Bekanntmachung veröffentlicht:
+
+Vergabestelle: Wasserverband Geestrand
+Bezeichnung: Erneuerung Trinkwasserleitung DN 200, Hauptstraße, Brande-Hörnerkirchen
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45231300 Bauarbeiten für Wasser- und Abwasserrohrleitungen
+Angebotsfrist: {-394}, 11:00 Uhr
+Ausführungsort: 25364 Brande-Hörnerkirchen
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "news_fruehjahr"
+day = -322
+time = "07:15"
+from = "baust.news"
+to = "us"
+subject = "Saisonstart im Tiefbau: Pflaster, Borde und Rinnen zu Aktionspreisen"
+body = """Guten Tag,
+
+die Saison läuft an, unsere Läger in Pinneberg und Elmshorn sind voll. Bis Ende des Monats gelten für gewerbliche Kunden folgende Aktionspreise (netto, ab Lager, solange der Vorrat reicht):
+
+Betonpflaster grau 20/10/8: 16,20 €/m² ab 5 Paletten
+Tiefbordstein 8/25/100: 7,30 €/m
+Hochbordstein 15/30/100: 11,60 €/m
+Straßenablauf Betonteile, Satz Trockenschlamm: 129,00 €/St
+
+NEU IM PROGRAMM
+Entwässerungsrinnen unserer Hausmarke "ElbeDrain" in den Nennweiten 100 bis 300, Klassen C 250 bis F 900, ab Lager lieferbar.
+
+TERMIN
+Tiefbautag in der Niederlassung Pinneberg mit Vorführung Pflasterverlegemaschine und Grillwagen, Anmeldung bei Ihrem Fachberater.
+
+Alle Preise zuzüglich Fracht und Umsatzsteuer. Abmelden können Sie sich jederzeit mit einer kurzen Antwort auf diese E-Mail."""
+
+[[mail]]
+id = "p_gewerbe"
+day = -301
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Bekanntmachung zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurde 1 neue Bekanntmachung veröffentlicht:
+
+Vergabestelle: Stadt Itzehoe, vertreten durch Ohlsen + Partner Ingenieure PartG mbB
+Bezeichnung: Erschließung Gewerbegebiet Süd, 1. Bauabschnitt: Kanal- und Straßenbau
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45232400 Bauarbeiten für Abwasserkanäle; 45233120 Straßenbauarbeiten
+Angebotsfrist: {-285}, 10:00 Uhr
+Ausführungsort: 25524 Itzehoe
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "re_bagger1"
+day = -262
+time = "10:44"
+from = "miete.buchhaltung"
+to = "us"
+subject = "Ihre Rechnung RE-2025-08814 – Mietvertrag MV-118204"
+body = """Sehr geehrte Damen und Herren,
+
+anbei erhalten Sie unsere Rechnung RE-2025-08814 über 8.649,92 EUR für den Mietvertrag MV-118204 (Mobilbagger 15 t, Baustelle Brande-Hörnerkirchen, Hauptstraße).
+
+Zahlungsziel: 14 Tage netto.
+
+Bitte geben Sie bei der Überweisung die Rechnungsnummer und Ihre Kundennummer 30772 an. Rückfragen zur Rechnung richten Sie bitte an diese Adresse, Rückfragen zum Gerät an Ihre Mietstation Hamburg-Eidelstedt."""
+attach = ["doc:re1"]
+
+[[mail]]
+id = "p_pumpwerk"
+day = -216
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Bekanntmachung zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurde 1 neue Bekanntmachung veröffentlicht:
+
+Vergabestelle: Stadt Norderbek, Zentrale Vergabestelle
+Bezeichnung: Neubau Abwasserpumpwerk Deichstraße mit Abwasserdruckleitung
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45232423 Bau von Abwasserpumpstationen
+Angebotsfrist: {-200}, 10:00 Uhr
+Ausführungsort: 25499 Norderbek
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "news_preisliste"
+day = -190
+time = "07:15"
+from = "baust.news"
+to = "us"
+subject = "Neue Preisliste Tiefbau / GaLaBau ab {-190} – bitte beachten"
+body = """Guten Tag,
+
+zum {-190} passen wir unsere Preise für Betonwaren und Entwässerungsartikel an. Grund sind die gestiegenen Zement- und Energiekosten unserer Vorlieferanten; im Mittel liegt die Anpassung bei 3,8 Prozent, bei Gussaufsätzen bei 6 Prozent.
+
+Die neue Preisliste Tiefbau und GaLaBau finden Sie im Anhang als PDF. Bereits bestätigte Aufträge und laufende Objektpreise bleiben bis zum vereinbarten Datum gültig.
+
+Für Objektanfragen ab 5 Paletten oder ab 200 m Bord sprechen Sie bitte Ihren Fachberater an, dort sind Sonderpreise möglich.
+
+Abmelden können Sie sich jederzeit mit einer kurzen Antwort auf diese E-Mail."""
+attach = ["doc:preisliste"]
+
+[[mail]]
+id = "p_schulweg"
+day = -151
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Bekanntmachung zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurde 1 neue Bekanntmachung veröffentlicht:
+
+Vergabestelle: Stadt Norderbek, Zentrale Vergabestelle
+Bezeichnung: Neubau Regenwasserkanal Schulweg
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45232130 Bauarbeiten für Regenwasserrohre
+Angebotsfrist: {-138}, 10:00 Uhr
+Ausführungsort: 25499 Norderbek
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "nt_mengen"
+day = -120
+time = "17:36"
+from = "us.albers"
+to = "us.doe"
+subject = "Deichstraße – Mengen für Nachtrag Baugrube Pumpwerk"
+body = """Moin John,
+
+hier die Mengen für den Nachtrag Baugrube, hab ich heute mit Hartwig zusammen aufgemessen, er hat das Aufmaßblatt gegengezeichnet:
+
+- Mehraushub wegen Torflinse Nordseite: 186 m³ (im LV nur 40 m³ Bodenaustausch drin, Pos. 2.2.60)
+- Entsorgung davon > Z 2: 310 t laut Wiegescheinen, Rest geht als Z 2
+- Füllsand als Ersatz: 295 t
+- Wasserhaltung 9 Tage länger, 2 Pumpen, Vakuumanlage lief durch
+- Spundwand 4 Wochen länger vorgehalten, 64 m² Bohlen
+
+Hartwig sagt, dem Grunde nach ist das für ihn ok, er will aber die Preise aus der Urkalkulation hergeleitet sehen. Kannst du das bis nächste Woche fertig machen? Die Wiegescheine liegen bei dir im Fach.
+
+Gruß
+Jonas"""
+
+[[mail]]
+id = "nt_mengen_aw"
+day = -117
+time = "08:20"
+from = "us.doe"
+to = "us.albers"
+subject = "AW: Deichstraße – Mengen für Nachtrag Baugrube Pumpwerk"
+reply_to = "nt_mengen"
+body = """Moin Jonas,
+
+danke, mache ich. Zwei Sachen brauche ich noch von dir:
+
+1. Für die Entsorgung > Z 2 die Analyse vom Labor, sonst erkennt er mir die 72 €/t nicht an.
+2. Bei der Wasserhaltung die Pumpstunden aus dem Bautagebuch, nicht nur die Tage.
+
+Den Mehraushub rechne ich über die Mengenmehrung der 2.2.60 nach § 2 Abs. 3 VOB/B, die Spundwand als eigene Nachtragsposition. Entwurf hast du Donnerstag.
+
+Viele Grüße
+John"""
+
+[[mail]]
+id = "p_k22"
+day = -96
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Bekanntmachung zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurde 1 neue Bekanntmachung veröffentlicht:
+
+Vergabestelle: Landesbetrieb Straßen und Wege Küste, Niederlassung West
+Bezeichnung: K 22, Neubau Radweg, Abschnitt Hemdingen
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45233162 Bau von Radwegen
+Angebotsfrist: {-80}, 10:00 Uhr
+Ausführungsort: 25485 Hemdingen
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "re_bagger2"
+day = -75
+time = "10:51"
+from = "miete.buchhaltung"
+to = "us"
+subject = "Ihre Rechnung RE-2026-06127 – Mietvertrag MV-126550"
+body = """Sehr geehrte Damen und Herren,
+
+anbei erhalten Sie unsere Rechnung RE-2026-06127 über 10.858,87 EUR für den Mietvertrag MV-126550 (Kettenbagger 22 t mit Hydraulikhammer, Baustelle Norderbek, Deichstraße).
+
+Zahlungsziel: 14 Tage netto.
+
+Bitte geben Sie bei der Überweisung die Rechnungsnummer und Ihre Kundennummer 30772 an. Rückfragen zur Rechnung richten Sie bitte an diese Adresse, Rückfragen zum Gerät an Ihre Mietstation Hamburg-Eidelstedt."""
+attach = ["doc:re2"]
+
+[[mail]]
+id = "schulung"
+day = -58
+time = "13:05"
+from = "verbau.jessen"
+to = "us"
+subject = "Seminar Befähigte Person Grabenverbau – noch Plätze frei"
+body = """Hallo Herr Kayser,
+
+wie am Telefon besprochen schicke ich Ihnen das Angebot für unser Tagesseminar "Befähigte Person für Grabenverbau nach DIN 4124". Für Ihre sechs Vorarbeiter aus Rendsburg halte ich die Plätze bis Ende nächster Woche frei.
+
+Termin ist der {+38} bei uns in Neumünster, Einzelheiten stehen im PDF. Als Mietkunde bekommen Sie 10 % auf die Teilnahmegebühr, bei sechs Personen sind das 1.863,00 € netto statt 2.070,00 €.
+
+Geben Sie mir bitte kurz Bescheid, ob ich fest buchen darf, und schicken Sie mir dann die Namen für die Bescheinigungen."""
+attach = ["doc:schulung"]
+
+[[mail]]
+id = "mahnung"
+day = -44
+time = "09:03"
+from = "miete.buchhaltung"
+to = "us"
+subject = "Zahlungserinnerung zur Rechnung RE-2026-06127"
+reply_to = "re_bagger2"
+quote = false
+body = """Sehr geehrte Damen und Herren,
+
+unsere Rechnung RE-2026-06127 vom {-75} über 10.858,87 EUR war am {-61} fällig. Einen Zahlungseingang konnten wir bisher nicht feststellen.
+
+Wir bitten um Ausgleich bis zum {-34}. Die Zahlungserinnerung finden Sie im Anhang. Sollte die Rechnung bei Ihnen in Klärung sein (zum Beispiel wegen der Reinigungspauschale), geben Sie uns bitte kurz Bescheid.
+
+Haben Sie inzwischen gezahlt, betrachten Sie diese Nachricht bitte als gegenstandslos."""
+attach = ["doc:mahnung"]
+
+[[mail]]
+id = "bab1"
+day = -30
+time = "08:14"
+from = "tba.hartwig"
+to = "us.doe"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Bauanlaufbesprechung Abschnitt Druckleitung"
+body = """Sehr geehrter Herr Doe,
+
+für den zweiten Teil der Maßnahme, die Abwasserdruckleitung DN 200 vom Pumpwerk bis zum Übergabeschacht Marschweg (rd. 840 m), möchte ich vor Beginn der Arbeiten eine Bauanlaufbesprechung ansetzen.
+
+Vorschlag: {-21}, 9:00 Uhr, Baubüro Deichstraße.
+
+Themen aus meiner Sicht:
+1. Bauablauf und Abschnitte, Terminplan bis zur Inbetriebnahme
+2. Verkehrsführung Deichstraße, verkehrsrechtliche Anordnung (Ordnungsamt nimmt teil)
+3. Kreuzung der Gashochdruckleitung bei Station 0+410, Auflagen des Betreibers
+4. Bodenmanagement, Zwischenlager, Deklaration
+5. Stand Nachtrag 3 (Baugrube Pumpwerk) und Nachtrag 4 (Spundwandvorhaltung)
+6. Druckprüfung und Übergabe an den Betrieb
+
+Bitte bringen Sie den fortgeschriebenen Bauzeitenplan und die Liste der Nachunternehmer für den Abschnitt mit. Herr Albers ist in Kopie; ich gehe davon aus, dass er teilnimmt.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "bab2"
+day = -30
+time = "11:40"
+from = "us.doe"
+to = "tba.hartwig"
+cc = ["us.albers"]
+subject = "AW: Pumpwerk Deichstraße – Bauanlaufbesprechung Abschnitt Druckleitung"
+reply_to = "bab1"
+body = """Sehr geehrter Herr Hartwig,
+
+vielen Dank für die Einladung. Der {-21} um 9:00 Uhr passt Herrn Albers; ich selbst habe an dem Vormittag eine Submission und könnte erst ab 10:30 Uhr dazukommen. Wäre 11:00 Uhr für Sie und das Ordnungsamt möglich? Sonst nimmt Herr Albers allein teil und ich komme zu Punkt 5 dazu.
+
+Zu Punkt 3 eine Bitte: Könnten Sie uns die Auflagen des Gasnetzbetreibers vorab schicken? Wenn dort Handschachtung und eine Aufsicht des Betreibers verlangt werden, müssen wir das im Bauzeitenplan berücksichtigen, in der Kalkulation ist die Kreuzung mit zwei Arbeitstagen angesetzt.
+
+Den Bauzeitenplan und die Nachunternehmerliste (Asphalt, Dichtheitsprüfung, Verkehrssicherung) bringen wir mit.
+
+Mit freundlichen Grüßen
+John Doe"""
+
+[[mail]]
+id = "bab3"
+day = -27
+time = "07:55"
+from = "tba.hartwig"
+to = "us.doe"
+cc = ["us.albers"]
+subject = "AW: Pumpwerk Deichstraße – Bauanlaufbesprechung Abschnitt Druckleitung"
+reply_to = "bab2"
+body = """Sehr geehrter Herr Doe,
+
+11:00 Uhr geht in Ordnung, das Ordnungsamt hat zugesagt. Es bleibt beim {-21}, Baubüro Deichstraße.
+
+Die Auflagen des Gasnetzbetreibers liegen mir inzwischen vor, ich schicke sie Ihnen mit getrennter Post. Vorab das Wesentliche: Handschachtung 1,50 m beidseits der Leitung, Einweisung vor Ort mit mindestens fünf Werktagen Voranmeldung, kein Verbau im Schutzstreifen ohne Zustimmung. Das wird mit zwei Arbeitstagen nicht zu machen sein; bitte stellen Sie sich darauf ein und sprechen Sie es in der Besprechung an, bevor daraus ein Nachtrag wird.
+
+Das Protokoll schreibe ich.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "news_herbst"
+day = -24
+time = "07:15"
+from = "baust.news"
+to = "us"
+subject = "Herbstaktion: Geotextil und Rinnen – und unser Winterlager"
+body = """Guten Tag,
+
+bevor der Frost kommt, räumen wir Platz für die Wintereinlagerung:
+
+Geotextil Vlies GRK 3, Rolle 2 x 50 m: 0,84 €/m² statt 0,92 €/m²
+Entwässerungsrinne ElbeDrain NW 150, Klasse D 400: 89,00 €/St statt 96,50 €/St
+Rinnenplatte 30/30/8, Restposten: 2,90 €/St
+
+WINTERLAGER
+Wer bis Jahresende Pflaster und Borde für das Frühjahr bestellt, bekommt den Preis von heute und wir lagern die Ware kostenfrei bis Ende März ein. Bedingung: Abnahme in vollen Paletten, Anzahlung 30 Prozent.
+
+HINWEIS
+Unsere Lieferanten haben für Januar Preiserhöhungen bei Betonwaren von 4 bis 6 Prozent angekündigt.
+
+Abmelden können Sie sich jederzeit mit einer kurzen Antwort auf diese E-Mail."""
+
+[[mail]]
+id = "foto"
+day = -20
+time = "16:48"
+from = "us.albers"
+to = "us.doe"
+subject = "K 22 – Durchlass bei Station 0+680, Foto"
+body = """Moin John,
+
+guck dir mal das Foto an (hab ich dir gerade auch aufs Handy geschickt, hier kommt es wohl nicht mit durch): Der vorhandene Durchlass unter der Zufahrt Hof Thomsen bei 0+680 ist kein DN 300 Betonrohr wie im LV, sondern ein gemauerter Kasten, ungefähr 60 x 50 cm, Sohle aus Feldsteinen, oben eine Betonplatte drauf. Auf dem Bild sieht man links den Zollstock an der Öffnung, rechts den Riss in der Platte quer über die ganze Breite.
+
+Ausbauen kriegen wir hin, aber das ist nicht die Position 3.4.20 "Betonrohr DN 300 ausbauen". Und der neue DN 400 passt da von der Höhe her nicht rein, die Sohle liegt 25 cm höher als im Plan.
+
+Ich melde das morgen als Bedenken an. Kannst du mir bis dahin sagen, was wir für den Abbruch kalkuliert hatten? Dann weiß ich, wie laut ich schreien muss.
+
+Gruß
+Jonas"""
+
+[[mail]]
+id = "p_moor"
+day = -13
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Bekanntmachung zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurde 1 neue Bekanntmachung veröffentlicht:
+
+Vergabestelle: Amt Rantzau für die Gemeinde Bilsen
+Bezeichnung: Neubau Regenrückhaltebecken Am Moor mit Zulaufkanal DN 500
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45247270 Bau von Speicherbecken; 45232130 Bauarbeiten für Regenwasserrohre
+Angebotsfrist: {+19}, 11:00 Uhr
+Ausführungsort: 25485 Bilsen
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "re_bagger3"
+day = -11
+time = "10:39"
+from = "miete.buchhaltung"
+to = "us"
+subject = "Ihre Rechnung RE-2026-09340 – Mietvertrag MV-129031"
+body = """Sehr geehrte Damen und Herren,
+
+anbei erhalten Sie unsere Rechnung RE-2026-09340 über 7.398,33 EUR für den Mietvertrag MV-129031 (Minibagger 8 t, Walzenzug, Rüttelplatte, Baustelle Hemdingen, K 22).
+
+Zahlungsziel: 14 Tage netto.
+
+Bitte beachten Sie den Hinweis auf der Rechnung: Ab dem 01.01.2027 gilt unsere neue Mietpreisliste. Laufende Mietverträge werden zum Monatswechsel umgestellt.
+
+Bitte geben Sie bei der Überweisung die Rechnungsnummer und Ihre Kundennummer 30772 an."""
+attach = ["doc:re3"]
+
+[[mail]]
+id = "p_l113"
+day = -10
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Bekanntmachung zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurde 1 neue Bekanntmachung veröffentlicht:
+
+Vergabestelle: Landesbetrieb Straßen und Wege Küste, Niederlassung West
+Bezeichnung: L 113, Ortsdurchfahrt Hemdingen, Neubau Geh- und Radweg, 2. Bauabschnitt
+Vergabenummer: LBSW-W-2026-0187
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45233162 Bau von Radwegen
+Angebotsfrist: {+5}, 10:00 Uhr
+Ausführungsort: 25485 Hemdingen
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "hausmesse"
+day = -9
+time = "14:22"
+from = "pumpen.behrens"
+to = ["us", "us.albers"]
+subject = "Einladung: Fachtag Abwasserpumpwerke am {+24} in Bargteheide"
+body = """Sehr geehrter Herr Doe, sehr geehrter Herr Albers,
+
+zu unserem Fachtag Abwasserpumpwerke am {+24} lade ich Sie herzlich nach Bargteheide ein. Das Programm finden Sie im Anhang.
+
+Zusätzlich haben Sie aus unserem Kalendersystem eine Termineinladung erhalten ("Aquatec Fachtag Pumpwerke", {+24}, 9:30 bis 15:00 Uhr, Ort: Werkhalle 2, Organisator: Sekretariat Projektvertrieb). Falls Ihr Mailprogramm sie nicht als Termin anzeigt: Zu- oder Absage bitte einfach formlos per Antwort auf diese Mail.
+
+Der Fachtag richtet sich in erster Linie an Betreiber und Planer. Da wir mit Ihnen beim Pumpwerk Deichstraße gut zusammenarbeiten, würde ich mich aber freuen, Sie oder Ihren Polier bei der Werksführung zu begrüßen. Die Teilnahme ist kostenfrei."""
+attach = ["doc:hausmesse"]
+
+[[mail]]
+id = "verbau_frage"
+day = -6
+time = "06:51"
+from = "us.albers"
+to = "us.doe"
+subject = "Birkenweg Verbau"
+body = """Moin John,
+
+haben wir für Birkenweg schon Preise für den Verbau? Ich hab mir gestern die Pläne angesehen: Grabentiefe bis 4,20 m und zwischen den Häusern 14 und 22 kaum Platz, da kommen wir mit den normalen Boxen nicht hin, das wird Gleitschiene oder Dielenkammer. Und Grundwasser steht laut Gutachten bei 2,80 m.
+
+Wenn du bei Verbautechnik Nord anfragst, sag bitte gleich dazu, dass wir die Elemente nur in 3-m-Längen reinkriegen, die Straße ist zu eng für den Tieflader mit den langen.
+
+Bin heute den ganzen Tag auf der K 22, ab 15 Uhr erreichbar.
+
+Gruß
+Jonas"""
+
+[[mail]]
+id = "verbau_aw"
+day = -6
+time = "07:34"
+from = "us.doe"
+to = "us.albers"
+subject = "AW: Birkenweg Verbau"
+reply_to = "verbau_frage"
+body = """Moin Jonas,
+
+noch nicht, die Anfrage geht heute raus. Bisher habe ich nur den alten Satz von der Mühlenstraße, 95 € je Element und Woche für die Standardbox, das passt hier nach deiner Beschreibung nicht.
+
+Ich frage Gleitschienenverbau bis 4,50 m in 3-m-Feldern an, Vorhaltung 14 Wochen, plus Dielenkammer als Alternative für den Engpass 14 bis 22. Sag mir bitte noch, wie viele Meter Graben du gleichzeitig offen haben willst, davon hängt die Stückzahl ab. Ich rechne erstmal mit 24 m.
+
+Wasserhaltung frage ich getrennt an.
+
+Viele Grüße
+John"""
+
+[[mail]]
+id = "p_k9"
+day = -6
+time = "06:02"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] 2 neue Bekanntmachungen zu Ihrem Suchprofil \"Tiefbau West\""
+body = """Guten Tag,
+
+zu Ihrem Suchprofil "Tiefbau West" wurden 2 neue Bekanntmachungen veröffentlicht:
+
+1.
+Vergabestelle: Kreis Pinneberg, Fachdienst Straßenbau und Verkehrssicherheit
+Bezeichnung: K 9, Deckenerneuerung zwischen Ellerhoop und Tornesch, 3,4 km
+Verfahrensart: Öffentliche Ausschreibung (VOB/A)
+CPV: 45233223 Erneuerung von Fahrbahndecken
+Angebotsfrist: {+21}, 10:00 Uhr
+Ausführungsort: 25373 Ellerhoop
+
+2.
+Vergabestelle: Abwasserzweckverband Südholstein Nord
+Bezeichnung: Kanalsanierung in geschlossener Bauweise, Schlauchlining DN 250 bis DN 400, Los 2
+Verfahrensart: Beschränkte Ausschreibung mit Teilnahmewettbewerb
+CPV: 45232410 Kanalisationsarbeiten
+Teilnahmefrist: {+13}, 12:00 Uhr
+Ausführungsort: 25436 Uetersen
+
+Die Vergabeunterlagen stehen nach Anmeldung im Bieterbereich zum Abruf bereit.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Suchprofile verwalten Sie unter "Mein Konto / Benachrichtigungen".
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "news_winter"
+day = -5
+time = "07:15"
+from = "baust.news"
+to = "us"
+subject = "Preisanpassung zum 1. Januar – jetzt noch zu alten Preisen einlagern"
+body = """Guten Tag,
+
+wie angekündigt erhöhen unsere Vorlieferanten zum 1. Januar die Preise. Für Sie heißt das ab Januar (netto, ab Lager Pinneberg):
+
+Betonpflaster grau 20/10/8: 17,90 €/m² (bisher 17,20 €/m²)
+Betonpflaster grau 20/10/10 Schwerlast: 22,60 €/m² (bisher 21,70 €/m²)
+Tiefbordstein 8/25/100: 8,10 €/m (bisher 7,75 €/m)
+Hochbordstein 15/30/100: 12,80 €/m (bisher 12,20 €/m)
+Aufsatz 500 x 500 Klasse D 400: 204,00 €/St (bisher 192,00 €/St)
+
+Bestellungen, die bis zum {+26} bei uns eingehen und bis Ende März abgenommen werden, liefern wir noch zu den bisherigen Preisen. Objektpreise aus laufenden Angeboten bleiben bis zu ihrem Ablaufdatum gültig.
+
+Zwischen den Feiertagen sind unsere Läger geschlossen, letzte Auslieferung am 22.12.
+
+Abmelden können Sie sich jederzeit mit einer kurzen Antwort auf diese E-Mail."""
+
+[[mail]]
+id = "p_l113_info"
+day = -4
+time = "15:25"
+from = "portal"
+to = "us"
+sign = false
+subject = "[Vergabemarktplatz Nord] Neue Nachricht der Vergabestelle zu LBSW-W-2026-0187"
+body = """Guten Tag,
+
+zu einem Verfahren, für das Sie als Interessent registriert sind, liegt eine neue Nachricht der Vergabestelle vor:
+
+Vergabestelle: Landesbetrieb Straßen und Wege Küste, Niederlassung West
+Vergabenummer: LBSW-W-2026-0187
+Bezeichnung: L 113, Ortsdurchfahrt Hemdingen, Neubau Geh- und Radweg, 2. Bauabschnitt
+Art der Nachricht: Bieterinformation 1 (Antworten auf Bieterfragen)
+Angebotsfrist: {+5}, 10:00 Uhr (unverändert)
+
+Den Wortlaut finden Sie im Bieterbereich unter "Kommunikation". Bitte bestätigen Sie dort die Kenntnisnahme.
+
+Diese Nachricht wurde automatisch erzeugt. Bitte antworten Sie nicht auf diese E-Mail.
+Vergabemarktplatz Nord · Die Vergabeplattform der Kommunen im Norden"""
+
+[[mail]]
+id = "reiterhof"
+day = -2
+time = "12:08"
+from = "us.albers"
+to = "us.doe"
+subject = "WG: Regenwasserkanal und Hofbefestigung Reiterhof"
+body = """Moin John,
+
+siehe unten, Henning Lüders ist ein Bekannter von mir aus Hemdingen, der Hof liegt 2 km von der K 22. Kannst du da mal drübergucken und ihm einen Preis machen? Ist nichts Großes, könnten wir im Frühjahr mit der Kolonne von der K 22 mitmachen.
+
+Gruß
+Jonas
+
+-------- Weitergeleitete Nachricht --------
+Von: Henning Lüders <info@reiterhof-lueders.test>
+Datum: {-3}
+An: Jonas Albers <albers@polier.test>
+Betreff: Regenwasserkanal und Hofbefestigung Reiterhof
+
+Hallo Jonas,
+
+wie neulich am Zaun besprochen: wir müssen bei uns endlich den Hof machen. Das Regenwasser vom Stalldach und vom Hof läuft im Moment einfach in die Senke vor der Reithalle, im Winter stehen die Pferde da im Matsch. Der Kreis hat uns jetzt die Einleitung in den Graben genehmigt.
+
+Mein Architekt hat mit mir eine Liste gemacht, was zu tun ist, die hänge ich als Excel an. Könnt ihr mir dazu einen Preis machen? Ich brauche das bis zum {+12}, weil die Bank die Zahlen für den Kredit haben will. Ein zweites Angebot hole ich mir noch von einem Betrieb aus Barmstedt.
+
+Ob Pflaster oder Asphalt, weiß ich noch nicht, das entscheide ich nach dem Preis. Der Futter-Lkw muss aber drüber können.
+
+Bauen wollen wir im März, wenn der Boden wieder trägt. Kommt gern vorbei und schaut es euch an, ich bin eigentlich immer auf dem Hof.
+
+Viele Grüße
+Henning
+
+Reiterhof Lüders · Pensionsstall und Reitschule
+Bilsener Weg 21 · 25485 Hemdingen"""
+attach = ["lv:reiterhof"]
+
+[[mail]]
+id = "nt_k22"
+day = -1
+time = "15:57"
+from = "us.albers"
+to = "us.doe"
+subject = "K 22 – Mehrmengen Woche {kw-1} für Nachtrag"
+body = """Moin John,
+
+kurz die Mehrmengen von dieser Woche, Aufmaß mit der Bauüberwachung ist gemacht:
+
+- Bodenaustausch Station 0+520 bis 0+610: 142 m³ statt 0 (im LV nur Bedarfsposition, schriftlich angeordnet am Dienstag)
+- Frostschutz dafür zusätzlich: 268 t laut Lieferscheinen Heidkamp
+- Boden zur Entsorgung: 231 t, Analyse kommt Montag, sieht nach Z 1.2 aus
+- Durchlass 0+680: gemauerten Kasten abgebrochen, 4,5 m³ Mauerwerk, 2 Mann plus Bagger je 6 Std.
+- LSA 4 Tage länger wegen der Sache mit dem Durchlass
+
+Die Bedarfsposition Bodenaustausch hatten wir ziemlich knapp angeboten, oder? Sag mir bitte, ob wir bei der Menge was über die Mengenmehrung holen können, bevor ich nächste Woche mit denen rede.
+
+Gruß
+Jonas"""

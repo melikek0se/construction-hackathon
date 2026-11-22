@@ -1,0 +1,465 @@
+# Grünwerk Garten- und Landschaftsbau (gala), Knut Matthiesen: the history with our estimator. A small firm:
+# reads mail in the evening, answers short and in lower case with the prices typed in, is late with his
+# papers, does not want phone calls during the day. P3 quoted (paving, too slow for the quantity),
+# P4 fence, paving and lawn (won, running), P6 felling, hedge bank and lawn (won, running), P7 quoted.
+
+[[sheet]]
+key = "p3"
+file = "Anfrage_Pflasterarbeiten_Gewerbegebiet_Sued.xlsx"
+items = """
+4.3.10 | 2300 m² | Betonsteinpflaster 8 cm, Gehwege | 43,50
+4.3.40 | 1650 m | Pflasterrinne, zweizeilig | 28,00
+4.3.50 | 38 St | Bordabsenkung für Grundstückszufahrt | 95,00
+"""
+
+[[sheet]]
+key = "p4"
+file = "Anfrage_Aussenanlagen_Pumpwerk_Deichstrasse.xlsx"
+items = """
+5.1.10 | 140 m2 | Betonsteinpflaster 8 cm, Betriebsfläche | 46,00
+5.1.20 | 52 m | Stabgitterzaun mit Tor | 124,00
+5.1.30 | 180 m2 | Oberboden andecken und Rasen ansäen | 6,90
+"""
+
+[[sheet]]
+key = "p6"
+file = "Anfrage_Landschaftsbau_Radweg_K22.xlsx"
+items = """
+2.1.30 | 14 St | Baum fällen und Wurzelstock roden | 185,00
+2.1.40 | 380 m | Knick auf den Stock setzen | 14,50
+3.3.20 | 3600 m² | Rasenansaat | 1,95
+"""
+
+[[sheet]]
+key = "p7"
+file = "Anfrage_Gruenland_ADL_Marschhof.xlsx"
+items = """
+2.1.50 | 900 m2 | Grünland wiederherstellen | 2,60
+"""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (quoted, lost)
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "13:20"
+from = "us"
+to = "gala"
+subject = "Angebotsanfrage Nachunternehmerleistung – Pflasterarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+body = """Moin Herr Matthiesen,
+
+ein Kollege aus Wedel hat Sie mir für Pflaster- und Außenanlagen empfohlen. Deshalb eine erste Anfrage, gleich in größerem Maßstab: Erschließung Gewerbegebiet Süd in Itzehoe (OP-ITZ-417), Gehwege an zwei neuen Planstraßen. Ich brauche Ihr Angebot als Nachunternehmer, komplett mit Material, Lohn und Gerät:
+
+Pos. 4.3.10 – 2300 m² – Betonsteinpflaster 8 cm, Gehwege
+Pos. 4.3.40 – 1650 m – Pflasterrinne, zweizeilig
+Pos. 4.3.50 – 38 St – Bordabsenkung für Grundstückszufahrt
+
+Borde und Tragschicht machen wir selbst, Sie fangen auf der fertigen Schottertragschicht an. Pflaster grau, 20/10/8, Bettung 4 cm.
+
+Ausführung ab {-235}, die Gehwege kommen in der zweiten Hälfte der Bauzeit. Schreiben Sie mir bitte auch, mit wie vielen Leuten Sie kommen und was Sie am Tag schaffen. Die Liste hängt als Excel-Datei an, Sie können die Preise aber genauso gut einfach in die Antwort schreiben.
+
+Abgabe ist am {-286}, ich brauche die Preise bis {-291}. Der Auftrag ist noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_erinnerung"
+day = -292
+time = "08:45"
+from = "us"
+to = "gala"
+subject = "Erinnerung: Angebotsanfrage Nachunternehmerleistung – Pflasterarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_anfrage"
+body = """Moin Herr Matthiesen,
+
+ich weiß, dass Sie tagsüber draußen sind, deshalb rufe ich nicht an, sondern schreibe noch einmal: Schaffen Sie mir die drei Preise für Itzehoe bis morgen Abend? Drei Zahlen in einer Mail genügen. Eine kurze Absage hilft mir auch.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p3_angebot"
+day = -291
+time = "21:40"
+from = "gala"
+to = "us"
+subject = "Re: Erinnerung: Angebotsanfrage Nachunternehmerleistung – Pflasterarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_erinnerung"
+body = """moin herr doe,
+
+sorry, komme erst abends an den rechner.
+
+pflaster 8 cm grau komplett 43,50 €/m²
+rinne zweizeilig 28,00 €/m
+absenkung 95 €/st
+
+alles mit material. aber ehrlich: 2300 m² sind für uns viel. wir sind zu dritt, zwei pflastern, 60 m² am tag wenn nix dazwischen kommt. das sind 8 wochen nur gehweg. wenn das zu lang ist nehmen sie mich lieber nur für die rinne und die absenkungen.
+
+danke fürs nicht anrufen"""
+
+[[mail]]
+id = "p3_dank"
+day = -288
+time = "09:15"
+from = "us"
+to = "gala"
+subject = "AW: Erinnerung: Angebotsanfrage Nachunternehmerleistung – Pflasterarbeiten – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "p3_angebot"
+body = """Moin Herr Matthiesen,
+
+danke, auch für die ehrliche Ansage. Acht Wochen passen nicht in den Bauablauf, die Gehwege müssen in vier Wochen liegen. Ich rechne das Pflaster deshalb mit unserer eigenen Kolonne und nehme Ihre Preise für die Rinne und die Absenkungen als Vergleich.
+
+Wenn wir den Auftrag bekommen, melde ich mich wegen der Rinne. Für Außenanlagen in Ihrer Größe frage ich Sie weiter an.
+
+Freundliche Grüße"""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße (won): fence, paving, lawn
+
+[[mail]]
+id = "p4_anfrage"
+day = -213
+time = "15:30"
+from = "us"
+to = "gala"
+subject = "Angebotsanfrage Nachunternehmerleistung – Außenanlagen – Abwasserpumpwerk Deichstraße mit Druckleitung"
+body = """Moin Herr Matthiesen,
+
+das Gewerbegebiet in Itzehoe haben wir übrigens nicht bekommen. Dafür jetzt etwas in Ihrer Größe: Die Stadt Norderbek baut das Pumpwerk an der Deichstraße neu (TBA-SE-0402), am Ende kommen die Außenanlagen. Bitte Ihr Angebot, komplett mit Material, Lohn und Gerät:
+
+Pos. 5.1.10 – 140 m2 – Betonsteinpflaster 8 cm, Betriebsfläche
+Pos. 5.1.20 – 52 m – Stabgitterzaun mit Tor
+Pos. 5.1.30 – 180 m2 – Oberboden andecken und Rasen ansäen
+
+Zaun 1,80 m hoch, feuerverzinkt, ein zweiflügeliges Tor 3,00 m breit, es ist im Meterpreis einzurechnen. Den Oberboden für die Rasenfläche lagern wir auf der Baustelle, Sie decken an und säen ein. Das Pflaster muss den Saugwagen der Stadt tragen, Tragschicht kommt von uns.
+
+Ausführung ganz am Ende der Bauzeit, nach heutigem Plan im Herbst. Bitte schreiben Sie, wann Sie können. Abgabe ist am {-200}, Preise bitte bis {-205}, gern wieder direkt in die Mail. Der Auftrag ist noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_angebot"
+day = -211
+time = "22:10"
+from = "gala"
+to = "us"
+subject = "Re: Angebotsanfrage Nachunternehmerleistung – Außenanlagen – Abwasserpumpwerk Deichstraße mit Druckleitung"
+reply_to = "p4_anfrage"
+body = """moin herr doe,
+
+das passt besser.
+
+pflaster 8 cm betriebsfläche 46,00 €/m² (dickere bettung, randeinfassung dabei)
+zaun stabgitter 1,80 feuerverzinkt 124,00 €/m, tor 3 m zweiflügelig ist da drin
+oberboden andecken + rasen 6,90 €/m²
+
+herbst geht. rasen säe ich bis mitte oktober, danach wird das nix mehr, dann erst april. zaun und pflaster gehen auch im november.
+
+preise gelten dies jahr."""
+
+[[mail]]
+id = "p4_auftrag"
+day = -170
+time = "10:40"
+from = "us"
+to = "gala"
+cc = ["us.albers"]
+subject = "Pumpwerk Deichstraße – Auftrag Außenanlagen"
+reply_to = "p4_angebot"
+quote = false
+body = """Moin Herr Matthiesen,
+
+wir haben den Auftrag für das Pumpwerk. Ich beauftrage Sie mit den Außenanlagen zu den Preisen Ihrer Mail vom {-211}:
+
+5.1.10 Pflaster Betriebsfläche, 140 m2 zu 46,00 €/m2
+5.1.20 Stabgitterzaun 1,80 m mit Tor 3,00 m, 52 m zu 124,00 €/m, das Tor ist im Meterpreis enthalten
+5.1.30 Oberboden andecken und Rasen ansäen, 180 m2 zu 6,90 €/m2
+
+Zusammen rund 14.100 € netto, abgerechnet wird nach Aufmaß. Ausführung nach Abruf durch unseren Bauleiter Jonas Albers (in Kopie), voraussichtlich ab Oktober.
+
+Was ich bis dahin von Ihnen brauche, bitte nicht liegen lassen:
+- Freistellungsbescheinigung nach § 48b EStG
+- Unbedenklichkeitsbescheinigung der Krankenkasse und der Berufsgenossenschaft
+- Nachweis der Betriebshaftpflicht
+
+Die Stadt prüft unsere Nachunternehmerliste. Ohne die Papiere darf ich Sie nicht auf die Baustelle lassen.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p4_auftrag_aw"
+day = -168
+time = "21:30"
+from = "gala"
+to = "us"
+subject = "Re: Pumpwerk Deichstraße – Auftrag Außenanlagen"
+reply_to = "p4_auftrag"
+body = """moin herr doe,
+
+danke, auftrag ist notiert. papiere such ich raus und schick sie."""
+
+[[mail]]
+id = "p4_papiere"
+day = -120
+time = "09:00"
+from = "us"
+to = "gala"
+subject = "Pumpwerk Deichstraße – Ihre Nachweise fehlen noch"
+reply_to = "p4_auftrag_aw"
+quote = false
+body = """Moin Herr Matthiesen,
+
+kurze Erinnerung, kein Anruf: Zu Ihrem Auftrag Deichstraße fehlen mir noch alle drei Nachweise (Freistellungsbescheinigung § 48b EStG, Unbedenklichkeitsbescheinigungen, Haftpflicht). Es eilt noch nicht, aber bis September brauche ich sie. Ein Foto vom Handy genügt mir fürs Erste.
+
+Freundliche Grüße"""
+
+# ------------------------------------------------------------------ P6 Radweg K 22 (won): felling, hedge bank, lawn
+
+[[mail]]
+id = "p6_anfrage"
+day = -92
+time = "11:10"
+from = "us"
+to = "gala"
+subject = "Angebotsanfrage Nachunternehmerleistung – Fällarbeiten, Knick, Rasenansaat – Radweg K 22, Abschnitt Hemdingen"
+body = """Moin Herr Matthiesen,
+
+der Landesbetrieb schreibt einen Radweg an der K 22 bei Hemdingen aus (LBSW-W-33-0719), 1.640 m entlang eines Knicks. Die grünen Positionen möchte ich bei Ihnen anfragen, komplett mit Lohn, Gerät und Saatgut:
+
+Pos. 2.1.30 – 14 St – Baum fällen und Wurzelstock roden
+Pos. 2.1.40 – 380 m – Knick auf den Stock setzen
+Pos. 3.3.20 – 3600 m² – Rasenansaat
+
+Die Bäume sind Eichen und Eschen bis 50 cm Stammdurchmesser, Stammholz bleibt beim Eigentümer, Kronenholz und Stubben entsorgen Sie. Gefällt werden darf erst nach Freigabe durch die untere Naturschutzbehörde. Die Rasenansaat liegt auf Banketten und Mulde, den Oberboden decken wir an.
+
+Ausführung {-35} bis {+60}. Bitte sagen Sie mir deutlich, was davon im Herbst geht und was nicht. Preise gern in die Mail, die Liste hängt trotzdem an. Abgabe ist am {-80}, ich brauche die Zahlen bis {-85}. Der Auftrag ist noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p6:blank"]
+
+[[mail]]
+id = "p6_angebot"
+day = -89
+time = "21:15"
+from = "gala"
+to = "us"
+subject = "Re: Angebotsanfrage Nachunternehmerleistung – Fällarbeiten, Knick, Rasenansaat – Radweg K 22, Abschnitt Hemdingen"
+reply_to = "p6_anfrage"
+body = """moin herr doe,
+
+war heute abend da und hab mir den knick angesehen.
+
+baum fällen + stubben roden 185 €/st (zwei eschen stehen dicht an der leitung, da brauch ich den steiger, ist drin)
+knick auf den stock 14,50 €/m, schnittgut häckseln und abfahren dabei
+rasen 1,95 €/m², landschaftsrasen RSM 7.1.2
+
+fällen und knick ab oktober kein problem, das ist genau die zeit. rasen: ab november säe ich nicht mehr, das läuft nicht auf und die gewährleistung hab dann ich. ansaat also april. wenn der landesbetrieb vorher fertig haben will muss er das wissen.
+
+verkehrssicherung für den steiger an der straße stellen sie."""
+
+[[mail]]
+id = "p6_auftrag"
+day = -47
+time = "15:05"
+from = "us"
+to = "gala"
+cc = ["us.albers"]
+subject = "Radweg K 22 Hemdingen – Auftrag Fällarbeiten, Knick, Rasenansaat – und Ihre Papiere"
+reply_to = "p6_angebot"
+quote = false
+body = """Moin Herr Matthiesen,
+
+der Radweg K 22 ist unser Auftrag. Ich beauftrage Sie zu den Preisen vom {-89}:
+
+2.1.30 Baum fällen und Wurzelstock roden, 14 St zu 185,00 €
+2.1.40 Knick auf den Stock setzen, 380 m zu 14,50 €/m
+3.3.20 Rasenansaat, 3.600 m² zu 1,95 €/m²
+
+Zusammen 15.120 € netto. Gefällt wird, sobald die Naturschutzbehörde freigibt, den Termin schreibt Ihnen Jonas Albers. Die Ampel für die halbseitige Sperrung steht ohnehin, den Steiger stellen Sie auf die gesperrte Spur. Die Ansaat im April habe ich dem Landesbetrieb als Hinweis gegeben, darüber wird noch gesprochen.
+
+Jetzt zu den Papieren, und das meine ich ernst: Für die Deichstraße warte ich seit dem Frühjahr auf Freistellungsbescheinigung, Unbedenklichkeitsbescheinigungen und Haftpflichtnachweis. Dieselben Unterlagen brauche ich nun auch für die K 22, der Landesbetrieb verlangt sie vor Ihrem ersten Arbeitstag. Solange die Freistellungsbescheinigung fehlt, muss ich von jeder Ihrer Rechnungen 15 % Bauabzugsteuer einbehalten und ans Finanzamt abführen. Das will keiner von uns.
+
+Bitte schicken Sie mir die Papiere bis {-40}.
+
+Freundliche Grüße"""
+
+# ------------------------------------------------------------------ P7 Marschhof (quoted)
+
+[[mail]]
+id = "p7_anfrage"
+day = -45
+time = "09:50"
+from = "us"
+to = "gala"
+subject = "Angebotsanfrage Nachunternehmerleistung – Grünland wiederherstellen – Abwasserdruckleitung Marschhof"
+body = """Moin Herr Matthiesen,
+
+noch eine kleine Anfrage, eine Zahl genügt: Für den Wasserverband Geestrand rechnen wir eine Druckleitung durch die Marsch bei Marschhof (WVG-A-2431). Nach den Bohrarbeiten sind die Flächen an den vier Gruben und unter der Baustraße wiederherzustellen:
+
+Pos. 2.1.50 – 900 m2 – Grünland wiederherstellen
+
+Das heißt: Fahrspuren und Grubenflächen lockern, planieren, mit Weidemischung nachsäen. Weidegrünland auf Klei, die Bauern sind empfindlich. Ausführung am Ende der Bauzeit, nach heutigem Stand im Frühjahr ({+110}).
+
+Abgabe ist am {-36}, Preis bitte bis {-40}. Der Auftrag ist noch nicht erteilt.
+
+Freundliche Grüße"""
+attach = ["sheet:p7:blank"]
+
+[[mail]]
+id = "p7_angebot"
+day = -44
+time = "20:45"
+from = "gala"
+to = "us"
+subject = "Re: Angebotsanfrage Nachunternehmerleistung – Grünland wiederherstellen – Abwasserdruckleitung Marschhof"
+reply_to = "p7_anfrage"
+body = """moin herr doe,
+
+grünland 2,60 €/m², lockern mit der fräse, planieren, weidemischung G V, anwalzen.
+
+nur wenn der klei abgetrocknet ist, also nicht vor april. auf nassem klei fahr ich mit dem schlepper nicht, dann ist es danach schlimmer als vorher. tiefe spuren über 20 cm vorher mit boden auffüllen, das macht ihr.
+
+papiere: weiß ich. steuerberater hat die freistellung neu beantragt, die alte war abgelaufen, hab ich nicht gemerkt. kommt."""
+
+[[mail]]
+id = "termine"
+day = -36
+time = "16:10"
+from = "us.albers"
+to = "gala"
+cc = ["us"]
+subject = "Termine K 22 (Fällen ab {-31}) und Deichstraße (Zaun, Pflaster ab KW {kw-30})"
+body = """Moin Knut,
+
+ich schreibe, weil du tagsüber eh nicht rangehst:
+
+K 22: Die Naturschutzbehörde hat bei der Anlaufbesprechung freigegeben. Du kannst ab {-31} fällen und den Knick setzen. Ampel steht ab Bau-km 0+000, wir fangen vorne an, also bitte auch vorne anfangen. Die zwei Eschen an der Freileitung: Der Netzbetreiber schaltet am {-29} von 9 bis 13 Uhr frei, nur dann.
+
+Deichstraße: Pumpwerk ist umgeschlossen, die Fläche ist ab KW {kw-30} frei für Zaun und Pflaster. Tragschicht für das Pflaster liegt dann. Rasen dieses Jahr nicht mehr, wie du geschrieben hast.
+
+Schreib mir heute Abend kurz, ob beides passt. Und bring bitte die Papiere mit, John wird langsam ungemütlich.
+
+Gruß"""
+
+[[mail]]
+id = "termine_aw"
+day = -35
+time = "21:05"
+from = "gala"
+to = "us.albers"
+cc = ["us"]
+subject = "Re: Termine K 22 (Fällen ab {-31}) und Deichstraße (Zaun, Pflaster ab KW {kw-30})"
+reply_to = "termine"
+body = """moin jonas,
+
+passt beides. k22 fang ich am {-31} vorne an, vier tage fällen und roden, dann knick. eschen am {-29} vormittag, steiger ist bestellt.
+
+deichstraße danach, erst zaun dann pflaster. zaunmatten sind bestellt, lieferzeit zwei wochen.
+
+papiere bring ich mit."""
+
+[[mail]]
+id = "papiere2"
+day = -30
+time = "08:30"
+from = "us"
+to = "gala"
+cc = ["us.albers"]
+subject = "Zweite Erinnerung: Freistellungsbescheinigung und Nachweise für K 22 und Deichstraße"
+body = """Moin Herr Matthiesen,
+
+Sie arbeiten seit gestern an der K 22, und ich habe noch immer kein einziges Papier von Ihnen. Die Frist bis {-40} ist verstrichen. Der Landesbetrieb hat gestern bei der Baustellenbegehung nach den Nachweisen unserer Nachunternehmer gefragt.
+
+Damit Sie wissen, woran Sie sind:
+- Ohne Freistellungsbescheinigung behalte ich von Ihrer ersten Rechnung 15 % ein und führe sie ab. Das Geld bekommen Sie dann nur über Ihre Steuererklärung zurück.
+- Ohne Unbedenklichkeitsbescheinigung der Berufsgenossenschaft muss Jonas Sie am {-24} von der Baustelle nehmen. Das ist keine Drohung, das verlangt unser Auftraggeber.
+
+Ich rufe weiterhin nicht an. Bitte antworten Sie heute Abend.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "papiere2_aw"
+day = -28
+time = "23:05"
+from = "gala"
+to = "us"
+cc = ["us.albers"]
+subject = "Re: Zweite Erinnerung: Freistellungsbescheinigung und Nachweise für K 22 und Deichstraße"
+reply_to = "papiere2"
+body = """moin herr doe,
+
+haben sie recht, tut mir leid. freistellung ist heute vom finanzamt gekommen, gilt drei jahre. hab sie mit der bescheinigung von der bg, der krankenkasse und der haftpflicht kopiert und jonas heute morgen an der k22 in die hand gegeben, er scannt sie ihnen ein.
+
+eine bitte noch: ihre buchhaltung hat diese woche dreimal tagsüber angerufen. ich steh da auf dem steiger oder sitz im bagger und geh nicht ran. bitte mail, ich les jeden abend und antworte auch."""
+
+[[mail]]
+id = "p4_rechnung"
+day = -13
+time = "21:40"
+from = "gala"
+to = "us"
+subject = "rechnung deichstraße zaun + pflaster"
+body = """moin herr doe,
+
+zaun und pflaster deichstraße sind fertig, jonas hat es gesehen. rechnung nr. 2026-41, schreib ich hier rein, papier kommt mit der post:
+
+zaun stabgitter 54 m x 124,00 = 6.696,00
+tor 3 m zweiflügelig 1 st = 1.450,00
+pflaster betriebsfläche 140 m² x 46,00 = 6.440,00
+summe netto 14.586,00 €
+
+rasen 180 m² kommt im april dazu. k22 fällen und knick rechne ich nächste woche ab."""
+
+[[mail]]
+id = "p4_rechnung_aw"
+day = -10
+time = "10:20"
+from = "us"
+to = "gala"
+cc = ["us.albers"]
+subject = "AW: rechnung deichstraße zaun + pflaster"
+reply_to = "p4_rechnung"
+body = """Moin Herr Matthiesen,
+
+Zaun und Pflaster sehen gut aus, die Stadt hat bei der Begehung nichts beanstandet. Die Rechnung muss ich aber in drei Punkten ändern:
+
+1. Tor: Das Tor ist im Meterpreis enthalten. So stand es in meiner Anfrage, so haben Sie es am {-211} angeboten („tor 3 m zweiflügelig ist da drin“) und so steht es im Auftrag. Die 1.450,00 € entfallen.
+
+2. Zaunlänge: Jonas hat mit Ihrem Mitarbeiter 52,4 m aufgemessen, einschließlich Tor. 52,4 m zu 124,00 € sind 6.497,60 €.
+
+3. Pflaster: Aufmaß 138 m², die Ecke am Schaltschrank ist kleiner geworden. 138 m² zu 46,00 € sind 6.348,00 €.
+
+Damit komme ich auf 12.845,60 € netto. Die Freistellungsbescheinigung liegt inzwischen vor, es wird nichts einbehalten. Wenn Sie einverstanden sind, schreiben Sie die Papierrechnung bitte gleich über diesen Betrag, dann zahlen wir innerhalb von 14 Tagen.
+
+Freundliche Grüße"""
+
+[[mail]]
+id = "p4_rechnung_ok"
+day = -9
+time = "20:50"
+from = "gala"
+to = "us"
+subject = "Re: rechnung deichstraße zaun + pflaster"
+reply_to = "p4_rechnung_aw"
+body = """moin herr doe,
+
+stimmt mit dem tor, hatte ich vergessen. aufmaß ist auch ok. rechnung über 12.845,60 geht morgen in die post."""
+
+# ------------------------------------------------------------------ now
+
+[[mail]]
+id = "winter"
+day = -2
+time = "21:50"
+from = "gala"
+to = ["us", "us.albers"]
+subject = "winterpause + neuer vorarbeiter"
+body = """moin herr doe, moin jonas,
+
+kurz zur planung:
+
+- wir machen vom {+24} bis ende februar winterpause. bis dahin wird der knick an der k22 fertig, fehlen noch 90 m.
+- rasen k22 (3600 m²) und rasen deichstraße (180 m²) säe ich im april, sobald der boden 8 grad hat. preise bleiben wie beauftragt. grünland marschhof genauso, falls ihr den auftrag kriegt.
+- ab märz hab ich einen vorarbeiter, ole petersen, gelernter landschaftsgärtner. der hat ein diensthandy und liest mails auch tagsüber. nummer schick ich wenn er da ist. bei mir bleibt es dabei: tagsüber bitte nicht anrufen, abends les ich alles.
+- für neue anfragen ab frühjahr: pflaster und zaun werden rund 5 % teurer, material ist wieder hochgegangen. rasen bleibt."""

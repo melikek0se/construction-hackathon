@@ -1,0 +1,433 @@
+# P3: Erschließung Gewerbegebiet Süd, 1. BA (Ohlsen + Partner for the Stadt Itzehoe). Estimated day -300 … -285,
+# lost: second, 3.1 % above the lowest bid. The client's side as it lies in our estimator's mailbox.
+
+[[lv]]
+key = "erschliessung"
+file = "LV_Erschliessung_Gewerbegebiet_Sued_1BA"
+format = "x83-31"
+client = "arch"
+name = "Erschließung Gewerbegebiet Süd, 1. BA"
+project = "Stadt Itzehoe, Erschließung Gewerbegebiet Süd, 1. Bauabschnitt: Straßen- und Kanalbau"
+number = "OP-ITZ-417"
+remarks = """Vorbemerkungen
+Auftraggeber: Stadt Itzehoe, vertreten durch das Amt für Stadtentwicklung und Tiefbau. Planung, Ausschreibung und Bauüberwachung: Ohlsen + Partner Ingenieure PartG mbB, Itzehoe.
+Bauvorhaben: Erschließung des Gewerbegebiets Süd, 1. Bauabschnitt, mit Planstraße A (620 m) und Planstraße B (470 m) einschließlich Regen- und Schmutzwasserkanal, Straßenbau bis zur Deckschicht, Gehwegen, Borden und Leerrohren für die Straßenbeleuchtung.
+Vergabeart: Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {-286}, 11:00 Uhr
+Bindefrist: {-250}
+Bieterfragen bis: {-293}
+Ausführungsbeginn: {-235}
+Fertigstellung: {-60}
+Baugrund: Oberboden 0,30 m, darunter Geschiebemergel, bereichsweise aufgeweicht; Schichtenwasser. Siehe Geotechnischer Bericht, Anlage 7.
+Der Oberboden bleibt Eigentum des AG und wird auf der Fläche des 2. Bauabschnitts gelagert.
+Es gelten VOB/B, VOB/C, ZTV E-StB, ZTV SoB-StB, ZTV Asphalt-StB, ZTV Pflaster-StB, DIN EN 1610, RStO 12 (Belastungsklasse Bk3,2)."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Baustelleneinrichtung und Verkehr
+1.1.10 | 1 psch | Baustelle einrichten | Baustelle für alle Leistungen dieses Leistungsverzeichnisses einrichten und für die Dauer der Bauzeit vorhalten. // Die Fläche für die Baustelleneinrichtung liegt an der Einmündung in die Lise-Meitner-Straße und ist im Lageplan gekennzeichnet.
+1.1.20 | 1 psch | Baustelle räumen | Baustelle räumen, benutzte Flächen in den ursprünglichen Zustand versetzen.
+1.1.30 | 1 psch | Verkehrssicherung Anbindung Lise-Meitner-Straße | Verkehrssicherung nach RSA 21 für die Herstellung der Anbindung an die Lise-Meitner-Straße, halbseitige Sperrung mit Lichtsignalanlage für 4 Wochen, einschließlich Verkehrszeichenplan.
+1.1.40 | 650 m | Baustraße herstellen und zurückbauen | Baustraße, Breite 4,00 m, aus Recyclingmaterial 0/45, Dicke 40 cm, auf Geotextil GRK 3 herstellen, unterhalten und nach Bauende zurückbauen.
+# 2 | Erdbau
+# 2.1 | Oberboden und Bodenbewegung
+2.1.10 | 14200 m² | Oberboden abtragen und lagern | Oberboden in einer Dicke von 30 cm abtragen, zur Fläche des 2. Bauabschnitts fördern (bis 500 m) und in Mieten bis 2,00 m Höhe lagern.
+2.1.20 | 9800 m³ | Boden lösen, Abtrag Straßenkörper | Boden des Homogenbereichs B2 (Geschiebemergel) im Abtrag lösen, laden und innerhalb der Baustelle fördern. Abrechnung nach Abtragsprofilen.
+2.1.30 | 6400 m³ | Boden einbauen, Auftrag | Geeigneten Boden aus dem Abtrag lagenweise einbauen und verdichten, DPr mindestens 97 %, in den oberen 50 cm 100 %.
+2.1.40 | 5200 t | Überschussboden verwerten, bis Z 1.1 | Überschüssigen Boden der Zuordnung Z 0 bis Z 1.1 abfahren und einer Verwertung zuführen. Abrechnung nach Wiegescheinen.
+2.1.50 | 12400 m² | Planum herstellen | Planum der Verkehrsflächen profilgerecht herstellen und verdichten, EV2 mindestens 45 MN/m², Abweichung von der Sollhöhe höchstens 2 cm.
+2.1.60 | 3500 m³ | Bodenverbesserung mit Bindemittel | Aufgeweichten Boden im Planumsbereich mit Mischbindemittel 30/70, 3 Gew.-%, im Baumischverfahren 40 cm tief verbessern und verdichten. Nur nach Anordnung der Bauüberwachung. | E
+# 3 | Entwässerungskanäle
+# 3.1 | Regenwasserkanal
+3.1.10 | 3900 m³ | Rohrgraben Regenwasserkanal, Tiefe bis 3,00 m | Boden für Rohrgraben lösen, seitlich lagern und nach dem Verlegen lagenweise wieder einbauen. Grabentiefe bis 3,00 m. // Verbau nach Wahl des AN und die Leitungszone aus Sand 0/2 sind einzurechnen.
+3.1.20 | 420 m | Stahlbetonrohr DN 600 verlegen | Stahlbetonrohr DN 600 nach DIN EN 1916 und DIN V 1201, Typ 2, mit Gleitringdichtung liefern und nach DIN EN 1610 verlegen.
+3.1.30 | 380 m | PP-Kanalrohr DN 400 SN 10 verlegen | Kanalrohr PP, Vollwand, DN 400, SN 10, nach DIN EN 1852 liefern und verlegen, einschließlich Formstücken.
+3.1.40 | 290 m | PP-Kanalrohr DN 300 SN 10 verlegen | Kanalrohr PP, Vollwand, DN 300, SN 10, nach DIN EN 1852 liefern und verlegen, einschließlich Formstücken.
+3.1.50 | 24 St | Schacht DN 1000, Tiefe bis 3,00 m | Schacht aus Betonfertigteilen DN 1000 nach DIN EN 1917 komplett herstellen: Unterteil mit Gerinne, Schachtringe, Konus, Auflageringe, Abdeckung Klasse D 400. Schachttiefe bis 3,00 m.
+3.1.60 | 6 St | Schacht DN 1200, Tiefe bis 3,00 m | Schacht aus Betonfertigteilen DN 1200 für Rohr DN 600 komplett herstellen, mit Abdeckplatte, Abdeckung Klasse D 400.
+3.1.70 | 46 St | Straßenablauf mit Anschlussleitung | Straßenablauf 500 x 500 mm nach DIN 4052 mit Aufsatz Klasse D 400 und Schlammeimer setzen, Anschlussleitung PP DN 150 bis 6 m Länge an den Kanal anschließen.
+3.1.80 | 1 psch | Anschluss an Regenrückhaltebecken | Regenwasserkanal DN 600 an das vorhandene Regenrückhaltebecken anschließen, einschließlich Auslaufbauwerk aus Ortbeton mit Böschungs- und Sohlsicherung aus Wasserbausteinen. Ausführung nach Angabe der Bauüberwachung.
+# 3.2 | Schmutzwasserkanal
+3.2.10 | 2700 m³ | Rohrgraben Schmutzwasserkanal | Wie Position 3.1.10, jedoch für den Schmutzwasserkanal, Grabentiefe bis 3,50 m.
+3.2.20 | 760 m | PP-Kanalrohr DN 200 SN 10 verlegen | Kanalrohr PP, Vollwand, DN 200, SN 10, nach DIN EN 1852 liefern und verlegen, einschließlich Abzweigen DN 200/150 für 18 Grundstücksanschlüsse.
+3.2.30 | 22 St | Schacht DN 1000 Schmutzwasser | Schacht aus Betonfertigteilen DN 1000 komplett herstellen, Unterteil mit Klinkergerinne, Tiefe bis 3,50 m, Abdeckung Klasse D 400 ohne Lüftungsöffnungen.
+3.2.40 | 18 St | Grundstücksanschluss DN 150 | Grundstücksanschlussleitung PP DN 150 vom Abzweig bis 1 m hinter die Grundstücksgrenze verlegen, Länge bis 8 m, Ende mit Verschlussstopfen und Markierungspfahl sichern.
+3.2.50 | 1850 m | TV-Inspektion und Dichtheitsprüfung | Regen- und Schmutzwasserkanal nach Hochdruckreinigung optisch inspizieren (DIN EN 13508-2) und haltungsweise nach DIN EN 1610 auf Dichtheit prüfen, einschließlich Schächten, Protokollen und Datenübergabe.
+# 4 | Straßenbau
+# 4.1 | Tragschichten ohne Bindemittel
+4.1.10 | 12400 m² | Frostschutzschicht 0/32, 35 cm | Frostschutzschicht aus Kies-Sand-Gemisch 0/32 nach TL SoB-StB liefern und in 35 cm Dicke einbauen, EV2 mindestens 120 MN/m².
+4.1.20 | 10900 m² | Schottertragschicht 0/45, 20 cm | Schottertragschicht 0/45 nach TL SoB-StB liefern und in 20 cm Dicke einbauen, EV2 mindestens 150 MN/m² unter Fahrbahnen, 120 MN/m² unter Gehwegen.
+# 4.2 | Asphalt
+4.2.10 | 8600 m² | Asphalttragschicht AC 22 T S, 10 cm | Asphalttragschicht AC 22 T S, Bindemittel 50/70, Einbaudicke 10 cm, nach ZTV Asphalt-StB liefern und einbauen.
+4.2.20 | 8600 m² | Asphaltbinderschicht AC 16 B S, 6 cm | Asphaltbinderschicht AC 16 B S, Bindemittel 25/55-55, Einbaudicke 6 cm, liefern und einbauen, einschließlich Ansprühen der Unterlage.
+4.2.30 | - m² | Asphaltdeckschicht AC 11 D S, 4 cm | Asphaltdeckschicht AC 11 D S, Bindemittel 25/55-55, Einbaudicke 4 cm, liefern und einbauen, einschließlich Ansprühen und Abstreuen. // Der Einbau erfolgt nach Abschluss der Hochbauarbeiten auf gesonderten Abruf des AG.
+# 4.3 | Pflaster und Borde
+4.3.10 | 2300 m² | Betonsteinpflaster 8 cm, Gehwege | Betonsteinpflaster 20 x 10 x 8 cm, grau, nach DIN EN 1338, auf 4 cm Bettung aus Brechsand-Splitt 0/5 liefern und im Läuferverband verlegen, einsanden und abrütteln.
+4.3.20 | 1650 m | Hochbord 15/30 setzen | Hochbordstein aus Beton 15 x 30 cm nach DIN EN 1340 und DIN 483 liefern und auf Fundament mit Rückenstütze aus Beton C20/25 setzen.
+4.3.30 | 1420 m | Tiefbord 8/25 setzen | Tiefbordstein aus Beton 8 x 25 cm liefern und als Gehweghinterkante auf Fundament mit Rückenstütze aus Beton C20/25 setzen.
+4.3.40 | 1650 m | Pflasterrinne, zweizeilig | Rinne aus Betonsteinpflaster 16 x 16 x 14 cm, zweizeilig, in Beton C20/25 setzen und mit Fugenmörtel vergießen.
+4.3.50 | 38 St | Bordabsenkung für Grundstückszufahrt | Bordanlage für Grundstückszufahrten auf 5 m Länge absenken, einschließlich Übergangssteinen. Lage und Anzahl nach Wahl des AG, nachträgliches Umsetzen ohne gesonderte Vergütung.
+# 5 | Leerrohre Straßenbeleuchtung
+# 5.1 | Kabelgraben und Leerrohre
+5.1.10 | 1380 m | Kabelgraben herstellen | Kabelgraben 0,30 m breit und 0,70 m tief im Gehweg ausheben, nach dem Verlegen mit Sand verfüllen und verdichten, Trassenwarnband einlegen.
+5.1.20 | 1380 m | Kabelschutzrohr DN 110 verlegen | Kabelschutzrohr aus PE-HD, DN 110, gelb oder schwarz, mit Zugdraht liefern und in Sandbettung verlegen. Rohrenden mit Stopfen verschließen.
+5.1.30 | 34 St | Köcherfundament für Lichtmast | Fertigteil-Köcherfundament für Lichtmaste bis 8 m Lichtpunkthöhe liefern und setzen, einschließlich Kabeleinführung DN 110. Maste und Leuchten liefert der Netzbetreiber.
+5.1.40 | 12 St | Kabelzugschacht | Kabelzugschacht aus Kunststoff 60 x 60 cm, Tiefe 80 cm, mit Abdeckung Klasse B 125, liefern und setzen.
+5.1.50 | 1380 m² | Banderder verlegen | Bandstahl 30 x 3,5 mm, feuerverzinkt, als Erder im Kabelgraben liefern und verlegen, Verbindungen mit Kreuzverbindern.
+# 6 | Stundenlohnarbeiten
+# 6.1 | Stundenlohn
+6.1.10 | 150 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter, nur auf schriftliche Anordnung der Bauüberwachung.
+6.1.20 | 80 h | Hydraulikbagger mit Bediener | Hydraulikbagger bis 25 t mit Bediener, nur auf schriftliche Anordnung der Bauüberwachung.
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "Aufforderung_Angebotsabgabe_OP-ITZ-417.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "arch"
+text = """Vergabenummer: OP-ITZ-417
+Auftraggeber: Stadt Itzehoe, Amt für Stadtentwicklung und Tiefbau
+Maßnahme: Erschließung Gewerbegebiet Süd, 1. Bauabschnitt, Straßen- und Kanalbau
+Vergabeart: Öffentliche Ausschreibung nach VOB/A, Abschnitt 1
+
+Sehr geehrte Damen und Herren,
+
+im Namen und für Rechnung der Stadt Itzehoe fordern wir Sie zur Abgabe eines Angebots für die oben genannte Bauleistung auf.
+
+Ablauf der Angebotsfrist, zugleich Eröffnungstermin: {-286|long}, 11:00 Uhr
+Ablauf der Bindefrist: {-250}
+Fragen zu den Vergabeunterlagen: ausschließlich in Textform bis {-293} an Ohlsen + Partner Ingenieure
+Ausführungsfristen: Beginn {-235}, Gesamtfertigstellung {-60}. Einzelfrist: Kanalbau und Tragschichten Planstraße A bis {-130}.
+
+Angebote sind elektronisch in Textform über den Vergabemarktplatz Nord einzureichen. Nebenangebote sind nicht zugelassen. Eine Aufteilung in Lose findet nicht statt.
+
+Mit dem Angebot sind vorzulegen: Angebotsschreiben, Leistungsverzeichnis mit Preisen, Eigenerklärung zur Eignung oder Präqualifikationsnachweis, Formblatt 221 oder 222, Verzeichnis der Nachunternehmerleistungen.
+Zuschlagskriterium: Preis 100 %.
+Sicherheiten: Vertragserfüllung 5 %, Mängelansprüche 3 %. Vertragsstrafe nach den Besonderen Vertragsbedingungen, Nr. 2.
+
+Die Anlagen (Baubeschreibung, Lagepläne, Höhenpläne, Regelquerschnitte, Geotechnischer Bericht) sind auf dem Vergabemarktplatz abrufbar. Das Leistungsverzeichnis liegt als GAEB-Datei DA 83 bei."""
+
+[[doc]]
+key = "niederschrift"
+file = "Niederschrift_Angebotseroeffnung_OP-ITZ-417.pdf"
+title = "Niederschrift über die Öffnung der Angebote (Auszug für Bieter)"
+from = "arch"
+text = """Vergabenummer: OP-ITZ-417
+Auftraggeber: Stadt Itzehoe
+Maßnahme: Erschließung Gewerbegebiet Süd, 1. Bauabschnitt, Straßen- und Kanalbau
+Eröffnungstermin: {-286}, 11:00 Uhr
+Eingegangene Angebote: 6, sämtlich fristgerecht und verschlüsselt. Nebenangebote: keine.
+
+Angebotsendsummen netto, ungeprüft, in der Reihenfolge der Höhe:
+
+Rang | Bieter | Summe netto
+1 | Bieter 5 | 2.548.310,40
+2 | Bieter 2 | 2.627.308,02
+3 | Bieter 1 | 2.689.455,10
+4 | Bieter 6 | 2.744.120,75
+5 | Bieter 3 | 2.861.990,30
+6 | Bieter 4 | 3.012.404,65
+
+Ihr Angebot wird in dieser Niederschrift als Bieter 2 geführt.
+
+Preisnachlässe ohne Bedingung: Bieter 3 bietet 2,0 % (in der Summe oben nicht berücksichtigt).
+Die Angebote sind rechnerisch, technisch und wirtschaftlich noch nicht geprüft."""
+
+[[doc]]
+key = "absage"
+file = "Mitteilung_Paragraf_19_VOB-A_OP-ITZ-417.pdf"
+title = "Mitteilung über die Nichtberücksichtigung Ihres Angebots (§ 19 Abs. 1 VOB/A)"
+from = "arch"
+text = """Vergabenummer: OP-ITZ-417
+Auftraggeber: Stadt Itzehoe
+Maßnahme: Erschließung Gewerbegebiet Süd, 1. Bauabschnitt, Straßen- und Kanalbau
+An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+
+Sehr geehrte Damen und Herren,
+
+im Auftrag der Stadt Itzehoe teilen wir Ihnen mit, dass Ihr Angebot vom {-287} nicht berücksichtigt werden konnte.
+
+Grund: Ihr Angebot war nicht das wirtschaftlichste. Einziges Zuschlagskriterium war der Preis.
+
+Geprüfte Angebotsendsumme Ihres Angebots: 2.627.308,02 EUR netto, Rang 2 von 6 gewerteten Angeboten.
+Geprüfte Angebotsendsumme des für den Zuschlag vorgesehenen Angebots: 2.548.310,40 EUR netto.
+Der Abstand beträgt 78.997,62 EUR, das sind 3,1 %.
+
+Ihr Angebot war vollständig und wurde in allen Wertungsstufen berücksichtigt; Ausschlussgründe lagen nicht vor. Der Zuschlag wird am {-262} erteilt.
+
+Auf Verlangen in Textform teilen wir Ihnen nach § 19 Abs. 2 VOB/A die Merkmale und Vorteile des Angebots des erfolgreichen Bieters sowie dessen Namen mit.
+
+Wir danken Ihnen für Ihre Beteiligung."""
+
+[[mail]]
+id = "einladung"
+day = -300
+time = "08:05"
+from = "arch.ohlsen"
+to = "us"
+cc = ["arch.kroeger"]
+subject = "Stadt Itzehoe, Erschließung Gewerbegebiet Süd 1. BA – Aufforderung zur Angebotsabgabe (OP-ITZ-417)"
+body = """Sehr geehrte Damen und Herren,
+
+im Auftrag der Stadt Itzehoe übersenden wir Ihnen die Aufforderung zur Abgabe eines Angebots für die Erschließung des Gewerbegebiets Süd, 1. Bauabschnitt (Straßen- und Kanalbau). Die Maßnahme ist seit heute öffentlich bekannt gemacht.
+
+1. Angebotsfrist: {-286|long}, 11:00 Uhr. Später eingehende Angebote werden ausgeschlossen.
+2. Bieterfragen: ausschließlich in Textform, bis {-293}. Telefonische Auskünfte werden nicht erteilt.
+3. Das Leistungsverzeichnis liegt als GAEB-Datei DA 83 bei; die Pläne und der Geotechnische Bericht stehen auf dem Vergabemarktplatz Nord.
+4. Sachbearbeiter für technische Rückfragen ist Herr Kröger (in Kopie).
+
+Wir weisen darauf hin, dass Änderungen an den Vergabeunterlagen unzulässig sind und zum Ausschluss führen."""
+attach = ["doc:anschreiben", "lv:erschliessung"]
+
+[[mail]]
+id = "fragen"
+day = -295
+time = "10:42"
+from = "us"
+to = "arch.ohlsen"
+cc = ["arch.kroeger"]
+subject = "Bieterfragen zu OP-ITZ-417 – Erschließung Gewerbegebiet Süd, 1. BA"
+body = """Sehr geehrte Frau Ohlsen, sehr geehrter Herr Kröger,
+
+zum Leistungsverzeichnis bitten wir um Klärung der folgenden vier Punkte:
+
+1. Position 4.2.30 „Asphaltdeckschicht AC 11 D S, 4 cm“
+Die Position enthält keine Menge. Tragschicht und Binder (4.2.10, 4.2.20) sind mit je 8.600 m² ausgeschrieben. Wir gehen von ebenfalls 8.600 m² aus. Zudem: Der Einbau soll „nach Abschluss der Hochbauarbeiten auf gesonderten Abruf des AG“ erfolgen. Liegt der Abruf innerhalb der Ausführungsfrist bis {-60}? Andernfalls bitten wir um eine Preisgleitung oder einen spätesten Abruftermin.
+
+2. Position 3.2.10 „Rohrgraben Schmutzwasserkanal“, 2700 m³
+Der Text lautet „Wie Position 3.1.10, jedoch für den Schmutzwasserkanal, Grabentiefe bis 3,50 m“. Position 3.1.10 schließt den Verbau „nach Wahl des AN“ und die Leitungszone ein. Gilt das auch für 3.2.10, obwohl ab 3,00 m Tiefe und im Schichtenwasser ein anderer Verbau nötig wird? Wir nehmen an: ja, Verbau und Leitungszone sind auch hier im Kubikmeterpreis enthalten.
+
+3. Position 3.1.80 „Anschluss an Regenrückhaltebecken“, 1 psch
+Das Auslaufbauwerk ist „nach Angabe der Bauüberwachung“ auszuführen; einen Plan haben wir in den Unterlagen nicht gefunden. Für eine Pauschale benötigen wir Abmessungen, Betonmenge und die Fläche der Sohlsicherung. Wir kalkulieren vorläufig mit einem Stirnwandbauwerk von rund 6 m³ Beton C30/37 und 25 m² Wasserbausteinen.
+
+4. Position 2.1.60 „Bodenverbesserung mit Bindemittel“, 3500 m³, Bedarfsposition
+Die Menge entspricht rund 70 % der Planumsfläche bei 40 cm Tiefe. Bei dieser Größenordnung ist die Leistung nach dem Geotechnischen Bericht eher die Regel als ein Bedarf. Wird die Position gewertet? Wir regen an, sie als Grundposition mit realistischer Menge auszuschreiben.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "antwort"
+day = -291
+time = "17:26"
+from = "arch.kroeger"
+to = "us"
+cc = ["arch.ohlsen"]
+subject = "AW: Bieterfragen zu OP-ITZ-417 – Erschließung Gewerbegebiet Süd, 1. BA"
+reply_to = "fragen"
+body = """Hallo Herr Doe,
+
+danke für die Fragen, hier die Antworten. Geht als Bieterinfo 1 heute Abend auch auf den Marktplatz.
+
+zu 1) Pos. 4.2.30: Stimmt, die Menge ist uns durchgerutscht. 8.600 m². Der Abruf der Deckschicht liegt innerhalb der Ausführungsfrist, spätestens acht Wochen vor Fertigstellung. Preisgleitung gibt es nicht.
+
+zu 2) Pos. 3.2.10: Ja, gilt genauso. Verbau und Leitungszone sind im m³-Preis drin, auch bei 3,50 m. Welchen Verbau Sie nehmen, ist Ihre Sache.
+
+zu 3) Pos. 3.1.80: Der Detailplan für das Auslaufbauwerk ist noch in der Abstimmung mit der Wasserbehörde, den kann ich im Moment nicht rausgeben. Orientieren Sie sich am Lageplan Blatt 4 und am Regelwerk. Das Bauwerk ist mit der Pauschale einzukalkulieren, eine Aufteilung in Einzelpositionen ist nicht vorgesehen.
+
+zu 4) Pos. 2.1.60: Bleibt Bedarfsposition, wird aber gewertet. Wir haben mit dem Bodengutachter noch mal gesprochen und setzen die Menge auf 1.200 m³ herab. Bitte mit dieser Menge anbieten, die berichtigte GAEB-Datei kommt mit der Bieterinfo.
+
+Bei weiteren Fragen gern noch mal melden, Frist dafür ist der {-293}."""
+
+[[mail]]
+id = "eingang"
+day = -287
+time = "15:21"
+from = "portal.noreply"
+to = "us"
+subject = "Eingangsbestätigung: Ihr Angebot zu OP-ITZ-417 wurde übermittelt"
+body = """Guten Tag,
+
+Ihr Angebot wurde verschlüsselt an die Vergabestelle übermittelt.
+
+Vergabestelle: Stadt Itzehoe, vertreten durch Ohlsen + Partner Ingenieure PartG mbB
+Vergabenummer: OP-ITZ-417
+Bezeichnung: Erschließung Gewerbegebiet Süd, 1. Bauabschnitt, Straßen- und Kanalbau
+Bieter: Acme Tiefbau GmbH, Hamburg
+Eingang auf dem Server: {-287}, 15:20:07 Uhr
+Ablauf der Angebotsfrist: {-286}, 11:00 Uhr
+Übermittelte Dateien: 6
+
+Das Angebot kann bis zum Ablauf der Angebotsfrist zurückgezogen und neu eingereicht werden. Diese Bestätigung dient als Nachweis des fristgerechten Eingangs."""
+
+[[mail]]
+id = "angebot"
+day = -287
+time = "15:32"
+from = "us"
+to = "arch.ohlsen"
+cc = ["arch.kroeger", "us"]
+subject = "Angebot OP-ITZ-417 – zur Information: wie eben über die Vergabeplattform eingereicht"
+body = """Sehr geehrte Frau Ohlsen,
+
+zu Ihrer Information: Unser Angebot zur Vergabe OP-ITZ-417 haben wir soeben vollständig über den Vergabemarktplatz Nord eingereicht; die Eingangsbestätigung liegt uns vor. Maßgeblich ist allein das dort eingereichte Angebot.
+
+Anbei erhalten Sie vorab das Leistungsverzeichnis mit unseren Preisen als GAEB-Datei (DA 84), damit es Ihnen für die Prüfung auch unmittelbar vorliegt. Die Angebotssumme beträgt 2.627.308,02 EUR netto. Die Antworten vom {-291} sind berücksichtigt (Position 4.2.30 mit 8.600 m², Bedarfsposition 2.1.60 mit 1.200 m³).
+
+Mit freundlichen Grüßen"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "niederschrift"
+day = -283
+time = "09:30"
+from = "arch.ohlsen"
+to = "us"
+subject = "OP-ITZ-417 – Niederschrift über die Öffnung der Angebote"
+body = """Sehr geehrter Herr Doe,
+
+anbei erhalten Sie den Auszug aus der Niederschrift über die Öffnung der Angebote vom {-286}.
+
+Es wurden sechs Angebote geöffnet. Ihr Angebot liegt mit einer ungeprüften Endsumme von 2.627.308,02 EUR netto an zweiter Stelle.
+
+Die Prüfung und Wertung der Angebote ist nicht abgeschlossen. Wir bitten, von Sachstandsanfragen abzusehen; Sie werden unaufgefordert unterrichtet."""
+attach = ["doc:niederschrift"]
+
+[[mail]]
+id = "aufklaerung"
+day = -276
+time = "11:48"
+from = "arch.kroeger"
+to = "us"
+subject = "OP-ITZ-417 – Aufklärung nach § 15 VOB/A: Formblatt 223 für fünf Positionen"
+body = """Hallo Herr Doe,
+
+im Zuge der Angebotsprüfung brauchen wir von den drei Erstplatzierten die Aufgliederung der Einheitspreise (Formblatt 223) für folgende Positionen:
+
+2.1.20 Boden lösen, Abtrag Straßenkörper
+3.1.10 Rohrgraben Regenwasserkanal
+4.1.10 Frostschutzschicht
+4.2.10 Asphalttragschicht
+4.3.10 Betonsteinpflaster
+
+Außerdem bitte die Angabe, welche Leistungen aus Titel 4.2 und 5 Sie an Nachunternehmer geben und ob die Verpflichtungserklärungen vorliegen.
+
+Frist: {-271}, 12:00 Uhr, per Mail an mich. Das ist eine Ausschlussfrist, also bitte nicht liegen lassen."""
+
+[[mail]]
+id = "aufklaerung_aw"
+day = -272
+time = "14:05"
+from = "us"
+to = "arch.kroeger"
+cc = ["arch.ohlsen"]
+subject = "AW: OP-ITZ-417 – Aufklärung nach § 15 VOB/A: Formblatt 223 für fünf Positionen"
+reply_to = "aufklaerung"
+body = """Sehr geehrter Herr Kröger,
+
+die angeforderte Aufgliederung der Einheitspreise für die Positionen 2.1.20, 3.1.10, 4.1.10, 4.2.10 und 4.3.10 haben wir soeben als Formblatt 223 über den Vergabemarktplatz nachgereicht; zur Sicherheit hier die Kernwerte (netto):
+
+2.1.20 Boden lösen: 6,85 EUR/m³ (Lohn 1,90 / Gerät 4,95)
+3.1.10 Rohrgraben RW einschließlich Verbau und Leitungszone: 38,40 EUR/m³ (Lohn 11,20 / Stoffe 9,60 / Gerät 17,60)
+4.1.10 Frostschutzschicht 35 cm: 14,20 EUR/m² (Lohn 1,45 / Stoffe 10,90 / Gerät 1,85)
+4.2.10 Asphalttragschicht 10 cm: 25,60 EUR/m² (Nachunternehmerleistung)
+4.3.10 Betonsteinpflaster 8 cm: 39,80 EUR/m² (Lohn 16,30 / Stoffe 21,40 / Gerät 2,10)
+
+Nachunternehmer: Die Asphaltarbeiten des Titels 4.2 vergeben wir vollständig; die Verpflichtungserklärung des Nachunternehmers liegt vor und ist beigefügt worden. Titel 5 (Leerrohre, Fundamente) führen wir im eigenen Betrieb aus.
+
+Für Rückfragen stehe ich gern zur Verfügung.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "absage"
+day = -266
+time = "10:15"
+from = "arch.ohlsen"
+to = "us"
+subject = "OP-ITZ-417 – Mitteilung nach § 19 Abs. 1 VOB/A"
+body = """Sehr geehrter Herr Doe,
+
+im Auftrag der Stadt Itzehoe müssen wir Ihnen mitteilen, dass Ihr Angebot für die Erschließung des Gewerbegebiets Süd, 1. Bauabschnitt, nicht berücksichtigt werden kann. Es war nach dem allein maßgeblichen Kriterium Preis nicht das wirtschaftlichste Angebot.
+
+Ihr Angebot liegt nach rechnerischer Prüfung mit 2.627.308,02 EUR netto auf Rang 2; der Abstand zum erstplatzierten Angebot beträgt 3,1 %. Die förmliche Mitteilung ist beigefügt.
+
+Die Stadt Itzehoe und unser Büro danken Ihnen für das sorgfältig ausgearbeitete Angebot."""
+attach = ["doc:absage"]
+
+[[mail]]
+id = "nachfrage"
+day = -263
+time = "08:52"
+from = "us"
+to = "arch.ohlsen"
+cc = ["arch.kroeger"]
+subject = "AW: OP-ITZ-417 – Mitteilung nach § 19 Abs. 1 VOB/A"
+reply_to = "absage"
+body = """Sehr geehrte Frau Ohlsen,
+
+vielen Dank für die Mitteilung. Wir bedauern das Ergebnis, zumal der Abstand gering ist.
+
+Nach § 19 Abs. 2 VOB/A bitten wir um Mitteilung der Merkmale und Vorteile des erfolgreichen Angebots sowie des Namens des Bieters. Für unsere Nachkalkulation wäre uns außerdem ein Hinweis hilfreich, in welchen Titeln wir vom Erstplatzierten am weitesten entfernt lagen.
+
+Für künftige Ausschreibungen Ihres Büros stehen wir gern wieder zur Verfügung.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "nachfrage_aw"
+day = -259
+time = "16:40"
+from = "arch.kroeger"
+to = "us"
+cc = ["arch.ohlsen"]
+subject = "AW: OP-ITZ-417 – Mitteilung nach § 19 Abs. 1 VOB/A"
+reply_to = "nachfrage"
+body = """Hallo Herr Doe,
+
+Frau Ohlsen hat mich gebeten zu antworten. Den Zuschlag hat am {-262} die Bietergemeinschaft Nordgeest Straßenbau / Kremperheider Kanalbau erhalten, Auftragssumme 2.548.310,40 EUR netto. Vorteil des Angebots war allein der niedrigere Preis, andere Kriterien gab es ja nicht.
+
+Soweit ich das sagen darf, ohne Einheitspreise zu nennen: In den Kanaltiteln (3.1 und 3.2) lagen Sie sogar leicht vorn. Der Unterschied kommt fast vollständig aus Titel 4.2 Asphalt, da war der Erste rund 55.000 EUR günstiger, die haben eine eigene Mischanlage in der Bietergemeinschaft. Der Rest steckt im Erdbau, vor allem in 2.1.40 Überschussboden.
+
+Schade, das Angebot war sauber und die Aufklärung kam als einzige komplett und pünktlich. Im Herbst kommt der 2. Bauabschnitt, da schreiben wir Sie gern wieder an."""
+
+# Our bid: the tender LV with the quantities and units of the client's answers and our unit prices.
+[[lv]]
+key = "angebot"
+base = "erschliessung"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_Gewerbegebiet_Sued_1BA"
+set = [
+  "4.2.30 | 8600 m² | Asphaltdeckschicht AC 11 D S, 4 cm | Asphaltdeckschicht AC 11 D S, Bindemittel 25/55-55, Einbaudicke 4 cm, liefern und einbauen, einschließlich Ansprühen und Abstreuen. // Der Einbau erfolgt nach Abschluss der Hochbauarbeiten auf gesonderten Abruf des AG.",
+  "2.1.60 | 1200 m³ | Bodenverbesserung mit Bindemittel | Aufgeweichten Boden im Planumsbereich mit Mischbindemittel 30/70, 3 Gew.-%, im Baumischverfahren 40 cm tief verbessern und verdichten. Nur nach Anordnung der Bauüberwachung. | E",
+]
+prices = """
+1.1.10 | 110141,58
+1.1.20 | 21150,00
+1.1.30 | 17050,00
+1.1.40 | 91,72
+2.1.10 | 3,06
+2.1.20 | 6,85
+2.1.30 | 6,35
+2.1.40 | 19,76
+2.1.50 | 1,29
+2.1.60 | 25,28
+3.1.10 | 38,40
+3.1.20 | 276,35
+3.1.30 | 178,74
+3.1.40 | 115,24
+3.1.50 | 3115,00
+3.1.60 | 4585,00
+3.1.70 | 1150,00
+3.1.80 | 28800,00
+3.2.10 | 52,33
+3.2.20 | 72,91
+3.2.30 | 3470,00
+3.2.40 | 752,61
+3.2.50 | 8,00
+4.1.10 | 14,20
+4.1.20 | 15,17
+4.2.10 | 25,60
+4.2.20 | 21,64
+4.2.30 | 19,05
+4.3.10 | 39,80
+4.3.20 | 40,57
+4.3.30 | 29,16
+4.3.40 | 54,09
+4.3.50 | 170,51
+5.1.10 | 17,05
+5.1.20 | 11,52
+5.1.30 | 493,90
+5.1.40 | 452,74
+5.1.50 | 5,76
+6.1.10 | 68,20
+6.1.20 | 123,47
+"""

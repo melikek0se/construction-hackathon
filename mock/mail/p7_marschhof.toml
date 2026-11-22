@@ -1,0 +1,333 @@
+# P7: Abwasserdruckleitung Marschhof, HDD (Wasserverband Geestrand). Estimated day -48 … -36, submitted,
+# result open; the client asks on day -20 to extend the binding period. The client's side in our mailbox.
+
+[[lv]]
+key = "druckleitung"
+file = "LV_ADL_Marschhof_HDD"
+format = "d83"
+client = "wvg"
+name = "Abwasserdruckleitung Marschhof"
+project = "Neubau Abwasserdruckleitung Marschhof - Pumpwerk Geestkante im Spülbohrverfahren"
+number = "WVG-A-2431"
+remarks = """Vorbemerkungen
+Bauvorhaben: Anschluss der Ortslage Marschhof an die zentrale Abwasserbeseitigung. Neubau einer Abwasserdruckleitung PE 100 RC da 180 SDR 11 vom neuen Pumpwerk Marschhof (nicht Teil dieser Ausschreibung) bis zum Pumpwerk Geestkante, Länge rund 1.210 m, davon 1.142 m im Horizontalspülbohrverfahren (HDD) in drei Bohrabschnitten und 64 m in offener Bauweise zwischen den Gruben.
+Vergabeart: Beschränkte Ausschreibung nach VOB/A.
+Angebotsfrist: {-36}, 11:00 Uhr
+Bindefrist: {-8}
+Bieterfragen bis: {-41}
+Ausführungsbeginn: {+35}
+Fertigstellung: {+110}
+Die Trasse verläuft über Grünland der Marsch. Die Flächen sind nur eingeschränkt tragfähig und dürfen mit Fahrzeugen nur auf Lastverteilplatten befahren werden. Bohrabschnitt 2 unterquert den Sielzug Marschhofer Wettern, Bohrabschnitt 3 die Kreisstraße 18.
+Baugrund: Klei 2,5 bis 4,0 m, darunter Torf und Mudde in wechselnder Dicke, ab 6 bis 8 m Sande. Siehe Baugrundgutachten mit Sondierungen im Abstand von rund 150 m.
+Der AN oder sein Nachunternehmer für die Bohrarbeiten muss nach DVGW GW 302, Gruppe GN 2, zertifiziert sein.
+Es gelten VOB/B und VOB/C, DIN 18324, DVGW GW 321, DVGW GW 302, DIN EN 805, DWA-A 125, DVGW GW 330."""
+items = """
+# 1 | Baustelleneinrichtung
+# 1.1 | Einrichtung und Zuwegung
+1.1.10 | 1 psch | Baustelle einrichten und räumen | Baustelle für sämtliche Leistungen einrichten, vorhalten und räumen. Lagerfläche für Rohre am Pumpwerk Geestkante, befestigt, rund 400 m2.
+1.1.20 | 1 psch | Bohranlage einrichten und umsetzen | Horizontalspülbohranlage mit mindestens 400 kN Zugkraft, Mischanlage, Recyclingeinheit und Ortungssystem antransportieren, an drei Startgruben nacheinander einrichten, umsetzen und abtransportieren.
+1.1.30 | 1 psch | Verkehrssicherung Kreisstraße 18 | Verkehrssicherung nach RSA 21 für die Arbeiten an Start- und Zielgrube beiderseits der K 18, Einengung der Fahrbahn mit Geschwindigkeitsbeschränkung, für rund 3 Wochen, einschließlich verkehrsrechtlicher Anordnung.
+1.1.40 | 2400 m2 | Lastverteilplatten als Baustraße | Baustraße und Arbeitsflächen auf dem Grünland aus Lastverteilplatten (Stahl oder Kunststoff, Tragfähigkeit für 40 t) verlegen, vorhalten und zurückbauen. Abrechnung nach belegter Fläche je Woche Vorhaltung.
+# 2 | Baugruben
+# 2.1 | Start- und Zielgruben
+2.1.10 | 4 St | Start- oder Zielgrube herstellen | Baugrube 3,0 x 6,0 m, Tiefe bis 2,20 m, im Klei ausheben, mit Verbau sichern und nach Abschluss der Arbeiten verfüllen. Oberboden getrennt lagern.
+2.1.20 | 28 d | Wasserhaltung Baugruben | Offene Wasserhaltung der Baugruben mit Tauchpumpe und Absetzcontainer betreiben, Ableitung in den nächsten Graben. Abrechnung je Tag und Grube.
+2.1.30 | 180 t | Boden entsorgen, Klei | Überschüssigen Klei, Zuordnung bis Z 1.2, TOC erhöht, abfahren und verwerten. Abrechnung nach Wiegescheinen.
+2.1.40 | 160 m3 | Füllsand liefern und einbauen | Füllsand 0/2 für Leitungszone und Verfüllung der Gruben liefern, lagenweise einbauen und verdichten.
+2.1.50 | 900 m2 | Grünland wiederherstellen | Beanspruchte Grünlandflächen lockern, Oberboden wieder andecken, planieren und mit Grünlandmischung ansäen. Abnahme durch den Bewirtschafter.
+# 3 | Druckleitung
+# 3.1 | Horizontalspülbohrung
+3.1.10 | 412 m | HDD Bohrabschnitt 1, Rohr da 180 | Pilotbohrung, Aufweitbohrung und Einzug des Rohrstrangs da 180 im Horizontalspülbohrverfahren nach DVGW GW 321, Überdeckung mindestens 2,50 m, mit Zugkraftmessung, Bohrprotokoll und Bohrplanung. Rohrlieferung siehe Position 3.1.40.
+3.1.20 | 386 m | HDD Bohrabschnitt 2, Unterquerung Wettern | Wie Position 3.1.10, jedoch mit Unterquerung des Sielzugs Marschhofer Wettern, Überdeckung unter der Gewässersohle mindestens 3,00 m.
+3.1.30 | 344 m | HDD Bohrabschnitt 3, Unterquerung K 18 | Wie Position 3.1.10, jedoch mit Unterquerung der Kreisstraße 18, Überdeckung unter der Fahrbahn mindestens 3,50 m, Setzungsmessung an der Fahrbahn vor und nach der Bohrung.
+3.1.40 | 1142 m | Druckrohr PE 100 RC da 180 SDR 11, Schutzmantel | Abwasserdruckrohr PE 100 RC, da 180 x 16,4 mm, SDR 11, mit additivem Schutzmantel aus PP für grabenlose Verlegung, in Stangen von 12 m liefern, zu drei Rohrsträngen stumpfschweißen und auf Rollenböcken auslegen.
+3.1.50 | 96 St | Schweißnaht da 180 mit Protokoll | Heizelementstumpfschweißnaht da 180 durch Schweißer mit Prüfung nach DVGW GW 330 herstellen, Schweißwulst außen entfernen, Schweißprotokoll mit Datenschreiber.
+3.1.60 | - m3 | Bohrspülung und Bohrklein entsorgen | Überschüssige Bohrspülung (Bentonitsuspension) und Bohrklein aufnehmen, abfahren und entsorgen, einschließlich Analytik und Nachweisen.
+3.1.70 | 1 psch | Bohrhindernisse und Baugrundrisiko | Sämtliche Erschwernisse aus dem Baugrund, insbesondere Hindernisse im Bohrkanal, Spülungsverluste, Ausbläser sowie Abbruch und Neuansatz einer Bohrung, ohne gesonderte Vergütung.
+3.1.80 | 1142 m | Bohrverlauf einmessen, Bestandsplan | Lage und Höhe des eingezogenen Rohres aus den Ortungsdaten der Pilotbohrung dokumentieren und als Bestandsplan digital übergeben.
+3.1.90 | 250 h | Stillstand Bohranlage auf Anordnung | Stillstand der betriebsbereiten Bohranlage mit Mannschaft aus Gründen, die der AG zu vertreten hat, auf Anordnung. | E
+# 3.2 | Offene Verlegung und Einbindungen
+3.2.10 | 64 m | Druckrohr da 180 in offener Bauweise | Druckrohr PE 100 RC da 180 SDR 11 zwischen den Gruben im offenen Graben, Tiefe bis 1,60 m, verlegen, einschließlich Erdarbeiten, Verbau und Sandbettung.
+3.2.20 | 2 St | Einbindung in Pumpwerk | Druckleitung an die Übergabeflansche DN 150 am Pumpwerk Marschhof und am Pumpwerk Geestkante anschließen, mit Vorschweißbund, Losflansch und Mauerdurchführung.
+3.2.30 | 3 St | Absperrschieber DN 150 | Weichdichtender Keilflachschieber DN 150, PN 10, für Abwasser, mit Einbaugarnitur und Straßenkappe, liefern und zwischen Flanschen einbauen.
+3.2.40 | 2 St | Be- und Entlüftungsventil im Schacht DN 1000 | Automatisches Be- und Entlüftungsventil für Abwasser DN 80 an den Hochpunkten einbauen, im Schacht aus Betonfertigteilen DN 1000, Tiefe 1,80 m, mit Abdeckung Klasse B 125.
+3.2.50 | 9 St | Elektroschweißmuffe da 180 | Elektroschweißmuffe PE 100 da 180, SDR 11, zum Verbinden der Rohrstränge in den Gruben liefern und verschweißen.
+3.2.60 | 4 St | Bogen PE da 180 | Bogen 30 oder 45 Grad, PE 100 da 180 SDR 11, liefern und einschweißen.
+# 3.3 | Prüfung
+3.3.10 | 3 St | Druckprüfung je Bohrabschnitt | Druckprüfung des eingezogenen Rohrstrangs je Bohrabschnitt vor dem Verbinden, Prüfdruck 10 bar, nach DIN EN 805 und DVGW W 400-2, mit Protokoll.
+3.3.20 | 1 psch | Gesamtdruckprüfung und Molchen | Gesamtdruckprüfung der fertigen Leitung, vorher Kalibermolch zum Nachweis des freien Querschnitts, Protokolle.
+# 4 | Stundenlohnarbeiten
+# 4.1 | Stundenlohn
+4.1.10 | 40 h | Facharbeiter Rohrleitungsbau | Stundenlohnarbeiten Rohrleitungsbauer, nur auf Anordnung des AG.
+4.1.20 | 20 h | Kettenbagger mit Bediener | Kettenbagger bis 15 t mit Moorlaufwerk und Bediener, nur auf Anordnung des AG.
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "Angebotsaufforderung_WVG-A-2431.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "wvg"
+text = """Vergabenummer: WVG-A-2431
+Maßnahme: Neubau Abwasserdruckleitung Marschhof - Pumpwerk Geestkante im Spülbohrverfahren
+Vergabeart: Beschränkte Ausschreibung nach VOB/A
+
+Sehr geehrte Damen und Herren,
+
+der Wasserverband Geestrand bittet Sie um ein Angebot für die oben genannte Leistung.
+
+Angebotsfrist und Eröffnungstermin: {-36|long}, 11:00 Uhr, Geschäftsstelle Am Wasserwerk 3
+Bindefrist: {-8}
+Fragen zu den Unterlagen: bis {-41} per E-Mail an Frau Lührs
+Ausführung: Beginn {+35}, Fertigstellung {+110}. Die Bohrarbeiten sind außerhalb der Weidesaison auszuführen.
+
+Angebote können schriftlich im verschlossenen Umschlag oder elektronisch in Textform per E-Mail an angebote@wv-geestrand.test abgegeben werden.
+
+Mit dem Angebot vorzulegen: ausgefülltes Leistungsverzeichnis, Zertifikat DVGW GW 302 GN 2 des Bohrunternehmens, DVGW GW 301 des Rohrleitungsbauers, drei Referenzen für Spülbohrungen über 300 m Länge in Weichböden aus den letzten fünf Jahren, Verzeichnis der Nachunternehmer.
+Zuschlagskriterium: Preis.
+Sicherheit: Vertragserfüllungsbürgschaft 5 % der Auftragssumme.
+
+Die Maßnahme wird aus Mitteln des Landes gefördert. Der Auftrag kann erst nach Zustimmung der Verbandsversammlung und Vorliegen des Zuwendungsbescheids erteilt werden.
+
+Anlagen: Leistungsverzeichnis (GAEB 90, D83), Lageplan 1:1000, Längsschnitt mit Bohrlinien, Baugrundgutachten, Gestattungen der Grundeigentümer."""
+
+[[doc]]
+key = "ergebnis"
+file = "Submissionsergebnis_WVG-A-2431.pdf"
+title = "Ergebnis der Angebotseröffnung"
+from = "wvg"
+text = """Vergabenummer: WVG-A-2431
+Maßnahme: Neubau Abwasserdruckleitung Marschhof - Pumpwerk Geestkante im Spülbohrverfahren
+Eröffnung: {-36}, 11:00 Uhr
+Aufgefordert: 5 Unternehmen. Eingegangen: 4 Angebote.
+
+Angebotsendsummen netto, ungeprüft:
+
+Rang | Bieter | Summe netto
+1 | Bieter 2 | 471.365,80
+2 | Bieter 4 | 478.930,20
+3 | Bieter 1 | 512.744,05
+4 | Bieter 3 | 549.108,60
+
+Ihr Angebot: Bieter 4.
+
+Die Angebote werden rechnerisch und technisch geprüft. Die Vergabeentscheidung trifft die Verbandsversammlung. Aus dieser Mitteilung ergibt sich kein Anspruch auf den Auftrag."""
+
+[[mail]]
+id = "einladung"
+day = -48
+time = "09:26"
+from = "wvg.luehrs"
+to = "us"
+subject = "Angebotsaufforderung Abwasserdruckleitung Marschhof im Spülbohrverfahren (WVG-A-2431)"
+body = """Guten Tag Herr Doe,
+
+nach der Hauptstraße in Brande haben wir wieder etwas für Sie, diesmal Abwasser: Marschhof wird an das zentrale Netz angeschlossen. Rund 1.210 m Druckleitung da 180, fast alles im Spülbohrverfahren durch die Marsch, drei Bohrabschnitte, einmal unter der Wettern und einmal unter der K 18 durch.
+
+Im Anhang die Angebotsaufforderung und das LV als D83. Pläne, Längsschnitt und Baugrundgutachten kommen wie beim letzten Mal über den Link.
+
+Die Termine:
+Angebotsfrist: {-36|long}, 11:00 Uhr
+Fragen bitte bis {-41} an mich
+Ausführung: {+35} bis {+110}, also außerhalb der Weidesaison
+
+Ich weiß, dass Sie nicht selbst bohren. Ein Nachunternehmer mit GW 302 GN 2 ist in Ordnung, die Referenzen müssen aber vom Bohrunternehmen kommen. Bitte schauen Sie sich die Flächen an, bevor Sie rechnen. Ohne Platten kommt da im Herbst kein Fahrzeug drauf."""
+attach = ["doc:anschreiben", "lv:druckleitung"]
+
+[[mail]]
+id = "fragen"
+day = -44
+time = "15:12"
+from = "us"
+to = "wvg.luehrs"
+subject = "Bieterfragen zu WVG-A-2431 – Abwasserdruckleitung Marschhof"
+body = """Sehr geehrte Frau Lührs,
+
+vielen Dank für die Aufforderung. Wir haben die Trasse am {-46} zusammen mit unserem Bohrunternehmen begangen und bitten um Klärung von drei Punkten:
+
+1. Position 3.1.60 „Bohrspülung und Bohrklein entsorgen“
+Die Position hat keine Menge (Einheit m3). Bei 1.142 m Bohrlänge und einem Aufweitdurchmesser von rund 280 mm rechnet unser Bohrunternehmen mit etwa 190 m3 Spülung und Bohrklein zur Entsorgung. Bitte nennen Sie die Menge, mit der gewertet wird.
+
+2. Position 3.1.70 „Bohrhindernisse und Baugrundrisiko“, 1 psch
+Nach dem Langtext sollen „sämtliche Erschwernisse aus dem Baugrund, insbesondere Hindernisse im Bohrkanal, Spülungsverluste, Ausbläser sowie Abbruch und Neuansatz einer Bohrung“ pauschal und ohne gesonderte Vergütung übernommen werden. Das Baugrundrisiko liegt nach VOB/B und DIN 18324 beim Auftraggeber; ein Neuansatz in Abschnitt 2 kostet für sich einen fünfstelligen Betrag. Bei Sondierungen im Abstand von 150 m ist das nicht kalkulierbar. Wir gehen davon aus, dass die Pauschale nur Erschwernisse abdeckt, die aus dem Baugrundgutachten erkennbar sind (Torf- und Muddelagen), und dass nicht erkennbare Hindernisse nach § 2 Abs. 6 VOB/B vergütet werden. Bitte bestätigen Sie das.
+
+3. Position 1.1.40 „Lastverteilplatten als Baustraße“, 2400 m2
+Der Langtext sagt „Abrechnung nach belegter Fläche je Woche Vorhaltung“, die Einheit ist m2 ohne Zeitangabe. Wie viele Wochen sind anzusetzen? Wir nehmen an: 2.400 m2 über 8 Wochen, in einem Einheitspreis je m2. Nach unserer Begehung genügt außerdem eine geringere Fläche, wenn die Platten mit der Bohranlage umgesetzt werden.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "antwort"
+day = -41
+time = "16:44"
+from = "wvg.luehrs"
+to = "us"
+subject = "AW: Bieterfragen zu WVG-A-2431 – Abwasserdruckleitung Marschhof"
+reply_to = "fragen"
+body = """Hallo Herr Doe,
+
+hier die Antworten, abgestimmt mit unserem Planungsbüro. Sie gehen an alle fünf Bieter.
+
+Zu 1 (Pos. 3.1.60): Die Menge fehlte tatsächlich. Bitte mit 190 m3 anbieten, so wird gewertet. Abgerechnet wird nach Lieferscheinen des Entsorgers.
+
+Zu 2 (Pos. 3.1.70): Darüber haben wir länger gesprochen. Das Planungsbüro möchte die Position so lassen, wie sie ist. Das Baugrundgutachten liegt bei, mehr Aufschlüsse gibt es nicht und wird es vor der Vergabe nicht geben. Das Risiko ist mit der Pauschale einzukalkulieren. Ich kann Ihnen dazu nichts anderes schreiben.
+
+Zu 3 (Pos. 1.1.40): Sie haben recht, da passen Text und Einheit nicht zusammen. Wir ändern: 1.800 m2, vorzuhalten über die gesamte Bauzeit der Bohrarbeiten (rund 8 Wochen), ein Einheitspreis je m2 einschließlich Umsetzen mit der Bohranlage. Der Zusatz „je Woche“ entfällt.
+
+Frist bleibt: {-36}, 11:00 Uhr."""
+
+[[mail]]
+id = "abgabe"
+day = -36
+time = "09:14"
+from = "us"
+to = "wvg.luehrs"
+cc = ["us"]
+subject = "Angebot WVG-A-2431 Abwasserdruckleitung Marschhof – fristgerecht eingereicht"
+body = """Sehr geehrte Frau Lührs,
+
+unser Angebot zur Vergabe WVG-A-2431 haben wir heute um 09:06 Uhr elektronisch in Textform an angebote@wv-geestrand.test gesendet: Angebotsschreiben, LV als P84 und PDF, Nachunternehmerverzeichnis, DVGW GW 301 (Acme Tiefbau) sowie GW 302 GN 2 und drei Referenzen des Bohrunternehmens Bohrtechnik Wattenmeer GmbH, Büsum.
+
+Ihre Antworten vom {-41} sind berücksichtigt (3.1.60 mit 190 m3, 1.1.40 mit 1.800 m2). Zu Position 3.1.70 haben wir, wie von Ihnen vorgegeben, einen Pauschalpreis ohne Vorbehalt eingetragen; unsere Annahmen dazu haben wir in einem Begleitschreiben erläutert, das die Vergabeunterlagen nicht ändert.
+
+Anbei unser Angebot als GAEB-Datei (D84), wie an die Angebotsadresse gesendet. Angebotssumme: 478.930,20 EUR netto.
+
+Bitte bestätigen Sie kurz den Eingang.
+
+Mit freundlichen Grüßen"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "ergebnis"
+day = -34
+time = "14:02"
+from = "wvg.luehrs"
+to = "us"
+subject = "AW: Angebot WVG-A-2431 Abwasserdruckleitung Marschhof – fristgerecht eingereicht"
+reply_to = "abgabe"
+body = """Hallo Herr Doe,
+
+Ihr Angebot war pünktlich da, danke. Das Ergebnis der Eröffnung vom {-36} hängt an: vier Angebote, Sie liegen ungeprüft auf Platz 2, knapp 7.600 EUR hinter dem Ersten.
+
+Entschieden ist damit nichts. Wir prüfen jetzt, vor allem die Referenzen der Bohrfirmen und die Position 3.1.70, bei der die Preise sehr weit auseinanderliegen. Es kann sein, dass ich dazu noch Fragen habe."""
+attach = ["doc:ergebnis"]
+
+[[mail]]
+id = "aufklaerung"
+day = -29
+time = "10:20"
+from = "wvg.luehrs"
+to = "us"
+subject = "WVG-A-2431 Marschhof: Fragen zu Ihrem Angebot (Aufklärung)"
+body = """Hallo Herr Doe,
+
+wie angekündigt ein paar Fragen zu Ihrem Angebot, wir stellen sie den beiden Erstplatzierten:
+
+1. Position 3.1.70: Ihr Pauschalpreis liegt deutlich über dem des Ersten. Was genau ist bei Ihnen darin enthalten? Im Begleitschreiben steht etwas von einem Neuansatz, das möchte ich verstehen.
+
+2. Bohrabschnitt 2 unter der Wettern: Welche Anlage setzt Ihr Bohrunternehmen ein, und mit welcher Überdeckung unter der Gewässersohle planen Sie? Der Sielverband fragt nach.
+
+3. Referenzen: Bei der zweiten Referenz (Druckleitung da 225, 420 m) fehlt die Bestätigung des Auftraggebers. Können Sie die nachreichen?
+
+4. Die Rohre mit Schutzmantel: Welche Lieferzeit haben Sie zugrunde gelegt? Wir hören von anderen Baustellen, dass es bei da 180 zurzeit dauert.
+
+Bitte bis {-24} per Mail. Wenn es schneller geht, umso besser."""
+
+[[mail]]
+id = "aufklaerung_aw"
+day = -26
+time = "11:35"
+from = "us"
+to = "wvg.luehrs"
+subject = "AW: WVG-A-2431 Marschhof: Fragen zu Ihrem Angebot (Aufklärung)"
+reply_to = "aufklaerung"
+body = """Sehr geehrte Frau Lührs,
+
+gern beantworten wir Ihre Fragen:
+
+Zu 1 (Position 3.1.70): Der Pauschalpreis enthält die Erschwernisse, die das Baugrundgutachten erkennen lässt: erhöhten Spülungsbedarf und eine angepasste Spülungsrezeptur in den Torf- und Muddelagen, eine zusätzliche Aufweitstufe in Abschnitt 2 sowie anteilig das Risiko eines Bohrabbruchs mit Neuansatz. Dafür haben wir einen Neuansatz in einem der drei Abschnitte mit 50 % Eintrittswahrscheinlichkeit angesetzt. Nicht enthalten ist nichts; der Preis gilt ohne Vorbehalt, wie von Ihnen vorgegeben.
+
+Zu 2 (Bohrabschnitt 2): Unser Nachunternehmer, die Bohrtechnik Wattenmeer GmbH, setzt eine Anlage mit 400 kN Zugkraft und Kreiselkompass-Ortung ein, weil unter dem Gewässer nicht begangen werden kann. Geplante Überdeckung unter der Sohle der Wettern: 4,20 m (gefordert 3,00 m), um im Sand unter der Mudde zu bohren und Ausbläser in das Gewässer zu vermeiden. Die Bohrplanung nach GW 321 reichen wir nach Auftragserteilung ein.
+
+Zu 3 (Referenz 2): Die Bestätigung des damaligen Auftraggebers liegt dem Bohrunternehmen vor; wir reichen sie bis {-24} nach.
+
+Zu 4 (Rohre): Kalkuliert sind sechs Wochen Lieferzeit ab Bestellung für 1.142 m da 180 SDR 11 mit Schutzmantel. Unser Händler hat die Menge und den Preis bis zum Ablauf der Bindefrist am {-8} zugesagt. Bei einem Ausführungsbeginn am {+35} muss spätestens in KW {kw-1} bestellt werden.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "bindefrist"
+day = -20
+time = "08:50"
+from = "wvg.luehrs"
+to = "us"
+subject = "WVG-A-2431 Marschhof: Bitte um Verlängerung der Bindefrist bis {+21}"
+body = """Hallo Herr Doe,
+
+danke für die Antworten und die nachgereichte Referenz, das ist alles vollständig.
+
+Jetzt muss ich Sie um etwas bitten. Wir schaffen die Vergabe nicht bis zum Ende der Bindefrist am {-8}. Zwei Gründe: Der Zuwendungsbescheid des Landes ist zugesagt, aber noch nicht da, und ohne ihn dürfen wir nicht beauftragen. Und die Verbandsversammlung, die zustimmen muss, tagt erst am {+14}.
+
+Deshalb die Bitte an alle vier Bieter: Sind Sie einverstanden, die Bindefrist für Ihr Angebot bis zum {+21} zu verlängern? Das Angebot bleibt dabei unverändert, Preise und Inhalt dürfen nicht angepasst werden. Wer nicht zustimmt, scheidet mit Ablauf der alten Frist aus dem Verfahren aus.
+
+Bitte geben Sie mir bis {-13} Bescheid, eine kurze Mail genügt. Der Ausführungsbeginn {+35} soll bleiben."""
+
+[[mail]]
+id = "bindefrist_aw"
+day = -17
+time = "13:28"
+from = "us"
+to = "wvg.luehrs"
+subject = "AW: WVG-A-2431 Marschhof: Bitte um Verlängerung der Bindefrist bis {+21}"
+reply_to = "bindefrist"
+body = """Sehr geehrte Frau Lührs,
+
+wir stimmen der Verlängerung der Bindefrist für unser Angebot vom {-36} zur Vergabe WVG-A-2431 bis zum {+21} zu. Das Angebot bleibt in Preis und Inhalt unverändert.
+
+Zwei Hinweise, damit es später keine Überraschung gibt:
+- Unser Rohrhändler und das Bohrunternehmen haben ihre Preise auf unsere Nachfrage ebenfalls bis {+21} verlängert. Die Lieferzeit für das Rohr da 180 mit Schutzmantel beträgt weiterhin sechs Wochen. Bei einem Auftrag am {+21} ist das Rohr damit frühestens Anfang KW {kw+63} auf der Baustelle; der Ausführungsbeginn {+35} wäre für die Gruben und die Baustraße zu halten, die erste Bohrung könnte erst danach beginnen.
+- Die Bohranlage ist bei unserem Nachunternehmer für den Zeitraum ab {+35} vorgemerkt, verbindlich reservieren kann er erst mit Auftrag.
+
+Wir würden uns freuen, wenn es klappt.
+
+Mit freundlichen Grüßen"""
+
+# Our bid: the tender LV with the quantities and units of the client's answers and our unit prices.
+[[lv]]
+key = "angebot"
+base = "druckleitung"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_ADL_Marschhof"
+set = [
+  "3.1.60 | 190 m3 | Bohrspülung und Bohrklein entsorgen | Überschüssige Bohrspülung (Bentonitsuspension) und Bohrklein aufnehmen, abfahren und entsorgen, einschließlich Analytik und Nachweisen.",
+  "1.1.40 | 1800 m2 | Lastverteilplatten als Baustraße | Baustraße und Arbeitsflächen auf dem Grünland aus Lastverteilplatten (Stahl oder Kunststoff, Tragfähigkeit für 40 t) verlegen, vorhalten und zurückbauen. Abrechnung nach belegter Fläche je Woche Vorhaltung.",
+]
+prices = """
+1.1.10 | 22014,50
+1.1.20 | 31000,00
+1.1.30 | 7400,00
+1.1.40 | 17,95
+2.1.10 | 5220,00
+2.1.20 | 157,76
+2.1.30 | 34,82
+2.1.40 | 41,34
+2.1.50 | 5,22
+3.1.10 | 128,38
+3.1.20 | 143,61
+3.1.30 | 137,08
+3.1.40 | 50,59
+3.1.50 | 73,98
+3.1.60 | 179,52
+3.1.70 | 41350,00
+3.1.80 | 2,61
+3.1.90 | 310,07
+3.2.10 | 104,45
+3.2.20 | 2610,00
+3.2.30 | 1250,00
+3.2.40 | 6310,00
+3.2.50 | 201,28
+3.2.60 | 228,47
+3.3.10 | 1580,00
+3.3.20 | 4135,00
+4.1.10 | 63,10
+4.1.20 | 106,62
+"""

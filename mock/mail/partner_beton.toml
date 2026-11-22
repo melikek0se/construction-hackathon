@@ -1,0 +1,613 @@
+# Betonwerk Störtal GmbH & Co. KG (beton): Birgit Thomsen. Förmlich, langsam (4 bis 7 Tage, oft erst nach Erinnerung),
+# immer ein PDF-Angebot mit Angebotsnummer, ab Werk zuzüglich Fracht je Fuhre, Mindestmenge 6 m³ bei Transportbeton,
+# Gültigkeit 21 Tage, freibleibend.
+# Jobs: P1 Mühlenstraße (Schachtteile geliefert), P3 Gewerbegebiet Süd (verloren), P4 Pumpwerk (Pumpschacht, Beton),
+# P5 Schulweg (verloren), P6 Radweg K 22 (Durchlässe).
+
+# ------------------------------------------------------------------ P1 Mühlenstraße
+
+[[sheet]]
+key = "p1"
+file = "Preisanfrage_Schachtfertigteile_Muehlenstrasse.xlsx"
+items = """
+3.2.10 | 19 St | Schachtunterteil DN 1000 setzen
+3.2.20 | 38 St | Schachtring DN 1000, h = 500 mm
+3.2.30 | 19 St | Schachtkonus DN 1000/625
+"""
+
+[[doc]]
+key = "p1_angebot"
+file = "Angebot_30417_Schachtfertigteile_Muehlenstrasse.pdf"
+title = "Angebot Nr. 30417"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg, Kundennummer 110388
+Bauvorhaben: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek
+Ihre Anfrage vom {-516}
+
+Wir bieten Ihnen freibleibend an:
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.2.10 | Schachtunterteil DN 1000, Gerinne nach Angabe | 19 | St | 402,00 | 7.638,00
+3.2.20 | Schachtring DN 1000, h = 500 mm, mit Steigeisen | 38 | St | 88,00 | 3.344,00
+3.2.30 | Schachtkonus DN 1000/625, h = 600 mm | 19 | St | 132,00 | 2.508,00
+Fracht | Lkw mit Ladekran, je Fuhre, voraussichtlich 4 | 4 | Fuhre | 185,00 | 740,00
+
+Summe netto: 14.230,00 EUR
+
+Preise in EUR netto ab Werk Itzehoe, zuzüglich Umsatzsteuer. Fracht je Fuhre nach Frachtzone 3 (Norderbek), Entladung mit Ladekran an befahrbarer Stelle, Wartezeit über 30 Minuten 22,00 EUR je angefangene Viertelstunde.
+Schachtunterteile nach DIN EN 1917 und DIN V 4034-1 mit werkseitigem Gerinne und Anschlüssen für PP-Rohr DN 300 und DN 400; die Gerinneausbildung je Schacht ist mit der Bestellung nach Schachtliste anzugeben. Gleitringdichtungen sind in den Preisen enthalten.
+Lieferzeit: Schachtringe und Konen ab Lager, Schachtunterteile 15 Arbeitstage nach Freigabe der Schachtliste.
+Zahlung: 30 Tage netto, 2 % Skonto bei Bankeinzug innerhalb 8 Tagen.
+Dieses Angebot ist freibleibend und gilt 21 Tage ab Angebotsdatum. Es gelten unsere Allgemeinen Verkaufs- und Lieferbedingungen."""
+
+[[mail]]
+id = "p1_anfrage"
+day = -516
+time = "08:25"
+from = "us"
+to = "beton"
+subject = "Preisanfrage – Schachtfertigteile DN 1000 – Kanalerneuerung Mühlenstraße"
+body = """Sehr geehrte Frau Thomsen,
+
+die Acme Tiefbau GmbH kalkuliert derzeit ein Angebot für das Bauvorhaben „Kanalerneuerung Mühlenstraße“ der Stadt Norderbek (TBA-SE-0318) und bittet um Ihre Preise für folgende Positionen:
+
+Pos. 3.2.10 – 19 St – Schachtunterteil DN 1000 nach DIN EN 1917 und DIN V 4034-1, mit Gerinne, Anschlüsse für PP DN 300 und DN 400
+Pos. 3.2.20 – 38 St – Schachtring DN 1000, h = 500 mm, mit Steigeisen und Gleitringdichtung
+Pos. 3.2.30 – 19 St – Schachtkonus DN 1000/625, Bauhöhe 600 mm
+
+Bitte nennen Sie je Position den Einheitspreis netto frei Baustelle Norderbek (bei Preisen ab Werk bitte die Fracht gesondert), die Lieferzeit, Skonto und Zahlungsziel sowie die Gültigkeit Ihres Angebots. Wir sind gegenüber dem Auftraggeber bis {-470} gebunden und bitten Sie, Ihre Preise bis dahin zu halten.
+
+Die Positionen liegen als Excel-Datei bei. Wir benötigen Ihr Angebot bis {-506}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_erinnerung"
+day = -510
+time = "08:05"
+from = "us"
+to = "beton"
+subject = "Erinnerung: Preisanfrage – Schachtfertigteile DN 1000 – Kanalerneuerung Mühlenstraße"
+reply_to = "p1_anfrage"
+body = """Sehr geehrte Frau Thomsen,
+
+am {-516} haben wir Sie um Ihre Preise für die Schachtfertigteile zur Mühlenstraße in Norderbek gebeten. Können Sie uns Ihr Angebot bis {-506} zusenden? Die Angebotsfrist endet am {-500}; eine kurze Absage würde uns ebenfalls helfen.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_angebot"
+day = -508
+time = "15:52"
+from = "beton"
+to = "us"
+subject = "AW: Erinnerung: Preisanfrage – Schachtfertigteile DN 1000 – Kanalerneuerung Mühlenstraße – unser Angebot Nr. 30417"
+reply_to = "p1_erinnerung"
+body = """Sehr geehrter Herr Doe,
+
+vielen Dank für Ihre Anfrage. Bitte entschuldigen Sie die verzögerte Bearbeitung.
+
+Unser Angebot Nr. 30417 erhalten Sie im Anhang. Die Preise verstehen sich ab Werk Itzehoe zuzüglich Fracht je Fuhre. Ihre Excel-Datei haben wir nicht ausgefüllt; maßgeblich ist das beigefügte Angebot.
+
+Für Rückfragen stehe ich Ihnen gern zur Verfügung."""
+attach = ["doc:p1_angebot"]
+
+[[mail]]
+id = "p1_frage"
+day = -507
+time = "16:40"
+from = "us"
+to = "beton"
+subject = "AW: Erinnerung: Preisanfrage – Schachtfertigteile DN 1000 – Kanalerneuerung Mühlenstraße – unser Angebot Nr. 30417"
+reply_to = "p1_angebot"
+body = """Sehr geehrte Frau Thomsen,
+
+vielen Dank für das Angebot Nr. 30417. Zwei Rückfragen:
+
+1. Ihr Angebot gilt 21 Tage. Unsere Bindefrist gegenüber der Stadt läuft bis {-470}, ein Auftrag an Sie käme frühestens nach dem Zuschlag. Können Sie die Preise bis {-470} halten?
+
+2. Sie rechnen mit vier Fuhren. Die Baustelle läuft in vier Abschnitten über gut fünf Monate; wir würden die Schächte abschnittsweise abrufen. Bleibt es bei 185,00 EUR je Fuhre, auch wenn es fünf oder sechs Anlieferungen werden?
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_antwort"
+day = -503
+time = "11:30"
+from = "beton"
+to = "us"
+subject = "AW: Erinnerung: Preisanfrage – Schachtfertigteile DN 1000 – Kanalerneuerung Mühlenstraße – unser Angebot Nr. 30417"
+reply_to = "p1_frage"
+body = """Sehr geehrter Herr Doe,
+
+zu Ihren Fragen teile ich Ihnen nach Rücksprache mit unserer Vertriebsleitung mit:
+
+Zu 1: Wir halten die Preise des Angebots Nr. 30417 ausnahmsweise bis zum {-470}. Danach gilt die dann gültige Preisliste.
+
+Zu 2: Der Frachtsatz von 185,00 EUR gilt je Fuhre, unabhängig von der Anzahl der Fuhren. Eine Fuhre fasst bis zu sechs Schachtunterteile oder zwölf Schachtringe. Für Teilmengen unter 8 t Ladung berechnen wir einen Mindermengenzuschlag von 45,00 EUR. Wir empfehlen daher, je Bauabschnitt vollständige Schächte abzurufen."""
+
+[[mail]]
+id = "p1_bestellung"
+day = -471
+time = "08:40"
+from = "us"
+to = "beton"
+cc = ["us.albers"]
+subject = "Bestellung zu Angebot Nr. 30417 – Schachtfertigteile Mühlenstraße Norderbek"
+body = """Sehr geehrte Frau Thomsen,
+
+wir haben den Auftrag für die Mühlenstraße erhalten und bestellen hiermit auf der Grundlage Ihres Angebots Nr. 30417 und Ihrer Zusage vom {-503}:
+
+19 Schachtunterteile DN 1000 zu 402,00 EUR
+38 Schachtringe DN 1000, h = 500 mm, zu 88,00 EUR
+19 Schachtkonen DN 1000/625 zu 132,00 EUR
+Fracht 185,00 EUR je Fuhre
+
+Die Schachtliste mit Gerinneausbildung und Anschlusshöhen für die ersten sechs Schächte (Abschnitt 1, Bahnübergang, DN 400) liegt bei Herrn Albers, unserem Bauleiter (in Kopie); er sendet sie Ihnen bis {-466} und ruft die Lieferungen ab. Baubeginn ist am {-455}.
+
+Die Stadt verlangt vor Baubeginn Leistungserklärung und Prüfzeugnisse für die Schachtfertigteile. Bitte senden Sie mir diese zu.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_ab"
+day = -465
+time = "14:10"
+from = "beton"
+to = "us"
+cc = ["us.albers"]
+subject = "Auftragsbestätigung 30417/1 – Schachtfertigteile Mühlenstraße Norderbek"
+reply_to = "p1_bestellung"
+body = """Sehr geehrter Herr Doe,
+
+wir danken für Ihren Auftrag und bestätigen ihn zu den Bedingungen unseres Angebots Nr. 30417 unter der Auftragsnummer 30417/1.
+
+Die Schachtliste für den ersten Abschnitt liegt uns seit gestern vor. Die sechs Schachtunterteile gehen in der kommenden Woche in die Fertigung; früheste Auslieferung ist der {-446}. Wir bitten um Verständnis, dass der von Herrn Albers gewünschte Termin {-455} nicht möglich ist: Die Lieferzeit von 15 Arbeitstagen beginnt mit der Freigabe der Schachtliste. Schachtringe und Konen sind ab Lager verfügbar.
+
+Abrufe richten Sie bitte mit fünf Werktagen Vorlauf an unsere Disposition. Leistungserklärung und Übereinstimmungszertifikat nach DIN V 4034-1 sind dieser Nachricht nicht beigefügt; sie gehen Ihnen mit der Post zu."""
+
+[[mail]]
+id = "p1_gerinne"
+day = -436
+time = "07:35"
+from = "us.albers"
+to = "beton"
+cc = ["us"]
+subject = "Mühlenstraße, Auftrag 30417/1 – Schacht S 7: Gerinne falsch (Zulauf DN 300 statt DN 400)"
+body = """Sehr geehrte Frau Thomsen,
+
+mit der Lieferung von gestern kam das Unterteil für Schacht S 7. Das Gerinne ist durchgehend für DN 300 gefertigt. Laut unserer Schachtliste vom {-467}, Zeile 7, hat S 7 den Zulauf DN 400 und den Ablauf DN 400, erst ab S 8 geht es mit DN 300 weiter.
+
+Das Teil steht unausgepackt am Festplatz. Ich brauche einen Ersatz bis {-429}, dann sind wir mit dem Graben an S 7. Bitte bestätigen Sie mir den Termin und holen Sie das falsche Unterteil mit derselben Fuhre ab.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_gerinne_aw"
+day = -431
+time = "10:20"
+from = "beton"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Mühlenstraße, Auftrag 30417/1 – Schacht S 7: Gerinne falsch (Zulauf DN 300 statt DN 400)"
+reply_to = "p1_gerinne"
+body = """Sehr geehrter Herr Albers,
+
+wir haben den Vorgang mit unserer Fertigung geprüft. Das Unterteil S 7 wurde irrtümlich nach Zeile 8 der Schachtliste gefertigt. Wir bedauern das Versehen.
+
+Das Ersatzteil ist betoniert und wird am {-428} vormittags angeliefert; ein früherer Termin ist wegen der Aushärtezeit nicht möglich. Das fehlerhafte Unterteil nehmen wir mit dieser Fuhre zurück. Fracht für die Ersatzlieferung berechnen wir nicht."""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (verloren)
+
+[[sheet]]
+key = "p3"
+file = "Preisanfrage_Betonrohre_Schaechte_Gewerbegebiet_Sued.xlsx"
+items = """
+3.1.20 | 420 m | Stahlbetonrohr DN 600 verlegen
+3.1.50 | 24 St | Schacht DN 1000, Tiefe bis 3,00 m
+3.1.60 | 6 St | Schacht DN 1200, Tiefe bis 3,00 m
+3.2.30 | 22 St | Schacht DN 1000 Schmutzwasser
+5.1.30 | 34 St | Köcherfundament für Lichtmast
+"""
+
+[[doc]]
+key = "p3_angebot"
+file = "Angebot_31962_Gewerbegebiet_Sued_Itzehoe.pdf"
+title = "Angebot Nr. 31962"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg, Kundennummer 110388
+Bauvorhaben: Erschließung Gewerbegebiet Süd, 1. Bauabschnitt, Itzehoe
+Ihre Anfrage vom {-296}
+
+Wir bieten Ihnen freibleibend an:
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.1.20 | Stahlbetonrohr DN 600 Typ 2, Baulänge 2,50 m | 420 | m | 114,00 | 47.880,00
+3.1.50 | Schachtbauteile DN 1000 je Schacht bis 3,00 m | 24 | St | 938,00 | 22.512,00
+3.1.60 | Schachtbauteile DN 1200 mit Abdeckplatte | 6 | St | 1.640,00 | 9.840,00
+3.2.30 | Schachtbauteile DN 1000, Klinkergerinne | 22 | St | 1.085,00 | 23.870,00
+5.1.30 | Köcherfundament für Lichtmast bis 8 m | 34 | St | 164,00 | 5.576,00
+Fracht | je Fuhre, Frachtzone 1 (Itzehoe) | 22 | Fuhre | 95,00 | 2.090,00
+
+Summe netto: 111.768,00 EUR
+
+Preise in EUR netto ab Werk Itzehoe, zuzüglich Umsatzsteuer und Fracht je Fuhre.
+Schachtbauteile je Schacht: Unterteil mit Gerinne (412,00 EUR), drei Schachtringe h = 500 mm (je 90,50 EUR), Konus (135,50 EUR), Auflagering und Dichtungen. Schachtabdeckungen sind nicht enthalten. Abweichende Schachttiefen werden nach Stückpreisen der Einzelteile abgerechnet.
+Stahlbetonrohre nach DIN EN 1916 und DIN V 1201 mit Gleitringdichtung. Lieferzeit DN 600: vier Wochen nach Auftragseingang, danach 60 m je Woche.
+Zahlung: 30 Tage netto, 2 % Skonto bei Bankeinzug innerhalb 8 Tagen.
+Dieses Angebot ist freibleibend und gilt 21 Tage ab Angebotsdatum."""
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "08:10"
+from = "us"
+to = "beton"
+subject = "Preisanfrage – Stahlbetonrohre und Schachtfertigteile – Erschließung Gewerbegebiet Süd, 1. BA"
+body = """Sehr geehrte Frau Thomsen,
+
+wir kalkulieren ein Angebot für die Erschließung des Gewerbegebiets Süd in Itzehoe, 1. Bauabschnitt (OP-ITZ-417, Ohlsen + Partner für die Stadt Itzehoe), und bitten um Ihre Preise:
+
+Pos. 3.1.20 – 420 m – Stahlbetonrohr DN 600, DIN EN 1916 und DIN V 1201, Typ 2, mit Gleitringdichtung
+Pos. 3.1.50 – 24 St – Schacht DN 1000 aus Betonfertigteilen, Tiefe bis 3,00 m, komplett (ohne Abdeckung)
+Pos. 3.1.60 – 6 St – Schacht DN 1200 für Rohr DN 600, mit Abdeckplatte, Tiefe bis 3,00 m
+Pos. 3.2.30 – 22 St – Schacht DN 1000 Schmutzwasser, Unterteil mit Klinkergerinne
+Pos. 5.1.30 – 34 St – Fertigteil-Köcherfundament für Lichtmaste bis 8 m Lichtpunkthöhe
+
+Bitte nennen Sie die Preise frei Baustelle oder ab Werk mit gesonderter Fracht, die Lieferzeit für DN 600 und die Gültigkeit. Die Baustelle liegt keine fünf Kilometer von Ihrem Werk. Die Angebotsfrist endet am {-286}; wir benötigen Ihr Angebot bis {-290}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_angebot"
+day = -289
+time = "16:35"
+from = "beton"
+to = "us"
+subject = "AW: Preisanfrage – Stahlbetonrohre und Schachtfertigteile – Erschließung Gewerbegebiet Süd, 1. BA – Angebot Nr. 31962"
+reply_to = "p3_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+anbei erhalten Sie unser Angebot Nr. 31962 zum Bauvorhaben Gewerbegebiet Süd. Wir bitten, die Bearbeitungszeit zu entschuldigen; Ihre telefonische Nachfrage von gestern hat uns erreicht.
+
+Wir haben die Schächte je Stück als Bauteilsatz angeboten; die Zusammensetzung und die Einzelpreise finden Sie im Angebot. Die Fracht ist wegen der kurzen Entfernung nach Frachtzone 1 berechnet.
+
+Bitte beachten Sie die Gültigkeit von 21 Tagen."""
+attach = ["doc:p3_angebot"]
+
+[[mail]]
+id = "p3_absage"
+day = -258
+time = "11:55"
+from = "us"
+to = "beton"
+subject = "Ihr Angebot Nr. 31962 – Gewerbegebiet Süd Itzehoe: Auftrag nicht an uns"
+reply_to = "p3_angebot"
+body = """Sehr geehrte Frau Thomsen,
+
+zu Ihrer Information: Die Stadt Itzehoe hat den Auftrag für das Gewerbegebiet Süd an eine Bietergemeinschaft vergeben, unser Angebot lag auf Rang 2. Ihr Angebot Nr. 31962 kommt damit nicht zum Tragen. Vielen Dank für die Ausarbeitung.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße
+
+[[sheet]]
+key = "p4"
+file = "Preisanfrage_Pumpschacht_Beton_Pumpwerk_Deichstrasse.xlsx"
+items = """
+2.1.70 | 32 m3 | Sohlplatte C30/37 mit Auftriebssicherung
+2.2.10 | 1 St | Fertigteil-Pumpschacht DN 2500
+2.2.70 | 1 St | Zulaufschacht DN 1000 mit Absperrschieber
+"""
+
+[[doc]]
+key = "p4_angebot"
+file = "Angebot_32788_Pumpwerk_Deichstrasse.pdf"
+title = "Angebot Nr. 32788"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg, Kundennummer 110388
+Bauvorhaben: Abwasserpumpwerk Deichstraße mit Druckleitung, Norderbek
+Ihre Anfrage vom {-211}
+
+Wir bieten Ihnen freibleibend an:
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+2.2.10 | Fertigteil-Pumpschacht DN 2500, h = 5,80 m, C40/50 | 1 | St | 21.800,00 | 21.800,00
+2.1.70 | Transportbeton C30/37 XA2, F3, Größtkorn 16 | 32 | m3 | 136,50 | 4.368,00
+2.2.70 | Schachtbauteile DN 1000, Tiefe 4,20 m | 1 | St | 1.290,00 | 1.290,00
+Fracht | Schwertransport Pumpschacht, drei Teile | 1 | psch | 1.450,00 | 1.450,00
+Fracht | Fahrmischer je Fuhre, 8 m3 | 4 | Fuhre | 68,00 | 272,00
+
+Summe netto: 29.180,00 EUR
+
+Preise in EUR netto ab Werk Itzehoe, zuzüglich Umsatzsteuer.
+Pumpschacht DN 2500 in drei Fertigteilen (Bodenteil mit Auftriebskragen-Anschluss, Schaft, Abdeckplatte mit Öffnung 1000 x 1400 mm), Beton C40/50 mit hohem Sulfatwiderstand, Wandstärke 20 cm, Aussparungen und Rohrdurchführungen nach Ihrem Werkplan. Gewicht des schwersten Teils 14,2 t; Autokran bauseits. Fertigung sieben Wochen nach Freigabe der Werkpläne.
+Transportbeton: Mindestmenge 6 m3 je Lieferung, darunter Mindermengenzuschlag 38,00 EUR je fehlendem m3. Entladezeit 10 Minuten je m3 frei, Pumpe bauseits.
+Der Spindelschieber DN 300 der Position 2.2.70 ist nicht Gegenstand dieses Angebots.
+Zahlung: 30 Tage netto; Pumpschacht 40 % bei Fertigungsbeginn.
+Dieses Angebot ist freibleibend und gilt 21 Tage ab Angebotsdatum."""
+
+[[mail]]
+id = "p4_anfrage"
+day = -211
+time = "08:30"
+from = "us"
+to = "beton"
+subject = "Preisanfrage – Fertigteil-Pumpschacht DN 2500 und Transportbeton – Abwasserpumpwerk Deichstraße"
+body = """Sehr geehrte Frau Thomsen,
+
+wir kalkulieren das Abwasserpumpwerk Deichstraße der Stadt Norderbek (TBA-SE-0402), Angebotsfrist {-200}, und bitten um Ihr Angebot für:
+
+Pos. 2.2.10 – 1 St – Fertigteil-Pumpschacht DN 2500, Bauhöhe 5,80 m, Beton C40/50 mit hohem Sulfatwiderstand, mit Abdeckplatte und Öffnung 1000 x 1400 mm
+Pos. 2.1.70 – 32 m3 – Transportbeton C30/37, XA2, für die Sohlplatte mit Auftriebskragen
+Pos. 2.2.70 – 1 St – Zulaufschacht DN 1000 aus Betonfertigteilen, Tiefe 4,20 m (ohne den Spindelschieber)
+
+Den Auszug aus dem LV mit den Langtexten und den Schnitt des Pumpschachts sende ich Ihnen mit getrennter Nachricht. Wichtig sind uns das Gewicht der Einzelteile (Kran), die Lieferzeit ab Freigabe der Werkpläne und die Fracht. Unsere Bindefrist läuft bis {-165}.
+
+Wir benötigen das Angebot bis {-204}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_angebot"
+day = -205
+time = "13:18"
+from = "beton"
+to = "us"
+subject = "AW: Preisanfrage – Fertigteil-Pumpschacht DN 2500 und Transportbeton – Abwasserpumpwerk Deichstraße – Angebot Nr. 32788"
+reply_to = "p4_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+in der Anlage erhalten Sie unser Angebot Nr. 32788. Der Pumpschacht wurde durch unsere Arbeitsvorbereitung nach dem übersandten Schnitt kalkuliert.
+
+Wir weisen auf Folgendes hin: Die Fertigung beginnt erst nach Ihrer schriftlichen Freigabe der Werkpläne und beträgt sieben Wochen. Für den Transport der drei Teile ist eine Genehmigung nicht erforderlich, wohl aber eine befestigte Zufahrt für 40 t Gesamtgewicht.
+
+Die Gültigkeit von 21 Tagen können wir, wie bei der Mühlenstraße, auf Ihre Bindefrist bis zum {-165} verlängern, wenn Sie uns dies bis zum Ablauf mitteilen."""
+attach = ["doc:p4_angebot"]
+
+[[mail]]
+id = "p4_bestellung"
+day = -172
+time = "08:15"
+from = "us"
+to = "beton"
+cc = ["us.albers"]
+subject = "Bestellung zu Angebot Nr. 32788 – Pumpschacht DN 2500, Pumpwerk Deichstraße"
+body = """Sehr geehrte Frau Thomsen,
+
+die Stadt Norderbek hat uns den Auftrag für das Pumpwerk Deichstraße erteilt. Wir bestellen auf der Grundlage Ihres Angebots Nr. 32788, dessen Gültigkeit Sie uns bis {-165} zugesagt haben:
+
+1 Fertigteil-Pumpschacht DN 2500 zu 21.800,00 EUR zuzüglich Schwertransport 1.450,00 EUR
+1 Satz Schachtbauteile DN 1000 für den Zulaufschacht zu 1.290,00 EUR
+32 m3 Transportbeton C30/37 XA2 zu 136,50 EUR/m3 zuzüglich Fracht, Abruf durch die Baustelle
+
+Die Werkpläne des Pumpschachts mit dem Auftriebsnachweis gehen bis {-165} an den Auftraggeber zur Freigabe; sobald sie freigegeben sind, erhalten Sie die Freigabe von uns schriftlich. Bitte senden Sie mir dafür Ihre Werkzeichnung bis {-167}. Für uns zählt der Termin: Das Pumpwerk muss am {-40} betriebsbereit sein.
+
+Ansprechpartner auf der Baustelle ist Herr Albers (in Kopie).
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p4_ab"
+day = -166
+time = "15:05"
+from = "beton"
+to = "us"
+cc = ["us.albers"]
+subject = "Auftragsbestätigung 32788/1 – Pumpschacht DN 2500, Pumpwerk Deichstraße"
+reply_to = "p4_bestellung"
+body = """Sehr geehrter Herr Doe,
+
+wir bestätigen Ihren Auftrag unter der Nummer 32788/1 zu den Bedingungen unseres Angebots Nr. 32788.
+
+Die Werkzeichnung des Pumpschachts (Blatt 1 bis 3) ist Ihnen heute mit getrennter Nachricht zugegangen. Die Fertigungszeit von sieben Wochen beginnt mit dem Eingang Ihrer schriftlichen Freigabe. Die Abschlagsrechnung über 40 % stellen wir bei Fertigungsbeginn.
+
+Den Transportbeton ruft die Baustelle bitte mit zwei Werktagen Vorlauf in unserer Disposition ab. Die Sohlplatte mit 32 m3 liefern wir in vier Fuhren im Takt von 30 Minuten."""
+
+# ------------------------------------------------------------------ P5 Schulweg (verloren)
+
+[[sheet]]
+key = "p5"
+file = "Preisanfrage_Stahlbetonrohre_Schaechte_Schulweg.xlsx"
+items = """
+3.1.10 | 286 m | Stahlbetonrohr DN 500 verlegen
+3.1.20 | 134 m | Stahlbetonrohr DN 600 verlegen
+3.2.10 | 9 St | Schachtunterteil DN 1200
+3.2.20 | 21 St | Schachtring DN 1200, h = 500 mm
+3.2.30 | 9 St | Abdeckplatte DN 1200/625
+"""
+
+[[doc]]
+key = "p5_angebot"
+file = "Angebot_33514_Regenwasserkanal_Schulweg.pdf"
+title = "Angebot Nr. 33514"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg, Kundennummer 110388
+Bauvorhaben: Neubau Regenwasserkanal Schulweg, Norderbek
+Ihre Anfrage vom {-147}
+
+Wir bieten Ihnen freibleibend an:
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+3.1.10 | Stahlbetonrohr DN 500 Typ 2, Wandverstärkung B | 286 | m | 96,50 | 27.599,00
+3.1.20 | Stahlbetonrohr DN 600 Typ 2, Wandverstärkung B | 134 | m | 118,00 | 15.812,00
+3.2.10 | Schachtunterteil DN 1200, Gerinne DN 500/600 | 9 | St | 786,00 | 7.074,00
+3.2.20 | Schachtring DN 1200, h = 500 mm | 21 | St | 149,00 | 3.129,00
+3.2.30 | Abdeckplatte DN 1200/625, befahrbar | 9 | St | 218,00 | 1.962,00
+Fracht | je Fuhre, Frachtzone 3 (Norderbek) | 16 | Fuhre | 196,00 | 3.136,00
+
+Summe netto: 58.712,00 EUR
+
+Preise in EUR netto ab Werk Itzehoe, zuzüglich Umsatzsteuer und Fracht je Fuhre.
+Stahlbetonrohre nach DIN EN 1916 und DIN V 1201, Baulänge 2,50 m, mit Gleitringdichtung. Lieferzeit vier Wochen nach Auftragseingang.
+Zahlung: 30 Tage netto, 2 % Skonto bei Bankeinzug innerhalb 8 Tagen.
+Dieses Angebot ist freibleibend und gilt 21 Tage ab Angebotsdatum."""
+
+[[mail]]
+id = "p5_anfrage"
+day = -147
+time = "08:20"
+from = "us"
+to = "beton"
+subject = "Preisanfrage – Stahlbetonrohre DN 500/600 und Schächte DN 1200 – Regenwasserkanal Schulweg"
+body = """Sehr geehrte Frau Thomsen,
+
+für die Stadt Norderbek kalkulieren wir den Neubau des Regenwasserkanals im Schulweg (TBA-SE-0431), Angebotsfrist {-138}. Wir bitten um Ihr Angebot für:
+
+Pos. 3.1.10 – 286 m – Stahlbetonrohr DN 500, DIN EN 1916 und DIN V 1201, Typ 2, Wandverstärkung B
+Pos. 3.1.20 – 134 m – Stahlbetonrohr DN 600, wie vor
+Pos. 3.2.10 – 9 St – Schachtunterteil DN 1200 mit werkseitigem Gerinne
+Pos. 3.2.20 – 21 St – Schachtring DN 1200, h = 500 mm
+Pos. 3.2.30 – 9 St – Abdeckplatte DN 1200/625, befahrbar
+
+Preise bitte mit Fracht nach Norderbek, Lieferzeit und Gültigkeit; unsere Bindefrist läuft bis {-108}. Da die Zeit knapp ist, bitten wir um Ihr Angebot bis {-142}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_erinnerung"
+day = -142
+time = "08:04"
+from = "us"
+to = "beton"
+subject = "Erinnerung: Preisanfrage – Stahlbetonrohre DN 500/600 und Schächte DN 1200 – Regenwasserkanal Schulweg"
+reply_to = "p5_anfrage"
+body = """Sehr geehrte Frau Thomsen,
+
+darf ich an unsere Anfrage vom {-147} zum Regenwasserkanal Schulweg erinnern? Wir geben am {-138} ab. Die Rohre sind die größte Stoffposition dieses LV; ohne Ihr Angebot müssten wir mit den Preisen aus Itzehoe rechnen.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p5_angebot"
+day = -141
+time = "12:40"
+from = "beton"
+to = "us"
+subject = "AW: Erinnerung: Preisanfrage – Stahlbetonrohre DN 500/600 und Schächte DN 1200 – Regenwasserkanal Schulweg – Angebot Nr. 33514"
+reply_to = "p5_erinnerung"
+body = """Sehr geehrter Herr Doe,
+
+unser Angebot Nr. 33514 ist beigefügt.
+
+Gegenüber unserem Angebot für Itzehoe hat sich der Preis für DN 600 erhöht; ausgeschrieben ist hier die Wandverstärkung B, zudem gilt seit dem Frühjahr unsere neue Preisliste. Die Fracht ist nach Frachtzone 3 berechnet."""
+attach = ["doc:p5_angebot"]
+
+[[mail]]
+id = "p5_absage"
+day = -111
+time = "09:30"
+from = "us"
+to = "beton"
+subject = "Ihr Angebot Nr. 33514 – Regenwasserkanal Schulweg: Auftrag nicht an uns"
+reply_to = "p5_angebot"
+body = """Sehr geehrte Frau Thomsen,
+
+der Auftrag für den Regenwasserkanal Schulweg ist an einen Mitbewerber gegangen, wir lagen auf Rang 4. Ihr Angebot Nr. 33514 erledigt sich damit. Bei den Rohren lagen wir nach Auskunft der Stadt gut; der Abstand kam aus Verbau und Wasserhaltung.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ P6 Radweg K 22
+
+[[sheet]]
+key = "p6"
+file = "Preisanfrage_Durchlaesse_DN400_Radweg_K22.xlsx"
+items = """
+4.1.10 | 48 m | Durchlass Stahlbetonrohr DN 400
+4.1.20 | 12 St | Böschungsstück DN 400
+"""
+
+[[doc]]
+key = "p6_angebot"
+file = "Angebot_34106_Radweg_K22_Hemdingen.pdf"
+title = "Angebot Nr. 34106"
+text = """Kunde: Acme Tiefbau GmbH, Hamburg, Kundennummer 110388
+Bauvorhaben: K 22, Neubau Radweg, Abschnitt Hemdingen
+Ihre Anfrage vom {-92}
+
+Wir bieten Ihnen freibleibend an:
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+4.1.10 | Stahlbetonrohr DN 400, Baulänge 2,00 m | 48 | m | 68,50 | 3.288,00
+4.1.20 | Böschungsstück DN 400, Neigung 1:1,5 | 12 | St | 142,00 | 1.704,00
+Fracht | je Fuhre, Frachtzone 3 (Hemdingen) | 2 | Fuhre | 198,00 | 396,00
+
+Summe netto: 5.388,00 EUR
+
+Preise in EUR netto ab Werk Itzehoe, zuzüglich Umsatzsteuer und Fracht je Fuhre.
+Stahlbetonrohre nach DIN EN 1916 mit Gleitringdichtung, 24 Rohre zu 2,00 m. Lieferung ab Lager innerhalb von fünf Werktagen nach Abruf.
+Zahlung: 30 Tage netto, 2 % Skonto bei Bankeinzug innerhalb 8 Tagen.
+Dieses Angebot ist freibleibend und gilt 21 Tage ab Angebotsdatum."""
+
+[[mail]]
+id = "p6_anfrage"
+day = -92
+time = "08:45"
+from = "us"
+to = "beton"
+subject = "Preisanfrage – Stahlbetonrohre DN 400 für Durchlässe – Radweg K 22, Abschnitt Hemdingen"
+body = """Sehr geehrte Frau Thomsen,
+
+eine kleine Anfrage zum Radweg an der K 22 bei Hemdingen (Landesbetrieb Straßen und Wege Küste, LBSW-W-33-0719), Angebotsfrist {-80}:
+
+Pos. 4.1.10 – 48 m – Stahlbetonrohr DN 400 nach DIN EN 1916 für sechs Durchlässe von je 8 m
+Pos. 4.1.20 – 12 St – Böschungsstück aus Beton für Rohr DN 400, Neigung 1:1,5
+
+Bitte Preise mit Fracht nach Hemdingen und Lieferzeit. Bindefrist {-50}. Ihr Angebot benötigen wir bis {-85}.
+
+Mit freundlichen Grüßen"""
+attach = ["sheet:p6:blank"]
+
+[[mail]]
+id = "p6_angebot"
+day = -86
+time = "14:22"
+from = "beton"
+to = "us"
+subject = "AW: Preisanfrage – Stahlbetonrohre DN 400 für Durchlässe – Radweg K 22, Abschnitt Hemdingen – Angebot Nr. 34106"
+reply_to = "p6_anfrage"
+body = """Sehr geehrter Herr Doe,
+
+anbei übersenden wir Ihnen unser Angebot Nr. 34106. Rohre und Böschungsstücke sind Lagerware. Bei einer Lieferung in zwei Fuhren bleibt es bei dem angebotenen Frachtsatz."""
+attach = ["doc:p6_angebot"]
+
+[[mail]]
+id = "p6_abruf"
+day = -40
+time = "07:50"
+from = "us.albers"
+to = "beton"
+cc = ["us"]
+subject = "Bestellung zu Angebot Nr. 34106 – Durchlässe DN 400, Radweg K 22 Hemdingen"
+body = """Sehr geehrte Frau Thomsen,
+
+wir haben den Radweg K 22 im Auftrag und bestellen zu Ihrem Angebot Nr. 34106:
+
+24 Stahlbetonrohre DN 400, Baulänge 2,00 m (48 m) zu 68,50 EUR/m
+12 Böschungsstücke DN 400 zu 142,00 EUR
+Fracht 198,00 EUR je Fuhre, zwei Fuhren
+
+Ihr Angebot ist älter als 21 Tage; Herr Doe hat mir gesagt, dass Sie die Preise telefonisch am {-48} bestätigt haben. Bitte bestätigen Sie mir das kurz schriftlich.
+
+Erste Fuhre (12 Rohre, 6 Böschungsstücke) bitte zum {-31}, Lagerfläche Hof bei Bau-km 0+700, Zufahrt über die Feldzufahrt, Entladung mit Ihrem Ladekran. Die zweite Fuhre rufe ich ab. Die Bauüberwachung verlangt den Eignungsnachweis für die Rohre, bitte legen Sie die Leistungserklärung der Lieferung bei.
+
+Mit freundlichen Grüßen"""
+
+# ------------------------------------------------------------------ ohne Anfrage
+
+[[mail]]
+id = "winter"
+day = -9
+time = "10:05"
+from = "beton"
+to = "us"
+subject = "Kundeninformation: Preisanpassung zum 1. Januar und Betriebsruhe zum Jahreswechsel"
+body = """Sehr geehrter Herr Doe,
+
+wir möchten Sie rechtzeitig über zwei Punkte informieren.
+
+1. Preisanpassung. Wegen gestiegener Kosten für Zement, Energie und Fracht passen wir unsere Preise zum 1. Januar an: Transportbeton um 5,50 EUR je m3 (C25/30 dann 133,50 EUR, C30/37 dann 146,00 EUR je m3 ab Werk), Schachtfertigteile und Stahlbetonrohre um durchschnittlich 4,2 %. Die Fracht je Fuhre in Frachtzone 3 beträgt ab Januar 206,00 EUR. Bestätigte Aufträge werden zu den vereinbarten Preisen ausgeliefert, sofern der Abruf bis zum 28. Februar erfolgt. Angebote behalten ihre Gültigkeit von 21 Tagen ab Angebotsdatum.
+
+2. Betriebsruhe. Unser Werk in Itzehoe ist vom 21. Dezember bis einschließlich 6. Januar geschlossen. In dieser Zeit werden weder Transportbeton noch Fertigteile ausgeliefert. Letzter Abruftermin für Lieferungen in diesem Jahr ist der 14. Dezember. Bei Frost unter minus 5 Grad liefern wir keinen Transportbeton.
+
+Die neue Preisliste senden wir Ihnen im Dezember mit der Post zu."""

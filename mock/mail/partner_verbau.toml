@@ -1,0 +1,599 @@
+# Verbautechnik Nord Mietservice GmbH (verbau): Nele Jessen. Freundlich, praktisch; Mietpreise je Element und Woche
+# plus Transport und Mindestmietzeit; fragt Grabentiefe, Breite und Rohrlänge, bevor sie anbietet; schickt einen
+# Verbauvorschlag als PDF.
+# Jobs: P1 Mühlenstraße (gemietet, Statik für die Gleitschiene), P3 Gewerbegebiet Süd (verloren), P4 Pumpwerk
+# (Spundwand: Absage, nicht ihr Programm), P5 Schulweg (verloren), P7 Marschhof (Vorschlag offen).
+
+# ------------------------------------------------------------------ P1 Mühlenstraße
+
+[[sheet]]
+key = "p1"
+file = "Preisanfrage_Grabenverbau_Muehlenstrasse.xlsx"
+items = """
+2.2.30 | 6900 m² | Grabenverbau herstellen und vorhalten
+"""
+
+[[doc]]
+key = "p1_vorschlag"
+file = "Verbauvorschlag_V-2291_Muehlenstrasse.pdf"
+title = "Verbauvorschlag und Mietangebot V-2291"
+text = """Bauvorhaben: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek
+Mieter: Acme Tiefbau GmbH, Hamburg
+Grundlage: Ihre Angaben vom {-514}: Grabentiefe 2,60 bis 3,50 m auf rund 720 m, 3,50 bis 4,50 m auf rund 140 m (Station 0+620 bis 0+760), lichte Grabenbreite 1,40 m, PP-Rohre DN 300 und DN 400 in 6-m-Längen, Auffüllung über Geschiebelehm und Sand, Grundwasser bei 3,80 m, Tagesleistung 12 bis 15 m, Bagger 22 t.
+
+Vorschlag:
+Abschnitte bis 3,50 m Tiefe: randgestützte Verbauboxen 3,50 x 2,40 m mit Aufsatzbox 3,50 x 1,30 m, Rohrdurchlasshöhe 1,25 m. Sechs Einheiten ergeben 21 m verbauten Graben, das reicht für Aushub, Verlegen und Verfüllen im Umsetzverfahren. Die 6-m-Rohre werden schräg durch zwei Boxenfelder eingefädelt.
+Abschnitt 3 (über 3,50 m bis 4,50 m, Bebauung dicht am Graben, Grundwasser): Gleitschienenverbau, einfache Schiene, Feldlänge 3,50 m, vier Felder. Der Verbau wird im Absenkverfahren eingebracht und setzungsarm gezogen.
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | Verbaubox 3,50 x 2,40 m, je Element und Woche | 6 | El. | 89,00 | 534,00
+2 | Aufsatzbox 3,50 x 1,30 m, je Element und Woche | 6 | El. | 42,00 | 252,00
+3 | Gleitschiene bis 4,50 m, Feld 3,50 m, je Woche | 4 | Feld | 265,00 | 1.060,00
+4 | An- und Abtransport mit Sattelzug, je Fuhre | 4 | Fuhre | 480,00 | 1.920,00
+5 | Standsicherheitsnachweis Gleitschiene, geprüft | 1 | psch | 350,00 | 350,00
+
+Die Beträge der Positionen 1 bis 3 gelten je Woche für die genannte Stückzahl.
+Mindestmietzeit 4 Wochen je Position. Die Miete läuft vom Tag der Auslieferung bis zum Tag der Rückgabe in unserem Lager Neumünster, abgerechnet wird wochenweise, angefangene Wochen tageweise mit einem Fünftel.
+Spindeln, Zuggeschirr und Verbindungsbolzen sind in der Miete enthalten. Reinigung bei Rückgabe in verschmutztem Zustand 35,00 EUR je Element. Schäden und fehlende Teile nach Aufwand.
+Einweisung der Kolonne am ersten Tag durch unseren Anwendungstechniker kostenfrei.
+Alle Preise netto. Zahlung 14 Tage netto. Angebot gültig bis {-470}."""
+
+[[doc]]
+key = "p1_statik"
+file = "Standsicherheitsnachweis_Gleitschiene_Muehlenstrasse_Abschnitt_3.pdf"
+title = "Standsicherheitsnachweis Gleitschienenverbau, Abschnitt 3"
+text = """Bauvorhaben: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek, Station 0+620 bis 0+760
+Mieter: Acme Tiefbau GmbH, Hamburg. Mietvertrag V-2291.
+
+Nachgewiesen wird der Gleitschienenverbau, einfache Schiene, Feldlänge 3,50 m, Plattenhöhe 2,40 m plus 1,30 m plus 1,30 m, für eine Grabentiefe bis 4,50 m und eine lichte Grabenbreite von 1,40 m.
+
+Lastannahmen: Erddruck nach DIN 4085 für Auffüllung (bis 1,20 m), Geschiebelehm und Sand nach Baugrundgutachten; Wasserdruck ab 3,80 m unter Gelände; Verkehrslast 10 kN/m² im Abstand von 0,60 m zur Grabenkante (halbseitige Sperrung, Lkw-Verkehr); Gebäudelast Häuser Nr. 14 bis 22 mit 30 kN/m² im Abstand von 2,10 m.
+
+Ergebnis: Die zulässige Plattenbelastung von 44 kN/m² wird mit 37 kN/m² eingehalten. Die Laufwagen sind in zwei Lagen anzuordnen, der untere 1,10 m über Grabensohle. Rohrdurchlasshöhe 1,10 m.
+
+Auflagen: Kein Aushub mehr als 0,50 m unter Plattenunterkante vorauseilend. Bei Wasserzutritt in der Sohle ist die offene Wasserhaltung vor dem weiteren Absenken in Betrieb zu nehmen. Ziehen des Verbaus lagenweise mit dem Verfüllen.
+
+Der Nachweis ist von einem Prüfingenieur für Standsicherheit geprüft; der Prüfbericht ist beigefügt."""
+
+[[mail]]
+id = "p1_anfrage"
+day = -516
+time = "08:30"
+from = "us"
+to = "verbau"
+subject = "Preisanfrage – Grabenverbau (Miete) – Kanalerneuerung Mühlenstraße Norderbek"
+body = """Guten Tag Frau Jessen,
+
+die Acme Tiefbau GmbH kalkuliert die Kanalerneuerung Mühlenstraße in Norderbek (Stadt Norderbek, TBA-SE-0318), Abgabe am {-500}. Für den Grabenverbau möchten wir Mietgerät anfragen:
+
+Pos. 2.2.30 – 6900 m² – Grabenverbau als Verbauplatten oder Gleitschienenverbau, Tiefe bis 4,50 m, herstellen und vorhalten
+
+Bauzeit {-455} bis {-300}, rund 860 m Kanal. Bitte nennen Sie uns Mietpreise, Transport und Mindestmietzeit. Die Position liegt als Excel-Datei bei; wenn sie für Mietgerät nicht passt, gern formlos.
+
+Wir benötigen Ihr Angebot bis {-506}.
+
+Viele Grüße"""
+attach = ["sheet:p1:blank"]
+
+[[mail]]
+id = "p1_rueckfrage"
+day = -515
+time = "10:25"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Kanalerneuerung Mühlenstraße Norderbek"
+reply_to = "p1_anfrage"
+body = """Hallo Herr Doe,
+
+vielen Dank für die Anfrage, das machen wir gern. Mit Quadratmetern Verbaufläche kann ich allerdings noch nichts anfangen, wir vermieten Elemente je Woche. Damit ich Ihnen das Richtige vorschlage, brauche ich ein paar Angaben:
+
+- Grabentiefe: wie viele Meter Graben bis 3,50 m, wie viele darüber?
+- lichte Grabenbreite, Rohrdurchmesser und Rohrlänge (bei 6-m-Rohren brauchen wir eine andere Aufstellung als bei 3 m)
+- Boden und Grundwasser laut Gutachten
+- Tagesleistung der Kolonne und Größe des Baggers (wegen der Gewichte)
+- Stehen Gebäude dicht am Graben? Kreuzen viele Leitungen?
+
+Die Excel-Tabelle lasse ich leer, Sie bekommen von mir einen Verbauvorschlag mit Mietpreisen als PDF."""
+
+[[mail]]
+id = "p1_antwort"
+day = -514
+time = "13:40"
+from = "us"
+to = "verbau"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Kanalerneuerung Mühlenstraße Norderbek"
+reply_to = "p1_rueckfrage"
+body = """Hallo Frau Jessen,
+
+gern, hier die Angaben:
+
+- Tiefe 2,60 bis 3,50 m auf rund 720 m; über 3,50 bis 4,50 m auf rund 140 m (Station 0+620 bis 0+760)
+- lichte Grabenbreite 1,40 m; PP-Rohre DN 300 und DN 400 in 6-m-Längen
+- Auffüllung bis 1,20 m, darunter Geschiebelehm und Sande, Grundwasser bei 3,80 m unter Gelände
+- Tagesleistung 12 bis 15 m, Mobilbagger 22 t
+- Im tiefen Abschnitt stehen die Häuser Nr. 14 bis 22 rund 2 m neben dem Graben. 56 Hausanschlüsse kreuzen, dazu Gas und Wasser im Gehweg.
+
+Halbseitige Sperrung, der Verkehr läuft direkt neben dem Graben.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p1_vorschlag"
+day = -512
+time = "15:10"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Kanalerneuerung Mühlenstraße Norderbek – Verbauvorschlag V-2291"
+reply_to = "p1_antwort"
+body = """Hallo Herr Doe,
+
+anbei mein Verbauvorschlag V-2291 mit den Mietpreisen.
+
+Kurz zusammengefasst: Für die 720 m bis 3,50 m reichen sechs Boxen mit Aufsatz, 89,00 und 42,00 EUR je Element und Woche. Für den tiefen Abschnitt an den Häusern würde ich keine Boxen nehmen, sondern eine Gleitschiene, vier Felder zu 265,00 EUR je Woche; die lässt sich setzungsarm absenken und ziehen, und Sie brauchen dort ohnehin einen Standsicherheitsnachweis, den liefern wir für 350,00 EUR pauschal mit.
+
+Transport 480,00 EUR je Fuhre, hin und zurück zusammen vier Fuhren. Mindestmietzeit vier Wochen. Bei den vielen Hausanschlüssen rechnen Sie bitte damit, dass die Boxen öfter umgesetzt werden als sonst; das kostet Zeit, nicht Miete.
+
+Wenn Sie den Auftrag bekommen, reservieren Sie die Gleitschiene bitte früh, davon haben wir nur drei Sätze."""
+attach = ["doc:p1_vorschlag"]
+
+[[mail]]
+id = "p1_bestellung"
+day = -470
+time = "08:50"
+from = "us"
+to = "verbau"
+cc = ["us.albers"]
+subject = "Mietauftrag zu Verbauvorschlag V-2291 – Mühlenstraße Norderbek"
+body = """Hallo Frau Jessen,
+
+wir haben die Mühlenstraße im Auftrag und mieten nach Ihrem Vorschlag V-2291:
+
+ab {-456}: 6 Verbauboxen 3,50 x 2,40 m mit 6 Aufsatzboxen, voraussichtlich 26 Wochen
+für Abschnitt 3 (Station 0+620 bis 0+760): Gleitschienenverbau, 4 Felder, voraussichtlich 6 Wochen; den Termin nennt Ihnen Herr Albers, unser Bauleiter (in Kopie), sobald die Verkehrsführung für den Abschnitt angeordnet ist
+Standsicherheitsnachweis für die Gleitschiene, geprüft, 350,00 EUR
+
+Die Stadt verlangt den Nachweis spätestens zwei Wochen vor Beginn des Abschnitts 3. Bitte reservieren Sie die Gleitschiene schon jetzt.
+
+Anlieferung der Boxen am {-456} an den Festplatz Mühlenstraße, Entladung mit unserem Bagger. Die Einweisung der Kolonne nehmen wir gern an.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p1_ab"
+day = -469
+time = "11:35"
+from = "verbau"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: Mietauftrag zu Verbauvorschlag V-2291 – Mühlenstraße Norderbek"
+reply_to = "p1_bestellung"
+body = """Hallo Herr Doe, hallo Herr Albers,
+
+herzlichen Glückwunsch zum Auftrag und vielen Dank für die Bestellung. Der Mietvertrag läuft bei uns unter V-2291.
+
+- 6 Boxen mit Aufsatz: Anlieferung am {-456} um 7:30 Uhr am Festplatz, zwei Sattelzüge. Unser Anwendungstechniker kommt um 8:00 Uhr zur Einweisung dazu.
+- Gleitschiene, 4 Felder: ist für Sie reserviert. Ich brauche den Termin mit zehn Tagen Vorlauf.
+- Standsicherheitsnachweis: Dafür benötige ich das Baugrundgutachten und einen Lageplan mit den Gebäudeabständen im Abschnitt 3. Die Prüfung dauert etwa zwei Wochen, bitte schicken Sie mir die Unterlagen also bald.
+
+Die Miete beginnt mit dem Tag der Anlieferung."""
+
+[[mail]]
+id = "p1_abschnitt3"
+day = -426
+time = "07:10"
+from = "us.albers"
+to = "verbau"
+cc = ["us"]
+subject = "Mühlenstraße, V-2291 – Gleitschiene für Abschnitt 3 ab {-405}, Statik"
+body = """Guten Morgen Frau Jessen,
+
+Abschnitt 3 beginnt voraussichtlich am {-404}, die verkehrsrechtliche Anordnung ist beantragt. Ich brauche die Gleitschiene, 4 Felder, am {-405} auf der Baustelle, Station 0+620, Entladung auf der gesperrten Fahrbahnseite.
+
+Den Standsicherheitsnachweis muss ich bis {-419} bei Herrn Hartwig von der Stadt vorlegen. Gutachten und Lageplan haben Sie seit {-460}. Wie ist der Stand?
+
+Vier der sechs Boxen bleiben im Abschnitt 2, zwei mit Aufsatz gehen mit dem Lkw der Gleitschiene zurück.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "p1_statik"
+day = -425
+time = "14:20"
+from = "verbau"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Mühlenstraße, V-2291 – Gleitschiene für Abschnitt 3 ab {-405}, Statik"
+reply_to = "p1_abschnitt3"
+body = """Hallo Herr Albers,
+
+passt gut, der Nachweis ist gestern vom Prüfingenieur zurückgekommen und hängt an. Ergebnis: Die Gleitschiene trägt bis 4,50 m auch mit der Gebäudelast der Häuser Nr. 14 bis 22 und dem Verkehr neben dem Graben. Zwei Auflagen stehen drin, die Ihre Kolonne kennen muss: nicht mehr als 0,50 m vorauseilend ausheben, und die Wasserhaltung muss laufen, bevor Sie unter 3,80 m gehen.
+
+Die Gleitschiene kommt am {-405} um 7:00 Uhr, ein Sattelzug; die zwei Boxen mit Aufsatz nimmt er mit zurück, die Miete dafür endet an dem Tag. Unser Techniker ist beim ersten Absenken wieder dabei, bei Gleitschienen ist das bei uns Pflicht."""
+attach = ["doc:p1_statik"]
+
+[[mail]]
+id = "p1_rechnung"
+day = -350
+time = "09:40"
+from = "us"
+to = "verbau"
+cc = ["us.albers"]
+subject = "V-2291 Mühlenstraße – Mietrechnung Gleitschiene: Mietende {-362}, nicht {-355}"
+body = """Hallo Frau Jessen,
+
+in Ihrer Rechnung für die Gleitschiene ist die Miete bis {-355} berechnet. Herr Albers hat den Verbau am {-362} zur Abholung gemeldet (Mail und Anruf am selben Tag), Ihr Lkw kam erst am {-355}. Die Woche dazwischen stand die Gleitschiene gezogen und gereinigt am Festplatz.
+
+Wir bitten um Berichtigung: vier Felder, eine Woche, 1.060,00 EUR netto. Die übrigen Positionen der Rechnung sind in Ordnung und zur Zahlung freigegeben.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p1_rechnung_aw"
+day = -349
+time = "10:55"
+from = "verbau"
+to = "us"
+cc = ["us.albers"]
+subject = "AW: V-2291 Mühlenstraße – Mietrechnung Gleitschiene: Mietende {-362}, nicht {-355}"
+reply_to = "p1_rechnung"
+body = """Hallo Herr Doe,
+
+Sie haben recht. Laut Vertrag läuft die Miete bis zur Rückgabe im Lager, aber die Abmeldung von Herrn Albers vom {-362} liegt mir vor, und dass unser Lkw eine Woche brauchte, ist unsere Sache. Ich schreibe Ihnen die 1.060,00 EUR gut, die Gutschrift geht heute raus.
+
+Für die nächste Baustelle als Tipp: Melden Sie Rückgaben drei Tage vorher an, dann klappt die Abholung zum Mietende."""
+
+# ------------------------------------------------------------------ P3 Gewerbegebiet Süd (verloren)
+
+[[sheet]]
+key = "p3"
+file = "Preisanfrage_Grabenverbau_Gewerbegebiet_Sued.xlsx"
+items = """
+3.1.10 | 3900 m³ | Rohrgraben Regenwasserkanal, Tiefe bis 3,00 m
+3.2.10 | 2700 m³ | Rohrgraben Schmutzwasserkanal
+"""
+
+[[doc]]
+key = "p3_vorschlag"
+file = "Verbauvorschlag_V-2618_Gewerbegebiet_Sued.pdf"
+title = "Verbauvorschlag und Mietangebot V-2618"
+text = """Bauvorhaben: Erschließung Gewerbegebiet Süd, 1. Bauabschnitt, Itzehoe
+Mieter: Acme Tiefbau GmbH, Hamburg
+Grundlage: Ihre Angaben vom {-296}: Regenwasserkanal bis 3,00 m tief, Stahlbetonrohr DN 600 (Baulänge 2,50 m) und PP DN 300/400; Schmutzwasserkanal bis 3,50 m tief, PP DN 200; Geschiebemergel, kein Grundwasser im Aushubbereich; freies Feld ohne Bebauung, zwei Kolonnen.
+
+Vorschlag:
+Kolonne 1 (Regenwasser, DN 600): vier Verbauboxen 3,50 x 2,40 m mit Aufsatzbox 1,30 m, lichte Breite 1,80 m, Rohrdurchlasshöhe 1,25 m; die 2,50-m-Rohre werden von oben zwischen den Spindeln eingehoben.
+Kolonne 2 (Schmutzwasser, bis 3,50 m): vier Verbauboxen 3,50 x 2,40 m mit Aufsatzbox 1,30 m, lichte Breite 1,20 m.
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | Verbaubox 3,50 x 2,40 m, je Element und Woche | 8 | El. | 91,00 | 728,00
+2 | Aufsatzbox 3,50 x 1,30 m, je Element und Woche | 8 | El. | 43,00 | 344,00
+3 | An- und Abtransport mit Sattelzug, je Fuhre | 4 | Fuhre | 495,00 | 1.980,00
+
+Die Beträge der Positionen 1 und 2 gelten je Woche für die genannte Stückzahl.
+Mindestmietzeit 4 Wochen. Miete vom Tag der Auslieferung bis zur Rückgabe im Lager Neumünster. Reinigung bei verschmutzter Rückgabe 35,00 EUR je Element.
+Alle Preise netto. Zahlung 14 Tage netto. Angebot gültig bis {-256}."""
+
+[[mail]]
+id = "p3_anfrage"
+day = -296
+time = "08:20"
+from = "us"
+to = "verbau"
+subject = "Preisanfrage – Grabenverbau (Miete) – Erschließung Gewerbegebiet Süd, 1. BA, Itzehoe"
+body = """Hallo Frau Jessen,
+
+neue Anfrage, diesmal gleich mit allem, was Sie beim letzten Mal wissen wollten. Erschließung Gewerbegebiet Süd in Itzehoe (OP-ITZ-417), Abgabe {-286}. Der Verbau ist hier in den Aushubpositionen enthalten:
+
+Pos. 3.1.10 – 3900 m³ – Rohrgraben Regenwasserkanal, Tiefe bis 3,00 m
+Pos. 3.2.10 – 2700 m³ – Rohrgraben Schmutzwasserkanal, Tiefe bis 3,50 m
+
+Angaben:
+- Regenwasser: 420 m Stahlbetonrohr DN 600 (Baulänge 2,50 m), 380 m PP DN 400, 290 m PP DN 300; lichte Grabenbreite 1,80 m bei DN 600, sonst 1,30 m
+- Schmutzwasser: 760 m PP DN 200, lichte Breite 1,20 m
+- Boden: Geschiebemergel, steif; kein Grundwasser im Aushub laut Geotechnischem Bericht
+- freies Feld, keine Gebäude, keine Fremdleitungen
+- zwei Kolonnen gleichzeitig, je 15 bis 20 m am Tag, Bagger 25 t
+- Bauzeit Kanal etwa 16 Wochen
+
+Bitte wieder ein Vorschlag mit Mietpreisen, bis {-290}. Die Tabelle hängt nur der Vollständigkeit halber an.
+
+Viele Grüße"""
+attach = ["sheet:p3:blank"]
+
+[[mail]]
+id = "p3_vorschlag"
+day = -295
+time = "14:45"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Erschließung Gewerbegebiet Süd, 1. BA, Itzehoe – Verbauvorschlag V-2618"
+reply_to = "p3_anfrage"
+body = """Hallo Herr Doe,
+
+so macht das Spaß, mit den Angaben konnte ich sofort loslegen. Der Vorschlag V-2618 hängt an.
+
+Auf dem freien Feld im Mergel brauchen Sie nichts Besonderes: je Kolonne vier Boxen mit Aufsatz, 91,00 und 43,00 EUR je Element und Woche. Für die DN-600-Rohre nehmen wir die breite Spindel mit 1,80 m. Transport 495,00 EUR je Fuhre nach Itzehoe, Mindestmietzeit vier Wochen.
+
+Die Miete ist gegenüber der Mühlenstraße um 2,00 EUR je Box gestiegen, das ist unsere Preisliste seit Jahresanfang. Bei 16 Wochen Mietdauer kann ich Ihnen ab der 13. Woche 10 % Langzeitnachlass geben, das steht nicht im Vorschlag, gilt aber."""
+attach = ["doc:p3_vorschlag"]
+
+[[mail]]
+id = "p3_absage"
+day = -258
+time = "12:20"
+from = "us"
+to = "verbau"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Erschließung Gewerbegebiet Süd, 1. BA, Itzehoe – Verbauvorschlag V-2618"
+reply_to = "p3_vorschlag"
+body = """Hallo Frau Jessen,
+
+leider wird nichts daraus: Itzehoe ging an eine Bietergemeinschaft, wir waren Zweiter. Den Vorschlag V-2618 können Sie schließen. Danke für die schnelle Arbeit, der Langzeitnachlass ist notiert.
+
+Viele Grüße"""
+
+# ------------------------------------------------------------------ P4 Pumpwerk Deichstraße: Absage Spundwand
+
+[[sheet]]
+key = "p4"
+file = "Preisanfrage_Baugrubenverbau_Pumpwerk_Deichstrasse.xlsx"
+items = """
+2.1.10 | 310 m2 | Baugrubenverbau mit Spundwand
+3.2.30 | 2 St | Start- und Zielgrube
+"""
+
+[[mail]]
+id = "p4_anfrage"
+day = -211
+time = "08:55"
+from = "us"
+to = "verbau"
+subject = "Preisanfrage – Baugrubenverbau Spundwand und Grubenverbau – Abwasserpumpwerk Deichstraße"
+body = """Hallo Frau Jessen,
+
+wir kalkulieren das Pumpwerk Deichstraße in Norderbek (TBA-SE-0402), Abgabe {-200}. Zwei Dinge:
+
+Pos. 2.1.10 – 310 m2 – Baugrubenverbau als wasserdichte Spundwand, Profillänge bis 9,00 m, erschütterungsarm eingebracht; Baugrube rund 6 x 7 m, Aushubtiefe bis 6,20 m, Klei, Torf, Sand, Grundwasser dicht unter Gelände
+Pos. 3.2.30 – 2 St – Start- und Zielgrube für die Spülbohrung, 2,5 x 4,0 m, Tiefe bis 2,00 m, mit Verbau
+
+Können Sie die Spundwand anbieten, als Miete der Bohlen oder komplett mit Einbringen und Ziehen? Vorhaltezeit etwa 14 Wochen. Für die beiden Gruben reicht ein Mietpreis je Woche. Bis {-204} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p4:blank"]
+
+[[mail]]
+id = "p4_absage"
+day = -210
+time = "11:15"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Baugrubenverbau Spundwand und Grubenverbau – Abwasserpumpwerk Deichstraße"
+reply_to = "p4_anfrage"
+body = """Hallo Herr Doe,
+
+bei der Spundwand muss ich passen, das ist nicht unser Programm. Wir vermieten leichte Kanaldielen und Spundbohlen bis 6 m Länge als Material. Eine wasserdichte Spundwand mit 9-m-Profilen, eingepresst, mit Aussteifung, Statik und Wasserhaltung im Klei ist Spezialtiefbau; dafür brauchen Sie eine Firma mit Presse und eigenem Statiker, die Ihnen die Wand als Leistung anbietet. Bohlen in dieser Länge haben wir auch nicht im Mietpark. Ich möchte Ihnen da nichts Halbes anbieten.
+
+Die beiden Gruben für die Spülbohrung mache ich gern: je Grube ein Eckschienen-Verbau 2,5 x 4,0 m bis 2,40 m Tiefe, 240,00 EUR je Grube und Woche, Mindestmietzeit vier Wochen, Transport 480,00 EUR je Fuhre, beide Gruben passen auf einen Zug. Wenn Sie die Gruben nacheinander herstellen, reicht ein Satz.
+
+Einen Verbauvorschlag als PDF schicke ich Ihnen dafür, wenn Sie den Auftrag haben und die genaue Lage der Gruben feststeht."""
+
+# ------------------------------------------------------------------ P5 Schulweg (verloren)
+
+[[sheet]]
+key = "p5"
+file = "Preisanfrage_Grabenverbau_Schulweg.xlsx"
+items = """
+2.1.30 | 3300 m² | Grabenverbau
+"""
+
+[[doc]]
+key = "p5_vorschlag"
+file = "Verbauvorschlag_V-3054_Schulweg.pdf"
+title = "Verbauvorschlag und Mietangebot V-3054"
+text = """Bauvorhaben: Neubau Regenwasserkanal Schulweg, Norderbek
+Mieter: Acme Tiefbau GmbH, Hamburg
+Grundlage: Ihre Angaben vom {-145}: Grabentiefe 3,20 bis 3,80 m auf 420 m, lichte Grabenbreite 1,70 m, Stahlbetonrohre DN 500 und DN 600 in Baulängen von 2,50 m, Sande und Schluffe, Grundwasserabsenkung mit Vakuumanlage, Schulgebäude und Wohnhäuser in 3 bis 5 m Abstand, Vollsperrung abschnittsweise.
+
+Variante A: Doppelgleitschienenverbau, Feldlänge 3,50 m, vier Felder. Einbau im Absenkverfahren, Ausbau lagenweise mit dem Verfüllen. Für Tiefen bis 3,80 m bei abgesenktem Grundwasser geeignet und üblich.
+Variante B: Dielenkammerverbau mit Kanaldielen 5,00 m, vier Felder. Die Dielen eilen dem Aushub voraus und binden unter der Sohle ein; kein offener Spalt hinter dem Verbau, daher die setzungsärmste Lösung neben Bebauung. Langsamer im Baufortschritt (etwa 6 bis 8 m je Tag statt 10 bis 12 m).
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+A1 | Doppelgleitschiene bis 4,00 m, Feld 3,50 m, je Woche | 4 | Feld | 278,00 | 1.112,00
+B1 | Dielenkammerverbau, Feld 3,50 m, je Woche | 4 | Feld | 395,00 | 1.580,00
+B2 | Kanaldielen 5,00 m, Satz für vier Felder, je Woche | 1 | Satz | 360,00 | 360,00
+2 | An- und Abtransport mit Sattelzug, je Fuhre | 4 | Fuhre | 510,00 | 2.040,00
+3 | Standsicherheitsnachweis, geprüft | 1 | psch | 380,00 | 380,00
+
+Die Beträge der Positionen A1, B1 und B2 gelten je Woche für die genannte Stückzahl.
+Mindestmietzeit 4 Wochen. Miete vom Tag der Auslieferung bis zur Rückgabe im Lager Neumünster.
+Für Variante B ist ein Bagger ab 30 t mit Anbauvibrator oder Dieleneindrückgerät erforderlich (nicht im Angebot).
+Alle Preise netto. Zahlung 14 Tage netto. Angebot gültig bis {-108}."""
+
+[[mail]]
+id = "p5_anfrage"
+day = -147
+time = "08:40"
+from = "us"
+to = "verbau"
+subject = "Preisanfrage – Grabenverbau (Miete) – Regenwasserkanal Schulweg Norderbek"
+body = """Hallo Frau Jessen,
+
+Regenwasserkanal Schulweg in Norderbek (TBA-SE-0431), Abgabe {-138}:
+
+Pos. 2.1.30 – 3300 m² – Grabenverbau, Tiefe bis 3,80 m, einbauen, vorhalten, zurückbauen
+
+Die Angaben, soweit ich sie habe: 420 m Kanal, Stahlbetonrohre DN 500 und DN 600 mit 2,50 m Baulänge, Grabentiefe 3,20 bis 3,80 m, Grundwasserabsenkung mit Vakuumanlage, Bauzeit etwa 16 Wochen.
+
+Der Haken: Im Langtext steht „Art des Verbaus nach Wahl des AG“. Ich frage dazu bei der Stadt nach, eine Antwort habe ich frühestens in ein paar Tagen. Was würden Sie dort einsetzen? Bis {-142} bitte.
+
+Viele Grüße"""
+attach = ["sheet:p5:blank"]
+
+[[mail]]
+id = "p5_rueckfrage"
+day = -146
+time = "09:50"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Regenwasserkanal Schulweg Norderbek"
+reply_to = "p5_anfrage"
+body = """Hallo Herr Doe,
+
+danke, fast alles dabei. Drei Dinge fehlen mir noch, und die entscheiden hier über die Verbauart:
+
+- lichte Grabenbreite bei DN 600?
+- Wie nah stehen Gebäude am Graben, und welche? Schulweg klingt nach Schule.
+- Boden unterhalb des Grundwasserspiegels: Sand oder bindig? Bei Feinsand und Vakuumanlage ist jeder offene Spalt hinter dem Verbau ein Setzungsrisiko.
+
+„Nach Wahl des AG“ habe ich so noch nicht gelesen. Wenn die Stadt am Ende Dielen oder Spundbohlen verlangt, kostet der Verbau ein Mehrfaches der Gleitschiene. Ich biete Ihnen deshalb zwei Varianten an, sobald ich die Angaben habe."""
+
+[[mail]]
+id = "p5_antwort"
+day = -145
+time = "11:30"
+from = "us"
+to = "verbau"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Regenwasserkanal Schulweg Norderbek"
+reply_to = "p5_rueckfrage"
+body = """Hallo Frau Jessen,
+
+- lichte Grabenbreite 1,70 m bei DN 600, 1,60 m bei DN 500
+- Die Grundschule steht auf rund 80 m Länge 3 m neben dem Graben, gegenüber Wohnhäuser in 4 bis 5 m Abstand
+- unter dem Grundwasserspiegel Fein- bis Mittelsand, darüber Schluff
+
+Zwei Varianten sind genau, was ich brauche. Die Antwort der Stadt auf unsere Bieterfrage steht noch aus.
+
+Viele Grüße"""
+
+[[mail]]
+id = "p5_vorschlag"
+day = -143
+time = "15:25"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Regenwasserkanal Schulweg Norderbek – Verbauvorschlag V-3054"
+reply_to = "p5_antwort"
+body = """Hallo Herr Doe,
+
+anbei der Vorschlag V-3054 mit beiden Varianten.
+
+Variante A, Doppelgleitschiene: 278,00 EUR je Feld und Woche, vier Felder. Das ist, was die meisten Firmen dort rechnen werden, und technisch geht es, wenn die Absenkung sauber läuft.
+
+Variante B, Dielenkammerverbau mit vorauseilenden Dielen: 395,00 EUR je Feld und Woche plus 360,00 EUR für den Dielensatz, also gut das 1,7-fache, und Sie schaffen nur etwa die halbe Tagesleistung. Dafür gibt es neben der Schule keinen offenen Spalt.
+
+Meine ehrliche Meinung: Auf den 80 m an der Schule würde ich B nehmen, auf dem Rest A. Wenn die Stadt sich nicht festlegt und Setzungen „ausgeschlossen“ haben will, tragen Sie das Risiko. Wie Sie das im Preis abbilden, müssen Sie entscheiden; ich wollte es nur gesagt haben. Transport 510,00 EUR je Fuhre, Statik 380,00 EUR, Mindestmietzeit vier Wochen."""
+attach = ["doc:p5_vorschlag"]
+
+[[mail]]
+id = "p5_absage"
+day = -111
+time = "10:05"
+from = "us"
+to = "verbau"
+subject = "AW: Preisanfrage – Grabenverbau (Miete) – Regenwasserkanal Schulweg Norderbek – Verbauvorschlag V-3054"
+reply_to = "p5_vorschlag"
+body = """Hallo Frau Jessen,
+
+der Schulweg ist weg, wir sind Vierter. Die Stadt hat die Verbauart nicht festgelegt („so zu wählen, dass Setzungen ausgeschlossen sind“), wir haben daraufhin auf ganzer Länge mit Ihrer Variante B gerechnet. Die drei vor uns haben nach Auskunft der Stadt Gleitschienen angesetzt. Ihre Mischung aus A und B wäre wohl der bessere Weg gewesen; das nehme ich für das nächste Mal mit.
+
+Den Vorschlag V-3054 können Sie schließen. Danke für die offenen Worte.
+
+Viele Grüße"""
+
+# ------------------------------------------------------------------ P7 Marschhof (Ergebnis offen)
+
+[[sheet]]
+key = "p7"
+file = "Preisanfrage_Grubenverbau_Marschhof.xlsx"
+items = """
+2.1.10 | 4 St | Start- oder Zielgrube herstellen
+"""
+
+[[doc]]
+key = "p7_vorschlag"
+file = "Verbauvorschlag_V-3391_Marschhof.pdf"
+title = "Verbauvorschlag und Mietangebot V-3391"
+text = """Bauvorhaben: Abwasserdruckleitung Marschhof im Spülbohrverfahren
+Mieter: Acme Tiefbau GmbH, Hamburg
+Grundlage: Ihre Angaben vom {-45}: vier Start- und Zielgruben 3,0 x 6,0 m, Tiefe bis 2,20 m, Klei, weich, Grundwasser 0,60 m unter Gelände, offene Wasserhaltung, Grünland, Zufahrt über Lastverteilplatten, je Grube etwa drei Wochen offen, zwei Gruben gleichzeitig.
+
+Vorschlag: Eckschienen-Grubenverbau 3,0 x 6,0 m mit Verbauplatten 2,40 m, an den Stirnseiten mit Aussparung für den Rohrstrang da 180 (Platte geteilt, untere Hälfte 1,00 m). Zwei Sätze, die nacheinander für alle vier Gruben verwendet werden. Im weichen Klei ist der Verbau im Absenkverfahren einzubringen; eine Sauberkeitsschicht oder Baggermatratzen auf der Sohle empfehlen wir.
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+1 | Eckschienen-Grubenverbau 3,0 x 6,0 m, je Woche | 2 | Satz | 310,00 | 620,00
+2 | An- und Abtransport, Dreiachser mit Kran, je Fuhre | 4 | Fuhre | 520,00 | 2.080,00
+
+Der Betrag der Position 1 gilt je Woche für zwei Sätze.
+Mindestmietzeit 4 Wochen. Miete vom Tag der Auslieferung bis zur Rückgabe im Lager Neumünster. Wegen der Zufahrt über Grünland liefern wir mit Dreiachser und Ladekran statt Sattelzug, daher vier Fuhren.
+Alle Preise netto. Zahlung 14 Tage netto. Angebot gültig bis {-8}."""
+
+[[mail]]
+id = "p7_anfrage"
+day = -45
+time = "08:35"
+from = "us"
+to = "verbau"
+subject = "Preisanfrage – Grubenverbau (Miete) – Abwasserdruckleitung Marschhof"
+body = """Hallo Frau Jessen,
+
+Abwasserdruckleitung Marschhof für den Wasserverband Geestrand (WVG-A-2431), Spülbohrung durch die Marsch, Abgabe {-36}:
+
+Pos. 2.1.10 – 4 St – Start- oder Zielgrube 3,0 x 6,0 m, Tiefe bis 2,20 m, im Klei, mit Verbau
+
+Angaben: Klei, weich, Grundwasser 0,60 m unter Gelände, offene Wasserhaltung. Grünland, Zufahrt nur über Lastverteilplatten. Durch die Stirnseiten läuft der Rohrstrang da 180. Je Grube etwa drei Wochen offen, zwei Gruben gleichzeitig, Ausführung ab {+35}. Bagger 15 t mit Moorlaufwerk.
+
+Bitte ein Vorschlag mit Mietpreis und Transport bis {-40}. Bindefrist {-8}.
+
+Viele Grüße"""
+attach = ["sheet:p7:blank"]
+
+[[mail]]
+id = "p7_vorschlag"
+day = -44
+time = "13:15"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Grubenverbau (Miete) – Abwasserdruckleitung Marschhof – Verbauvorschlag V-3391"
+reply_to = "p7_anfrage"
+body = """Hallo Herr Doe,
+
+alles da, was ich brauche, danke. Vorschlag V-3391 anbei.
+
+Zwei Sätze Eckschienen-Grubenverbau 3,0 x 6,0 m, 310,00 EUR je Satz und Woche, Mindestmietzeit vier Wochen. Bei vier Gruben zu je drei Wochen und zwei gleichzeitig rechnen Sie mit etwa sieben Wochen für beide Sätze. An den Stirnseiten bekommen Sie geteilte Platten, damit der Rohrstrang durchpasst.
+
+Achtung beim Transport: Mit dem Sattelzug kommen wir nicht aufs Grünland, wir liefern mit Dreiachser und Kran, 520,00 EUR je Fuhre, vier Fuhren. Und mit einem 15-t-Bagger heben Sie die Eckschienen (je 480 kg) gut, die Platten 2,40 x 3,00 m mit 620 kg auch; bei den 6-m-Seiten liefern wir zwei 3-m-Platten statt einer langen.
+
+Lastverteilplatten vermieten wir übrigens nicht, falls Sie die noch suchen."""
+attach = ["doc:p7_vorschlag"]
+
+[[mail]]
+id = "p7_verlaengerung"
+day = -17
+time = "10:30"
+from = "verbau"
+to = "us"
+subject = "AW: Preisanfrage – Grubenverbau (Miete) – Abwasserdruckleitung Marschhof – Verbauvorschlag V-3391"
+reply_to = "p7_vorschlag"
+body = """Hallo Herr Doe,
+
+zu Ihrem Anruf von gestern: Den Vorschlag V-3391 verlängere ich bis zum {+21}, die Mietpreise bleiben, wie sie sind. Die zwei Sätze kann ich Ihnen ohne Auftrag nicht reservieren, im Winter ist bei den Grubenverbauen aber selten Engpass.
+
+Falls sich der Baubeginn in den Januar schiebt: Ab dem 1. Januar gilt unsere neue Mietpreisliste; für Marschhof bleibt es bei den angebotenen Preisen, wenn der Mietauftrag bis {+21} da ist."""
+
+# ------------------------------------------------------------------ ohne Anfrage
+
+[[mail]]
+id = "mietpreise"
+day = -6
+time = "09:12"
+from = "verbau"
+to = "us"
+subject = "Neue Mietpreisliste ab 1. Januar und unsere Zeiten über Weihnachten"
+body = """Hallo Herr Doe,
+
+zwei Informationen für Ihre Planung.
+
+Mietpreise: Ab dem 1. Januar passen wir die Mieten um durchschnittlich 4 % an. Die Standard-Verbaubox 3,50 x 2,40 m kostet dann 99,00 EUR statt 95,00 EUR je Element und Woche, die Aufsatzbox 46,50 statt 44,50 EUR, das Gleitschienenfeld 291,00 statt 280,00 EUR. Transporte bleiben bei 520,00 EUR je Fuhre. Die Mindestmietzeit von vier Wochen bleibt. Laufende Mietverträge und Angebote mit Gültigkeitsdatum sind nicht betroffen, also auch nicht Marschhof.
+
+Weihnachten: Unser Lager in Neumünster ist vom 23. Dezember bis 3. Januar geschlossen, in dieser Zeit keine Auslieferung und keine Rücknahme. Mietgerät, das über die Feiertage auf Ihrer Baustelle steht, berechnen wir für diese Zeit nicht, wenn Sie es uns bis zum 18. Dezember als ruhend melden. Für Notfälle (Verbau beschädigt, Graben offen) erreichen Sie unsere Bereitschaft unter der bekannten Nummer.
+
+Ich wünsche Ihnen schon jetzt eine ruhige Adventszeit."""

@@ -1,0 +1,558 @@
+# P1: Kanalerneuerung Mühlenstraße, Norderbek (Stadt Norderbek). Estimated day -520 … -500, won, built last year.
+# The client's side of the job as it lies in our estimator's mailbox.
+
+[[lv]]
+key = "kanal"
+file = "LV_Kanalerneuerung_Muehlenstrasse"
+format = "x83"
+client = "tba"
+name = "Kanalerneuerung Mühlenstraße"
+project = "Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek"
+number = "TBA-SE-0318"
+remarks = """Vorbemerkungen zum Leistungsverzeichnis
+Bauvorhaben: Erneuerung des Schmutzwasserkanals in der Mühlenstraße zwischen Marktstraße und Bahnübergang, Länge rund 860 m, in offener Bauweise einschließlich Schächten, Anschlussleitungen und Wiederherstellung der Fahrbahn.
+Vergabeart: Öffentliche Ausschreibung nach VOB/A.
+Angebotsfrist: {-500}, 10:00 Uhr
+Bindefrist: {-470}
+Bieterfragen bis: {-508}
+Ausführungsbeginn: {-455}
+Fertigstellung: {-300}
+Die Arbeiten erfolgen unter halbseitiger Sperrung der Mühlenstraße. Die Zufahrt zu den Grundstücken und für Rettungsfahrzeuge ist jederzeit zu gewährleisten.
+Baugrund: Auffüllungen bis 1,20 m, darunter Geschiebelehm und Sande; Grundwasser nach Baugrundgutachten vom Büro für Geotechnik bei 3,80 m unter Gelände. Belastungen oberhalb der Zuordnungsklasse Z 2 sind nach dem Gutachten nicht zu erwarten.
+Es gelten die VOB/B und VOB/C, DIN EN 1610, das Arbeitsblatt DWA-A 139, die ZTV E-StB, die ZTV Asphalt-StB und die ZTV A-StB in der jeweils gültigen Fassung."""
+items = """
+# 1 | Baustelleneinrichtung und Verkehrssicherung
+# 1.1 | Baustelleneinrichtung
+1.1.10 | 1 psch | Baustelle einrichten | Geräte, Unterkünfte und Betriebsmittel für sämtliche Leistungen dieses LV auf die Baustelle bringen, aufstellen und für die Dauer der Bauzeit vorhalten. // Lagerfläche wird vom AG am Festplatz Mühlenstraße zur Verfügung gestellt, Entfernung zur Baustelle bis 400 m.
+1.1.20 | 1 psch | Baustelle räumen | Baustelle nach Abschluss der Arbeiten von allen Geräten, Anlagen und Einrichtungen räumen. Benutzte Flächen entsprechend dem ursprünglichen Zustand herrichten.
+1.1.30 | 1 psch | Beweissicherung Gebäude und Verkehrsflächen | Beweissicherung an 31 Gebäuden sowie an Fahrbahn und Gehwegen vor Baubeginn durch einen unabhängigen Sachverständigen, mit Fotodokumentation und Rissprotokoll. // Übergabe in zweifacher Ausfertigung und digital an den AG.
+# 1.2 | Verkehrssicherung
+1.2.10 | 1 psch | Verkehrssicherung einrichten, vorhalten, räumen | Verkehrssicherung nach RSA 21 für die gesamte Bauzeit einrichten, vorhalten, umsetzen und räumen, einschließlich Verkehrszeichenplan und Abstimmung mit der Verkehrsbehörde. // Art und Umfang der Sperrungen richten sich nach der verkehrsrechtlichen Anordnung. Änderungen der Verkehrsführung, auch Vollsperrungen mit Umleitungsbeschilderung, werden ohne gesonderte Vergütung ausgeführt.
+1.2.20 | 26 Wo | Lichtsignalanlage vorhalten und betreiben | Mobile Lichtsignalanlage für halbseitige Sperrung, Typ C, verkehrsabhängig gesteuert, vorhalten und betreiben einschließlich Wartung, Stromversorgung und Störungsdienst. // Abrechnung je Kalenderwoche.
+1.2.30 | 480 m | Bauzaun stellen, vorhalten, räumen | Mobilen Bauzaun, Höhe 2,00 m, mit Fußplatten stellen, für die Bauzeit vorhalten, je Bauabschnitt umsetzen und wieder räumen.
+# 2 | Erdarbeiten und Verbau
+# 2.1 | Aufbruch
+2.1.10 | 2150 m² | Asphaltbefestigung aufbrechen | Asphaltbefestigung der Fahrbahn, Dicke bis 18 cm, aufbrechen und laden. Aufbruchbreite nach Regelquerschnitt. // Das Material ist nach Untersuchung des AG teerfrei (Verwertungsklasse A).
+2.1.20 | 1240 m | Asphalt schneiden | Asphaltbefestigung, Dicke bis 18 cm, geradlinig schneiden. Schnittkanten sind bis zum Wiedereinbau zu schützen.
+2.1.30 | 560 t | Asphaltaufbruch verwerten | Asphaltaufbruch, teerfrei, AVV 17 03 02, abfahren und einer Verwertung zuführen. Abrechnung nach Wiegescheinen einer geeichten Waage.
+# 2.2 | Rohrgraben
+2.2.10 | 4850 m³ | Boden für Rohrgraben lösen, Tiefe bis 3,50 m | Boden der Homogenbereiche B1 und B2 für Rohrgraben profilgerecht lösen, laden und fördern. Grabentiefe bis 3,50 m, Grabenbreite nach DIN EN 1610. // Handschachtung im Bereich kreuzender Leitungen ist eingeschlossen.
+2.2.20 | 620 m³ | Boden lösen wie 2.2.10, Tiefe über 3,50 m | Wie Position 2.2.10, jedoch Grabentiefe über 3,50 m bis 4,50 m.
+2.2.30 | 6900 m² | Grabenverbau herstellen und vorhalten | Grabenverbau als Verbauplatten oder Gleitschienenverbau, Tiefe bis 4,50 m, einbauen, vorhalten und zurückbauen. // Abrechnung nach verbauter Grabenwandfläche. Der Standsicherheitsnachweis ist Sache des AN.
+2.2.40 | 3100 t | Boden entsorgen, Zuordnung bis Z 1.2 | Überschüssigen Boden der Zuordnungsklasse bis Z 1.2 nach LAGA M 20 abfahren und verwerten. Abrechnung nach Wiegescheinen. // Die Deklarationsanalytik stellt der AG.
+2.2.50 | 800 t | Boden entsorgen, Zuordnung Z 2 | Boden der Zuordnungsklasse Z 2 nach LAGA M 20 und höher belasteten Boden abfahren und ordnungsgemäß entsorgen, einschließlich aller Gebühren und Nachweise. Abrechnung nach Wiegescheinen.
+2.2.60 | 2900 m³ | Leitungszone mit Füllsand herstellen | Füllsand 0/2 liefern und als Bettung, Seitenverfüllung und Abdeckung bis 30 cm über Rohrscheitel lagenweise einbauen und verdichten, Verdichtungsgrad DPr mindestens 97 %.
+2.2.70 | 3600 m³ | Rohrgraben verfüllen | Rohrgraben oberhalb der Leitungszone mit geeignetem Aushubboden oder geliefertem Füllboden lagenweise verfüllen und verdichten, DPr mindestens 98 %, im Planumsbereich 100 %. // Nachweis der Verdichtung durch den AN je 50 m Graben.
+2.2.80 | 350 h | Offene Wasserhaltung betreiben | Offene Wasserhaltung mit Tauchpumpe bis 30 m³/h einschließlich Schläuchen, Absetzcontainer und Ableitung in den vorhandenen Kanal betreiben. // Abrechnung nach Betriebsstunden auf Nachweis. | E
+# 3 | Kanalbau
+# 3.1 | Rohrleitungen
+3.1.10 | 612 m | PP-Kanalrohr DN 300 SN 10 verlegen | Kanalrohr aus Polypropylen, Vollwand, DN 300, Ringsteifigkeit SN 10, nach DIN EN 1852, mit Steckmuffe liefern und nach DIN EN 1610 auf Sandbettung verlegen. // Formstücke und Passlängen sind eingerechnet.
+3.1.20 | 248 m | PP-Kanalrohr DN 400 SN 10 verlegen | Kanalrohr aus Polypropylen, Vollwand, DN 400, Ringsteifigkeit SN 10, nach DIN EN 1852, mit Steckmuffe liefern und nach DIN EN 1610 auf Sandbettung verlegen. // Formstücke und Passlängen sind eingerechnet.
+3.1.30 | 186 m | Anschlussleitung PP DN 150 verlegen | Anschlussleitung aus Polypropylen DN 150 SN 10 liefern und vom Hauptkanal bis zur Grundstücksgrenze verlegen, einschließlich Bögen. Erdarbeiten werden nach Titel 2.2 vergütet.
+3.1.40 | 42 St | Abzweig DN 300/150 einbauen | Abzweig 45 Grad, PP, DN 300/150, passend zum Rohr der Position 3.1.10, liefern und einbauen.
+3.1.50 | 14 St | Abzweig DN 400/150 einbauen | Wie Position 3.1.40, jedoch DN 400/150.
+3.1.60 | - St | Hausanschluss umbinden | Vorhandene Grundstücksanschlussleitung, Steinzeug DN 150, an der Grundstücksgrenze freilegen und mit Übergangsstück an die neue Anschlussleitung anbinden. // Lage nach örtlicher Feststellung und Angabe der Bauleitung.
+# 3.2 | Schächte
+3.2.10 | 19 St | Schachtunterteil DN 1000 setzen | Schachtunterteil aus Beton DN 1000 nach DIN EN 1917 und DIN V 4034-1, mit werkseitig hergestelltem Gerinne und Schachtfutter für PP-Rohr DN 300 oder DN 400, liefern und auf Sauberkeitsschicht C12/15 versetzen.
+3.2.20 | 38 St | Schachtring DN 1000, h = 500 mm | Schachtring aus Beton DN 1000, Bauhöhe 500 mm, mit Steigeisen und Gleitringdichtung, liefern und versetzen.
+3.2.30 | 19 St | Schachtkonus DN 1000/625 | Schachthals (Konus) DN 1000/625, Bauhöhe 600 mm, mit Steigeisen, liefern und versetzen, einschließlich Auflageringen zum Höhenausgleich.
+3.2.40 | 19 St | Schachtabdeckung Klasse D 400 | Schachtabdeckung nach DIN EN 124, Klasse D 400, lichte Weite 625 mm, Rahmen Guss mit Betonfüllung, Deckel mit dämpfender Einlage, ohne Lüftungsöffnungen, liefern und höhengerecht einbauen.
+3.2.50 | 21 St | Vorhandenen Schacht abbrechen | Vorhandenen Mauerwerks- oder Betonschacht DN 1000, Tiefe bis 4,00 m, vollständig abbrechen, Abbruchmaterial laden und entsorgen. Schachtabdeckungen gehen in das Eigentum des AN über.
+# 3.3 | Altkanal und Prüfungen
+3.3.10 | 860 m | Altkanal Steinzeug DN 250 ausbauen | Vorhandenen Schmutzwasserkanal aus Steinzeug DN 250 im Zuge des Grabenaushubs ausbauen, laden und entsorgen. // Die Abwasserüberleitung während der Bauzeit ist in die Einheitspreise der Rohrverlegung einzurechnen.
+3.3.20 | 860 m | TV-Inspektion des neuen Kanals | Optische Inspektion des neuen Kanals nach DIN EN 13508-2 und DWA-M 149-2 einschließlich vorheriger Hochdruckreinigung, Bericht und Datenübergabe im Format ISYBAU-XML.
+3.3.30 | 19 St | Dichtheitsprüfung Haltung | Dichtheitsprüfung der Haltung mit Luft oder Wasser nach DIN EN 1610 einschließlich Protokoll. Abrechnung je Haltung.
+3.3.40 | 19 St | Dichtheitsprüfung Schacht | Dichtheitsprüfung des Schachtes mit Wasser nach DIN EN 1610 einschließlich Protokoll.
+# 4 | Straßenwiederherstellung
+# 4.1 | Oberbau
+4.1.10 | 2150 m² | Frostschutzschicht 0/32, Dicke 30 cm | Frostschutzschicht aus Kies-Sand-Gemisch 0/32 nach TL SoB-StB liefern und in einer Dicke von 30 cm einbauen und verdichten, Verformungsmodul EV2 mindestens 120 MN/m².
+4.1.20 | 2150 m² | Schottertragschicht 0/45, Dicke 15 cm | Schottertragschicht 0/45 nach TL SoB-StB liefern und in einer Dicke von 15 cm einbauen, EV2 mindestens 150 MN/m².
+4.1.30 | 2150 m² | Asphalttragschicht AC 22 T S, 10 cm | Asphalttragschicht AC 22 T S, Bindemittel 50/70, Einbaudicke 10 cm, nach ZTV Asphalt-StB liefern und einbauen. Unterlage reinigen.
+4.1.40 | 2600 m | Asphaltdeckschicht AC 11 D S, 4 cm | Asphaltdeckschicht AC 11 D S, Bindemittel 50/70, Einbaudicke 4 cm, auf der gesamten Fahrbahnbreite liefern und einbauen, einschließlich Ansprühen mit Bitumenemulsion und Abstreuen. Abrechnung nach eingebauter Fläche.
+4.1.50 | 1240 m | Nähte und Anschlüsse herstellen | Nähte und Anschlüsse an vorhandene Asphaltflächen mit Schmelzband 40 x 10 mm herstellen.
+4.1.60 | 19 St | Schachtabdeckung an Deckschicht anpassen | Schachtabdeckung beim Einbau der Deckschicht höhen- und neigungsgerecht anpassen und mit schnell erhärtendem Vergussmörtel untergießen.
+# 5 | Stundenlohnarbeiten
+# 5.1 | Stundenlohn
+5.1.10 | 80 h | Facharbeiter | Stundenlohnarbeiten Facharbeiter (Kanalbauer, Straßenbauer) nur auf besondere schriftliche Anordnung des AG.
+5.1.20 | 40 h | Mobilbagger mit Bediener | Mobilbagger bis 18 t einschließlich Bediener und Betriebsstoffen, nur auf besondere schriftliche Anordnung des AG.
+"""
+
+[[doc]]
+key = "anschreiben"
+file = "Aufforderung_Angebotsabgabe_Muehlenstrasse.pdf"
+title = "Aufforderung zur Abgabe eines Angebots"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0318
+Maßnahme: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek
+Vergabeart: Öffentliche Ausschreibung nach VOB/A, Abschnitt 1
+
+Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek beabsichtigt, die oben genannte Bauleistung zu vergeben. Sie werden gebeten, ein Angebot abzugeben.
+
+Ablauf der Angebotsfrist und Eröffnungstermin: {-500|long}, 10:00 Uhr
+Ablauf der Bindefrist: {-470}
+Fragen zu den Vergabeunterlagen: in Textform bis {-508} an die Zentrale Vergabestelle
+Ausführungsfristen: Beginn spätestens {-455}, Fertigstellung bis {-300}
+
+Angebote sind elektronisch in Textform über den Vergabemarktplatz Nord einzureichen. Schriftliche Angebote sind nicht zugelassen. Nebenangebote sind nicht zugelassen.
+
+Mit dem Angebot vorzulegen: Angebotsschreiben (Formblatt 213), das ausgefüllte Leistungsverzeichnis, Eigenerklärung zur Eignung (Formblatt 124) oder Nachweis der Präqualifikation, Verzeichnis der Nachunternehmerleistungen (Formblatt 233), Angaben zur Preisermittlung (Formblatt 221 oder 222).
+Auf Verlangen vorzulegen: Urkalkulation im verschlossenen Umschlag, Nachweis der Fachkunde nach Gütezeichen Kanalbau AK 2 oder gleichwertig.
+
+Zuschlagskriterium: Preis 100 %.
+Sicherheiten: Vertragserfüllungsbürgschaft 5 % der Auftragssumme, Mängelansprüchebürgschaft 3 % der Abrechnungssumme.
+Vertragsstrafe: 0,1 % der Auftragssumme je Werktag der Überschreitung der Fertigstellungsfrist, höchstens 5 %.
+
+Anlagen: Leistungsverzeichnis (GAEB DA XML), Baubeschreibung, Lageplan 1:500, Längsschnitt, Regelquerschnitt, Baugrundgutachten."""
+
+[[doc]]
+key = "niederschrift"
+file = "Submissionsergebnis_TBA-SE-0318.pdf"
+title = "Mitteilung über das Ergebnis der Angebotseröffnung"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0318
+Maßnahme: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek
+Eröffnungstermin: {-500}, 10:00 Uhr, Rathaus Norderbek, Zimmer 2.14
+Zahl der eingegangenen Angebote: 5, davon verspätet: 0. Nebenangebote: keine.
+
+Ungeprüfte Angebotsendsummen (netto, ohne Umsatzsteuer):
+
+Rang | Bieter | Summe netto
+1 | Bieter 2 | 1.398.412,60
+2 | Bieter 4 | 1.431.906,25
+3 | Bieter 1 | 1.467.380,10
+4 | Bieter 5 | 1.502.775,40
+5 | Bieter 3 | 1.588.210,95
+
+Ihr Angebot ist in dieser Aufstellung als Bieter 2 geführt.
+
+Die Summen sind rechnerisch noch nicht geprüft. Aus dieser Mitteilung kann kein Anspruch auf Erteilung des Zuschlags abgeleitet werden. Die Mitteilung erfolgt nach § 14a Abs. 7 VOB/A."""
+
+[[doc]]
+key = "auftrag"
+file = "Auftragsschreiben_TBA-SE-0318.pdf"
+title = "Auftragsschreiben (Zuschlag)"
+from = "tba"
+text = """Vergabenummer: TBA-SE-0318
+Maßnahme: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek
+An: Acme Tiefbau GmbH, Schnackenburgallee 114, 22525 Hamburg
+
+Sehr geehrte Damen und Herren,
+
+auf Ihr Angebot vom {-501} erhalten Sie den Zuschlag für die oben genannte Leistung.
+
+Auftragssumme netto: 1.390.766,86 EUR
+Umsatzsteuer 19 %: 264.245,70 EUR
+Auftragssumme brutto: 1.655.012,56 EUR
+
+Die Auftragssumme weicht von der Angebotssumme (1.398.412,60 EUR netto) ab. Das beigefügte Auftrags-Leistungsverzeichnis unterscheidet sich vom Angebot in vier Punkten, die im Aufklärungsgespräch am {-490} festgehalten wurden:
+1. Position 2.2.80 (Offene Wasserhaltung betreiben, Bedarfsposition) wird nicht beauftragt und entfällt.
+2. Position 3.2.50 (Vorhandenen Schacht abbrechen): Die Menge verringert sich von 21 auf 19 St, weil zwei Schächte bereits durch die Stadtwerke zurückgebaut wurden.
+3. Position 2.2.60 (Leitungszone mit Füllsand herstellen): Der Einheitspreis beträgt 34,84 EUR/m³ statt 37,34 EUR/m³. Die Stadt gestattet die Zwischenlagerung des Füllsands auf dem Festplatz; die dadurch ersparten Transportkosten hat der Auftragnehmer im Aufklärungsgespräch mit 2,50 EUR/m³ beziffert.
+4. Neue Position 3.3.50 (TV-Inspektion der Anschlussleitungen, 186 m) zum im Aufklärungsgespräch benannten Einheitspreis von 6,40 EUR/m.
+
+Vertragsbestandteile sind in dieser Reihenfolge: dieses Auftragsschreiben, das Leistungsverzeichnis mit Baubeschreibung einschließlich der Bieterinformation Nr. 1 vom {-507}, die Besonderen und Zusätzlichen Vertragsbedingungen, die Pläne, die VOB/C und die VOB/B.
+
+Ausführungsfristen: Beginn der Ausführung spätestens am {-455}, Fertigstellung bis zum {-300}. Die Fertigstellungsfrist ist Vertragsfrist.
+Sicherheit für die Vertragserfüllung: 5 % der Auftragssumme, 69.538,34 EUR, als Bürgschaft nach Formblatt 421 innerhalb von 18 Werktagen nach Zugang dieses Schreibens.
+
+Bauleitung des Auftraggebers: Dipl.-Ing. Sven Hartwig, Fachdienst Tiefbau, Stadtentwässerung, Tel. +49 4122 5550 167.
+
+Bitte bestätigen Sie den Empfang dieses Schreibens umgehend in Textform und benennen Sie Ihren verantwortlichen Bauleiter.
+
+Stadt Norderbek
+Der Bürgermeister
+Im Auftrag
+Meyer"""
+
+[[doc]]
+key = "nachtrag1"
+file = "Nachtragsangebot_N1_Muehlenstrasse.pdf"
+title = "Nachtragsangebot N 1: Entsorgung Boden > Z 2 (Station 0+310 bis 0+395)"
+from = "us"
+text = """Bauvorhaben: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek
+Auftrag: TBA-SE-0318 vom {-482}
+Grundlage: § 2 Abs. 6 VOB/B, Mehrkostenanzeige vom {-405}, Bieterinformation Nr. 1 vom {-507}, Antwort zu Frage 2
+
+Im Bereich Station 0+310 bis 0+395 wurde unterhalb der Auffüllung teerhaltiges, mit PAK belastetes Material angetroffen (alte Wegebefestigung, Deklarationsanalyse des Labors vom {-407}: PAK 16 nach EPA 186 mg/kg, Zuordnung > Z 2, AVV 17 05 03*). Das Material ist im Leistungsverzeichnis nicht erfasst.
+
+Pos. | Bezeichnung | Menge | Einheit | EP | GP
+N1.1 | Boden > Z 2 separieren, auf Folie zwischenlagern, abdecken | 230 | m3 | 9,40 | 2.162,00
+N1.2 | Boden > Z 2 abfahren und entsorgen, mit Begleitschein | 418 | t | 74,50 | 31.141,00
+N1.3 | Deklarationsanalytik je Haufwerk, 2 Stück | 2 | St | 385,00 | 770,00
+N1.4 | Füllboden als Ersatz liefern und einbauen | 230 | m3 | 21,80 | 5.014,00
+N1.5 | Stillstand Kolonne und Gerät am {-406} und {-405} | 14 | h | 268,00 | 3.752,00
+
+Summe netto: 42.839,00 EUR
+
+Die Mengen sind vorläufig, abgerechnet wird nach Wiegescheinen und Aufmaß. Die Preise sind auf der Grundlage der Urkalkulation ermittelt, die Zuschläge entsprechen dem Hauptauftrag. Eine Verlängerung der Ausführungsfrist um 4 Arbeitstage wird beantragt."""
+
+[[mail]]
+id = "einladung"
+day = -520
+time = "09:12"
+from = "tba.meyer"
+to = "us"
+subject = "Aufforderung zur Angebotsabgabe – Erneuerung Schmutzwasserkanal Mühlenstraße (TBA-SE-0318)"
+body = """Sehr geehrte Damen und Herren,
+
+die Stadt Norderbek schreibt die Erneuerung des Schmutzwasserkanals in der Mühlenstraße öffentlich aus. Die Bekanntmachung ist heute auf dem Vergabemarktplatz Nord erschienen; als in unserer Bieterdatei geführtes Unternehmen erhalten Sie die Unterlagen zusätzlich auf diesem Wege.
+
+Vergabenummer: TBA-SE-0318
+Ablauf der Angebotsfrist: {-500|long}, 10:00 Uhr
+Bindefrist: {-470}
+Bieterfragen: in Textform bis {-508} an die Zentrale Vergabestelle
+
+Beigefügt sind die Aufforderung zur Angebotsabgabe und das Leistungsverzeichnis als GAEB-Datei. Baubeschreibung, Pläne und das Baugrundgutachten stehen auf dem Vergabemarktplatz zum Abruf bereit.
+
+Angebote sind ausschließlich elektronisch über den Vergabemarktplatz einzureichen."""
+attach = ["doc:anschreiben", "lv:kanal"]
+
+[[mail]]
+id = "fragen"
+day = -513
+time = "14:36"
+from = "us"
+to = "tba.meyer"
+subject = "Bieterfragen zu TBA-SE-0318 – Erneuerung Schmutzwasserkanal Mühlenstraße"
+body = """Sehr geehrte Frau Meyer,
+
+bei der Durchsicht des Leistungsverzeichnisses haben sich vier Fragen ergeben, um deren Beantwortung wir bitten:
+
+1. Position 4.1.40 „Asphaltdeckschicht AC 11 D S, 4 cm“, 2600 m
+Der Langtext nennt „Abrechnung nach eingebauter Fläche“, die Mengeneinheit ist jedoch m. Die übrigen Schichten (4.1.10 bis 4.1.30) sind mit 2150 m² ausgeschrieben. Wir gehen davon aus, dass m² gemeint ist und die Deckschicht über die volle Fahrbahnbreite größer ist als die Grabenwiederherstellung. Bitte bestätigen Sie Einheit und Menge.
+
+2. Position 2.2.50 „Boden entsorgen, Zuordnung Z 2“, 800 t
+Im Langtext heißt es „Boden der Zuordnungsklasse Z 2 nach LAGA M 20 und höher belasteten Boden abfahren und ordnungsgemäß entsorgen“. Eine Entsorgung oberhalb Z 2 ist ohne Kenntnis von Art und Menge der Belastung nicht kalkulierbar; die Vorbemerkungen sagen zudem, dass solche Belastungen nicht zu erwarten sind. Wir gehen davon aus, dass die Position nur Material bis Z 2 umfasst und höher belastetes Material gesondert vergütet wird.
+
+3. Position 1.2.10 „Verkehrssicherung einrichten, vorhalten, räumen“, 1 psch
+Laut Langtext werden „Änderungen der Verkehrsführung, auch Vollsperrungen mit Umleitungsbeschilderung, ohne gesonderte Vergütung ausgeführt“. Liegt bereits ein abgestimmter Verkehrszeichenplan vor? Mit wie vielen Bauabschnitten und Umsetzungen ist zu rechnen? Wir kalkulieren derzeit mit halbseitiger Sperrung in vier Abschnitten ohne Vollsperrung.
+
+4. Position 3.1.60 „Hausanschluss umbinden“
+Die Menge fehlt. Aus den Abzweigen (3.1.40 und 3.1.50) ergeben sich 56 Stück. Bitte teilen Sie die Menge mit.
+
+Vielen Dank im Voraus.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "antwort"
+day = -507
+time = "11:05"
+from = "tba.meyer"
+to = "us"
+subject = "AW: Bieterfragen zu TBA-SE-0318 – Erneuerung Schmutzwasserkanal Mühlenstraße (Bieterinformation Nr. 1)"
+reply_to = "fragen"
+body = """Sehr geehrter Herr Doe,
+
+zu Ihren Fragen vom {-513} ergeht nach Rücksprache mit dem Fachdienst Tiefbau die folgende Bieterinformation Nr. 1. Sie wird allen Bietern über den Vergabemarktplatz bekannt gegeben und wird Bestandteil der Vergabeunterlagen.
+
+Zu 1 (Position 4.1.40): Die Mengeneinheit ist m². Die Deckschicht wird auf voller Fahrbahnbreite erneuert. Die Menge wird auf 2.480 m² berichtigt. Bitte tragen Sie Ihren Einheitspreis für m² ein; die Vergabestelle wertet mit 2.480 m².
+
+Zu 2 (Position 2.2.50): Die Position umfasst Boden der Zuordnungsklasse Z 2. Die Worte „und höher belasteten Boden“ entfallen. Nach dem Baugrundgutachten ist Material oberhalb Z 2 nicht zu erwarten. Sollte wider Erwarten solches Material angetroffen werden, ist dies dem Auftraggeber unverzüglich anzuzeigen; die Vergütung richtet sich dann nach § 2 Abs. 6 VOB/B.
+
+Zu 3 (Position 1.2.10): Ein mit der Verkehrsbehörde abgestimmter Verkehrszeichenplan liegt noch nicht vor. Die Verkehrssicherung ist entsprechend der Baubeschreibung, Abschnitt 3.4, und nach den Erfordernissen des Bauablaufs einzukalkulieren. Der Wortlaut der Position bleibt unverändert.
+
+Zu 4 (Position 3.1.60): Die Menge beträgt 56 St.
+
+Die Angebotsfrist bleibt unverändert."""
+
+[[mail]]
+id = "eingang"
+day = -501
+time = "16:48"
+from = "portal.noreply"
+to = "us"
+subject = "Eingangsbestätigung: Ihr Angebot zu TBA-SE-0318 wurde übermittelt"
+body = """Guten Tag,
+
+Ihr Angebot wurde verschlüsselt an die Vergabestelle übermittelt.
+
+Vergabestelle: Stadt Norderbek, Zentrale Vergabestelle
+Vergabenummer: TBA-SE-0318
+Bezeichnung: Erneuerung Schmutzwasserkanal Mühlenstraße, Norderbek
+Bieter: Acme Tiefbau GmbH, Hamburg
+Eingang auf dem Server: {-501}, 16:47:52 Uhr
+Ablauf der Angebotsfrist: {-500}, 10:00 Uhr
+Übermittelte Dateien: 7 (Angebotsschreiben, LV als X84, Formblätter 124, 221, 233, Nachweis Gütezeichen, Bauzeitenplan)
+
+Das Angebot kann bis zum Ablauf der Angebotsfrist zurückgezogen und neu eingereicht werden. Diese Bestätigung dient als Nachweis des fristgerechten Eingangs."""
+
+[[mail]]
+id = "angebot"
+day = -501
+time = "16:58"
+from = "us"
+to = "tba.meyer"
+cc = ["us"]
+subject = "Angebot TBA-SE-0318 – zur Information: wie eben über die Vergabeplattform eingereicht"
+body = """Sehr geehrte Frau Meyer,
+
+zu Ihrer Information: Unser Angebot zur Vergabe TBA-SE-0318 haben wir soeben vollständig über den Vergabemarktplatz Nord eingereicht; die Eingangsbestätigung liegt uns vor. Maßgeblich ist allein das dort eingereichte Angebot.
+
+Anbei erhalten Sie vorab das Leistungsverzeichnis mit unseren Preisen als GAEB-Datei (X84), damit es Ihnen für die Prüfung auch unmittelbar vorliegt. Die Angebotssumme beträgt 1.398.412,60 EUR netto. Die Bieterinformation Nr. 1 vom {-507} ist berücksichtigt (Position 4.1.40 mit 2.480 m², Position 3.1.60 mit 56 St).
+
+Mit freundlichen Grüßen"""
+attach = ["lv:angebot"]
+
+[[mail]]
+id = "niederschrift"
+day = -499
+time = "08:55"
+from = "tba.meyer"
+to = "us"
+subject = "TBA-SE-0318 – Mitteilung über das Ergebnis der Angebotseröffnung"
+body = """Sehr geehrte Damen und Herren,
+
+die Angebote zur oben genannten Vergabe wurden am {-500} um 10:00 Uhr geöffnet. Die Mitteilung über die ungeprüften Angebotsendsummen nach § 14a Abs. 7 VOB/A ist beigefügt.
+
+Es sind fünf Angebote eingegangen. Ihr Angebot liegt nach der ungeprüften Endsumme an erster Stelle. Die rechnerische, technische und wirtschaftliche Prüfung steht noch aus; ein Anspruch auf den Zuschlag ergibt sich hieraus nicht."""
+attach = ["doc:niederschrift"]
+
+[[mail]]
+id = "zuschlag"
+day = -482
+time = "10:20"
+from = "tba.meyer"
+to = "us"
+cc = ["tba.hartwig"]
+subject = "Zuschlag – Erneuerung Schmutzwasserkanal Mühlenstraße (TBA-SE-0318)"
+body = """Sehr geehrter Herr Doe,
+
+nach Abschluss der Prüfung und Wertung sowie Beschluss des Bau- und Umweltausschusses erhalten Sie den Zuschlag auf Ihr Angebot vom {-501}. Das Auftragsschreiben ist beigefügt; das Original geht Ihnen mit der Post zu.
+
+Auftragssumme: 1.390.766,86 EUR netto (Angebotssumme 1.398.412,60 EUR netto).
+
+Das Auftrags-Leistungsverzeichnis ist als GAEB-Datei (X86) beigefügt. Es weicht in vier Punkten vom Angebot ab, wie im Aufklärungsgespräch am {-490} besprochen: Die Bedarfsposition 2.2.80 (Wasserhaltung) wird nicht beauftragt. Die Menge der Position 3.2.50 beträgt 19 statt 21 St. Der Einheitspreis der Position 2.2.60 verringert sich um 2,50 EUR/m³ auf 34,84 EUR/m³, weil der Füllsand auf dem Festplatz zwischengelagert werden darf. Neu aufgenommen ist die Position 3.3.50, TV-Inspektion der Anschlussleitungen, 186 m zu 6,40 EUR/m. Die Einzelheiten stehen im Auftragsschreiben.
+
+Bitte bestätigen Sie den Empfang in Textform und benennen Sie Ihren Bauleiter. Die Vertragserfüllungsbürgschaft ist innerhalb von 18 Werktagen vorzulegen. Für alle technischen Fragen und die Bauanlaufbesprechung wendet sich Herr Hartwig vom Fachdienst Tiefbau an Sie."""
+attach = ["doc:auftrag", "lv:auftrag"]
+
+[[mail]]
+id = "bestaetigung"
+day = -479
+time = "08:30"
+from = "us"
+to = "tba.meyer"
+cc = ["tba.hartwig", "us.albers"]
+subject = "AW: Zuschlag – Erneuerung Schmutzwasserkanal Mühlenstraße (TBA-SE-0318)"
+reply_to = "zuschlag"
+body = """Sehr geehrte Frau Meyer,
+
+wir bestätigen den Empfang des Auftragsschreibens vom {-482} und bedanken uns für den Auftrag. Die vier Abweichungen des Auftrags-Leistungsverzeichnisses vom Angebot entsprechen dem Aufklärungsgespräch; wir sind damit einverstanden.
+
+Verantwortlicher Bauleiter ist Herr Jonas Albers (Mobil +49 171 5550 318, in Kopie). Die Vertragserfüllungsbürgschaft über 69.538,34 EUR ist bei unserem Kautionsversicherer beantragt und geht Ihnen fristgerecht im Original zu.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "anlauf"
+day = -476
+time = "07:42"
+from = "tba.hartwig"
+to = "us"
+cc = ["us.albers"]
+subject = "Mühlenstraße – Bauanlaufbesprechung, Urkalkulation, Unterlagen vor Baubeginn"
+body = """Hallo Herr Doe, hallo Herr Albers,
+
+Bauanlaufbesprechung: {-468|long}, 9:00 Uhr, Rathaus Zimmer 3.07, anschließend Begehung der Trasse. Die Stadtwerke (Gas, Wasser) und die Verkehrsbehörde sind eingeladen.
+
+Bis dahin brauche ich von Ihnen:
+- Urkalkulation im verschlossenen Umschlag, wird bei mir hinterlegt und nur im Beisein Ihrer Firma geöffnet
+- Bauzeitenplan mit den vier Bauabschnitten, Beginn am Bahnübergang (Tiefpunkt)
+- Verkehrszeichenplan zur Anordnung, bitte direkt mit Ihrem Verkehrssicherer vorbereiten
+- Fabrikate und Prüfzeugnisse für PP-Rohre DN 300 und DN 400, Schachtfertigteile, Abdeckungen
+- Standsicherheitsnachweis für den Verbau über 3,50 m (Station 0+620 bis 0+760)
+- Name des SiGeKo-Ansprechpartners und Nachunternehmerliste mit Formblatt 233 in aktueller Fassung
+
+Beweissicherung (Pos. 1.1.30) bitte vor dem ersten Aufbruch abschließen, der Gutachter soll sich die Häuser Nr. 14 bis 22 genau ansehen, die stehen dicht am Graben.
+
+Gruß"""
+
+[[mail]]
+id = "anlauf_aw"
+day = -472
+time = "15:10"
+from = "us"
+to = "tba.hartwig"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße – Bauanlaufbesprechung, Urkalkulation, Unterlagen vor Baubeginn"
+reply_to = "anlauf"
+body = """Sehr geehrter Herr Hartwig,
+
+den Termin am {-468} um 9:00 Uhr nehmen Herr Albers und ich wahr.
+
+Die Urkalkulation bringen wir im verschlossenen Umschlag mit. Bauzeitenplan, Nachunternehmerliste und die Produktdatenblätter für Rohre und Schachtfertigteile erhalten Sie bis {-470} per E-Mail. Der Verkehrszeichenplan ist in Arbeit und wird zur Besprechung als Entwurf vorliegen. Den Standsicherheitsnachweis für den Verbau liefert der Vermieter des Verbaus, sobald die Geräteauswahl feststeht, spätestens zwei Wochen vor Beginn des Abschnitts 3.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "mehrkosten"
+day = -405
+time = "13:25"
+from = "us.albers"
+to = "tba.hartwig"
+cc = ["us"]
+subject = "Mühlenstraße – Anzeige nach § 2 Abs. 6 VOB/B: belasteter Boden Station 0+310 bis 0+395"
+body = """Sehr geehrter Herr Hartwig,
+
+wie gestern vor Ort besprochen, zeige ich Folgendes schriftlich an:
+
+Seit {-407} treffen wir zwischen Station 0+310 und 0+395 unterhalb der Auffüllung in 0,9 bis 1,6 m Tiefe eine schwarze, teerig riechende Schicht an (vermutlich alte Wegebefestigung mit Teerbindemittel). Die Analyse der Mischprobe vom {-407} ergibt PAK 16 von 186 mg/kg, Zuordnung > Z 2, gefährlicher Abfall. Das Laborprotokoll haben Sie gestern erhalten.
+
+Das Material ist im LV nicht enthalten. Position 2.2.50 gilt nach der Bieterinformation Nr. 1 nur bis Z 2. Wir separieren das Material und lagern es abgedeckt auf Folie am Festplatz. Geschätzte Menge: rund 230 m³ beziehungsweise 420 t.
+
+Wir zeigen hiermit Mehrkosten nach § 2 Abs. 6 VOB/B sowie eine Behinderung nach § 6 Abs. 1 VOB/B an (Stillstand der Kolonne am {-406} und {-405} bis zur Klärung des Entsorgungswegs). Ein Nachtragsangebot folgt kurzfristig. Bitte teilen Sie mit, ob so verfahren werden soll.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "ablehnung"
+day = -402
+time = "08:14"
+from = "tba.hartwig"
+to = "us.albers"
+cc = ["us"]
+subject = "AW: Mühlenstraße – Anzeige nach § 2 Abs. 6 VOB/B: belasteter Boden Station 0+310 bis 0+395"
+reply_to = "mehrkosten"
+body = """Hallo Herr Albers,
+
+die Anzeige habe ich erhalten. Separieren und abgedeckt lagern ist richtig, so weitermachen.
+
+Einen Nachtrag sehe ich aber nicht. Das LV enthält mit 2.2.50 eine Position für belasteten Boden mit 800 t, davon ist bisher kaum etwas abgerufen. Mit Belastungen im Altstadtbereich musste ein Fachunternehmen rechnen, die Auffüllungen stehen im Gutachten. Die 420 t rechnen wir über 2.2.50 ab. Den Stillstand von zwei Tagen kann ich nicht anerkennen, die Kolonne hätte am Abschnitt 3 weiterarbeiten können.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "nachtrag"
+day = -399
+time = "11:40"
+from = "us"
+to = "tba.hartwig"
+cc = ["us.albers", "tba.meyer"]
+subject = "Mühlenstraße – Nachtragsangebot N 1: Entsorgung Boden > Z 2"
+reply_to = "ablehnung"
+quote = false
+body = """Sehr geehrter Herr Hartwig,
+
+Ihre Auffassung vom {-402} teilen wir nicht und bitten, sie zu überdenken.
+
+Wir haben genau diesen Punkt vor Angebotsabgabe gefragt. In der Bieterinformation Nr. 1 vom {-507}, Antwort zu Frage 2, hat die Stadt klargestellt: Position 2.2.50 umfasst Boden der Zuordnungsklasse Z 2, die Worte „und höher belasteten Boden“ entfallen, und wird wider Erwarten Material oberhalb Z 2 angetroffen, richtet sich die Vergütung nach § 2 Abs. 6 VOB/B. Die Bieterinformation ist laut Auftragsschreiben Vertragsbestandteil. Unser Einheitspreis für 2.2.50 von 37,20 EUR/t beruht auf einer Annahmegebühr für Z 2; für gefährlichen Abfall mit Begleitscheinverfahren verlangt die Deponie mehr als das Doppelte.
+
+Das Nachtragsangebot N 1 über 42.839,00 EUR netto ist beigefügt. Zum Stillstand: Abschnitt 3 war am {-406} noch nicht verkehrsrechtlich angeordnet, ein Umsetzen war nicht möglich. Die Anordnung lag erst am {-404} vor.
+
+Wir schlagen vor, die Einzelheiten beim Jour fixe am {-397} zu besprechen. Herr Albers bringt die Wiegescheine der bisherigen Abfuhr mit.
+
+Mit freundlichen Grüßen"""
+attach = ["doc:nachtrag1"]
+
+[[mail]]
+id = "nachtrag_aw"
+day = -390
+time = "16:02"
+from = "tba.hartwig"
+to = "us"
+cc = ["us.albers", "tba.meyer"]
+subject = "AW: Mühlenstraße – Nachtragsangebot N 1: Entsorgung Boden > Z 2"
+reply_to = "nachtrag"
+body = """Hallo Herr Doe,
+
+ich habe mir die Bieterinformation noch einmal angesehen und den Nachtrag mit dem Rechnungsprüfungsamt durchgesprochen. Dem Grunde nach erkennen wir N 1 an. Zur Höhe:
+
+- N1.1 Separieren 9,40 EUR/m³: in Ordnung.
+- N1.2 Entsorgung: 74,50 EUR/t ist mir zu hoch. Nach Ihrer Urkalkulation (heute in Ihrem Beisein geöffnet, Herr Albers war dabei) und dem Angebot Ihres Entsorgers komme ich auf 71,80 EUR/t einschließlich Ihrer Zuschläge. Dazu stehe ich.
+- N1.3 Analytik: in Ordnung, gegen Rechnung des Labors.
+- N1.4 Füllboden 21,80 EUR/m³: in Ordnung.
+- N1.5 Stillstand: Ich erkenne einen Tag an, 7 Stunden. Am zweiten Tag hätte die Kolonne Schächte in Abschnitt 1 fertigstellen können.
+
+Damit ergibt sich bei den vorläufigen Mengen ein Betrag von rund 39.834 EUR netto. Abgerechnet wird nach Wiegescheinen und Aufmaß. Fristverlängerung vier Arbeitstage: einverstanden. Wenn Sie zustimmen, geht die Nachtragsvereinbarung nächste Woche in die Unterschrift.
+
+Mit freundlichen Grüßen"""
+
+[[mail]]
+id = "nachtrag_ok"
+day = -387
+time = "09:05"
+from = "us"
+to = "tba.hartwig"
+cc = ["us.albers"]
+subject = "AW: Mühlenstraße – Nachtragsangebot N 1: Entsorgung Boden > Z 2"
+reply_to = "nachtrag_aw"
+body = """Sehr geehrter Herr Hartwig,
+
+vielen Dank für die zügige Prüfung. Mit 71,80 EUR/t für N1.2 und einem Tag Stillstand (7 Stunden) sind wir einverstanden. Bitte senden Sie uns die Nachtragsvereinbarung zur Unterschrift.
+
+Mit freundlichen Grüßen"""
+
+# Our bid: the tender LV with the quantities and units of the client's answers and our unit prices.
+[[lv]]
+key = "angebot"
+base = "kanal"
+phase = "84"
+file = "Angebot_Acme_Tiefbau_Muehlenstrasse"
+set = [
+  "3.1.60 | 56 St | Hausanschluss umbinden | Vorhandene Grundstücksanschlussleitung, Steinzeug DN 150, an der Grundstücksgrenze freilegen und mit Übergangsstück an die neue Anschlussleitung anbinden. // Lage nach örtlicher Feststellung und Angabe der Bauleitung.",
+  "4.1.40 | 2480 m² | Asphaltdeckschicht AC 11 D S, 4 cm | Asphaltdeckschicht AC 11 D S, Bindemittel 50/70, Einbaudicke 4 cm, auf der gesamten Fahrbahnbreite liefern und einbauen, einschließlich Ansprühen mit Bitumenemulsion und Abstreuen. Abrechnung nach eingebauter Fläche.",
+]
+prices = """
+1.1.10 | 94913,59
+1.1.20 | 13770,00
+1.1.30 | 20400,00
+1.2.10 | 50650,00
+1.2.20 | 980,32
+1.2.30 | 10,79
+2.1.10 | 10,79
+2.1.20 | 3,75
+2.1.30 | 26,99
+2.2.10 | 24,23
+2.2.20 | 33,04
+2.2.30 | 26,44
+2.2.40 | 26,22
+2.2.50 | 37,20
+2.2.60 | 37,34
+2.2.70 | 20,38
+2.2.80 | 42,41
+3.1.10 | 129,98
+3.1.20 | 196,06
+3.1.30 | 79,31
+3.1.40 | 185,05
+3.1.50 | 269,86
+3.1.60 | 682,92
+3.2.10 | 2040,00
+3.2.20 | 236,82
+3.2.30 | 319,43
+3.2.40 | 512,19
+3.2.50 | 793,07
+3.3.10 | 26,44
+3.3.20 | 4,63
+3.3.30 | 269,86
+3.3.40 | 181,75
+4.1.10 | 18,17
+4.1.20 | 14,87
+4.1.30 | 35,25
+4.1.40 | 23,13
+4.1.50 | 5,07
+4.1.60 | 203,77
+5.1.10 | 63,89
+5.1.20 | 105,74
+"""
+
+# The award: one item dropped, one added, one quantity changed, one unit price reduced (see the Auftragsschreiben).
+[[lv]]
+key = "auftrag"
+base = "angebot"
+phase = "86"
+file = "Auftrags-LV_Muehlenstrasse"
+drop = ["2.2.80"]
+set = [
+  "3.2.50 | 19 St | Vorhandenen Schacht abbrechen | Vorhandenen Mauerwerks- oder Betonschacht DN 1000, Tiefe bis 4,00 m, vollständig abbrechen, Abbruchmaterial laden und entsorgen. Schachtabdeckungen gehen in das Eigentum des AN über.",
+]
+add = """
+3.3.50 | 186 m | TV-Inspektion der Anschlussleitungen | Optische Inspektion der neuen Anschlussleitungen DN 150 vom Hauptkanal aus mit Satellitenkamera nach DIN EN 13508-2, einschließlich Bericht und Datenübergabe.
+"""
+prices = """
+3.2.50 | 793,07
+2.2.60 | 34,84
+3.3.50 | 6,40
+"""

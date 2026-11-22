@@ -65,7 +65,7 @@ uv run boq FILE                        # parse an LV, print rule findings; --jso
                                        #   --prices (unit prices from the priced bids)
 uv run boq-seed                        # put the six dataset projects (and old LLM answers) into the database
 docker compose exec mail boq-mail ADDRESS…  # make mailboxes on the demo mail server (no argument: list them)
-docker compose exec api boq-mail --fill     # the mock world (mock/mail/) into the mailboxes; --reset: afresh; the mail server does it at start
+docker compose exec api boq-mail --fill     # the mock world (mock/mail/) into the mailboxes; --reset: afresh; --empty: take it out again; the mail server fills at start unless DEMO_MAIL_FILL=0
 uv run boq-mail --check                # build the mock world and read every LV back, no server needed
 docker compose up --watch              # dev: UI :5173 (hot reload), API :8000 (auto-reload), Postgres :5432, webmail :8025/webmail/ on the demo mail server (Stalwart, kept in Postgres; password `demo`); new deps rebuild
 docker compose --profile prod up --build  # the production image locally (as on Render): :8080, password "demo"
