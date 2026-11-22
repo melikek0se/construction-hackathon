@@ -54,8 +54,8 @@ Working name: TBD. One screen flow:
    change-order potential), sorted by money at stake. Click a finding → the item text with the trigger highlighted.
 3. **Price**: per item a suggested unit price with source (own history / benchmark / supplier quote / model estimate),
    date and confidence band. Items with no reliable price are the **price gaps**.
-4. **Close the gaps**: for the gaps with the biggest cost impact, request quotes — by email draft or by the
-   **voice agent that phones the supplier** (dropped, D-059). The quote flows back into the table.
+4. **Close the gaps**: for the gaps with the biggest cost impact, request quotes by e-mail. The quote
+   flows back into the table.
 5. **What-if**: sliders for material price change, labour rate, risk surcharge → bid total as a range (P50 / P80).
 6. **Export**: bidder-question list, risk report (PDF), priced GAEB X84 if time allows.
 
@@ -96,7 +96,7 @@ Deterministic checks first (cheap, explainable, no hallucination), LLM checks se
 2. Today: skim, copy last project's prices, phone three suppliers, hope.
 3. With the tool: upload → in a minute the 12 items that decide whether this job makes or loses money.
 4. Show one real finding of each type on their data. Show the money at stake.
-5. The price gap: "we have no current price for this pipe." → the agent calls the supplier, live. Quote lands in the table.
+5. The price gap: "we have no current price for this pipe." → the agent writes the inquiry to the supplier; the quote is read back into the table.
 6. Before/after: review time, number of bidder questions sent, bid total as a range instead of a guess.
 7. Honest limits and what comes next.
 
@@ -106,9 +106,7 @@ Deterministic checks first (cheap, explainable, no hallucination), LLM checks se
   against the GAEB twin of the same project.
 - **LLM cost/latency on long LVs.** Mitigation: rule checks first, LLM per title in parallel, cache by item hash.
 - **Too many weak findings.** Mitigation: severity threshold, money-at-stake ranking, a curated demo file.
-- **The voice agent steals time from the judged core.** Mitigation: time-box it, build it only after steps 1–2 work
-  end to end, keep a recorded fallback.
-- **Live demo failure.** Mitigation: pre-computed results for the demo file, recorded video of the call.
+- **Live demo failure.** Mitigation: pre-computed results for the demo file.
 
 ---
 

@@ -10,7 +10,7 @@ were not checked against each vendor's own pricing page. Check before relying on
 - Requests up to about 90 s: the AI review of a large LV (project C: 90 s). Hosts that cut requests at 30–60 s
   (serverless functions, e.g. Vercel) do not fit.
 - A Postgres database (`DATABASE_URL`). The server keeps nothing it needs on disk (D-026), so the host needs no volume; the PDF view writes project documents and drawn pages to `data/processed/pages/` as a cache it can rebuild.
-- A public HTTPS URL, which the ElevenLabs webhooks will need as well.
+- A public HTTPS URL.
 
 ## Options
 
@@ -61,7 +61,7 @@ put in automatically. The six dataset projects go in only on request: `docker co
 3. **Render**: New → Web Service → connect the GitHub repo (needs access to `melikek0se/construction-hackathon`)
    → runtime *Docker*, instance *Free*, region *Frankfurt*, health check path `/api/health`.
    Environment: `DATABASE_URL`, `ANTHROPIC_API_KEY`, `BOQ_PASSWORD` (anyone with the link could otherwise
-   spend API credit on the AI review), later `ELEVENLABS_API_KEY` / `ELEVENLABS_AGENT_ID`.
+   spend API credit on the AI review).
    (With `DEMO_MAIL=1` the mailboxes are also filled with the mock world of `mock/mail/` at every start;
    the app then reads about ten invitations with Claude, once. `DEMO_MAIL_FILL=0` leaves the mailboxes empty.)
    For the mail features add `DEMO_MAIL=1`: the container then runs its own mail server and webmail

@@ -241,7 +241,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     <thead><tr><th>Ne dedi</th><th>Doğru mu</th><th>Uygulamada ne olur</th></tr></thead>
     <tbody>
       <tr><td>Fiyata buffer koymak lazım</td><td><span class="pill good">Doğru</span></td><td>Herkese aynı yüzde yerine, fiyatı ne kadar az biliyorsak o kadar pay. Toplamı tek rakam değil aralık olarak gösteririz.</td></tr>
-      <tr><td>Fiyat satıcıdan email ya da telefonla alınır</td><td><span class="pill good">Doğru</span></td><td>Uygulama fiyat talebini kendi hazırlar. Sesli ajan fikri buradan çıkıyor.</td></tr>
       <tr><td>Parça sayarken fire ve bozulma oranı</td><td><span class="pill warn">Doğru, yeri farklı</span></td><td>Almanya'da listedeki miktar işverenin verdiği, yerine takılan miktardır. Fire miktara eklenmez. Malzeme maliyetine ve sipariş miktarına eklenir.</td></tr>
       <tr><td>Her kalemin verisi yok, hiçbir fiyat %100 güvenilir ve güncel değil</td><td><span class="pill good">En önemlisi</span></td><td>Her fiyatın yanında kaynağı, tarihi ve güven seviyesi yazar. Bilmiyorsak "fiyat yok" deriz, uydurmayız.</td></tr>
       <tr><td>Fiyat yoksa önce satıcıya sor, olmazsa muadilini bul</td><td><span class="pill good">Doğru</span></td><td>Sıra: elimizdeki teklif → geçmiş projeler → satıcıya sor → muadil ürün → tahmin.</td></tr>
@@ -255,37 +254,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
 
 <section>
   <span class="num">06</span>
-  <h2>Sesli ajan fikri</h2>
-  <p class="lead">Yapmaya değer, ama sunumun son sahnesi olarak. Ürünün kendisi olarak değil.</p>
-  <p>Nasıl çalışır:</p>
-  <ol class="steps">
-    <li><span>Uygulama fiyatını bilmediğimiz kalemleri listeler, parası büyük olanlar üstte.</span></li>
-    <li><span>Kullanıcı bir kalem ve bir tedarikçi seçip "fiyat iste" der.</span></li>
-    <li><span>Ajan arar. İlk cümlede yapay zekâ olduğunu, hangi şirket ve hangi proje için aradığını söyler.</span></li>
-    <li><span>Ürünü, miktarı ve teslim yerini söyler. Fiyatı, geçerlilik süresini ve teslim süresini sorar. Ürün yoksa muadilini sorar.</span></li>
-    <li><span>Aldığı fiyat ekrandaki tabloya canlı düşer. Teklif toplamındaki belirsizlik aralığı daralır.</span></li>
-  </ol>
-  <p>Maliyet: ElevenLabs'in fiyat sayfasına göre plana dahil dakikalar bitince dakikası 0,08 $, üstüne kullanılan dil modelinin ücreti eklenir. Hackathon için önemsiz bir tutar.</p>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Lehine</th><th>Aleyhine</th></tr></thead>
-    <tbody>
-      <tr><td>Gerçek bir işi otomatikleştiriyor: kalkülatörler zaten tedarikçi arıyor.</td><td>Jüri asıl hata bulma kısmına bakacak. O zayıfsa telefon görüşmesi kurtarmaz.</td></tr>
-      <tr><td>Salonda başka kimsede olmayacak, akılda kalır.</td><td>Canlı ses demoları bozulabilir (gürültü, gecikme, internet).</td></tr>
-      <tr><td>ElevenLabs kredin var ve gereken her şey tek platformda.</td><td>Gerçek tedarikçi aramanın hukuki soruları var.</td></tr>
-    </tbody>
-  </table></div>
-  <p><strong>Önerim:</strong></p>
-  <ul>
-    <li>Ana uygulama baştan sona çalışmadan buna başlamayın.</li>
-    <li>Bir kişi, yaklaşık 4 saat. Olmazsa önceden çekilmiş video gösterin.</li>
-    <li>Sahnede gerçek tedarikçi aramayın. Bir arkadaşınız tarayıcıdan tedarikçiyi oynasın. Telefon numarası gerekmez.</li>
-    <li>Önce aynı işi email ile yapın. Hem yedek olur hem aynı altyapıyı kullanır.</li>
-  </ul>
-  <div class="note warn"><strong>Jüri sorarsa:</strong> AB yapay zekâ yasası gereği ajan yapay zekâ olduğunu söylemek zorunda (Ağustos 2026'dan beri). Almanya'da izinsiz ses kaydı suç. Bizim cevabımız: ajan sadece şirketin zaten çalıştığı tedarikçileri arar, kendini tanıtır, kayıt almaz ve her zaman bir insanın geri aramasını teklif eder.</div>
-</section>
-
-<section>
-  <span class="num">07</span>
   <h2>Ne yapmalıyız, hangi sırayla</h2>
   <ol class="steps">
     <li><span><strong>Dosyayı oku, kalemleri tabloda göster.</strong> Önce GAEB, çünkü okuması kesin. PDF sonra.</span></li>
@@ -293,14 +261,14 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     <li><span><strong>Yapay zekâ ile zor olanları bul.</strong> Belirsiz tarif, eksik kalem, ön şartlarla çelişki.</span></li>
     <li><span><strong>Sorunları paraya göre sırala, rapor üret.</strong> Her bulgu: hangi kalem, hangi cümle, neden önemli, ne yapmalı.</span></li>
     <li><span><strong>Fiyat ve "ya şöyle olursa" hesabı.</strong> Üç gerçek tekliften geçmiş fiyat.</span></li>
-    <li><span><strong>Tedarikçiden fiyat isteme.</strong> Önce email, sonra sesli ajan.</span></li>
+    <li><span><strong>Tedarikçiden fiyat isteme.</strong> Email ile.</span></li>
   </ol>
   <p>İlk dört adım puanlanan kısım. Son ikisi bizi diğerlerinden ayırır.</p>
   <div class="note"><strong>Benzer ürünler var.</strong> Almanya'da BauAnalyst ve baugenic gibi şirketler yapay zekâ ile LV kontrolü satıyor. Jüri "bu zaten var" diyebilir. Bizim farkımız: sorunu bulmakla kalmayıp fiyat boşluğunu tedarikçiye sorarak kapatmak.</div>
 </section>
 
 <section>
-  <span class="num">08</span>
+  <span class="num">07</span>
   <h2>Neyi doğruladım, neyi doğrulayamadım</h2>
   <p>İkinci turda, ilk turda emin olmadığım her iddiayı kaynağından kontrol ettirdim.</p>
   <div class="tablewrap"><table>
@@ -309,8 +277,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <tr><td>Miktar %10'dan fazla saparsa yeni fiyat istenebilir; sözleşmede olmayan ek iş başlamadan önce bildirilmeli; götürü fiyat kural olarak değişmez</td><td><span class="pill good">Doğrulandı</span></td><td>VOB/B §2 metninden okundu.</td></tr>
       <tr><td>İşveren işi "açık ve eksiksiz" tarif etmek zorunda, müteahhide olağan dışı risk yükleyemez, marka yazarsa "ya da muadili" demeli</td><td><span class="pill good">Doğrulandı</span></td><td>VOB/A §7. Kamu ihaleleri için geçerli.</td></tr>
       <tr><td>Almanya'da kamu yol işlerinde sözleşme başına ortalama 2,5 ek iş anlaşması</td><td><span class="pill good">Doğrulandı</span></td><td>Sayıştay raporu (1995–1999, 2.988 sözleşme, 7.321 ek iş). Eski ama resmi. Sunumda kullanılabilir.</td></tr>
-      <tr><td>ElevenLabs fiyatı ve paket adları</td><td><span class="pill good">Doğrulandı</span></td><td>Python: <span class="de">elevenlabs</span>, tarayıcı: <span class="de">@elevenlabs/react</span>.</td></tr>
-      <tr><td>ElevenLabs Almancayı anlıyor</td><td><span class="pill warn">Kısmen</span></td><td>Konuşma tanıma modelinde Almanca en iyi doğruluk grubunda. Canlı görüşme modeli için açık bir liste bulunamadı. Denemek lazım.</td></tr>
       <tr><td>Ücretsiz resmi fiyat endeksi (Destatis)</td><td><span class="pill warn">Kısmen</span></td><td>Var, ama hesap açmak gerekiyor. İnşaat fiyat endeksi üç ayda bir yayınlanıyor.</td></tr>
       <tr><td>Tedarikçi teklifleri 2–4 hafta geçerli</td><td><span class="pill bad">Doğrulanamadı</span></td><td>Tekliflerin çoğunlukla "bağlayıcı değil" verildiği doğru. Süre için kaynak yok. Abine sor.</td></tr>
       <tr><td>İş koluna göre fire oranları (%3–10 gibi)</td><td><span class="pill bad">Doğrulanamadı</span></td><td>Sadece forum ve rehber yazıları var. Uygulamada ayarlanabilir varsayım olmalı.</td></tr>
@@ -321,29 +287,24 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
 </section>
 
 <section id="emin-olmadiklarimiz">
-  <span class="num">09</span>
+  <span class="num">08</span>
   <h2>Henüz bilmediklerimiz</h2>
   <ul>
     <li><strong>Jüri neye göre puan verecek?</strong> Kendi dosyalarıyla mı test edecekler, hangi formatta? Organizatörlere ilk sorulacak şey.</li>
     <li><strong>Başka veri var mı?</strong> Özellikle "hatalı kalem örnekleri". Bizim için test seti olurdu.</li>
-    <li><strong>Takımda kim ne biliyor, ne kadar süre kaldı?</strong> Teknoloji seçimi ve sesli ajana vakit kalıp kalmayacağı buna bağlı.</li>
-    <li><strong>ElevenLabs Almanca rakamları ve ürün kodlarını ne kadar iyi anlıyor?</strong> Denemeden bilemeyiz.</li>
+    <li><strong>Takımda kim ne biliyor, ne kadar süre kaldı?</strong> Teknoloji seçimi buna bağlı.</li>
   </ul>
 </section>
 
 <section>
-  <span class="num">10</span>
+  <span class="num">09</span>
   <h2>Kaynaklar</h2>
   <ul class="src" id="sources">
     <li>Veri seti: repodaki <span class="de">dataset/</span>. Rakamlar <span class="de">scripts/inspect_dataset.py</span> ile ve bu oturumda yazılan analizlerle çıkarıldı.</li>
     <li>Alman sözleşme kuralları (VOB/B §2): <a href="https://dejure.org/gesetze/VOB-B/2.html">dejure.org/gesetze/VOB-B/2.html</a></li>
     <li>Tarif kuralları (VOB/A §7): <a href="https://dejure.org/gesetze/VOB-A/7.html">dejure.org/gesetze/VOB-A/7.html</a></li>
     <li>Ek iş istatistiği (Sayıştay verisi, Wanninger 2003): <a href="https://www.cemconsultants.de/downloads/Behinderungen-Nachtraege.pdf">cemconsultants.de/downloads/Behinderungen-Nachtraege.pdf</a></li>
-    <li>ElevenLabs fiyatları: <a href="https://elevenlabs.io/pricing/agents">elevenlabs.io/pricing/agents</a></li>
     <li>Maliyet bileşenleri ve tipik oranlar: <a href="https://www.bauprofessor.de/gemeinkostenzuschlaege/">bauprofessor.de/gemeinkostenzuschlaege</a></li>
-    <li>ElevenLabs ajan dokümanları: <a href="https://elevenlabs.io/docs/eleven-agents/llms.txt">elevenlabs.io/docs/eleven-agents</a></li>
-    <li>AB yapay zekâ yasası madde 50: <a href="https://artificialintelligenceact.eu/article/50/">artificialintelligenceact.eu/article/50</a></li>
-    <li>Almanya'da ses kaydı (§201 StGB): <a href="https://www.gesetze-im-internet.de/stgb/__201.html">gesetze-im-internet.de/stgb/__201.html</a></li>
   </ul>
   <footer>Ayrıntılar repoda <span class="de">docs/</span> klasöründe. Bu sayfa hukuki tavsiye değildir.</footer>
 </section>

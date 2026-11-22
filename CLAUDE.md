@@ -98,4 +98,4 @@ its hand mapping). Design rules for the UI: `DESIGN.md`; product context: `PRODU
 
 - Secrets in `.env` (see `.env.example`); never commit them.
 - Python via `uv` (system Python is 3.9 — too old; pin 3.12).
-- When writing Claude API or ElevenLabs code, check current docs instead of relying on memory.
+- When writing Claude API code, check current docs instead of relying on memory.

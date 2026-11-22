@@ -227,8 +227,6 @@ def timeline(rec: dict, supplier_id: str) -> list[dict]:
         for m in ms:
             meta = m["meta"] or {}
             kind = meta.get("kind") or "inquiry"
-            if kind == "call":  # a call kept from before the voice agent was taken out (D-059)
-                continue
             base = {"mail_id": m["id"], "subject": m["subject"], "example": bool(meta.get("example")),
                     **{k: where[k] for k in ("project_id", "project", "file", "package")}}
             out.append({**base, "id": m["id"], "kind": kind, "direction": "out", "at": m["sent_at"] or m["created"],

@@ -27,7 +27,7 @@ Nothing of this is built yet.
         ▼                   ▼                       │ structured quote
  ┌──────────────────────────────────┐      ┌────────┴─────────┐
  │ web app: items · findings ·      │─────▶│ RFQ: email draft │
- │ prices · what-if · exports       │      │ or voice agent   │
+ │ prices · what-if · exports       │      │ by e-mail        │
  └──────────────────────────────────┘      └──────────────────┘
 ```
 
@@ -41,7 +41,6 @@ Nothing of this is built yet.
   the shared system prompt and preliminary remarks; run titles in parallel.
 - **Frontend: React (Vite or Next.js)** with a table component that survives 2,000 rows.
 - **Storage: SQLite or plain JSON files.** No auth, no multi-tenancy.
-- **Voice: ElevenLabs Agents** — dropped (D-059).
 
 ## Data model (sketch)
 
@@ -75,7 +74,7 @@ class PricePoint:
     item_oz: str
     unit_price: Decimal
     source: Literal["history", "benchmark", "supplier_quote", "model_estimate"]
-    source_detail: str       # project / supplier / call id
+    source_detail: str       # project / supplier / quote id
     as_of: date
     valid_until: date | None
     confidence: float        # 0..1, decays with age
@@ -107,7 +106,6 @@ Price gaps ranked by `qty × estimated price × band width` feed the RFQ queue.
 5. Risk score + change-order classification + report export.
 6. PDF parser, validated against the GAEB twin.
 7. Price suggestion from history; what-if.
-8. Voice agent RFQ (time-boxed).
 
 Steps 6–8 can run in parallel with 3–5 once the model is fixed, if we have the people.
 

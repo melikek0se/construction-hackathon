@@ -6,7 +6,7 @@ something.
 ## For the team
 
 - **Q1. Who is on the team and who is strong in what?** Decides stack (D-003) and how much runs in parallel.
-- **Q2. How much time is left, and when is the code freeze / pitch?** Decides whether pricing and voice fit at all.
+- **Q2. How much time is left, and when is the code freeze / pitch?** Decides whether pricing fits at all.
 - **Q3. Which LV is the demo file?** Suggestion: project C (pipeline, 274 items, priced offer exists, PDF + GAEB 90)
   or project B (GAEB XML + PDF + bid + award).
 - **Q4. Product name.**
@@ -36,7 +36,6 @@ in a bid, and is his experience from Germany or Turkey?
 ## Technical
 
 - **Q14. Position flags `W`, `B`, `L` in GAEB 90 record 21** — confirm meaning (assumed Wahl-, Bedarfsposition, lump sum).
-- **Q15. ElevenLabs: German recognition quality for numbers, units and product codes; cost in credits per minute.**
 - **Q16. Does the Destatis GENESIS API need an account?** Only matters if we index old prices to today.
 
 ## Answered

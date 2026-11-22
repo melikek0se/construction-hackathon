@@ -11,7 +11,7 @@ different place than one would first assume.
 | # | Insight | Verdict | Becomes |
 |---|---------|---------|---------|
 | 1 | A buffer on prices | Correct, relevant | Risk surcharge driven by price confidence; bid total as a range |
-| 2 | Pull prices from the seller by email or phone | Correct, our differentiator | RFQ flow: email draft + voice agent |
+| 2 | Pull prices from the seller by email or phone | Correct, our differentiator | RFQ flow by e-mail |
 | 3 | Part failure / waste rate when counting quantities | Correct, but not on the LV quantity | Waste factor in material cost and order quantity |
 | 4 | The real unknown: no data for every item, nothing 100 % reliable, no live price | Correct, the central design principle | Every price has source, date, validity, confidence |
 | 5 | No price → ask the seller of X first, else find an equivalent | Correct, relevant | Price-resolution waterfall incl. equivalent products |
@@ -47,8 +47,7 @@ For the tool: generate the inquiry from the LV item (spec, quantity, site, deliv
 parse the answer back into a structured price. Email is the normal channel for a binding quote. Phone is the channel
 for speed: an indicative price, availability, lead time, and **chasing** an unanswered email.
 
-The voice agent was dropped (D-059). This point was the justification for it: it is an existing
-manual process, not an invented use case.
+The app asks by e-mail only (D-059); phoning stays the estimator's own.
 
 ## 3. Failure rate / waste when counting parts
 
@@ -111,9 +110,7 @@ Because the price depends on it: customer discount group, credit standing, regio
 An anonymous caller gets the list price or nothing.
 
 So every inquiry needs a **company profile**: company name, customer number at that supplier if any, contact person,
-callback number and email, project name and site location, bid deadline. The voice agent must state these up front
-and must say for whom it is calling. It must also say that it is an AI assistant (the voice agent was
-dropped, D-059). Corollary: scraping web shops gives list prices only — a weak signal, to be labelled as such.
+callback number and email, project name and site location, bid deadline. Every inquiry states these up front. Corollary: scraping web shops gives list prices only — a weak signal, to be labelled as such.
 
 ## 7. Labour costs
 
@@ -133,7 +130,7 @@ For the tool:
 
 - The pricing module is designed around **provenance and confidence**, not around a price-prediction model.
 - **Price gaps** become a first-class object in the UI, next to findings.
-- The RFQ loop (email + voice) is the differentiator, and it needs the company profile and order quantities.
+- The RFQ loop by e-mail is the differentiator, and it needs the company profile and order quantities.
 - Unit prices are stored as four components from the start.
 
 ## Questions to take back to him
@@ -143,4 +140,3 @@ For the tool:
 3. Would an indicative phone price be used in a bid, or only a written quote?
 4. What does he check first when he opens a new LV? Which mistakes has he actually seen cost money?
 5. Does his experience come from Germany or Turkey? (Unit-price contracts and who owns the quantities differ.)
-6. Would a supplier talk to an AI caller at all? What would make them hang up?
