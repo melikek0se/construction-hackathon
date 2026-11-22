@@ -376,6 +376,9 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   again"), what each station does under the table, the Claude spend open at the foot; at the right the whole
   record of what Polier did. `RunsDialog` is gone. Checked in headless Chrome: slab → page, row → runs,
   back, deep link `/pipeline/:id`, "Record" on an archive project → page with it open → back; no errors.
+  Polier is the same size on every page (2026-11-22, Atahan): the 60 % scale on the partners page is gone;
+  its scrolling parts end with 150 px of room instead, so Polier lies over no row. Measured 134 px on home,
+  partners and pipeline.
 
 - Audit of what Claude costs (2026-11-21; `src/boq/spend.py`, table `llm_calls`, `GET /api/spend[?project=]`):
   one row per request to the Claude API (AI review, second look, chat, chat about all projects, reply

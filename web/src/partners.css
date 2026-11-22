@@ -2482,18 +2482,6 @@ ol.pt-points button {
   margin-left: 0;
 }
 
-/* Polier stands smaller on this page, so it does not lie over the last column; it grows back under the pointer */
-body:has(.pt) .agent-button {
-  transform: scale(0.6);
-  transform-origin: bottom right;
-  transition: transform 160ms var(--ease);
-}
-
-body:has(.pt) .agent-button:hover,
-body:has(.pt) .agent-button:focus-visible {
-  transform: none;
-}
-
 .pt-table .pt-pick {
   margin: 0 9px 0 0;
 }
@@ -2707,4 +2695,13 @@ body:has(.pt) .agent-button:focus-visible {
 
 .pt-firms-wait {
   font-weight: 400;
+}
+
+/* Polier is the same size here as on every page; the scrolling parts end with room for it, so it never lies
+   over the last row or the last column once scrolled to the end */
+.pt-wide,
+.pt-profile,
+.pt-look,
+.pt-searches {
+  padding-bottom: 150px;
 }
