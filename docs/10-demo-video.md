@@ -1,64 +1,62 @@
-# Demo video: "The Estimator"
+# Demo video: "Jürgen gets a tender"
 
-A film-trailer parody, exactly 2:00. A deep trailer voice tells an ordinary tender week as an action film.
-The picture is serious, the subject is a sewer LV: that is the joke. 34 s are staged scenes, 86 s are the
-real app on the demo tender **TBA-2026-114, Erneuerung Mischwasserkanal Birkenweg, 2. BA**.
+Two minutes, and nearly all of it is the app. One tender is followed from the moment it drops into the
+estimator's mailbox to the moment the contract is won; the point of every scene is that Polier works from
+the mail by itself and the estimator only decides. The humour is Jürgen, who says what estimators think.
 
-The story as data (lines, seconds, shots) is `scripts/demo_video/story.mjs`; this page is its reading copy.
+Second version (Atahan, 2026-11-22). The first, a film-trailer parody ("The Estimator"), spent a quarter of
+its time on staged scenes and title cards; he asked for the app instead, and for this order of scenes.
+The first cut of the old version is `scripts/demo_video/demo.mp4` until the new one replaces it.
 
-## How it is made
+## The picture
 
-```bash
-cd scripts/demo_video && npm install      # once; needs ffmpeg and ELEVENLABS_API_KEY in .env
-docker compose up                          # the app on :5173 with the demo tender
-node make.mjs all                          # voice, sound, record, render, mix → out/demo.mp4, out/sheet.jpg
-node make.mjs record a6 && node make.mjs render a6 && node make.mjs mix   # one shot again
-```
-
-- Voice, music and hits come from ElevenLabs and are kept in `out/voice` and `out/sound` per text (in git), so a
-  second run costs nothing and needs no key. The first cut to watch is `scripts/demo_video/demo.mp4` (in git,
-  a lighter copy of `out/demo.mp4`).
-- The shots are recorded from the running app at twice 1080p, so the close-ups stay sharp. The recording
-  only looks: it sends nothing, submits nothing, changes nothing.
-- What the shots show depends on the state of the demo tender when they are recorded.
-
-Order of work (Atahan, 2026-11-22): story, then a first cut by Claude with type on black in place of the
-staged scenes (done), then the staged scenes generated on ElevenLabs Image & Video and cut in (not done).
-
-## Characters
-
-- **Jürgen**, estimator, mid-fifties, reading glasses on a cord, a cold coffee. Speaks German, little.
-- **The narrator**, English, deep, far too dramatic. Never seen.
-- **Polier**, the app. Does not speak; it shows.
-- **The LV**, 78 items about a combined sewer, in four documents. The villain.
+- **Split screen where mail matters**: on the left the estimator's mailbox (the webmail of the demo mail
+  server, `kalkulation@polier.test`), on the right Polier. Otherwise Polier alone, with close-ups.
+- **The document fills up** (Atahan, 2026-11-22): the tender's document in the middle of the page is the
+  spine of the film. After every step the camera comes back to the same items in the same framing, and
+  there is more on them each time: the bare LV, then the findings beside it, then the questions, then the
+  first prices from the price book, then the client's answers and corrected quantities, then the quotes,
+  until every item carries a price and the bid total stands. The map at the left fills in the same way.
+- A small clock in the corner says when we are ("Mon 08:12", "an hour later", "three weeks later"): the
+  waits are cut, and the film says so.
+- Jürgen is heard, not seen (German, subtitled in English). A narrator says one short line per scene.
 
 ## Story
 
-| # | Time | Picture | Sound |
-|---|------|---------|-------|
-| 1 | 0:00–0:08 | STAGED. Night, an office in Norderbek, 23:47. Jürgen between towers of paper. | Narrator: "In a world… where the bid is due at ten a.m. … sharp." |
-| 2 | 0:08–0:15 | STAGED. The printer will not stop. Pages slide over the floor. | "One man faced a combined sewer. Seventy-eight items. Four documents. No mercy." |
-| 3 | 0:15–0:21 | STAGED. Jürgen lifts one page, squints, looks into the camera. | Jürgen: "Dreißig Wochen Baustelleneinrichtung… bei zweiundzwanzig Wochen Bauzeit? Na super." |
-| 4 | 0:21–0:27 | The title slams in: **POLIER**. | Hit. "This autumn… he is not alone." |
-| 5 | 0:27–0:42 | APP. The board of tenders; a click on Birkenweg; its cover sheet: 18 days, Checks, Client, Prices, Bid. | "It reads every page. Every remark. Every footnote nobody reads." |
-| 6 | 0:42–1:08 | APP. "Next to look at", then finding 2 of 25 in close-up: item 1.1.30, 30 weeks of site facilities against a contract period of about 22 weeks, 35.329,20 € at stake, with the quoted passage. Then three more findings, fast. | "It finds what the client hoped you would miss." Hit. "Thirty weeks of site facilities… in a twenty-two week contract. Thirty-five thousand euros. Gone." "And that… was only number two of twenty-five." |
-| 7 | 1:08–1:23 | APP. The bidder question on 1.1.30 as it went out, the client's answer under it (22 weeks), then the correspondence: 15 answered. | "It asks the awkward questions. Politely. In German." "And the client… answers." |
-| 8 | 1:23–1:40 | APP. An item with a supplier's quote beside it, the comparison of the quotes; then the one item with "No price: nothing to go by". | "Every price has a source. A date. A supplier who actually wrote back." "No source? No price. It says so." |
-| 9 | 1:40–1:49 | APP. "Finish the bid": the bid total and what it may cost, down to the document. | "One bid. Every cent explained." |
-| 10 | 1:49–1:56 | STAGED. Daylight, the same office, tidy, 16:58. Jürgen takes his jacket. | "This time… he goes home on time." Jürgen: "Feierabend." |
-| 11 | 1:56–2:00 | Logo. | Hit. "Polier. Evidence included. Coffee not included." |
+| # | Time | Left: the mailbox | Right: Polier | Said |
+|---|------|-------------------|---------------|------|
+| 1 | 0:00–0:10 | An invitation to bid arrives from the Stadt Norderbek, an LV attached. | The board. A card appears in the Intake by itself; the six stations run: read, rules, AI review, compare. | Narrator: "Monday, 8:12. A tender lands in Jürgen's inbox. Jürgen is getting coffee." |
+| 2 | 0:10–0:18 | | Polier calls: "A tender was found in the mail." A click on it: the tender, checked already. | Narrator: "By the time he is back, it has been read. All of it." |
+| 3 | 0:18–0:32 | | The document with the findings beside it; close-up of the worst item with its quoted passage and the money at stake. | Jürgen: "Was ist das denn für eine Position? Wollen die uns verarschen?" Narrator: "Polier put it more politely." |
+| 4 | 0:32–0:42 | | "Take it on". Polier writes the questions for the client, sorts the items into packages for suppliers and subcontractors, and fills in what the price book knows. The document: question marks and first prices appear. | Narrator: "One click: take it on. The questions are drafted, the inquiries sorted, the known prices filled in." |
+| 5 | 0:42–0:54 | The message to the client leaves. | Jürgen ticks the questions he wants asked; the message is written beside them; sent. | Narrator: "Jürgen decides what is asked. Polier writes it. In German." |
+| 6 | 0:54–1:04 | The inquiries leave. | The packages: who is asked for what; sent. | Narrator: "Then the suppliers." |
+| 7 | 1:04–1:16 | | One package has nobody to ask. "Find firms": Polier looks on the web, proposes firms, one is added. | Jürgen: "Dafür haben wir keinen." Narrator: "Nobody for this one. So Polier goes and finds somebody." |
+| 8 | 1:16–1:32 | Replies come in: the client's answers, two quotes, a supplier who asks back. | Polier calls each one out; in the document the answers stand at their questions and the quotes at their items; a reply to the supplier is drafted. | Narrator: "Jürgen does nothing. The answers are read, the quotes compared, the next reply drafted." |
+| 9 | 1:32–1:44 | | Jürgen confirms what the answers change (a quantity, an allowance) and takes the prices; the document is nearly full. The partner's page: its prices and products are up to date. | Narrator: "He confirms what changes. Every price keeps its source, and every partner its record." |
+| 10 | 1:44–1:52 | The bid leaves. | "Finish the bid": what is left for him, filled, the document complete, submitted. | Narrator: "What is left is his. Then it goes out." |
+| 11 | 1:52–2:00 | "Three weeks later": the award arrives. | Polier: "You won it!", confetti, the card moves to Award. | Jürgen: "Na also." Narrator: "Polier. It reads the mail, so you can build." |
 
-## What makes it funny, and what must stay true
+## What is real, and what is helped along
 
-- The voice never winks. The pathos is spent on Baustelleneinrichtung.
-- Jürgen says two things in the whole film. What he stumbles over in scene 3 is what Polier finds in scene 6.
-- Everything in scenes 5 to 9 is the app as it is, on the demo data. No finding, price or answer is made
-  up for the video; the numbers spoken (78 items, four documents, 30 and 22 weeks, 35 thousand euros, two
-  of twenty-five) are the ones on the screen and have to be checked again if the demo data changes.
+- Everything on the right is the app doing what it does: finding the tender in the mail, the checks, the
+  questions and packages, reading the replies and quotes, the search for firms, the award.
+- The other side of the mail is played: the client and the firms are `scripts/demo_counterpart.py` (Claude
+  writes their replies), the award is a mail sent by the recording script. The film's tender is a made-up
+  one of its own, so no tender of the demo world is used up.
+- Waits are cut (the checks take minutes, a supplier takes days). The mailbox is looked into when the scene
+  needs it instead of on the server's three-minute clock.
+- Not in the app: Polier does not answer a supplier by itself. It drafts the answer; the estimator sends it.
+  Scene 8 shows it that way.
+
+## How it is made
+
+`scripts/demo_video/`: `story.mjs` (lines and shots), `make.mjs` (voice and music from ElevenLabs, shots
+recorded from the running app with Playwright, cut with ffmpeg). `node make.mjs all` → `out/demo.mp4`.
+Unlike the first version, recording this one acts in the app: it takes a tender on, sends mail on the demo
+mail server and submits a bid, all on the film's own tender.
 
 ## Open
 
-- Nobody has listened to the first cut yet: voice, music level and the hits are unheard.
-- Framing of the close-ups in scenes 7 and 8 is rough.
-- The staged scenes (1, 2, 3, 10): one character picture first, then the clips from it.
-- Team name for the last card.
+- Not shot yet. Scenes 4 to 11 are written from the code and the pages, not from a run-through.
+- Jürgen's voice: no German voice on the account; a library voice speaks German with an accent.
