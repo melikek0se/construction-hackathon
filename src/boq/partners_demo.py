@@ -88,7 +88,6 @@ FIRMS = [
      "open": [], "declined": [("hs", 121, 20)]},
     {"name": "Beispiel Garten- und Landschaftsbau", "kind": "subcontractor", "email": "buero@galabau.example", "contact": "Herr Olsen",
      "phone": "+49 4103 5550 18", "place": "Wedel", "groups": ["Landschaftsbau", "Rasen", "Pflanzarbeiten", "Zaunbau"],
-     "more": {"no_call": True},
      "mail": [
          (60, "in", "Angebot Gewerbepark", "Hallo,\n\nPreise siehe unten, alles inkl. Material und Anfahrt:\nOberboden andecken 20 cm: 4,60 €/m²\nRasenansaat: 1,85 €/m²\n\nBitte nicht anrufen, wir sind tagsüber auf der Baustelle. Mail lesen wir abends.\n\nGruß Olsen"),
      ],
@@ -155,7 +154,7 @@ def put() -> int:
     for firm in FIRMS:
         have = known.get(firm["name"])
         fields = {k: firm[k] for k in ("contact", "phone", "place")}
-        more = {**firm["more"], "example": True if have else "made"}
+        more = {**firm.get("more", {}), "example": True if have else "made"}
         if have:
             sid = supply.save_supplier({**fields, "more": more}, have["id"])["id"]
         else:

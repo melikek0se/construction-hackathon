@@ -41,7 +41,7 @@ Nothing of this is built yet.
   the shared system prompt and preliminary remarks; run titles in parallel.
 - **Frontend: React (Vite or Next.js)** with a table component that survives 2,000 rows.
 - **Storage: SQLite or plain JSON files.** No auth, no multi-tenancy.
-- **Voice: ElevenLabs Agents** — see `05-voice-agent.md`.
+- **Voice: ElevenLabs Agents** — dropped (D-059).
 
 ## Data model (sketch)
 

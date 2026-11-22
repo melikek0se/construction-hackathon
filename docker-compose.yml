@@ -50,7 +50,7 @@ services:
     depends_on:
       db: {condition: service_healthy}
       mail: {condition: service_healthy}
-    env_file: [.env]  # ANTHROPIC_API_KEY, ELEVENLABS_*; the lines below win over it
+    env_file: [.env]  # ANTHROPIC_API_KEY; the lines below win over it
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/boq
       # The app's own mailbox: the firm's account on the mail server above, unless .env names a real one

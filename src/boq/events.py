@@ -9,7 +9,7 @@ from sqlalchemy import insert, select
 
 from boq import db
 
-KINDS = ("tender", "answer", "quote", "asks", "decline", "released", "run", "call")
+KINDS = ("tender", "answer", "quote", "asks", "decline", "released", "run")
 
 
 def record(project_id: str | None, kind: str, text: str, move: str = "") -> None:

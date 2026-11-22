@@ -3,7 +3,7 @@
    estimator reads each inquiry and sends it (nothing goes out by itself), the replies are read into one
    line per item, and each package gets a comparison on what it costs on site with a proposal. Items that
    cannot be priced as written wait for the client's answer and are not asked for. */
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { checkQuoteReplies, chooseQuote, composeInquiry, getSupply, mailInquiry, markMailSent, planSupply, quotesToBid, readQuote, setPackageSuppliers } from "./api";
 import { dayText } from "./controls";
 import { eur } from "./format";
@@ -26,10 +26,8 @@ const num = (v: number) => v.toLocaleString("de-DE", { minimumFractionDigits: 2,
 const qty = (v: number | null) => (v === null ? "–" : v.toLocaleString("de-DE", { maximumFractionDigits: 3 }));
 const say = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-type Open = { kind: "write" | "remind" | "answer" | "read" | "thread" | "call"; pkg: string; supplier: string } | null;
+type Open = { kind: "write" | "remind" | "answer" | "read" | "thread"; pkg: string; supplier: string } | null;
 
-// the voice call brings its own library: loaded when a call is opened
-const CallPanel = lazy(() => import("./Call"));
 
 export function InquiriesView({
   analysisId,
@@ -299,11 +297,6 @@ function Package({
                   Remind
                 </button>
               )}
-              {state.voice && a.status !== "answered" && a.status !== "declined" && (
-                <button className="btn-ghost small" title="The voice agent phones and asks for the prices; you listen" onClick={() => onOpen({ kind: "call", pkg: p.id, supplier: a.supplier_id })}>
-                  Call
-                </button>
-              )}
               {a.thread.length > 0 && (a.thread.length > 1 || a.thread[0].reply) && (
                 <button className="text-link" onClick={() => onOpen(open?.kind === "thread" && open.supplier === a.supplier_id ? null : { kind: "thread", pkg: p.id, supplier: a.supplier_id })}>
                   Conversation ({a.thread.length + a.thread.filter((t) => t.reply).length})
@@ -321,11 +314,6 @@ function Package({
               )}
             </span>
             {open && open.supplier === a.supplier_id && open.kind === "thread" && <Thread turns={a.thread} supplier={a.supplier} />}
-            {open && open.supplier === a.supplier_id && open.kind === "call" && (
-              <Suspense fallback={<p className="quiet">Loading the call…</p>}>
-                <CallPanel analysisId={analysisId} pkg={p.id} supplier={a.supplier_id} supplierName={a.supplier} onDone={() => void act("", () => getSupply(analysisId))} />
-              </Suspense>
-            )}
             {open && open.supplier === a.supplier_id && (open.kind === "write" || open.kind === "remind" || open.kind === "answer") && (
               <Composer
                 analysisId={analysisId}
@@ -390,7 +378,7 @@ function lastSaid(thread: InquiryTurn[]): string | null {
 
 /** The conversation with one supplier about one package: our messages and what came back, in order. */
 function Thread({ turns, supplier }: { turns: InquiryTurn[]; supplier: string }) {
-  const LABEL = { inquiry: "Inquiry", reminder: "Reminder", answer: "Our answer", call: "Call by the voice agent" } as const;
+  const LABEL = { inquiry: "Inquiry", reminder: "Reminder", answer: "Our answer" } as const;
   return (
     <ol className="sup-thread">
       {turns.map((t) => (

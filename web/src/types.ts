@@ -646,7 +646,6 @@ export interface SupplierMore {
   contacts: { name: string; role: string; email: string; phone: string }[];
   preferred: boolean;
   blocked: boolean;
-  no_call: boolean; // not to be phoned by the voice agent
   documents: { name: string; valid_until: string }[]; // a subcontractor's papers with their expiry
   found: { search: string; url: string; title: string; why: string; at: string; what: string } | null; // where a web search found it
   style: PartnerStyle | null;
@@ -691,7 +690,6 @@ export interface PartnerThread extends PartnerWhere {
   since: string | null;
   days: number | null;
   reminders: number;
-  calls: number;
   summary: string;
   asks: number;
   due: string | null;
@@ -714,7 +712,6 @@ export interface PartnerCard {
   alternatives: number;
   declined: number;
   reminders: number;
-  calls: number;
   taken: number;
   messages: number;
   last_contact: string | null;
@@ -749,7 +746,7 @@ export interface PartnerPrice extends PartnerWhere {
 export interface PartnerEvent extends PartnerWhere {
   id: string;
   mail_id: string | null;
-  kind: "inquiry" | "reminder" | "answer" | "call" | "reply" | "transcript" | "mail";
+  kind: "inquiry" | "reminder" | "answer" | "reply" | "mail";
   direction: "in" | "out";
   at: string;
   draft: boolean;
@@ -760,7 +757,6 @@ export interface PartnerEvent extends PartnerWhere {
   reply_kind?: string;
   summary?: string;
   priced?: boolean;
-  audio?: boolean;
 }
 
 export interface PartnerRow extends Omit<Supplier, "more"> {
@@ -820,7 +816,6 @@ export interface PartnersOverview {
   coverage: { group: string; kind: Supplier["kind"]; partners: { id: string; name: string }[] }[];
   gaps: PartnerGap[];
   needs: PartnerNeed[];
-  voice: boolean;
   inbox: string | null;
   discovery: { auto: boolean; every_days: number; region: string };
   company: Company;
@@ -924,7 +919,7 @@ export interface SupplyPackage {
 /** One message of ours in a conversation with a supplier, and what came back on it. */
 export interface InquiryTurn {
   id: string;
-  kind: "inquiry" | "reminder" | "answer" | "call"; // call: the voice agent phoned (src/boq/voice.py)
+  kind: "inquiry" | "reminder" | "answer";
   subject: string;
   body: string;
   created: string;
@@ -974,7 +969,6 @@ export interface SupplyState {
   inbox: string | null;
   company: Company;
   suppliers: Supplier[];
-  voice: boolean; // the voice agent can phone a supplier (an ElevenLabs key is set)
   priced_file: boolean;
   plan: { id: string; created: string } | null;
   packages: SupplyPackage[];

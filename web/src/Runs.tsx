@@ -641,7 +641,7 @@ interface Happening {
   at: string;
   project_id: string | null;
   project: string;
-  kind: string; // tender, answer, quote, asks, decline, released, run, call
+  kind: string; // tender, answer, quote, asks, decline, released, run
   text: string;
   move: "you" | "client" | "supplier" | "";
 }

@@ -55,7 +55,7 @@ Working name: TBD. One screen flow:
 3. **Price**: per item a suggested unit price with source (own history / benchmark / supplier quote / model estimate),
    date and confidence band. Items with no reliable price are the **price gaps**.
 4. **Close the gaps**: for the gaps with the biggest cost impact, request quotes — by email draft or by the
-   **voice agent that phones the supplier** (see `05-voice-agent.md`). The quote flows back into the table.
+   **voice agent that phones the supplier** (dropped, D-059). The quote flows back into the table.
 5. **What-if**: sliders for material price change, labour rate, risk surcharge → bid total as a range (P50 / P80).
 6. **Export**: bidder-question list, risk report (PDF), priced GAEB X84 if time allows.
 

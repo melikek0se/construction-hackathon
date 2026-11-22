@@ -333,10 +333,6 @@ export async function composeFollowUp(
   return read(await fetch("/api/partners/follow-up", send("POST", { ...thread, kind })));
 }
 
-/** The analysis a conversation belongs to, for the voice agent's call from the partners page. */
-export async function findFollowUp(thread: { project_id: string; file: string; package: string; supplier_id: string }): Promise<{ analysis_id: string }> {
-  return read(await fetch("/api/partners/follow-up", send("POST", { ...thread, kind: "call" })));
-}
 
 export async function mailInquiry(
   id: string,
@@ -465,10 +461,6 @@ export async function putExamples(on: boolean): Promise<void> {
   if (!response.ok) await read(response);
 }
 
-
-export async function fetchCallRecord(mailId: string): Promise<{ status: string; transcript: string; seconds: number | null }> {
-  return read(await fetch(`/api/mails/${mailId}/call-record`, { method: "POST" }));
-}
 
 /** The tender step of a project: its LVs put together from all their documents. */
 export async function openTender(id: string): Promise<Tender> {

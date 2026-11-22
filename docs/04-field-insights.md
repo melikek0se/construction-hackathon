@@ -47,7 +47,7 @@ For the tool: generate the inquiry from the LV item (spec, quantity, site, deliv
 parse the answer back into a structured price. Email is the normal channel for a binding quote. Phone is the channel
 for speed: an indicative price, availability, lead time, and **chasing** an unanswered email.
 
-The voice agent concept is in `05-voice-agent.md`. This point is the justification for it: it is an existing
+The voice agent was dropped (D-059). This point was the justification for it: it is an existing
 manual process, not an invented use case.
 
 ## 3. Failure rate / waste when counting parts
@@ -112,8 +112,8 @@ An anonymous caller gets the list price or nothing.
 
 So every inquiry needs a **company profile**: company name, customer number at that supplier if any, contact person,
 callback number and email, project name and site location, bid deadline. The voice agent must state these up front
-and must say for whom it is calling. It must also say that it is an AI assistant (see the legal section in
-`05-voice-agent.md`). Corollary: scraping web shops gives list prices only — a weak signal, to be labelled as such.
+and must say for whom it is calling. It must also say that it is an AI assistant (the voice agent was
+dropped, D-059). Corollary: scraping web shops gives list prices only — a weak signal, to be labelled as such.
 
 ## 7. Labour costs
 

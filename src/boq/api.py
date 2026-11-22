@@ -30,7 +30,7 @@ from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
 from boq import (amendments, bid, catalog, chat, db, events, inbox, mail, partners, partners_demo, pipeline, retrieve, risk,
-                 runs, spend, supply, tender, voice)
+                 runs, spend, supply, tender)
 from boq import dates as tender_dates
 from boq import intake as intake_rules
 from boq.checks import run_checks, sort_findings
@@ -1655,7 +1655,6 @@ def _supply_state(analysis_id: str) -> dict:
             "due": dates.get("due"), "binding_until": dates.get("binding_until"), "reply_by": supply.reply_by(dates),
             "account": account["from"] if account else None, "inbox": (mail.inbox() or {}).get("user") or None,
             "company": supply.company(), "suppliers": directory,
-            "voice": voice.available(),  # the voice agent can phone a supplier (an ElevenLabs key is set)
             "priced_file": any(i.total is not None for i in boq.items)}
     if kept is None:
         return {**base, "plan": None, "packages": [], "waits": [{"oz": oz, "question": q} for oz, q in wait.items()],
@@ -2017,88 +2016,6 @@ def quotes_to_bid(analysis_id: str):
 
 
 
-# ---------------------------------------------------------------- the supplier phoned (boq.voice)
-
-class CallStart(BaseModel):
-    package: str
-    supplier_id: str
-
-
-@app.post("/api/analyses/{analysis_id}/supply/call")
-def start_call(analysis_id: str, body: CallStart):
-    """Start a call to a supplier about a package, from the browser: a token for the voice agent, what it
-    is told (who asks, the job, the items), and the record the prices of the call are kept under."""
-    boq, _ = _analysis(analysis_id)
-    state = _supply_state(analysis_id)
-    _, package = _package(analysis_id, body.package)
-    to = supply.supplier(body.supplier_id)
-    if to is None:
-        raise HTTPException(404, "This supplier is no longer in the directory.")
-    if to["more"].get("no_call"):
-        raise HTTPException(422, f"{to['name']} is marked \"do not phone\" in the directory.")
-    try:
-        session = voice.token()
-    except voice.VoiceUnavailable as exc:
-        raise HTTPException(503, str(exc)) from exc
-    asked, firm = _asked(boq, package["items"]), state["company"]
-    listed = "\n".join(f"{i['oz']} | {i['qty'] if i['qty'] is not None else '-'} {i['unit']} | {i['label']}" for i in asked)
-    kept = mail.keep(supply.PRICE_INQUIRY, _project_id(analysis_id), boq.file, to["phone"] or to["email"] or to["name"],
-                     f"Telefonat – {package['name']} – {state['lv']['name']}", f"Call by the voice agent about:\n{listed}", "phone",
-                     asked, sent=True, meta={"package": body.package, "supplier_id": body.supplier_id, "kind": "call",
-                                             "conversation_id": session["conversation_id"]})
-    day = state["reply_by"]
-    return {"mail_id": kept["id"], "token": session["token"], "conversation_id": session["conversation_id"],
-            "variables": {"company_name": firm["name"] or "unser Unternehmen", "supplier_name": to["name"],
-                          "project_name": state["lv"]["name"], "contact_name": firm["contact"] or "unsere Kalkulation",
-                          "reply_by": f"{date.fromisoformat(day):%d.%m.%Y}" if day else "Ende der Woche", "items_text": listed},
-            "items": asked}
-
-
-class CallPrice(BaseModel):
-    pos: str
-    unit_price: float
-    unit: str = ""
-    product: str = ""
-    alternative: bool = False
-    note: str = ""
-
-
-@app.post("/api/mails/{mail_id}/call-price")
-def call_price(mail_id: str, body: CallPrice):
-    """A price the supplier gave on the phone, handed over by the voice agent while the call is going. It
-    joins the prices of this call; a price by phone is indicative, so the quote is marked not binding."""
-    found = _mail(mail_id)
-    if (found["meta"] or {}).get("kind") != "call":
-        raise HTTPException(422, "This record is no call.")
-    before = next((q for q in supply.quotes_for(found["project_id"], found["file"]) if q["mail_id"] == mail_id), None)
-    lines = [{**line, "pos": line["oz"]} for line in (before or {"lines": []})["lines"] if line["oz"] != body.pos.strip()]
-    lines.append({"pos": body.pos, "unit_price": body.unit_price, "unit": body.unit, "product": body.product,
-                  "alternative": body.alternative, "note": body.note, "quote": None})
-    read = supply.match_lines(found["items"], None, lines, {"basis": "unknown", "binding": "non_binding",
-                                                           "note": "By phone, indicative: ask for the written quote."})
-    if not any(line["oz"] == body.pos.strip().lstrip("0") or line["oz"] == body.pos.strip() for line in read["lines"]):
-        return {"ok": False, "say": f"Position {body.pos} is not in the inquiry. Use the item number exactly as listed."}
-    supply.keep_quote(found, found["file"], read, "")
-    return {"ok": True, "say": f"Noted: item {body.pos}, {body.unit_price:.2f} EUR per {body.unit or 'unit'}.", "priced": len(read["lines"])}
-
-
-class CallEnd(BaseModel):
-    transcript: str = ""
-
-
-@app.post("/api/mails/{mail_id}/call-end")
-def call_end(mail_id: str, body: CallEnd):
-    """The call is over: what was said is kept with it, as the reply of this turn of the conversation."""
-    found = _mail(mail_id)
-    quoted = any(q["mail_id"] == mail_id for q in supply.quotes_for(found["project_id"], found["file"]))
-    mail.keep_reply(mail_id, body.transcript.strip()[:60000] or "(nothing was said)",
-                    {"kind": "quote" if quoted else "other", "asks": [], "unmatched": [],
-                     "summary": "Prices given by phone: indicative, the written quote is still to come." if quoted
-                     else "The call ended without a price."}, "phone")
-    return {"ok": True}
-
-
-
 # ---------------------------------------------------------------- partners: suppliers and subcontractors (boq.partners)
 
 @app.get("/api/partners")
@@ -2172,6 +2089,35 @@ def partner_history():
         raise HTTPException(503, str(exc)) from exc
 
 
+class FollowUp(BaseModel):
+    project_id: str
+    file: str  # the file's name, as the conversation carries it
+    package: str
+    supplier_id: str
+    # "reminder"; "answer": what the firm asked back, answered from the LV (asks Claude); "inquiry": the first
+    # message to a firm on the package
+    kind: str = "reminder"
+
+
+@app.post("/api/partners/follow-up")
+async def partner_follow_up(body: FollowUp):
+    """The next message in an open conversation, written from the partners page: a reminder, or the answer
+    to what the firm asked back. It is the message the price inquiries of the tender would write
+    (`compose_inquiry`); with it comes the analysis it belongs to, which is where it is sent from. Nothing
+    goes out here: the estimator reads the text first."""
+    if body.kind not in ("reminder", "answer", "inquiry"):
+        raise HTTPException(422, "kind is reminder, answer or inquiry.")
+    with db.engine().connect() as conn:
+        kept = [r.id for r in conn.execute(select(db.analyses.c.id).where(db.analyses.c.project_id == body.project_id)
+                                           .order_by(db.analyses.c.created.desc()))]
+    analysis_id = next((a for a in kept if _analysis(a)[0].file == body.file), None)
+    if analysis_id is None:
+        raise HTTPException(404, "The analysis of this tender's file is no longer kept. Open the file once.")
+    draft = await compose_inquiry(analysis_id, InquiryDraft(package=body.package, supplier_id=body.supplier_id,
+                                                            remind=body.kind == "reminder", answer=body.kind == "answer"))
+    return {**draft, "analysis_id": analysis_id}
+
+
 @app.post("/api/partners/messages")
 async def partner_messages(files: list[UploadFile]):
     """The same for messages handed over as .eml files: each goes to the partner it is from or to."""
@@ -2199,38 +2145,6 @@ def remove_examples():
 def partner_profile(supplier_id: str):
     """One partner: its prices with their dates, its usual terms, how it behaves, and every message and call."""
     found = partners.profile(supplier_id)
-class FollowUp(BaseModel):
-    project_id: str
-    file: str  # the file's name, as the conversation carries it
-    package: str
-    supplier_id: str
-    # "reminder"; "answer": what the firm asked back, answered from the LV (asks Claude); "inquiry": the first
-    # message to a firm on the package; "call": nothing is written, only the analysis is found (the voice agent)
-    kind: str = "reminder"
-
-
-@app.post("/api/partners/follow-up")
-async def partner_follow_up(body: FollowUp):
-    """The next message in an open conversation, written from the partners page: a reminder, or the answer
-    to what the firm asked back. It is the message the price inquiries of the tender would write
-    (`compose_inquiry`); with it comes the analysis it belongs to, which is where it is sent from. Nothing
-    goes out here: the estimator reads the text first."""
-    if body.kind not in ("reminder", "answer", "inquiry", "call"):
-        raise HTTPException(422, "kind is reminder, answer, inquiry or call.")
-    with db.engine().connect() as conn:
-        kept = [r.id for r in conn.execute(select(db.analyses.c.id).where(db.analyses.c.project_id == body.project_id)
-                                           .order_by(db.analyses.c.created.desc()))]
-    analysis_id = next((a for a in kept if _analysis(a)[0].file == body.file), None)
-    if analysis_id is None:
-        raise HTTPException(404, "The analysis of this tender's file is no longer kept. Open the file once.")
-    if body.kind == "call":
-        _package(analysis_id, body.package)
-        return {"analysis_id": analysis_id}
-    draft = await compose_inquiry(analysis_id, InquiryDraft(package=body.package, supplier_id=body.supplier_id,
-                                                            remind=body.kind == "reminder", answer=body.kind == "answer"))
-    return {**draft, "analysis_id": analysis_id}
-
-
     if found is None:
         raise HTTPException(404, "This partner is no longer in the directory.")
     return found
@@ -2253,33 +2167,6 @@ async def partner_style(supplier_id: str):
         raise HTTPException(502, f"Reading the style failed: {exc}") from exc
 
 
-@app.get("/api/mails/{mail_id}/call-audio")
-def call_audio(mail_id: str):
-    """The recording of a call the voice agent made, as ElevenLabs keeps it."""
-    found = _mail(mail_id)
-    conversation = (found["meta"] or {}).get("conversation_id")
-    if not conversation:
-        raise HTTPException(404, "No recording is kept for this call.")
-    try:
-        return Response(voice.audio(conversation), media_type="audio/mpeg")
-    except voice.VoiceUnavailable as exc:
-        raise HTTPException(503, str(exc)) from exc
-
-
-@app.post("/api/mails/{mail_id}/call-record")
-def call_record(mail_id: str):
-    """Fetch what ElevenLabs kept of a call (who said what) and keep it as the call's transcript."""
-    found = _mail(mail_id)
-    conversation = (found["meta"] or {}).get("conversation_id")
-    if not conversation:
-        raise HTTPException(404, "This record is no call with a recording.")
-    try:
-        kept = voice.record(conversation)
-    except voice.VoiceUnavailable as exc:
-        raise HTTPException(503, str(exc)) from exc
-    if kept["transcript"]:
-        mail.keep_reply(mail_id, kept["transcript"][:60000], {**(found["answers"] or {"kind": "other", "asks": [], "unmatched": [], "summary": ""})}, "phone")
-    return kept
 @app.post("/api/partners/{supplier_id}/read")
 async def partner_read(supplier_id: str):
     """What an estimator should know about a partner in a few sentences (asks Claude), kept with it. Every

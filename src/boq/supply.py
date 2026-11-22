@@ -64,7 +64,7 @@ def set_company(values: dict) -> dict:
 
 
 # What else is kept about a directory entry, in the column `more`. Read and shown by boq.partners.
-MORE = {"website": "", "customer_no": "", "contacts": [], "preferred": False, "blocked": False, "no_call": False,
+MORE = {"website": "", "customer_no": "", "contacts": [], "preferred": False, "blocked": False,
         "documents": [], "found": None, "style": None, "read": None, "example": False}
 
 

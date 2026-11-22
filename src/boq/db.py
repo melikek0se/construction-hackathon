@@ -129,7 +129,7 @@ suppliers = Table(
     Column("note", Text, nullable=False, default=""),
     Column("source", String(16), nullable=False),  # "user", "quote" (learned from a reply), "web", "demo"
     # what else the agent knows about the firm (boq.partners.MORE): website, our customer number there, more
-    # contact persons, flags (preferred, blocked, not to be phoned), a subcontractor's documents with their
+    # contact persons, flags (preferred, blocked), a subcontractor's documents with their
     # expiry, where a web search found it, and how it writes (`style`, worked out from its messages)
     Column("more", JSON),
 )

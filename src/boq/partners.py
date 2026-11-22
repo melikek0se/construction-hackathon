@@ -4,7 +4,7 @@ boq.supply holds the directory and the inquiries of one LV. This module looks ac
 
 - the prices a partner gave, each with its day, its validity and the tender it was for (`profile`, `book`),
 - how it behaves: how often it answers, how fast, how often it is taken (`_card`),
-- every message and call with it, the inquiries of the app and the older mail found in the mailbox or
+- every message with it, the inquiries of the app and the older mail found in the mailbox or
   handed over as .eml (`timeline`, `take_messages`, `mailbox_history`),
 - how it writes, read by Claude from its own messages with the passage for every claim (`read_style`), and
   an inquiry written that way (`restyle`): only the opening and the closing change, the items never,
@@ -32,7 +32,7 @@ from urllib.parse import urlparse
 import anthropic
 from sqlalchemy import delete, insert, select, update
 
-from boq import catalog, db, mail, spend, supply, voice
+from boq import catalog, db, mail, spend, supply
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable
 
 STALE_DAYS = supply.QUOTE_FRESH_DAYS
@@ -103,7 +103,6 @@ def _thread(rec: dict, key: tuple, ms: list[dict]) -> dict:
             "subject": ms[0]["subject"], "since": _iso(since),
             "days": (datetime.now(timezone.utc) - since).days if since else None,
             "reminders": sum(1 for m in ms if (m["meta"] or {}).get("kind") == "reminder"),
-            "calls": sum(1 for m in ms if (m["meta"] or {}).get("kind") == "call"),
             "first_sent": sent and sent["sent_at"], "summary": (said or {}).get("summary") or "",
             "asks": len((said or {}).get("asks") or []), "example": bool((ms[0]["meta"] or {}).get("example")),
             "questions": [str(a.get("question") or "").strip() for a in (said or {}).get("asks") or [] if a.get("question")],
@@ -114,8 +113,6 @@ def _thread(rec: dict, key: tuple, ms: list[dict]) -> dict:
 def _via(m: dict | None) -> str:
     if m is None:
         return ""
-    if m["via"] == "phone":
-        return "phone"
     return "sheet" if (m["reply"] or "").startswith("(Excel") else "e-mail" if m["reply_via"] == "imap" else "reply pasted"
 
 
@@ -175,7 +172,7 @@ def _card(rec: dict, s: dict, prices: list[dict]) -> dict:
             "latest_price": max((p["date"] for p in prices), default=None),
             "alternatives": sum(1 for p in prices if p["alternative"]),
             "declined": sum(1 for t in threads if t["status"] == "declined"),
-            "reminders": sum(t["reminders"] for t in threads), "calls": sum(t["calls"] for t in threads),
+            "reminders": sum(t["reminders"] for t in threads),
             "taken": taken, "messages": len(older) + sum(len(ms) for k, ms in rec["threads"].items() if k[0] == s["id"]),
             "last_contact": max(days)[:10] if days else None,
             "open": [t for t in threads if t["status"] in ("sent", "question", "later", "drafted")]}
@@ -220,7 +217,7 @@ def _usual(rec: dict, supplier_id: str) -> dict | None:
 
 
 def timeline(rec: dict, supplier_id: str) -> list[dict]:
-    """Every message and call with a partner, newest first: what the app sent with what came back on it,
+    """Every message with a partner, newest first: what the app sent with what came back on it,
     and the older mail found in the mailbox."""
     out = []
     for key, ms in rec["threads"].items():
@@ -230,19 +227,19 @@ def timeline(rec: dict, supplier_id: str) -> list[dict]:
         for m in ms:
             meta = m["meta"] or {}
             kind = meta.get("kind") or "inquiry"
+            if kind == "call":  # a call kept from before the voice agent was taken out (D-059)
+                continue
             base = {"mail_id": m["id"], "subject": m["subject"], "example": bool(meta.get("example")),
                     **{k: where[k] for k in ("project_id", "project", "file", "package")}}
             out.append({**base, "id": m["id"], "kind": kind, "direction": "out", "at": m["sent_at"] or m["created"],
                         "draft": not m["sent_at"], "via": m["via"],
-                        "text": "" if kind == "call" else m["body"]})
+                        "text": m["body"]})
             if m["reply"]:
                 said = m["answers"] or {}
-                out.append({**base, "id": m["id"] + "r", "kind": "transcript" if kind == "call" else "reply",
+                out.append({**base, "id": m["id"] + "r", "kind": "reply",
                             "direction": "in", "at": m["reply_at"] or m["created"], "draft": False,
                             "via": m["reply_via"] or "", "text": m["reply"], "reply_kind": said.get("kind") or "quote",
-                            "summary": said.get("summary") or "", "priced": m["id"] in rec["quoted"],
-                            # the recording is with ElevenLabs under the call's id (boq.voice.audio)
-                            "audio": bool(kind == "call" and meta.get("conversation_id") and voice.available())})
+                            "summary": said.get("summary") or "", "priced": m["id"] in rec["quoted"]})
     for o in rec["older"]:
         if o["supplier_id"] == supplier_id:
             out.append({"id": o["id"], "mail_id": None, "kind": "mail", "direction": o["direction"], "at": o["at"],
@@ -286,7 +283,7 @@ def overview() -> dict:
             entry["partners"].append({"id": s["id"], "name": s["name"]})
     return {"partners": partners, "waiting": waiting, "book": rows,
             "coverage": sorted(cover.values(), key=lambda c: (len(c["partners"]), c["group"].lower())),
-            "gaps": gaps(rec), "needs": needs(rec), "voice": voice.available(), "inbox": (mail.inbox() or {}).get("user") or None,
+            "gaps": gaps(rec), "needs": needs(rec), "inbox": (mail.inbox() or {}).get("user") or None,
             "discovery": discovery(), "company": supply.company()}
 
 
@@ -315,6 +312,7 @@ def gaps(rec: dict | None = None) -> list[dict]:
                         "project_id": where["project_id"], "project": where["project"], "items": len(p["items"])})
     return out
 
+
 def needs(rec: dict | None = None) -> list[dict]:
     """What the tenders need bought or subcontracted, package by package, and who can be asked for each:
     every firm on the package with where the conversation with it stands ("unasked" before the first
@@ -334,7 +332,6 @@ def needs(rec: dict | None = None) -> list[dict]:
                         "why": p.get("why") or "", "items": len(p["items"]), "active": active, "firms": firms,
                         "chosen": bool((plan["chosen"] or {}).get(p["id"]))})
     return out
-
 
 
 # ------------------------------------------------------------------ Claude
@@ -378,7 +375,7 @@ STYLE_SCHEMA = {
         "closing": {"type": "string"},
         "register": {"type": "string", "enum": ["formal", "neutral", "casual"]},
         "length": {"type": "string", "enum": ["short", "medium", "long"]},
-        "answers_with": {"type": "string", "enum": ["filled sheet", "prices in the mail", "quote as a document", "phone", "unknown"]},
+        "answers_with": {"type": "string", "enum": ["filled sheet", "prices in the mail", "quote as a document", "unknown"]},
         "person": {"type": "string"},
         "habits": {"type": "array", "items": _QUOTED},
         "summary": {"type": "string"},
@@ -404,12 +401,12 @@ closing: their closing formula as written ("Viele Grüße", "Mit freundlichen Gr
 one of their messages word for word; empty if they use none.
 - register: formal, neutral or casual. length: how long their messages are.
 - answers_with: how their prices arrive, if the messages show it: the filled-in sheet, prices typed into \
-the mail, a quote as a document (PDF), by phone; else unknown.
+the mail, a quote as a document (PDF); else unknown.
 - person: the name of the person who writes, as signed; empty if no message is signed by a person.
 - habits: up to six things an estimator should know before writing to them or reading their quote, each \
 with its passage (quote, character for character, at most 200 characters) from THEIR messages: e.g. always \
 quotes ex works, asks for the delivery date first, answers only after a reminder, offers their house brand \
-as an alternative, wants the call rather than the mail. text is one English sentence. A habit needs to \
+as an alternative. text is one English sentence. A habit needs to \
 show in the messages; do not generalise from what is usual in the trade.
 - summary: two English sentences for the estimator on how this partner communicates.
 - write_like: one to three sentences of guidance, in English, for writing the next inquiry to them: how to \
@@ -417,6 +414,7 @@ address them, how long, what to put first. Only what the messages support.
 
 The messages may be anonymised: tokens such as [FIRMA_044] replace names; use them as they stand.
 """
+
 
 # ------------------------------------------------------------------ Polier's read of a partner
 
@@ -477,7 +475,7 @@ async def read_firm(supplier_id: str, client: anthropic.AsyncAnthropic | None = 
     if c["asked"]:
         fact(f"Inquiries sent to this firm: {c['asked']}. Answered: {c['answered']} ({c['answer_rate']} %). "
              f"Declined: {c['declined']}. Quotes received: {c['quotes']}. Reminders that had to be sent: {c['reminders']}. "
-             f"Calls: {c['calls']}. Times its quote was taken into a bid: {c['taken']}.")
+             f"Times its quote was taken into a bid: {c['taken']}.")
     if c["reply_hours"] is not None:
         h = c["reply_hours"]
         fact(f"Median time to its first reply: {h:.0f} hours" + (f" (about {h / 24:.0f} days)." if h >= 36 else "."))
@@ -524,7 +522,6 @@ async def read_firm(supplier_id: str, client: anthropic.AsyncAnthropic | None = 
             "basis": {"inquiries": c["asked"], "quotes": c["quotes"], "messages": len(messages)}}
     supply.save_supplier({"more": {"read": read}}, supplier_id)
     return read
-
 
 
 def _talk(supplier_id: str, rec: dict | None = None, limit: int = 40) -> list[dict]:
