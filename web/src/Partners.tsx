@@ -23,7 +23,6 @@ import {
   putExamples,
   readMailboxHistory,
   readPartnerFirm,
-  readPartnerStyle,
   removeSupplier,
   saveCompany,
   saveDiscovery,
@@ -46,7 +45,6 @@ const price = (n: number) => `${money.format(n)} €`;
 const pct = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 const took = (h: number | null) => (h === null ? "–" : h < 36 ? `${Math.round(h)} h` : `${Math.round(h / 24)} days`);
 const KIND: Record<Supplier["kind"], string> = { supplier: "Supplier", subcontractor: "Subcontractor" };
-const SOURCE: Record<Supplier["source"], string> = { user: "entered", quote: "from a quote", web: "found on the web", demo: "example" };
 const BASIS: Record<string, string> = { free_to_site: "free to site", ex_works: "ex works, freight on top", unknown: "not stated" };
 const BINDING: Record<string, string> = { binding: "binding", non_binding: "not binding", unknown: "not stated" };
 const STATUS: Record<PartnerThread["status"], string> = {
@@ -72,47 +70,7 @@ const Mark = ({ you }: { you: boolean }) => <i className={`pt-mark${you ? " is-y
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const today = () => new Date().toISOString().slice(0, 10);
 const daysTo = (iso: string) => Math.round((Date.parse(iso.slice(0, 10)) - Date.parse(today())) / 864e5);
-const median = (list: number[]) => {
-  const s = [...list].sort((a, b) => a - b);
-  return s.length === 0 ? null : s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
-};
 
-
-/** What became of every inquiry to a firm, one mark each: quoted, declined, still waiting, never answered.
-    Counted from the record, so the marks stand by outcome, not in the order the inquiries went out. */
-function Replies({ c }: { c: PartnerCard }) {
-  if (!c.asked) return <span className="quiet">never asked</span>;
-  const declined = Math.min(c.declined, c.answered);
-  const quoted = c.answered - declined;
-  const waiting = Math.min(c.asked - c.answered, c.open.filter((t) => t.status === "sent" || t.status === "later").length);
-  const silent = Math.max(0, c.asked - c.answered - waiting);
-  const says = [quoted && `${quoted} answered`, declined && `${declined} declined`, waiting && `${waiting} still open`, silent && `${silent} never answered`].filter(Boolean).join(", ");
-  const marks = (n: number, kind: string) => Array.from({ length: n }, (_, i) => <i key={`${kind}${i}`} className={kind} />);
-  return (
-    <span className="pt-strip" role="img" aria-label={`${c.asked} asked: ${says}`} title={`${plural(c.asked, "inquiry", "inquiries")}: ${says}`}>
-      {marks(quoted, "is-yes")}
-      {marks(declined, "is-declined")}
-      {marks(waiting, "is-waiting")}
-      {marks(silent, "is-silent")}
-    </span>
-  );
-}
-
-/** How many of a firm's prices still hold, as a bar and a count. */
-function Holds({ c }: { c: PartnerCard }) {
-  if (!c.prices) return <span className="quiet">no price yet</span>;
-  const holds = c.prices - c.stale;
-  return (
-    <span className="pt-holds" title={`${holds} of ${plural(c.prices, "price")} still hold`}>
-      <i>
-        <b style={{ width: `${(holds / c.prices) * 100}%` }} />
-      </i>
-      <span className={`num${holds === 0 ? " pt-up" : ""}`}>
-        {holds}/{c.prices}
-      </span>
-    </span>
-  );
-}
 
 /** Where a firm's prices stand: of the things another firm priced too (prices that hold only), on how many it is
     the lowest, and by how much it lies over the lowest on the others. */
@@ -235,12 +193,9 @@ export function PartnersPage({
               ? (searches ?? []).reduce((n, s) => n + s.candidates.filter((c) => c.status === "new").length, 0)
               : null;
   const openPartner = (id: string) => onPlace({ tab: "suppliers", partner: id });
-  // the firms the open one stands among, in the order of the register: for "previous" and "next"
-  const among = useMemo(() => (rows.some((p) => p.id === place.partner) ? rows : all).map((p) => p.id), [rows, all, place.partner]);
   // prices that still hold and run out within a week: the ones to use or ask again while they stand
   const soon = useMemo(() => (data?.book ?? []).reduce((n, b) => n + b.offers.filter((o) => o.fresh && o.valid_until && daysTo(o.valid_until) <= 7).length, 0), [data]);
   const unsigned = data !== null && (!data.company.name.trim() || !data.company.email.trim());
-  const typical = useMemo(() => median(all.map((p) => p.card.reply_hours).filter((h): h is number => h !== null)), [all]);
 
   const nav = (
     <nav className="pt-nav" aria-label="Partners">
@@ -311,10 +266,6 @@ export function PartnersPage({
               id={place.partner}
               voice={data.voice}
               book={data.book}
-              typical={typical}
-              firms={all.filter((p) => p.card.reply_hours !== null).length}
-              among={among}
-              onStep={openPartner}
               onBack={() => onPlace({ tab: "suppliers", partner: null })}
               onChanged={changed}
               onGone={() => (onPlace({ tab: "suppliers", partner: null }), void changed())}
@@ -524,21 +475,16 @@ function Register({
 
 /* ------------------------------------------------------------------ one firm */
 
-type Sheet = "prices" | "talk" | "terms" | "style";
-const SHEET_NAMES: readonly string[] = ["prices", "talk", "terms", "style"];
-
 /** The conversation a message belongs to: a package of a tender; older inquiries without a package stand alone;
     mail that is part of no inquiry is one group (""). */
 const threadKey = (e: PartnerEvent) => (!e.mail_id ? "" : e.package ? `${e.project_id ?? e.project}|${e.package}` : e.mail_id);
 
+/** One firm, read from top to bottom: who it is and how to reach it, what is open with it right now, how it
+    answers, what Polier knows about it, its prices, the conversations. Entering and changing is behind "Edit". */
 function Profile({
   id,
   voice,
   book,
-  typical,
-  firms,
-  among,
-  onStep,
   onBack,
   onChanged,
   onGone,
@@ -548,12 +494,6 @@ function Profile({
   id: string;
   voice: boolean;
   book: PartnersOverview["book"];
-  /** Median time to the first reply over the whole directory, and how many firms it is of. */
-  typical: number | null;
-  firms: number;
-  /** The firms of the register in its order, this one among them. */
-  among: string[];
-  onStep: (id: string) => void;
   onBack: () => void;
   onChanged: () => void;
   onGone: () => void;
@@ -561,17 +501,7 @@ function Profile({
   onError: (e: string) => void;
 }) {
   const [p, setP] = useState<PartnerProfile | null>(null);
-  const [sheet, setSheet] = useState<Sheet | null>(() => {
-    const named = location.hash.slice(1);
-    return SHEET_NAMES.includes(named) ? (named as Sheet) : null;
-  });
-  const show = (key: Sheet) => {
-    setSheet(key);
-    history.replaceState(history.state, "", `${location.pathname}${location.search}#${key}`);
-  };
-  const [ask, setAsk] = useState<(Message & { pkg: string }) | null>(null);
-  const [asking, setAsking] = useState(false);
-  const [reading, setReading] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [summing, setSumming] = useState(false);
   const [point, setPoint] = useState<number | null>(null);
   const [armed, setArmed] = useState(false);
@@ -580,30 +510,36 @@ function Profile({
   useEffect(() => void load(), [load]);
   const level = useMemo(() => priceLevel(book, id), [book, id]);
 
-  if (!p) return <section className="pt-profile pt-solo"><p className="quiet">Reading…</p></section>;
+  const back = (
+    <button className="pt-fp-back" onClick={onBack}>
+      <svg width="9" height="14" viewBox="0 0 9 14" aria-hidden>
+        <path d="M7.5 1L1.5 7l6 6" fill="none" stroke="currentColor" strokeWidth="2" />
+      </svg>
+      All firms
+    </button>
+  );
+  if (!p)
+    return (
+      <section className="pt-fp">
+        <div className="pt-fp-in">
+          {back}
+          <p className="quiet">Reading…</p>
+        </div>
+      </section>
+    );
 
   const save = (values: Partial<Supplier>) => saveSupplier(values, p.id).then(() => (void load(), onChanged()), (e) => onError(say(e)));
   const more = (values: Partial<SupplierMore>) => save({ more: values as SupplierMore });
-  const text = (key: "name" | "contact" | "email" | "phone" | "place" | "note") => (e: { target: { value: string } }) => {
+  const text = (key: "name" | "contact" | "email" | "phone" | "place") => (e: { target: { value: string } }) => {
     const v = e.target.value.trim();
     if (v !== p[key] && (key !== "name" || v)) void save({ [key]: v });
-  };
-  const extra = (key: "website" | "customer_no") => (e: { target: { value: string } }) => e.target.value.trim() !== p.more[key] && void more({ [key]: e.target.value.trim() });
-  const style = p.more.style;
-  const c = p.card;
-  const theirs = p.timeline.filter((e) => e.direction === "in" && e.kind !== "transcript").length;
-  const readStyle = () => {
-    setReading(true);
-    readPartnerStyle(p.id)
-      .then(() => (void load(), onChanged()), (e) => onError(say(e)))
-      .finally(() => setReading(false));
   };
   const drop = (files: File[]) =>
     handOverMessages(files.filter((f) => f.name.toLowerCase().endsWith(".eml"))).then(
       (r) => (void load(), onChanged(), r.kept === 0 && onError(`None of these messages is from or to an address of ${p.name}${r.known ? ` (${r.known} are in a conversation already)` : ""}.`)),
       (e) => onError(say(e)),
     );
-
+  const c = p.card;
   const sum = p.more.read;
   const sumUp = () => {
     setSumming(true);
@@ -613,255 +549,31 @@ function Profile({
       .finally(() => setSumming(false));
   };
   const bare = c.asked === 0 && p.timeline.length === 0 && p.prices.length === 0;
-  const askAgain = (r: PartnerPrice) => {
-    setAsking(true);
-    composeFollowUp({ project_id: r.project_id!, file: r.file_name!, package: r.package_id!, supplier_id: p.id }, "inquiry")
-      .then((d) => setAsk({ pkg: r.package_id!, kind: "inquiry", analysis_id: d.analysis_id, to: d.to, subject: d.subject, body: d.body, points: [] }), (e) => onError(say(e)))
-      .finally(() => setAsking(false));
-  };
-  const sendAsk = (via: "smtp" | "draft") => {
-    if (!ask) return;
-    setAsking(true);
-    mailInquiry(ask.analysis_id, { package: ask.pkg, supplier_id: p.id, to: ask.to, subject: ask.subject, body: ask.body, via, kind: "inquiry" })
-      .then(() => (setAsk(null), void load(), onChanged()), (e) => onError(say(e)))
-      .finally(() => setAsking(false));
-  };
-  const at: Sheet = sheet ?? (p.prices.length ? "prices" : p.timeline.length ? "talk" : "terms");
-  const holds = c.prices - c.stale;
-  // the next day a price that still holds runs out, and how many go with it
-  const ends = p.prices.filter((r) => r.fresh && r.valid_until).map((r) => r.valid_until!).sort();
-  const nextEnd = ends[0];
-  const threads = new Set(p.timeline.map(threadKey)).size;
-  const facts = [p.contact, p.email, p.phone, p.place, p.more.customer_no && `customer no. ${p.more.customer_no}`].filter(Boolean);
-  const SHEETS: [Sheet, string, number | null][] = [
-    ["prices", "Prices", p.prices.length],
-    ["talk", "Conversations", threads],
-    ["terms", "Terms and particulars", null],
-    ["style", "How they write", null],
-  ];
 
   return (
     <section
-      className={`pt-profile pt-solo${dropping ? " is-dropping" : ""}`}
+      className={`pt-fp${dropping ? " is-dropping" : ""}`}
       onDragOver={(e) => e.dataTransfer.types.includes("Files") && (e.preventDefault(), e.stopPropagation(), setDropping(true))}
       onDragLeave={() => setDropping(false)}
       onDrop={(e) => (e.preventDefault(), e.stopPropagation(), setDropping(false), void drop([...e.dataTransfer.files]))}
     >
-      <header className="pt-head">
-        <div>
-          <nav className="pt-crumb" aria-label="Where this is">
-            <button className="text-link" onClick={onBack}>
-              Firms
-            </button>
-            <span aria-hidden>›</span>
-            <span>{p.name}</span>
-            {among.length > 1 && among.includes(p.id) && (
-              <span className="pt-crumb-step">
-                <button className="text-link" disabled={among.indexOf(p.id) === 0} onClick={() => onStep(among[among.indexOf(p.id) - 1])}>
-                  Previous
-                </button>
-                <span className="num">
-                  {among.indexOf(p.id) + 1} of {among.length}
-                </span>
-                <button className="text-link" disabled={among.indexOf(p.id) === among.length - 1} onClick={() => onStep(among[among.indexOf(p.id) + 1])}>
-                  Next
-                </button>
-              </span>
-            )}
-          </nav>
-          <h2>
-            {p.name}
-            <em className="tag">{KIND[p.kind]}</em>
-            {p.more.preferred && <em className="tag pt-pref">preferred</em>}
-            {p.more.blocked && <em className="tag">not asked</em>}
-            {p.more.no_call && <em className="tag">not phoned</em>}
-            {(p.more.example || p.source !== "user") && (
-              <em className="tag" title={p.more.example ? "An example: this firm, its older mail and its older prices are made up, to show the page with a history." : undefined}>
-                {p.more.example ? "example" : SOURCE[p.source]}
-              </em>
-            )}
-          </h2>
-          <p className="pt-head-sub">
-            {facts.length === 0 && <span>no contact entered yet</span>}
-            {p.contact && <span>{p.contact}</span>}
-            {p.email && <a href={`mailto:${p.email}`}>{p.email}</a>}
-            {p.phone && <a href={`tel:${p.phone.replace(/[^+\d]/g, "")}`}>{p.phone}</a>}
-            {p.place && <span>{p.place}</span>}
-            {p.more.customer_no && <span>customer no. {p.more.customer_no}</span>}
-            {p.more.website && (
-              <a href={/^https?:/.test(p.more.website) ? p.more.website : `https://${p.more.website}`} target="_blank" rel="noreferrer">
-                {p.more.website.replace(/^https?:\/\//, "")}
-              </a>
-            )}
-            <button className="text-link" onClick={() => show("terms")}>
-              edit
-            </button>
-          </p>
-          {p.groups.length > 0 && (
-            <p className="pt-head-sub" lang="de">
-              <span lang="en">{p.kind === "supplier" ? "sells" : "does"}</span> {p.groups.join(", ")}
+      <div className="pt-fp-in">
+        {back}
+
+        <header className="pt-fp-head">
+          <div>
+            <h2>{p.name}</h2>
+            <p>
+              {[KIND[p.kind], p.place, p.more.preferred && "preferred", p.more.blocked && "not asked", p.more.example && "example firm"].filter(Boolean).join(" · ")}
             </p>
-          )}
-        </div>
-      </header>
-      {p.more.found && (
-        <p className="pt-note">
-          Found on the web on {day(p.more.found.at)} while looking for <span lang="de">„{p.more.found.what}“</span>:{" "}
-          <a href={p.more.found.url} target="_blank" rel="noreferrer">
-            {p.more.found.title || p.more.found.url}
-          </a>
-          . {p.more.found.why} Check the contact on its page before the first inquiry goes out; Polier writes to nobody on its own.
-        </p>
-      )}
-
-      {c.open.length > 0 && (
-        <ul className="pt-open">
-          {c.open.map((t, i) => (
-            <li key={i}>
-              <Mark you={yours(t)} />
-              <b>{yours(t) ? "Your move" : "Their move"}</b>
-              <span>
-                {STATUS[t.status]}
-                {t.days !== null && (t.days === 0 ? " today" : ` for ${plural(t.days, "day")}`)}
-                {t.reminders > 0 && `, reminded ${t.reminders === 1 ? "once" : `${t.reminders} times`}`} · <span lang="de">{[t.package, t.project].filter(Boolean).join(" · ")}</span>
-                {t.summary && <small>{t.summary}</small>}
-              </span>
-              {t.project_id && t.file !== null && (
-                <button className={yours(t) ? "btn-new small" : "btn-ghost small"} onClick={() => onOpenTender(t.project_id!, t.file!)}>
-                  {t.status === "question" ? "Answer in the inquiry" : "Open the inquiry"}
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="pt-top">
-      {(sum || !bare) && (
-        <div className="pt-pread">
-          <header>
-            <b>Polier's read</b>
-            {sum && (
-              <small>
-                from {[sum.basis.inquiries && plural(sum.basis.inquiries, "inquiry", "inquiries"), sum.basis.quotes && plural(sum.basis.quotes, "quote"), sum.basis.messages && plural(sum.basis.messages, "message")].filter(Boolean).join(", ")} · {day(sum.at)}
-              </small>
-            )}
-            <button className="text-link" disabled={summing} onClick={sumUp} title="Asks Claude: a few seconds, a few cents">
-              {summing ? "Reading the record…" : sum ? "Read again" : "Let Polier read the record"}
-            </button>
-          </header>
-          {!sum ? (
-            <p className="quiet">What to know before asking this firm or reading its quote, in a few sentences. Each one names the count or the passage it rests on; a sentence without one is not shown.</p>
-          ) : sum.points.length === 0 ? (
-            <p className="quiet">Nothing Polier wrote stood against the record, so nothing is shown.</p>
-          ) : (
-            <ol className="pt-points">
-              {sum.points.map((pt, i) => (
-                <li key={i}>
-                  <button className={point === i ? "is-on" : ""} aria-expanded={point === i} onClick={() => setPoint(point === i ? null : i)} title="What this rests on">
-                    {pt.text}
-                  </button>
-                </li>
-              ))}
-            </ol>
-          )}
-          {sum && point !== null && sum.points[point] && (
-            <ul className="pt-point-src">
-              {sum.points[point].sources.map((s) =>
-                s.kind === "fact" ? (
-                  <li key={s.id}>
-                    <em className="tag">the record</em> {s.text}
-                  </li>
-                ) : (
-                  <li key={s.id}>
-                    <em className="tag">{s.who === "them" ? "their message" : "our message"}</em> <span className="num">{day(s.at)}</span> <span lang="de">{s.text}</span>
-                  </li>
-                ),
-              )}
-              {sum.points[point].quote && (
-                <li>
-                  <q lang="de">{sum.points[point].quote}</q>
-                </li>
-              )}
-            </ul>
-          )}
-          {sum && Math.min(30, p.timeline.filter((e) => e.text && !e.draft).length) !== sum.basis.messages && <small>The record has changed since this was written: read again.</small>}
-          {sum && sum.dropped > 0 && <small>{plural(sum.dropped, "sentence")} left out: its source, passage or a figure did not stand in the record.</small>}
-        </div>
-      )}
-
-      <dl className="pt-figures pt-score">
-        <div>
-          <dt>Answers</dt>
-          <dd className="num">
-            {c.asked ? `${c.answered} of ${c.asked}` : "–"} <Replies c={c} />
-          </dd>
-          <small>
-            {c.asked === 0
-              ? "no inquiry has gone to this firm yet"
-              : [c.quotes > 0 && plural(c.quotes, "quote"), c.declined > 0 && `${c.declined} declined`, c.taken > 0 && `taken ${c.taken === 1 ? "once" : `${c.taken} times`}`, c.reminders > 0 && plural(c.reminders, "reminder"), c.calls > 0 && plural(c.calls, "call")].filter(Boolean).join(", ") || "no quote yet"}
-          </small>
-        </div>
-        <div>
-          <dt>First reply, median</dt>
-          <dd className="num">{took(c.reply_hours)}</dd>
-          <small>{c.reply_hours === null ? "has not answered yet" : typical !== null && firms > 1 ? `the median of all ${firms} firms that answered: ${took(typical)}` : "the only firm that has answered"}</small>
-        </div>
-        <div title="Net prices as quoted, prices that still hold only. Terms differ between firms (ex works or free to site) and are not evened out.">
-          <dt>Lowest price on</dt>
-          <dd className="num">{level ? `${level.low} of ${level.n}` : "–"}</dd>
-          <small>
-            {!level
-              ? "nothing yet that another firm priced too"
-              : level.low === level.n
-                ? "things another firm priced too"
-                : `things another firm priced too; on the others ${level.pct < 0.1 ? "under 0,1" : pct.format(level.pct)} % over the lowest`}
-          </small>
-        </div>
-        <div>
-          <dt>Prices that hold</dt>
-          <dd className="num">
-            {c.prices ? `${holds} of ${c.prices}` : "–"} {c.prices > 0 && <Holds c={c} />}
-          </dd>
-          <small>{c.prices === 0 ? "no price from this firm yet" : nextEnd ? `${ends.filter((e) => e === nextEnd).length} run out on ${day(nextEnd)}` : holds ? "none with a last day stated" : `the latest is of ${day(c.latest_price)}`}</small>
-        </div>
-      </dl>
-      </div>
-
-      <div className="views pt-sheets" role="tablist" aria-label={p.name}>
-        {SHEETS.map(([key, label, n]) => (
-          <button key={key} role="tab" aria-selected={at === key} onClick={() => show(key)}>
-            {label}
-            {n !== null && <span className="pt-count">{n}</span>}
+          </div>
+          <button className="btn-ghost" aria-expanded={editing} onClick={() => setEditing(!editing)}>
+            {editing ? "Done" : "Edit"}
           </button>
-        ))}
-      </div>
+        </header>
 
-      {at === "prices" &&
-        (p.prices.length === 0 ? (
-          <p className="quiet">No price from this firm yet. A quote read in the price inquiries of a tender lands here with its day and validity.</p>
-        ) : (
-          <>
-            {ask && <DraftPanel draft={ask} sending={asking} onChange={setAsk} onSend={sendAsk} onDiscard={() => setAsk(null)} />}
-            <PriceLines rows={p.prices} usual={p.usual} sub={p.kind === "subcontractor"} busy={asking || ask !== null} onAsk={askAgain} />
-          </>
-        ))}
-
-      {at === "talk" && (
-        <div>
-          {p.timeline.length === 0 ? (
-            <p className="quiet">Nothing yet. Inquiries, replies and calls from the tenders show here; older mail comes in as .eml files dropped on this page.</p>
-          ) : (
-            <Threads events={p.timeline} open={c.open} voice={voice} onRecord={load} onError={onError} />
-          )}
-          <p className="quiet pt-drop-hint">Drop saved e-mails (.eml) anywhere on this page: each is put to the firm it is from or to.</p>
-        </div>
-      )}
-
-      {at === "terms" && (
-        <div className="pt-cols">
-          <div className="pt-block">
-            <h3>Particulars</h3>
+        {editing ? (
+          <div className="pt-fp-edit">
             <div className="pt-fields" key={p.id}>
               <label className="wide">
                 <span>Name</span>
@@ -880,286 +592,222 @@ function Profile({
                   <input type="text" defaultValue={p[key]} onBlur={text(key)} />
                 </label>
               ))}
-              <label>
-                <span>Web page</span>
-                <input type="text" defaultValue={p.more.website} onBlur={extra("website")} />
-              </label>
-              <label>
-                <span>Our customer number there</span>
-                <input type="text" defaultValue={p.more.customer_no} onBlur={extra("customer_no")} />
-              </label>
               <label className="wide">
                 <span>{p.kind === "supplier" ? "Sells" : "Does"}</span>
                 <input type="text" lang="de" defaultValue={p.groups.join(", ")} onBlur={(e) => e.target.value.trim() !== p.groups.join(", ") && void save({ groups: words(e.target.value) })} />
-                <small>Material groups or trades, in your words. Polier picks whom to ask by these and by what was quoted before.</small>
-              </label>
-              <label className="wide">
-                <span>Note</span>
-                <input type="text" defaultValue={p.note} onBlur={text("note")} />
+                <small>Material groups or trades, in your words. Polier picks whom to ask by these.</small>
               </label>
             </div>
-            <p className="quiet">A field is kept when you leave it.</p>
-            {p.more.contacts.length > 0 && (
-              <p className="pt-contacts">
-                <span>Also</span>
-                {p.more.contacts.map((x, i) => (
-                  <span key={i}>
-                    {x.name}
-                    {x.role && ` (${x.role})`}
-                    {x.email && `, ${x.email}`}
-                  </span>
-                ))}
-              </p>
-            )}
-            {p.products.length > 0 && (
-              <p className="pt-products" lang="de">
-                <span lang="en">Offered before</span>
-                {p.products.map((x) => (
-                  <em key={x.name} className="tag">
-                    {x.name}
-                  </em>
-                ))}
-              </p>
-            )}
-          </div>
-          <div className="pt-block">
-            <h3>Usual terms {p.usual && <small>from {plural(p.usual.quotes, "quote")}</small>}</h3>
-            {p.usual ? (
-              <dl className="pt-terms">
-                <dt>Prices</dt>
-                <dd>{p.usual.basis ? BASIS[p.usual.basis] : "not stated"}{p.usual.freight !== null && `, freight about ${price(p.usual.freight)}`}</dd>
-                <dt>Discount</dt>
-                <dd>{p.usual.discount_pct !== null ? `${pct.format(p.usual.discount_pct)} % on all items` : "none stated"}</dd>
-                <dt>Payment</dt>
-                <dd lang="de">{p.usual.skonto || "–"}</dd>
-                <dt>Valid for</dt>
-                <dd>{p.usual.valid_days !== null ? `about ${p.usual.valid_days} days` : "not stated"}</dd>
-                <dt>Binding</dt>
-                <dd>{p.usual.binding ? BINDING[p.usual.binding] : "not stated"}</dd>
-              </dl>
-            ) : (
-              <p className="quiet">No quote from this firm yet, so nothing is known about its terms.</p>
-            )}
-            <h3 className="pt-sub">How Polier treats this firm</h3>
-            <div className="pt-flags">
-              <label className="check" title="Asked first where several fit">
-                <input type="checkbox" checked={p.more.preferred} onChange={(e) => void more({ preferred: e.target.checked })} /> Preferred: asked first where several fit
-              </label>
-              <label className="check" title="Stays among your firms with its prices, but Polier does not put it on an inquiry">
-                <input type="checkbox" checked={p.more.blocked} onChange={(e) => void more({ blocked: e.target.checked })} /> Do not ask: stays here, goes on no inquiry
-              </label>
-              <label className="check" title="The voice agent does not phone this firm">
-                <input type="checkbox" checked={p.more.no_call} onChange={(e) => void more({ no_call: e.target.checked })} /> Do not phone
-              </label>
-            </div>
-            <p className="pt-remove">
-              <span className="quiet">Among your firms since {day(p.created)}.</span>
+            <label className="check">
+              <input type="checkbox" checked={p.more.preferred} onChange={(e) => void more({ preferred: e.target.checked })} /> Preferred: asked first where several firms fit
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={p.more.blocked} onChange={(e) => void more({ blocked: e.target.checked })} /> Do not ask: stays in the list, goes on no inquiry
+            </label>
+            <p className="pt-fp-remove">
+              <span className="quiet">A field is kept when you leave it.</span>
               <button className={`btn-ghost small${armed ? " armed" : ""}`} onBlur={() => setArmed(false)} onClick={() => (armed ? removeSupplier(p.id).then(onGone, (e) => onError(say(e))) : setArmed(true))}>
-                {armed ? "Remove for good?" : "Remove the firm"}
+                {armed ? "Remove for good?" : "Remove this firm"}
               </button>
             </p>
           </div>
-        </div>
-      )}
+        ) : (
+          <dl className="pt-fp-facts">
+            <div>
+              <dt>Contact</dt>
+              <dd>{p.contact || <span className="quiet">not entered</span>}</dd>
+            </div>
+            <div>
+              <dt>E-mail</dt>
+              <dd>{p.email ? <a href={`mailto:${p.email}`}>{p.email}</a> : <span className="quiet">not entered</span>}</dd>
+            </div>
+            <div>
+              <dt>Phone</dt>
+              <dd>{p.phone ? <a href={`tel:${p.phone.replace(/[^+\d]/g, "")}`}>{p.phone}</a> : <span className="quiet">not entered</span>}</dd>
+            </div>
+            <div>
+              <dt>{p.kind === "supplier" ? "Sells" : "Does"}</dt>
+              <dd lang="de">{p.groups.join(", ") || <span className="quiet" lang="en">not entered</span>}</dd>
+            </div>
+          </dl>
+        )}
 
-      {at === "style" && (
-        <div className="pt-block pt-style">
+        {p.more.found && (
+          <p className="pt-note">
+            Found on the web on {day(p.more.found.at)} while looking for <span lang="de">„{p.more.found.what}“</span>:{" "}
+            <a href={p.more.found.url} target="_blank" rel="noreferrer">
+              {p.more.found.title || p.more.found.url}
+            </a>
+            . Check the contact on its page before the first inquiry goes out.
+          </p>
+        )}
+
+        {c.open.length > 0 && (
+          <section className="pt-fp-part">
+            <h3>Right now</h3>
+            <ul className="pt-fp-now">
+              {[...c.open].sort((x, y) => Number(yours(y)) - Number(yours(x))).map((t, i) => (
+                <li key={i} className={yours(t) ? "is-you" : ""}>
+                  <Mark you={yours(t)} />
+                  <div>
+                    <b>{yours(t) ? "Your reply is needed" : "Waiting for their reply"}</b>
+                    <span>
+                      {STATUS[t.status]}
+                      {t.days !== null && (t.days === 0 ? " today" : ` for ${plural(t.days, "day")}`)}
+                      {t.reminders > 0 && `, reminded ${t.reminders === 1 ? "once" : `${t.reminders} times`}`} · <span lang="de">{[t.package, t.project].filter(Boolean).join(" · ")}</span>
+                    </span>
+                    {t.summary && <small>{t.summary}</small>}
+                  </div>
+                  {t.project_id && t.file !== null && (
+                    <button className={yours(t) ? "btn-new" : "btn-ghost"} onClick={() => onOpenTender(t.project_id!, t.file!)}>
+                      {t.status === "question" ? "Answer" : "Open the inquiry"}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section className="pt-fp-part">
+          <h3>How this firm answers</h3>
+          <dl className="pt-fp-figures">
+            <div>
+              <dt>Answers our inquiries</dt>
+              <dd className="num">{c.asked ? `${c.answered} of ${c.asked}` : "–"}</dd>
+              <small>{c.asked === 0 ? "no inquiry has gone to this firm yet" : c.reply_hours === null ? "no reply so far" : `usually within ${took(c.reply_hours)}`}</small>
+            </div>
+            <div>
+              <dt>Quotes received</dt>
+              <dd className="num">{c.quotes}</dd>
+              <small>{c.taken > 0 ? `taken into a bid ${c.taken === 1 ? "once" : `${c.taken} times`}` : c.declined > 0 ? `declined ${c.declined === 1 ? "once" : `${c.declined} times`}` : "none taken into a bid yet"}</small>
+            </div>
+            <div title="Of the items another firm priced too. Net prices as quoted; ex works and free to site are not evened out.">
+              <dt>Cheapest</dt>
+              <dd className="num">{level ? `on ${level.low} of ${level.n}` : "–"}</dd>
+              <small>{level ? "items another firm priced too" : "no item yet that another firm priced too"}</small>
+            </div>
+          </dl>
+        </section>
+
+        {(sum || !bare) && (
+          <section className="pt-fp-part">
+            <h3>
+              What Polier knows about this firm
+              <button className="btn-ghost small" disabled={summing} onClick={sumUp} title="Asks Claude: a few seconds, a few cents">
+                {summing ? "Reading the record…" : sum ? "Write again" : "Write it"}
+              </button>
+            </h3>
+            {!sum ? (
+              <p className="quiet">Polier reads the inquiries, quotes and messages on record and says in a few sentences what to know before asking this firm. Every sentence shows what it rests on.</p>
+            ) : sum.points.length === 0 ? (
+              <p className="quiet">Nothing Polier wrote stood against the record, so nothing is shown.</p>
+            ) : (
+              <ol className="pt-points">
+                {sum.points.map((pt, i) => (
+                  <li key={i}>
+                    <div>
+                      <button className={point === i ? "is-on" : ""} aria-expanded={point === i} onClick={() => setPoint(point === i ? null : i)} title="Show what this rests on">
+                        {pt.text}
+                      </button>
+                      {point === i && (
+                        <ul className="pt-point-src">
+                          {pt.sources.map((s) =>
+                            s.kind === "fact" ? (
+                              <li key={s.id}>
+                                <em className="tag">the record</em> {s.text}
+                              </li>
+                            ) : (
+                              <li key={s.id}>
+                                <em className="tag">{s.who === "them" ? "their message" : "our message"}</em> <span className="num">{day(s.at)}</span> <span lang="de">{s.text}</span>
+                              </li>
+                            ),
+                          )}
+                          {pt.quote && (
+                            <li>
+                              <q lang="de">{pt.quote}</q>
+                            </li>
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+            {sum && sum.points.length > 0 && <p className="quiet pt-fp-hint">Press a sentence to see the count or the passage it rests on.</p>}
+          </section>
+        )}
+
+        <section className="pt-fp-part">
           <h3>
-            How they write
-            {style && <small>read from {style.messages} of their messages on {day(style.at)}</small>}
-            <button className="btn-ghost small" disabled={reading || theirs === 0} onClick={readStyle} title={theirs === 0 ? "There is no message from this firm yet" : "Asks Claude: a few seconds, a few cents"}>
-              {reading ? "Reading their messages…" : style ? "Read again" : "Read their style"}
-            </button>
+            Prices <small>{p.prices.length ? "the latest quote for each item" : ""}</small>
           </h3>
-          {style ? (
-            <>
-              <p className="pt-style-sum">{style.summary}</p>
-              <dl className="pt-traits">
-                <Trait label="Addresses us with" value={style.address === "unknown" ? "not shown" : style.address} quote={style.address_quote} />
-                <Trait label="Opens with" value={style.salutation || "no salutation"} de />
-                <Trait label="Closes with" value={style.closing || "no closing"} de />
-                <Trait label="Tone" value={`${style.register}, ${style.length} messages`} />
-                <Trait label="Prices arrive as" value={style.answers_with} />
-                <Trait label="Who writes" value={style.person || "not signed"} de />
-              </dl>
-              {style.habits.length > 0 && (
-                <ul className="pt-habits">
-                  {style.habits.map((h, i) => (
-                    <li key={i}>
-                      {h.text}
-                      <q lang="de">{h.quote}</q>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <p className="pt-like">
-                <b>Polier writes to them like this</b>
-                {style.write_like} The items of an inquiry and what is asked for stay as they are; only the opening and the closing follow this. You read every message before it goes out.
-              </p>
-              {style.dropped > 0 && <p className="quiet">{style.dropped} trait{style.dropped === 1 ? " was" : "s were"} left out: the passage was not in their messages.</p>}
-            </>
-          ) : (
-            <p className="quiet">
-              {theirs === 0
-                ? "Nothing to read yet. Once this firm has answered, or its older mail is here (drop .eml files on this page, or read the mailbox under \"Your firm\"), Polier reads how it writes and words the next inquiry to match."
-                : `${plural(theirs, "message")} from this firm ${theirs === 1 ? "is" : "are"} on record. Polier can read how it writes (form of address, tone, habits, each with its passage) and word the next inquiry to match.`}
-            </p>
-          )}
-        </div>
-      )}
+          {p.prices.length === 0 ? <p className="quiet">No price from this firm yet. A quote read in the price inquiries of a tender shows here.</p> : <FirmPrices rows={p.prices} sub={p.kind === "subcontractor"} />}
+        </section>
+
+        <section className="pt-fp-part">
+          <h3>
+            Conversations <small>{p.timeline.length ? "one per inquiry, newest first" : ""}</small>
+          </h3>
+          {p.timeline.length === 0 ? <p className="quiet">Nothing yet. Inquiries, replies and calls from the tenders show here.</p> : <Threads events={p.timeline} open={c.open} voice={voice} onRecord={load} onError={onError} />}
+        </section>
+      </div>
     </section>
   );
 }
 
-/** A price's course as steps, oldest at the left: a price holds until the next quote changes it. */
-function Spark({ values }: { values: number[] }) {
-  const w = 84;
-  const h = 22;
-  const lo = Math.min(...values);
-  const hi = Math.max(...values);
-  const y = (v: number) => (hi === lo ? h / 2 : h - 3 - ((v - lo) / (hi - lo)) * (h - 6));
-  const x = (i: number) => 3 + (i / values.length) * (w - 6);
-  const d = values.map((v, i) => `${i === 0 ? "M" : "V"}${i === 0 ? `${x(0)},${y(v)}` : y(v)}H${x(i + 1)}`).join("");
-  return (
-    <svg className="pt-spark" width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`${values.length} quotes, from ${price(values[0])} to ${price(values[values.length - 1])}`}>
-      <path d={d} />
-      {values.map((v, i) => (
-        <circle key={i} cx={x(i)} cy={y(v)} r="2.2" />
-      ))}
-    </svg>
-  );
-}
-
-const apart = (from: string, to: string) => {
-  const days = Math.round((Date.parse(to) - Date.parse(from)) / 864e5);
-  return days < 45 ? plural(Math.max(days, 1), "day") : plural(Math.round(days / 30.4), "month");
-};
-
-/** A firm's prices, one row per thing priced: the latest quote, how the price moved, how long it holds. */
-function PriceLines({ rows, usual, sub, busy, onAsk }: { rows: PartnerPrice[]; usual: PartnerProfile["usual"]; sub: boolean; busy: boolean; onAsk: (r: PartnerPrice) => void }) {
-  const [open, setOpen] = useState<string | null>(null);
-  const groups = useMemo(() => {
+/** A firm's prices: the latest quote for each item, with the price before where there was one. */
+function FirmPrices({ rows, sub }: { rows: PartnerPrice[]; sub: boolean }) {
+  const items = useMemo(() => {
     const by = new Map<string, PartnerPrice[]>();
     for (const r of rows) by.set(`${r.label}|${r.unit}`, [...(by.get(`${r.label}|${r.unit}`) ?? []), r]);
-    return [...by.entries()]
-      .map(([key, list]) => ({ key, list: [...list].sort((a, b) => b.date.localeCompare(a.date)) }))
-      .sort((a, b) => Number(b.list[0].fresh) - Number(a.list[0].fresh) || b.list[0].date.localeCompare(a.list[0].date));
+    return [...by.values()].map((list) => [...list].sort((a, b) => b.date.localeCompare(a.date))).sort((a, b) => b[0].date.localeCompare(a[0].date));
   }, [rows]);
-  const usualSays = usual && [usual.basis && BASIS[usual.basis], usual.binding && BINDING[usual.binding]].filter(Boolean).join(", ");
-  const differs = (r: PartnerPrice) => [usual?.basis !== r.basis && r.basis !== "unknown" && BASIS[r.basis], usual?.binding !== r.binding && r.binding !== "unknown" && BINDING[r.binding]].filter(Boolean).join(", ");
   return (
-    <div>
-      <p className="quiet pt-lines-note">
-        {groups.length === rows.length ? plural(rows.length, "price") : `${plural(rows.length, "price")} for ${plural(groups.length, "thing")}`}, what still holds first.
-        {usualSays && ` Unless a row says otherwise: ${usualSays}.`} {sub ? "A subcontractor's price is the whole unit price." : "A supplier's price is the material part of a unit price."}
-      </p>
-      <table className="pt-prices pt-lines">
-        <thead>
-          <tr>
-            <th>{sub ? "Work" : "Product"}</th>
-            <th>Course</th>
-            <th className="r">Latest, net</th>
-            <th>Holds</th>
-            <th>For</th>
-          </tr>
-        </thead>
-        <tbody>
-          {groups.map(({ key, list }) => {
-            const r = list[0];
-            const first = list[list.length - 1];
-            const change = list.length > 1 && first.net > 0 ? ((r.net - first.net) / first.net) * 100 : null;
-            const left = r.valid_until ? daysTo(r.valid_until) : null;
-            const span = r.valid_until ? Math.max(1, Math.round((Date.parse(r.valid_until) - Date.parse(r.date)) / 864e5)) : null;
-            const shown = open === key;
-            const other = differs(r);
-            return [
-              <tr key={key} className={`${r.fresh ? "" : "is-stale"}${list.length > 1 ? " is-more" : ""}`} onClick={() => list.length > 1 && setOpen(shown ? null : key)}>
-                <td lang="de">
-                  <b>{r.label}</b>
-                  {r.alternative && <em className="tag" lang="en">other product</em>}
-                  {r.product && r.product !== r.label && <small>{r.alternative ? "offered instead: " : ""}{r.product}</small>}
-                  {r.note && <small lang="en">{r.note}</small>}
-                  {other && <small lang="en">{other}</small>}
-                </td>
-                <td>
-                  {list.length > 1 ? (
-                    <button className="pt-course" aria-expanded={shown} onClick={(e) => (e.stopPropagation(), setOpen(shown ? null : key))} title={shown ? "Hide the quotes" : `Show the ${list.length} quotes`}>
-                      <Spark values={[...list].reverse().map((x) => x.net)} />
-                    </button>
-                  ) : (
-                    <span className="quiet">first quote</span>
-                  )}
-                </td>
-                <td className="r num">
-                  <b>{price(r.net)}</b>
-                  <small>
-                    per {r.unit || "unit"}
-                    {change !== null && (
-                      <span className={change > 0 ? "pt-up" : ""}>
-                        {" "}· {change > 0 ? "+" : ""}
-                        {pct.format(change)} % in {apart(first.date, r.date)}
-                      </span>
-                    )}
-                  </small>
-                </td>
-                <td className="num">
-                  {!r.fresh ? (
-                    <>
-                      <em className="tag">out of date</em>
-                      <small>{r.valid_until ? `since ${day(r.valid_until)}` : `quoted ${day(r.date)}`}</small>
-                      {r.project_id && r.package_id && r.file_name && (
-                        <button className="text-link" disabled={busy} onClick={(e) => (e.stopPropagation(), onAsk(r))} title="Polier writes the inquiry for this package once more; you read it before it goes out">
-                          ask again
-                        </button>
-                      )}
-                    </>
-                  ) : left !== null && span !== null ? (
-                    <>
-                      <span className={`pt-holds${left <= 10 ? " is-short" : ""}`}>
-                        <i>
-                          <b style={{ width: `${Math.max(4, Math.min(100, (left / span) * 100))}%` }} />
-                        </i>
-                        <span>{plural(Math.max(left, 0), "day")}</span>
-                      </span>
-                      <small>until {day(r.valid_until)}</small>
-                    </>
-                  ) : (
-                    <>
-                      no last day stated
-                      <small>quoted {day(r.date)}</small>
-                    </>
-                  )}
-                </td>
-                <td lang="de">
-                  {r.project || <span className="quiet">–</span>}
-                  <small>{[day(r.date), r.via].filter(Boolean).join(" · ")}</small>
-                </td>
-              </tr>,
-              shown &&
-                list.map((x, i) => (
-                  <tr key={`${key}/${i}`} className="pt-line-past">
-                    <td colSpan={2} lang="de">
-                      {day(x.date)} · {x.project || "–"}
-                      {differs(x) && <span lang="en"> · {differs(x)}</span>}
-                    </td>
-                    <td className="r num">
-                      {price(x.net)}
-                      {x.before?.change_pct != null && (
-                        <small className={x.before.change_pct > 0 ? "pt-up" : ""}>
-                          {x.before.change_pct > 0 ? "+" : ""}
-                          {pct.format(x.before.change_pct)} % on the one before
-                        </small>
-                      )}
-                    </td>
-                    <td className="num">{x.valid_until ? `until ${day(x.valid_until)}` : "no last day stated"}</td>
-                    <td>{x.via}</td>
-                  </tr>
-                )),
-            ];
-          })}
-        </tbody>
-      </table>
-    </div>
+    <table className="pt-fp-prices">
+      <colgroup>
+        <col style={{ width: "44%" }} />
+        <col style={{ width: "18%" }} />
+        <col style={{ width: "14%" }} />
+        <col style={{ width: "24%" }} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>{sub ? "Work" : "Item"}</th>
+          <th className="r">Price, net</th>
+          <th>Quoted</th>
+          <th>For the tender</th>
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((list) => {
+          const r = list[0];
+          const was = list[1];
+          const change = was && was.net > 0 ? ((r.net - was.net) / was.net) * 100 : null;
+          return (
+            <tr key={`${r.label}|${r.unit}`}>
+              <td lang="de">
+                <b>{r.label}</b>
+                {r.alternative ? <small lang="en">offered another product: <span lang="de">{r.product}</span></small> : r.product && r.product !== r.label && <small>{r.product}</small>}
+              </td>
+              <td className="r num">
+                <b>{price(r.net)}</b>
+                <small>
+                  per {r.unit || "unit"}
+                  {change !== null && ` · was ${price(was.net)} (${change > 0 ? "+" : ""}${pct.format(change)} %)`}
+                </small>
+              </td>
+              <td className="num">
+                {day(r.date)}
+                {r.valid_until && <small>valid until {day(r.valid_until)}</small>}
+              </td>
+              <td lang="de">{r.project || <span className="quiet">–</span>}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
 
@@ -1213,16 +861,6 @@ function Threads({ events, open, voice, onRecord, onError }: { events: PartnerEv
     </div>
   );
 }
-
-const Trait = ({ label, value, quote, de }: { label: string; value: string; quote?: string; de?: boolean }) => (
-  <div>
-    <dt>{label}</dt>
-    <dd lang={de ? "de" : undefined}>
-      {value}
-      {quote && <q lang="de">{quote}</q>}
-    </dd>
-  </div>
-);
 
 function Prices({ rows, sub, who, onOpen }: { rows: PartnerPrice[]; sub?: boolean; who?: boolean; onOpen?: (id: string) => void }) {
   return (

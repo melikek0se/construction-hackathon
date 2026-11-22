@@ -152,6 +152,19 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   altogether** (the chip, the red line in the table and on the firm's page, the form under "Terms and
   particulars"); `suppliers.more.documents` is still kept on the server and the example firms still carry
   theirs. Seen in headless Chrome at 1500 wide, no console error.
+  **A firm's page written again (2026-11-22)**, at the user's word (nothing on it could be understood, the
+  way back was not designed): one column to read from the top. A button "All firms" above the name; the name
+  with kind and place; four boxes Contact, E-mail, Phone, Sells; "Right now" (your reply first, with
+  "Answer"); "How this firm answers" (answers our inquiries, quotes received, cheapest on n of m items another
+  firm priced too); "What Polier knows about this firm" (the sentences, a press shows the source under the
+  sentence); "Prices" (the latest quote per item: price, the one before where there was one, day quoted and
+  valid until, the tender); "Conversations". "Edit" opens name, contact, e-mail, phone, place, what it sells,
+  preferred, do not ask, remove. **Gone from the page**: the four sheets, "How they write" and its button
+  (the style kept for a firm is still used when an inquiry is written; it can no longer be read anew from the
+  page), usual terms, web page, customer number, note, "do not phone", "offered before", the reply marks,
+  the course of a price as a line, "ask again", previous / next, the open sheet in the address. Seen in
+  headless Chrome at 1500 wide, no console error: a supplier with everything, a subcontractor without
+  prices, a source opened, "Edit", back to the table and the browser's back.
   **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
   freight per unit), grouping the price book by material group proper (the package stands in for it). The
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:
