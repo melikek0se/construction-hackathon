@@ -15,7 +15,9 @@ node make.mjs all                          # voice, sound, record, render, mix â
 node make.mjs record a6 && node make.mjs render a6 && node make.mjs mix   # one shot again
 ```
 
-- Voice, music and hits come from ElevenLabs and are kept in `out/` per text, so a second run costs nothing.
+- Voice, music and hits come from ElevenLabs and are kept in `out/voice` and `out/sound` per text (in git), so a
+  second run costs nothing and needs no key. The first cut to watch is `scripts/demo_video/demo.mp4` (in git,
+  a lighter copy of `out/demo.mp4`).
 - The shots are recorded from the running app at twice 1080p, so the close-ups stay sharp. The recording
   only looks: it sends nothing, submits nothing, changes nothing.
 - What the shots show depends on the state of the demo tender when they are recorded.
