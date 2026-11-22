@@ -67,6 +67,7 @@ uv run boq-seed                        # put the six dataset projects (and old L
 docker compose exec mail boq-mail ADDRESS…  # make mailboxes on the demo mail server (no argument: list them)
 docker compose exec api boq-mail --fill     # the mock world (mock/mail/) into the mailboxes; --reset: afresh; --empty: take it out again; the mail server fills at start unless DEMO_MAIL_FILL=0
 uv run boq-mail --check                # build the mock world and read every LV back, no server needed
+docker compose exec -T api python - [questions|quotes|all] [PROJECT] [--dry] < scripts/demo_counterpart.py  # plays the client and the firms on the demo mail server: answers our messages that have no reply (asks Claude)
 docker compose up --watch              # dev: UI :5173 (hot reload), API :8000 (auto-reload), Postgres :5432, webmail :8025/webmail/ on the demo mail server (Stalwart, kept in Postgres; password `demo`); new deps rebuild
 docker compose --profile prod up --build  # the production image locally (as on Render): :8080, password "demo"
 uv run uvicorn boq.api:app --reload    # API without Docker (SQLite, or DATABASE_URL from .env)
