@@ -66,9 +66,10 @@ def test_api_and_unpriced_lv():
     assert client.post(f"/api/analyses/{unpriced}/whatif", json={}).json() == {"priced": False}
 
 
-def test_the_bid_in_progress_is_what_is_varied(database):
+def test_the_bid_in_progress_is_what_is_varied(database, monkeypatch):
     """An LV without prices: the unit prices entered in the bid, the accepted allowance in them, and the
     quantity the client corrected, which the bid itself does not count with."""
+    monkeypatch.setattr(api, "AUTOFILL", False)  # only the two prices typed here are in the bid
     client = TestClient(api.app)
     analysis_id = client.get("/api/catalog/D/files/0").json()["id"]
     assert client.post(f"/api/analyses/{analysis_id}/whatif", json={}).json() == {"priced": False}

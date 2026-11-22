@@ -24,8 +24,13 @@ def test_the_bid_is_priced_carries_allowances_and_goes_back_as_x84(database, tmp
     client = TestClient(api.app)
     analysis_id = client.get("/api/catalog/D/files/0").json()["id"]
     sheet = client.get(f"/api/analyses/{analysis_id}/bid").json()
-    assert sheet["x84"] and sheet["priced"] == 0 and sheet["missing"] == sheet["items"] == 50 and sheet["net"] == 0
+    # the tender is taken on: Polier has put the prices it has from past bids on the items (D-075), and
+    # nothing on the others
+    auto = {r["item_oz"] for r in sheet["rows"] if r["unit_price"] is not None}
+    assert sheet["x84"] and sheet["items"] == 50 and sheet["priced"] == len(auto) == sheet["from_suggestions"] >= 1
+    assert sheet["missing"] == 50 - len(auto) and all(r["source"] == "suggestion" for r in sheet["rows"] if r["item_oz"] in auto)
     first, second = sheet["rows"][0], sheet["rows"][1]
+    others = len(auto - {first["item_oz"], second["item_oz"]})
 
     assert client.put(f"/api/analyses/{analysis_id}/bid", json={"prices": {"9.9.9": "1"}}).status_code == 422
     assert client.put(f"/api/analyses/{analysis_id}/bid", json={"prices": {first["item_oz"]: "viel"}}).status_code == 422
@@ -34,7 +39,7 @@ def test_the_bid_is_priced_carries_allowances_and_goes_back_as_x84(database, tmp
     rows = {r["item_oz"]: r for r in sheet["rows"]}
     assert rows[first["item_oz"]]["price"] == 1000 and rows[first["item_oz"]]["source"] == "own"
     assert rows[first["item_oz"]]["total"] == round(1000 * first["qty"], 2)
-    assert sheet["priced"] == 2 and sheet["missing"] == 48
+    assert sheet["priced"] == 2 + others and sheet["missing"] == 48 - others
 
     # an open point of the client's answers, accepted as an allowance of 10 %, sits in the unit price
     with db.engine().begin() as conn:

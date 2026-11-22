@@ -363,7 +363,11 @@ export default function App() {
         setCurrent({ project: p, file: 0 });
         setTenderData({ key: filesKey(p), data });
         setSelection(place.item ? { oz: place.item, finding: null } : NONE);
-        const at = { step: "check" as const, view: "map" as const, lv: null, item: null, ...place };
+        // opened without a step named, a project opens on the step it stands at (D-073): a bid that went out
+        // on Bid, a tender that ended on Award
+        const stage = stageOf(p);
+        const stands: TenderPlace["step"] = stage === "result" ? "award" : stage === "submitted" ? "bid" : "check";
+        const at = { view: "map" as const, lv: null, item: null, ...place, step: place.step ?? stands };
         setTender({ id: p.id, ...at, lv: data.lvs.length > 1 ? lv ?? at.lv : null });
       } catch (e) {
         await covered;
@@ -977,6 +981,8 @@ export default function App() {
             <h1 className="band-here band-project" title={current.project.name}>
               {current.project.name}
             </h1>
+            {/* where the tender stands: the tender page puts its three steps and what is to do next here (Tender.tsx) */}
+            <div className="band-steps" ref={setBandSlot} />
             {/* what one does with the project, as slabs filling the right end of the band (home.css `.band-slab`) */}
             <nav className="actions band-slabs" aria-label="Project">
               {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
@@ -1086,6 +1092,7 @@ export default function App() {
         </Suspense>
       ) : tender && tenderData && current ? (
         <TenderPage
+          bandSlot={bandSlot}
           tender={tenderData.data}
           plan={datesOf(current.project, summaries[current.project.id])}
           place={tender}

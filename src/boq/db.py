@@ -107,7 +107,7 @@ bid_prices = Table(
     Column("file", Text, nullable=False),
     Column("item_oz", Text, nullable=False),
     Column("unit_price", Text, nullable=False),  # decimal as text: the price before any allowance
-    Column("source", String(16), nullable=False),  # "own": typed in; "suggestion": taken from past bids
+    Column("source", String(16), nullable=False),  # "own": typed in; "suggestion": from the price book or past bids; "quote": a quote for this tender
     Column("updated", DateTime(timezone=True), nullable=False),
 )
 

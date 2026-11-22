@@ -8,7 +8,7 @@ import { Sign } from "./components";
 import { LvText, eur, qty } from "./format";
 import { Fingerprint, PLANNED } from "./Projects";
 import type { TenderPlace } from "./router";
-import { ACTION_LABEL, CATEGORY_LABEL, KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type Finding, type ItemKind, type Plan, type Project, type ProjectSummary, type Severity, type Tender, type TenderItem, type TenderLv } from "./types";
+import { ACTION_LABEL, CATEGORY_LABEL, KIND_LABEL, SEVERITIES, SEVERITY_LABEL, countLabel, type BidRow, type Finding, type ItemKind, type Plan, type Project, type ProjectSummary, type Severity, type Tender, type TenderItem, type TenderLv } from "./types";
 import { AskRow, Changed, Differs, backText, count, dayText, daysLeft, lvTitle, sectionsOf } from "./Tender";
 import "./tenderdoc.css";
 
@@ -35,6 +35,59 @@ export interface StepLayer {
 export interface AskLayer {
   card: (f: Finding) => ReactNode; // under the finding's card; nothing for a finding without a question
   mark: (oz: string) => { cls: string; text: string } | null; // in place of the item's mark on the strip
+  // While the message is written: only the items with a question stand on the page, each with the findings
+  // that carry one, and the message stands where the map was. `go` leads to an item.
+  only?: ((oz: string) => boolean) | null;
+  panel?: ((go: (oz: string) => void) => ReactNode) | null;
+  keep?: (f: Finding) => boolean; // with `only`: the findings that stay beside an item
+  wide?: boolean; // the panel needs more room than the message
+  extra?: (oz: string) => ReactNode; // beside an item after its findings: its price (D-071)
+  cover?: ReactNode; // on the cover sheet: how the questions and the prices stand
+  head?: { title: string; note: string }; // what the head over the cards says while `only` holds (default: findings with a question)
+}
+
+/** The unit prices on the items of the open LV (D-075): the row of the bid per item, and how a price typed
+ *  is kept. `set` is null while the tender is in the intake: the fields stand there, nothing is entered. */
+export interface DocPrices {
+  rows: Map<string, BidRow>;
+  set: ((oz: string, text: string) => void) | null;
+  priced: number;
+  net: number;
+}
+
+const SOURCE_SAYS: Record<string, string> = { own: "yours", quote: "quote", file: "in the file" };
+const priceText = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** The unit price of an item to type, and its total. A price Polier put there says where it is from under
+ *  the field and is set in the quieter face; one the estimator typed is ink. The field is small: an empty
+ *  one says what goes into it ("€/m"), a filled one stands beside its quantity's unit and its total in
+ *  euros; what the columns are is said once, on the section's head. */
+function PriceCells({ row, unit, onSet }: { row: BidRow | undefined; unit: string; onSet: ((text: string) => void) | null }) {
+  const kept = row?.unit_price != null ? priceText(row.unit_price) : "";
+  const [typed, setTyped] = useState(kept);
+  const [busy, setBusy] = useState(false); // typing: what the server says meanwhile does not write over it
+  useEffect(() => {
+    if (!busy) setTyped(kept);
+  }, [kept, busy]);
+  const from = row?.source ? SOURCE_SAYS[row.source] ?? (row.suggestion?.basis === "partners" ? `price book${row.suggestion.stale ? ", old" : ""}` : "past bids") : "";
+  const fixed = !onSet || row?.source === "file";
+  return (
+    <>
+      <label className={`ep${row?.source && row.source !== "own" ? " auto" : ""}`}>
+        <input type="text" inputMode="decimal" value={typed} disabled={fixed} placeholder={onSet ? `€/${unit}` : "–"} aria-label={`Unit price in euros per ${unit}`}
+          title={!onSet ? "Take the tender on to price it" : row?.material ? `Material alone: ${priceText(row.material.unit_price)} (${row.material.supplier})` : undefined}
+          onFocus={() => setBusy(true)}
+          onChange={(e) => setTyped(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+          onBlur={() => {
+            setBusy(false);
+            if (typed.trim() !== kept && onSet) onSet(typed.trim());
+          }} />
+        {from && <small>{`${from}${row?.allowance_percent ? ` · +${row.allowance_percent} %` : ""}`}</small>}
+      </label>
+      <span className="gp">{row?.total != null ? eur(row.total) : "–"}</span>
+    </>
+  );
 }
 
 interface Row {
@@ -98,7 +151,7 @@ const Strip = memo(function Strip({ lvId, rows, ranks, onGo, over, ask }: { lvId
 });
 
 /** What the marks of the map stand for, above its first piece: only the marks this tender has. */
-function Legend({ model }: { model: Lv[] }) {
+function Legend({ model, ask }: { model: Lv[]; ask: boolean }) {
   const rows = model.flatMap((x) => x.secs.flatMap((sec) => sec.rows));
   const has = (m: string) => rows.some((r) => r.mark === m);
   const kinds = (Object.keys(LETTER) as ItemKind[]).filter((k) => LETTER[k] && has(LETTER[k]));
@@ -120,6 +173,15 @@ function Legend({ model }: { model: Lv[] }) {
         {has("Δ") && <div><dt><i className="tn-blk diff">Δ</i></dt><dd>Changed since the last issue</dd></div>}
         {has("≠") && <div><dt><i className="tn-blk diff">≠</i></dt><dd>The documents differ</dd></div>}
         {has("–") && <div><dt><i className="tn-blk is-dropped">–</i></dt><dd>Dropped in this issue</dd></div>}
+        {/* the Questions step: an item with a question carries the question's mark in place of its own */}
+        {ask && (
+          <>
+            <div><dt><i className="tn-flag high td-qm">?</i></dt><dd>A question to ask, on its finding's colour</dd></div>
+            <div><dt><i className="tn-flag high td-qm on">?</i></dt><dd>Ticked for the next message</dd></div>
+            <div><dt><i className="tn-blk td-qm">→</i></dt><dd>Asked: with the client</dd></div>
+            <div><dt><i className="tn-blk diff td-qm">✓</i></dt><dd>Answered by the client</dd></div>
+          </>
+        )}
       </dl>
     </div>
   );
@@ -199,8 +261,10 @@ function Piece(_: { no: ReactNode; title: string; sub: string; hole?: boolean; c
   return null;
 }
 
-const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, findings, general, reading, counts, marks, onOpen, layer, ask }: { ask: AskLayer | null; layer: StepLayer | null; x: Lv; tender: Tender; single: boolean; asked: Set<string>; onAsk: (lv: number, oz: string, ask: boolean) => void; onGo: (id: string) => void; findings: Map<string, Finding[]> | null; general: Finding[]; reading: boolean; counts: Record<Severity, number> | null; marks: string; onOpen: () => void }) {
-  const { lv, secs } = x;
+const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, findings, general, reading, counts, marks, onOpen, layer, ask, prices }: { prices: DocPrices | null; ask: AskLayer | null; layer: StepLayer | null; x: Lv; tender: Tender; single: boolean; asked: Set<string>; onAsk: (lv: number, oz: string, ask: boolean) => void; onGo: (id: string) => void; findings: Map<string, Finding[]> | null; general: Finding[]; reading: boolean; counts: Record<Severity, number> | null; marks: string; onOpen: () => void }) {
+  const { lv } = x;
+  const only = ask?.only ?? null; // the message is being written: the items with a question, nothing else
+  const secs = useMemo(() => (only ? x.secs.map((sec) => ({ ...sec, rows: sec.rows.filter((r) => !r.gone && only(r.it.oz)) })).filter((sec) => sec.rows.length) : x.secs), [x.secs, only]);
   // how bad the worst finding of each item is: from the findings when they are read, else from the
   // summary's one digit per item
   const ranks = useMemo(() => {
@@ -226,7 +290,7 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
               <span className="tn-ix">{lv.no ?? lv.id + 1}</span>
               <div>
                 <b lang="de"><LvText text={lv.label} /></b>
-                <small>{count(lv.items.length, "item")} in {count(secs.length, "section")}{issue > 1 && ` · issue ${issue} of ${issue}`}</small>
+                <small>{count(lv.items.length, "item")} in {count(secs.length, "section")}{issue > 1 && ` · issue ${issue} of ${issue}`}{prices && prices.priced > 0 && ` · ${prices.priced} priced · ${eur(prices.net)} net`}</small>
               </div>
               <span className="td-files">
                 {docs.map((d) => (
@@ -237,14 +301,14 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
           </R>
         </div>
       </div>
-      {(layer ? !!layer.lv : issue > 1 || lv.back.form === null || general.length > 0 || (!findings && (some || reading))) && (
+      {(only ? general.some((f) => ask!.keep?.(f) ?? true) : layer ? !!layer.lv : issue > 1 || lv.back.form === null || general.length > 0 || (!findings && (some || reading))) && (
         <div className="td-s">
           <div className="td-lft" />
           <div className="td-bod">
             <R side={layer ? layer.lv : (
               <>
                 {!findings && reading && <div className="td-kn">Reading the findings of this LV.</div>}
-                {general.map((f, n) => (
+                {(only ? general.filter((f) => ask!.keep?.(f) ?? true) : general).map((f, n) => (
                   <div key={n} className={`td-cd fd${f.severity === "info" ? "" : " pt"}`}>
                     <h4><Sign severity={f.severity} size={15} />{CATEGORY_LABEL[f.category]}<span className="td-id">{f.origin === "llm" ? "AI review" : f.check_id}</span></h4>
                     {f.title && <b className="td-ft">{f.title}</b>}
@@ -254,20 +318,20 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
                     {ask?.card(f)}
                   </div>
                 ))}
-                {!findings && !reading && some && (
+                {!only && !findings && !reading && some && (
                   <div className="td-cd pt">
                     <h4>What the checks found here</h4>
                     <p>{SEVERITIES.filter((sev) => counts![sev] > 0).map((sev) => countLabel(counts![sev], sev)).join(" · ")}. The marks in the strips say where.</p>
                     <div className="tn-askrow"><button className="tn-btn ink sm" onClick={onOpen}>Show them beside the items</button></div>
                   </div>
                 )}
-                {issue > 1 && (
+                {!only && issue > 1 && (
                   <div className="td-cd pt">
                     <h4>The client sent this LV again</h4>
                     <p>Issue {issue} replaces issue {issue - 1}: {said.length ? said.map(([n, w]) => `${n} ${w}`).join(", ") : "nothing changed"}. What you read here is issue {issue}; what was done on the one before goes on with it.</p>
                   </div>
                 )}
-                {lv.back.form === null && single && (
+                {!only && lv.back.form === null && single && (
                   <div className="td-cd pt">
                     <h4>No GAEB file came</h4>
                     <p>The items are read from the {tender.documents[lv.carrier].format} file. A bid cannot go back as X84 without the client's X83.</p>
@@ -280,7 +344,7 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
           </div>
         </div>
       )}
-      {lv.remarks.length > 0 && (
+      {!only && lv.remarks.length > 0 && (
         <div className="td-s">
           <Piece no="§" title="Remarks" sub={`${count(lv.remarks.length, "passage")} before the items`} />
           <div className="td-bod">
@@ -303,13 +367,13 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
               <Strip lvId={lv.id} rows={s.rows} ranks={ranks} onGo={onGo} ask={ask?.mark} />
             </Piece>
             <div className="td-bod">
-              <R><h3 className="td-sech" lang="de"><i>{s.no}</i><LvText text={s.name} /></h3></R>
+              <R><h3 className={`td-sech${prices ? " priced" : ""}`} lang="de"><i>{s.no}</i><LvText text={s.name} />{prices && <span className="td-cols" lang="en"><em>Quantity</em><em>Unit price</em><em>Total</em></span>}</h3></R>
               {s.rows.map(({ it, gone }, j) => {
                 const page = it.sources.find((p) => p.page !== null)?.page;
                 const where = it.sources.map((p) => `${tender.documents[p.doc].format}${p.page !== null ? ` page ${p.page}` : ""}`).join(" · ");
                 const key = `${lv.id}:${it.oz}`;
                 const figure = !!it.diff && (it.diff.qty !== undefined || it.diff.unit !== undefined);
-                const fs = gone ? [] : findings?.get(it.oz) ?? [];
+                const fs = (gone ? [] : findings?.get(it.oz) ?? []).filter((f) => !only || (ask!.keep?.(f) ?? true));
                 const found = fs.map((f, n) => (
                   <div key={n} className={`td-cd fd${f.severity === "info" ? "" : " pt"}`}>
                     <h4><Sign severity={f.severity} size={15} />{CATEGORY_LABEL[f.category]}<span className="td-id">{f.origin === "llm" ? "AI review" : f.check_id}</span></h4>
@@ -347,10 +411,11 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
                   <div className="td-kn"><i className="tn-blk">{LETTER[it.kind]}</i>{KIND_LABEL[it.kind]}</div>
                 ) : null;
                 const mine = layer && !gone ? layer.mark(it.oz) : null;
-                const side = layer ? (gone ? null : layer.item(it.oz)) : found.length || rest ? <>{found}{rest}</> : null;
+                const more = gone ? null : ask?.extra?.(it.oz) ?? null;
+                const side = layer ? (gone ? null : layer.item(it.oz)) : only ? <>{found}{more}</> : found.length || rest || more ? <>{found}{more}{rest}</> : null;
                 return (
                   <R key={it.oz} id={`td-${lv.id}-${it.oz}`} cls={k === secs.length - 1 && j === s.rows.length - 1 ? "last" : undefined} side={side}>
-                    <div className={`td-it${gone ? " gone" : ""}`}>
+                    <div className={`td-it${gone ? " gone" : ""}${prices ? " priced" : ""}`}>
                       {/* the item's number carries the colour of its worst finding, as its mark in the map and its card do */}
                       <b className={`oz${layer ? (mine?.oz ? ` ${mine.oz}` : "") : !gone && ranks.get(it.oz) ? ` is-${BY_RANK[ranks.get(it.oz)!]}` : ""}`}>{it.oz}</b>
                       <div className="tx">
@@ -358,6 +423,7 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
                         {it.long && it.long.trim() !== it.short.trim() && <p lang="de"><LvText text={it.long} /></p>}
                       </div>
                       <span className="q">{it.qty === null ? "–" : qty(it.qty)} <small lang="de">{it.unit}</small>{page ? <i>PDF page {page}</i> : null}</span>
+                      {prices && (gone ? <><span /><span /></> : <PriceCells row={prices.rows.get(it.oz)} unit={it.unit} onSet={prices.set && ((text) => prices.set!(it.oz, text))} />)}
                     </div>
                   </R>
                 );
@@ -370,7 +436,7 @@ const LvBlock = memo(function LvBlock({ x, tender, single, asked, onAsk, onGo, f
   );
 });
 
-export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDrawer, summary, findings, general, findingsLv, selected, onOpenLv, layer = null, ask = null }: { ask?: AskLayer | null; layer?: StepLayer | null; tender: Tender; plan: Plan; place: TenderPlace; views: ReactNode; onAsk: (lv: number, oz: string, ask: boolean) => void; onDates: () => void; onDrawer: () => void; summary: ProjectSummary | null; findings: Map<string, Finding[]> | null; general: Finding[] | null; findingsLv: number | null; selected: string | null; onOpenLv: (lv: number) => void }) {
+export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDrawer, summary, findings, general, findingsLv, selected, onOpenLv, layer = null, ask = null, acts = null, prices = null }: { prices?: DocPrices | null; acts?: ReactNode; ask?: AskLayer | null; layer?: StepLayer | null; tender: Tender; plan: Plan; place: TenderPlace; views: ReactNode; onAsk: (lv: number, oz: string, ask: boolean) => void; onDates: () => void; onDrawer: () => void; summary: ProjectSummary | null; findings: Map<string, Finding[]> | null; general: Finding[] | null; findingsLv: number | null; selected: string | null; onOpenLv: (lv: number) => void }) {
   const model = useMemo(() => build(tender), [tender]);
   const asked = useMemo(() => new Set(tender.asked.map((a) => `${a.lv}:${a.oz}`)), [tender.asked]);
   const single = tender.lvs.length === 1;
@@ -398,6 +464,13 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
     for (let e: HTMLElement | null = el; e && e !== page.current; e = e.offsetParent as HTMLElement | null) y += e.offsetTop;
     return y;
   };
+  /** How much of the page's top the head of an LV covers while it sticks there: a row led to has to stand
+   *  below it, or the head lies over the top of the row and of its finding. */
+  const lead = () => {
+    const r = page.current, h = r?.querySelector<HTMLElement>(".td-lvh");
+    // it sticks below the page's own top padding
+    return r && h ? h.offsetHeight + (parseFloat(getComputedStyle(h).top) || 0) + (parseFloat(getComputedStyle(r).paddingTop) || 0) : 0;
+  };
   /** The rows a card waits beside for the estimator, in reading order, each once. */
   const pointRows = () => {
     const r = page.current;
@@ -415,7 +488,12 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
    *  rises from below, so the map travels at the pace of the text. What was read is dimmed. */
   const spy = useCallback(() => {
     const r = page.current, box = mapBox.current, list = mapList.current;
-    if (r) setPointAt(pointRows().filter((x) => topOf(x) <= r.scrollTop + 90).length);
+    if (r) {
+      // the one the reading stands at: the last whose top has reached the line under the LV's head; at the
+      // very end of the page the last one, which may not get that far up
+      const rows = pointRows(), line = r.scrollTop + lead() + 28;
+      setPointAt(r.scrollTop + r.clientHeight >= r.scrollHeight - 2 && r.scrollTop > 0 ? rows.length : rows.filter((x) => topOf(x) <= line).length);
+    }
     if (!r || !box || !list) return;
     const line = r.getBoundingClientRect().top + 120;
     const pieces = [...list.querySelectorAll<HTMLElement>(".td-mp")];
@@ -454,7 +532,7 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
     const r = page.current, el = document.getElementById(id);
     if (!r || !el) return;
     turning.current = null; // a jump is the text moving: the map follows it again
-    const head = el.closest(".td-lv") && !el.classList.contains("td-lv") ? 62 : 0;
+    const head = el.closest(".td-lv") && !el.classList.contains("td-lv") ? lead() : 0;
     const from = r.scrollTop, to = Math.max(0, topOf(el) - head - 12), t0 = performance.now();
     const step = (t: number) => {
       const k = Math.min(1, (t - t0) / 240);
@@ -475,6 +553,30 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
     const to = rows[n];
     go(to.id || (to.id = `td-pt-${n}`));
   };
+  // The head of the findings stands over their column from outside the scrolling page: it has to know how
+  // wide the page's scrollbar is (none on a Mac with overlay bars, 13 to 17px otherwise), or it stands that
+  // much too far right.
+  useLayoutEffect(() => {
+    const r = page.current;
+    if (!r) return;
+    const set = () => r.parentElement?.style.setProperty("--td-sb", `${r.offsetWidth - r.clientWidth}px`);
+    set();
+    const seen = new ResizeObserver(set);
+    seen.observe(r);
+    return () => seen.disconnect();
+  });
+  // J and K go on and back through the findings, as the arrows of their head do; not while something is typed
+  const stepNow = useRef(step);
+  stepNow.current = step;
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (e.metaKey || e.ctrlKey || e.altKey || (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))) return;
+      if (e.key === "j" || e.key === "k") stepNow.current(e.key === "j" ? 1 : -1);
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, []);
 
   useLayoutEffect(() => {
     settle();
@@ -565,12 +667,15 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
 
   return (
     <>
-      <div className="td-flow">
+      <div className={`td-flow${ask?.panel ? " composing" : ""}${ask?.panel && ask.wide ? " wide" : ""}${acts ? " acted" : ""}`}>
+        {/* what the estimator does next with the tender, above the map: ask the client, ask for prices */}
+        {acts && <div className="td-acts">{acts}</div>}
+        {ask?.panel && <aside className="td-compose" aria-label="Message to the client">{ask.panel((oz) => go(`td-${findingsLv ?? tender.lvs[0].id}-${oz}`))}</aside>}
         {/* the map, all of it at once: what was read stands above, what comes below, the part being read
             in the middle; it moves with the reading (see `spy`) */}
         <aside className="td-map" ref={mapBox} aria-label="Map of the tender">
           <div className="td-maplist" ref={mapList}>
-            {!layer && <Legend model={model} />}
+            {!layer && <Legend model={model} ask={!!ask} />}
             <button className="td-mp" data-for="td-top" onClick={() => go("td-top", false)}>
               <span className="hd"><i>↑</i><b>{layer?.title ?? "Cover sheet"}</b><small>{layer ? "" : count(mine.length, "document")}</small></span>
             </button>
@@ -599,10 +704,13 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
         {(points > 0 || views) && (
           <div className="td-tools">
             {points > 0 && (
-              <div className="td-pts" role="group" aria-label="Points to look at">
-                <button onClick={() => step(-1)} aria-label="Previous point to look at" title="Previous">‹</button>
-                <span><b>{pointAt}</b> of {points} to look at</span>
-                <button onClick={() => step(1)} aria-label="Next point to look at" title="Next">›</button>
+              // the head of the findings' column, as the document and the panel have theirs: how many there are
+              // to look at, which one the reading stands at, back and on
+              <div className="td-pts" role="group" aria-label="Findings to look at">
+                <span className="tn-ix">{points}</span>
+                <div><b>{ask?.only && ask.head ? ask.head.title : "Findings"}</b><small>{pointAt ? `${pointAt} of ${points}` : `${points} to look at`}{ask?.only ? ` · ${ask.head?.note ?? "with a question"}` : ""}</small></div>
+                <button onClick={() => step(-1)} aria-label="Previous finding" title="The finding before (K)">‹</button>
+                <button onClick={() => step(1)} aria-label="Next finding" title="The next finding (J)">›</button>
               </div>
             )}
             {views}
@@ -664,6 +772,7 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
                         <Lane tender={tender} plan={plan} onGo={(id) => go(id, false)} />
                       </section>
                     )}
+                    {ask?.cover}
                     {summary && summary.checked !== false && (
                       <section className="wide">
                         <h3>Where the findings are<span>every item in LV order; one with a finding stands up</span></h3>
@@ -769,7 +878,7 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
                   </div>
                 </section>
               ))}
-              <LvBlock ask={ask && (x.lv.id === findingsLv || single) ? ask : null} layer={layer && (x.lv.id === findingsLv || single) ? layer : layer ? { ...layer, lv: null, item: () => null, mark: () => null } : null} x={x} tender={tender} single={single} asked={asked} onAsk={onAsk} onGo={go} onOpen={() => onOpenLv(x.lv.id)} general={x.lv.id === findingsLv ? general ?? NONE : NONE}
+              <LvBlock prices={x.lv.id === findingsLv || single ? prices : null} ask={ask && (x.lv.id === findingsLv || single) ? ask : null} layer={layer && (x.lv.id === findingsLv || single) ? layer : layer ? { ...layer, lv: null, item: () => null, mark: () => null } : null} x={x} tender={tender} single={single} asked={asked} onAsk={onAsk} onGo={go} onOpen={() => onOpenLv(x.lv.id)} general={x.lv.id === findingsLv ? general ?? NONE : NONE}
                 findings={x.lv.id === findingsLv ? findings : null} reading={x.lv.id === findingsLv && !findings}
                 counts={summary?.docs.find((d) => d.index === x.lv.carrier)?.counts ?? null} marks={summary?.docs.find((d) => d.index === x.lv.carrier)?.marks ?? ""} />
             </div>

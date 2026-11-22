@@ -46,6 +46,12 @@ export default function WebFinds({
       },
       (e) => setError(say(e)),
     );
+  // Nobody to ask and never looked for: Polier looks on the web by itself, once per package (D-075). A
+  // search that was made before is not made again by itself; "Search again" is the estimator's.
+  const none = searches !== null && searches.length === 0;
+  useEffect(() => {
+    if (none && !busy && !error) look();
+  }, [none]); // eslint-disable-line react-hooks/exhaustive-deps
   const found = (searches ?? []).flatMap((s) => s.candidates.map((c, n) => ({ s, c, n }))).filter(({ c }) => c.status === "new");
 
   return (

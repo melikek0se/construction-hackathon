@@ -86,38 +86,56 @@
   margin-top: 14px;
 }
 
-/* ---- where the tender stands: this page is the first of six; the others are still the old workspace */
-.tn-stages {
+/* ---- where the tender stands: the three steps stand in the band, right of the project's name (App.tsx
+   `.band-steps`, filled by Tender.tsx). They show the state and lead to the step; the open one is ink. */
+.band-steps {
   flex: none;
+  align-self: stretch;
   display: flex;
-  border-bottom: 2px solid var(--ink);
+  margin: -4px 0; /* over the band's padding, to its stripes */
 }
-.tn .tn-stage {
-  flex: 1;
+.tn-stages {
   min-width: 0;
-  padding: 7px 16px 8px;
-  border-left: 1px solid var(--rule);
+  display: flex;
+  align-items: stretch;
+  font-variant-numeric: tabular-nums;
+}
+.tn-stage {
+  flex: none;
+  max-width: 230px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px;
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--ink);
+  border-radius: 0;
+  color: var(--ink);
+  text-align: left;
   transition: background 120ms var(--ease);
 }
-.tn-stage:first-child {
-  border-left: 0;
+.tn-stage:disabled {
+  opacity: 1;
 }
 .tn-stage b {
   display: block;
-  font: 600 16px/1.1 var(--display);
+  font: 600 17px/1.1 var(--display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .tn-stage i {
   font: 600 12px var(--display);
   font-style: normal;
-  color: var(--dim);
+  color: var(--yellow-ink);
   margin-right: 6px;
 }
 .tn-stage span {
   display: block;
+  margin-top: 2px;
   font-size: 12px;
-  color: var(--mute);
+  color: var(--yellow-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -132,29 +150,138 @@
 .tn-stage.on i {
   color: var(--yellow);
 }
-button.tn-stage:not(.on):hover {
-  background: var(--hover);
+button.tn-stage:not(.on):not(.locked):hover {
+  background: #fff;
 }
-.tn-stage.off b {
-  color: var(--dim);
+.tn-stage.off b,
+.tn-stage.locked b,
+.tn-stage.locked span {
+  opacity: 0.55;
 }
-.tn .tn-stage.locked {
+.tn-stage.locked {
   cursor: not-allowed;
 }
-button.tn-stage.locked:hover {
-  background: none;
+.tn-stage:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -5px;
 }
-.tn-stage.locked span {
-  color: var(--dim);
+.tn-stage.on:focus-visible {
+  outline-color: var(--yellow);
 }
-/* an intake tender: the decision the card offers, at the end of the steps */
+/* one cell stands in the band: the open step. A press lists the three under it. */
+.tn-stagebox {
+  position: relative;
+  display: flex;
+}
+.tn-stagebox > .tn-stage {
+  min-width: 170px;
+}
+.tn-stage b svg {
+  margin-left: 8px;
+  color: var(--yellow);
+}
+.tn-stagemenu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 9px); /* under the band's lower stripe */
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 rgb(18 20 19 / 0.18);
+}
+.tn-stagemenu .tn-stage {
+  max-width: 420px;
+  padding: 9px 16px 10px;
+  border-left: 0;
+  border-top: 1px solid var(--rule);
+}
+.tn-stagemenu .tn-stage:first-child {
+  border-top: 0;
+}
+.tn-stagemenu .tn-stage:not(.on) span,
+.tn-stagemenu .tn-stage:not(.on) i {
+  color: var(--mute);
+}
+.tn-stagemenu button.tn-stage:not(.on):not(.locked):hover {
+  background: var(--hover);
+}
+/* what is to do next, after the steps: the checks, the two messages, an intake tender's decision */
 .tn-decide {
   flex: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
-  border-left: 1px solid var(--rule);
+  padding-left: 14px;
+  border-left: 1px solid var(--ink);
+}
+.tn-decide + .tn-decide {
+  padding-left: 8px;
+  border-left: 0;
+}
+.tn-decide .btn-ghost,
+.tn-decide .td-actbtn {
+  background: #fff;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+.tn-decide .btn-new,
+.tn-decide .td-actbtn.on {
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: #fff;
+}
+.tn-decide .btn-ghost:hover:not(:disabled),
+.tn-decide .td-actbtn:hover,
+.tn-decide .btn-new:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--yellow);
+}
+/* the band is tight beside the steps: the project's name takes what is left and ends in an ellipsis (it
+   stands in full on the cover sheet), the project's slabs are as wide as their words and, on a narrow
+   screen, only their signs */
+.band:has(.band-steps) {
+  gap: 16px;
+}
+.band:has(.band-steps) .band-project {
+  flex: 1 1 0;
+}
+.band-steps ~ .band-slabs {
+  flex: none;
+  margin-left: 0;
+}
+.band-steps ~ .band-slabs .band-slab {
+  min-width: 0;
+  padding: 0 18px;
+  white-space: nowrap;
+}
+.band-steps ~ .band-slabs .band-slab small {
+  display: none;
+}
+.band-steps ~ .band-slabs .band-slab b {
+  grid-row: 1 / 3;
+  align-self: center;
+}
+@media (max-width: 1700px) {
+  .band-steps ~ .band-slabs .band-slab {
+    column-gap: 0;
+  }
+  .band-steps ~ .band-slabs .band-slab b {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+@media (max-width: 1280px) {
+  .tn-stage span {
+    display: none;
+  }
 }
 
 .tn-work {
@@ -925,13 +1052,6 @@ button.tn-stage.locked:hover {
   .tn-main {
     min-height: 70vh;
   }
-  .tn-stages {
-    overflow-x: auto;
-  }
-  .tn .tn-stage {
-    flex: none;
-    min-width: 130px;
-  }
   .tn-page {
     padding: 18px 14px;
   }
@@ -1322,9 +1442,9 @@ button.tn-stage.locked:hover {
   z-index: 2;
 }
 
-/* Polier is at work on this step: the barrier tape runs along the foot of its cell (the pipeline has no
-   strip of its own on this page) */
-.tn .tn-stage.busy {
+/* Polier is at work on this step: the barrier tape runs along the foot of its cell in the band (the pipeline
+   has no strip of its own on this page) */
+.tn-stage.busy {
   position: relative;
 }
 .tn-stage.busy::after {

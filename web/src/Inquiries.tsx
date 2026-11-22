@@ -231,8 +231,10 @@ function Package({
   const setAsk = (ids: string[]) => void act("ask", () => setPackageSuppliers(analysisId, p.id, ids));
 
   return (
-    <section className={`sup-pkg is-${p.kind}`}>
+    <section className={`sup-pkg is-${p.kind}`} id={`sup-pkg-${p.id}`}>
       <header>
+        {/* on the tender's page the head of a package is a section head as in the document: its items on a plate */}
+        <i className="sup-n">{p.items.length}</i>
         <h2 lang="de">{p.name}</h2>
         <span className={`sup-kind is-${p.kind}`}>{p.kind === "subcontract" ? "Subcontractor · whole unit price" : "Supplier · material only"}</span>
         <span className="sup-cov">

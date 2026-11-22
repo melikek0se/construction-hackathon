@@ -14,11 +14,57 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- A message opened in the mail program is plainly not sent (2026-11-22, Atahan lost sight of his text
+  after "Open in mail program"; `MailCard`, `takeBack` in `Questions.tsx`): the card reads "Not sent yet",
+  its text stands open, with "Mark as sent", "Open in mail program again", "Download .eml" and "Take it
+  back and write it again" (the draft goes, its questions are ticked again in their wording, address,
+  subject and text stand in the fields as written). No reply box and no "waits for a reply" before it is
+  marked as sent; the section reads "Messages · n not sent yet". Nothing changed on the server.
+  Checked: type-check; in Chrome the unsent message of TBA-2026-114 with its text open.
+  Not checked: "Take it back and write it again" and "Open in mail program again" pressed (the only
+  draft there is Atahan's own).
+
+- The unit price on the document takes less room (2026-11-22, Atahan; `PriceCells` in `TenderDoc.tsx`,
+  `.td-it .ep` in `tenderdoc.css`): the field is 84px by 22px (was 112 by 26), an empty one says "€/m"
+  (euros per the item's unit) instead of "unit price", the lines "per m" and "total" under every row are
+  gone (the section's head names the columns); the source of a price Polier put there stays under it.
+  Checked: type-check; in Chrome on TBA-2026-114 empty and filled rows, no figure cut off in 79 rows.
+  Not checked: a five-figure unit price in the field, an intake tender (fields off).
+
+- The three heads of the tender page in three tones (2026-11-22, Atahan; end of `tenderdoc.css`): the
+  document's head stays ink, the findings' is white over a 2px ink rule, the open panel's is yellow with
+  an ink plate. No hue outside the palette (red, blue, green mean something on that page).
+  Checked in Chrome on TBA-2026-114, Ask for prices. Not checked: the message panel with its "Take all"
+  tags on yellow, the page without a panel open.
+
+- The head of an open panel stays (2026-11-22; `.td-phead` in `tenderdoc.css`): "Message to the client"
+  and "Price inquiries" hold on one line with the document's head and the findings' head while the panel
+  is read under them (it used to move up 16px to the band).
+  Checked in Chrome on TBA-2026-114, Ask for prices, panel scrolled: the three heads at the same height.
+  Not checked: the message panel scrolled (it was too short to scroll there).
+
 - The board's columns are Intake, Tender, Bid, Award (2026-11-22, D-074, replacing D-067; `COLUMNS` and
   `STAGE_LABEL` in `Projects.tsx`): Intake holds what waits for the go (the checks are done there), Tender what was taken on (stage
   "pricing"; "check" is no stage to choose any more and is read as "pricing"), Bid what is with the
   client, Award what ended. Nothing migrated on the server.
   Checked: type-check. Not checked: the board in a browser.
+
+- The panels move in and out (2026-11-22; `Tender.tsx` `movePanel`, `tenderdoc.css` `:root[data-panel]`):
+  "Ask the client" and "Ask for prices" open and shut their panel as one View Transition, 460 ms: the map
+  leaves at the left, the panel comes in at the right, the document, the findings and their head move
+  over between them on the same clock; the same way back. The old `td-shift` / `td-panel-in` are gone.
+  Checked: type-check; in Chrome on LBSW-W-2026-0187 the message opened and shut, stopped halfway each
+  time (the edges of map, document and panel stay together).
+  Not checked: "Ask for prices", from one panel straight to the other, the buttons on the cover sheet
+  (they take the same way, `toStep`), Safari and Firefox (without the API the page just changes).
+
+- The step in the band (2026-11-22, D-072, D-073; `Tender.tsx`, `App.tsx`, `tender.css`): the strip under
+  the band is gone. Right of the project's name stands one cell, the open step with its line of state; a
+  press lists Tender, Bid, Award. The buttons for what is next follow it. A project opens on the step it
+  stands at (submitted: Bid, ended: Award, else Tender).
+  Checked: type-check; in Chrome a won project opens on Award from the board, the menu lists the three.
+  Not checked: an intake tender ("Take it on" / "Pass" in the band, Bid and Award locked in the menu), a
+  run going (the tape), a submitted project, a window under 1300 px.
 
 - The way from a mail to the first results, checked end to end (2026-11-22, before "Take it on"): a new
   tender (made up for it: SWN-K-2026-077 Regenwasserkanal Ahornring, 15 items, X83 and print-out, with
@@ -59,6 +105,42 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   package and firms, 3 waiting for the client, 4 from past bids; the rail's "4 stops".
   Not checked: the 8 s reading after something sent, a card of an inquiry that is out.
 
+- Unit price and total on every item, filled by Polier (2026-11-22, D-075; `api.py` (`_autofill`,
+  `AUTOFILL`), `TenderDoc.tsx` (`PriceCells`, `DocPrices`), `Tender.tsx`, `WebFinds.tsx`, `tenderdoc.css`,
+  tests `test_bid.py`, `test_whatif.py`): fields on the document from the start, typed after "Take it on";
+  quote for this tender, else price book, else past bids, else empty; a web search by itself for a package
+  with nobody to ask. Checked: pytest; in Chrome on TBA-2026-114: 78 fields, 3 filled from past bids, a
+  typed price gives its total and "yours", an intake tender has its fields closed.
+  Not checked: a quote coming in and changing a field; the web search running by itself.
+  Known: an automatic price that is cleared comes back at the next read; only "own" prices stay as typed.
+- Tender, questions and prices are one page (2026-11-22, D-071; `Tender.tsx`, `TenderDoc.tsx` (`AskLayer`:
+  `extra`, `cover`, `keep`, `wide`; `acts`), `Questions.tsx` (`composing`), `tenderdoc.css`): the band has
+  Tender, Bid, Award; after "Take it on" the tender's document shows the questions under their findings
+  and a price line beside the items, the cover sheet says how both stand; "Ask the client" and "Ask for
+  prices" at the top left open the message or the inquiries where the map was, and the page then uses
+  the whole width. `pricesLayer` and the Questions/Prices cells are gone; the routes are kept.
+  Checked: type-check, build; in Chrome on TBA-2026-114: the page (18 question blocks, 44 price lines),
+  the message panel, the inquiries panel with 37 package items; an intake tender shows the plain tender.
+  Not checked: sending anything, writing an inquiry in the narrow panel, a tender with several LVs.
+  Later the same day: an open panel stands at the far right as a sheet like the document (ink head, section
+  heads), the findings exactly in the middle under a head of their own ("Findings", back and on, J/K; it
+  leads a finding to below the LV's head and reaches the last one); a ticked question fills the head of
+  its card green; the two buttons are in the band. Asking for prices: a card per item (kind of price, how
+  the inquiry stands, the package as a button that brings it up in the panel, who it goes to), packages
+  as section heads with their item count. Checked in Chrome on TBA-2026-114 by measuring the heads and
+  stepping through all findings. Not checked: an inquiry written and sent (the green head of a price card).
+- The Questions step is the Tender step's document (2026-11-22, D-069; `Questions.tsx` (`AskCard`,
+  `MessageDialog`), `TenderDoc.tsx` (`AskLayer`), `Tender.tsx`, `tenderdoc.css`, `api.py` (`texts`),
+  `mail.py` (`standing`)): the same page as Tender; under each "Ask the client" finding a tick and the
+  German question in a text field; the ticked ones are one message in a dialog behind "Message to the
+  client" at the top right, with the messages that went out and their replies; marks of the questions on
+  the map. The cover page of D-068 for Questions is gone; the view without `layout` is kept but not reached.
+  The dialog became a mode of the page (D-070): the button at the top right puts the message where the
+  map was and leaves only the items with a question; a tick adds the question, a cross takes it out.
+  Checked in Chrome on TBA-2026-114: 18 items, 18 cards, two ticks give "2 of 18" and a message of two.
+  Checked: type-check, pytest (225), in Chrome on TBA-2026-114: 18 question blocks and 18 marks, a tick
+  counts on the button, the dialog writes the message, a reworded question goes into the message.
+  Not checked: sending, a reply read back and decided on a card, asking again, several LVs.
 - Questions and Prices on the tender's document (2026-11-22, D-068; `TenderDoc.tsx` (`StepLayer`),
   `Questions.tsx` (`layout`), `Tender.tsx` (`pricesLayer`), `router.ts`, `tenderdoc.css`): both steps are
   the same page as the Tender step, with their own cover page, cards and marks. Front end only.
@@ -177,30 +259,9 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   of the Tender step (`?item=`) scrolls there; a press on an item in the text does nothing, since its
   card is always open. The Check, Prices and Bid steps still have their three columns.
 
-- Intake page: research and mock-ups, nothing built (2026-11-22; `playground/intake/`, untracked;
-  `cd playground/intake && python3 -m http.server 5302 --bind 127.0.0.1`): what the estimator wants to see
-  while a tender is in the intake (one LV in several formats, several LVs, a new Stand arriving meanwhile).
-  Research tab (Turkish, sources marked read / search excerpt / not found) and four designs on three
-  scenarios with real data (T1 Birkenweg from the dev API, the 27 LVs of project F): A register (row per
-  LV, column per format, Stand), B by arrival, C only what needs a decision, D recommended (A's table,
-  C's list, B's time as one lane). Waiting for Atahan's choice. Seen in headless Chrome at 1500 wide;
-  the buttons were not clicked.
-  **E, Atahan's idea, added the same day** (`doc.js`, `data-t1.js`, `data-f.js`): the whole tender as one
-  document: map at the left (LVs, the open LV's sections, passed ones dimmed, follows the scroll), the
-  text in the middle (the client's mails, then per LV the remarks and the items, notes in the margin),
-  the open item or point at the right (the list "for you to look at" while nothing is open). Cover, dates,
-  lane and the register of D fold away under a one-line bar "About this tender". Seen in headless Chrome
-  at 1500 wide on T1 with Stand 2 and on the 27 LVs (1.076 items): the top, a jump to an item, a point
-  with its passage, the map following. Not checked: a hand on the mouse, the 240 ms jump (the pictures
-  were taken with the jump made at once), the bar opened, under 1280px.
-  **E changed at Atahan's word (same day): nothing beside the text is a panel.** The piece of the map for
-  a section stands at the left of that section (it holds at the top while its section is read and leaves
-  with it), the card of an item or of a marked passage hangs at the right of it and scrolls with it;
-  cards do not push the text apart (`settle` moves one down that would run into the one above). What
-  stays put: a 42px index at the far left (LV numbers, or section numbers for one LV) to jump with, and
-  "n to look at · next" in the step rail. Seen in headless Chrome at 1500 wide: the mails with their
-  three cards, a jump to a reworded item, LV 13 of the 27. Not checked: by hand, "next", a card taken
-  and taken back, the bar opened, under 1280px.
+- Intake page: researched and drawn as five mock-ups (2026-11-22), then built from the fifth (D-064 and
+  the entries above). The research with its sources is in `docs/07-user-flows.md` ("The intake and the
+  tender page as one document"); the mock-ups (`playground/intake/`) were deleted once the page stood.
 
 - New projects into the intake (2026-11-22, D-063; `POST /api/projects` in `api.py`, texts in `Projects.tsx`):
   a project made in the new-project dialog (or by dropping files) stands in the Intake column, read and not
@@ -431,7 +492,9 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   einzurechnen", "soweit erforderlich") in the preliminary remarks and the notes between items: one finding
   per block, the client's sentence quoted whole, with how many items stand under that title (and their value
   in a priced file). 55 findings over the German dataset files, 0 to 6 per LV. They are in the findings list
-  and the risk report, and marked on the PDF page where the sentence stands; picking one opens the page.
+  and the risk report, and marked on the PDF page where the sentence stands. (Merged into the tender page
+  on 2026-11-22: there they stand with the findings without an item; the old workspace's "picking one opens
+  the page" went with the workspace.)
   The Remarks tab is gone: for a day it showed these passages marked in the remark text, which the PDF tab
   shows already, and before that only the text. Not done: the amount is in the explanation, not in "money
   at stake" (the finding has no item to take a price from); remarks are not read by the AI review on their

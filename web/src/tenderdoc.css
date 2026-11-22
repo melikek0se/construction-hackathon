@@ -1471,7 +1471,7 @@
   color: var(--mute);
 }
 /* the marks of the questions on the map: can be asked, ticked for the next message, with the client, answered */
-.tn .td-strip .td-qm {
+.tn :is(.td-strip, .td-legend) .td-qm {
   min-width: 16px;
   width: 16px;
   height: 16px;
@@ -1479,16 +1479,15 @@
   font: 700 10.5px/16px var(--text);
   text-align: center;
 }
-.tn .td-strip .tn-flag.td-qm.on {
-  background: var(--ink);
-  color: var(--yellow);
+.tn :is(.td-strip, .td-legend) .tn-flag.td-qm.on {
+  box-shadow: 0 0 0 1px #fff, 0 0 0 3px var(--ink);
 }
-.tn .td-strip .tn-blk.td-qm {
+.tn :is(.td-strip, .td-legend) .tn-blk.td-qm {
   box-shadow: inset 0 0 0 1px var(--ink);
   background: #fff;
   color: var(--ink);
 }
-.tn .td-strip .tn-blk.diff.td-qm {
+.tn :is(.td-strip, .td-legend) .tn-blk.diff.td-qm {
   background: var(--ink);
   color: #fff;
 }
@@ -1516,16 +1515,892 @@
   letter-spacing: 0.02em;
   text-transform: none;
 }
-/* the message as a sign: the next message at the left, what went out at the right */
-.q-dialog .np-body > section.questions {
-  display: flex;
-  height: auto;
-  margin: 0;
-  padding: 16px 18px 20px;
-  gap: 12px;
-  overflow-y: auto;
+/* the message is being written (D-070): it stands where the map was, the page keeps the items with a
+   question and their findings */
+.td-flow.composing {
+  grid-template-columns: calc(min(460px, 34vw) + var(--td-gut, 0px)) minmax(0, 1fr);
 }
-.q-dialog .q-compose,
-.q-dialog .q-mail {
+.td-flow.composing > .td-map {
+  display: none;
+}
+.td-flow.composing #td-top,
+.td-flow.composing .td-end,
+.td-flow.composing .td-page > .td-s {
+  display: none;
+}
+.td-compose {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 4px 40px var(--td-gut, 16px);
+  background: var(--tint);
+}
+.questions.td-qpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: auto;
+  padding: 0 12px 0 0;
+  overflow: visible;
+}
+.td-qpanel > header h2 {
+  font: 700 22px/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-qpanel > header p {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 6px;
+  font-size: 13.5px;
+}
+.td-qpanel > header p b {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.td-qpanel > header .text-link {
+  font-size: 12.5px;
+}
+.td-qin {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--ink);
+}
+.td-qin li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: baseline;
+  padding: 5px 4px 5px 9px;
+  font-size: 12.5px;
+  animation: td-qin 260ms var(--ease) both;
+}
+.td-qin li + li {
+  border-top: 1px solid var(--rule);
+}
+.td-qin li > span[lang] {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@keyframes td-qin {
+  from {
+    background: var(--yellow);
+  }
+}
+.tn .td-qout {
+  width: 22px;
+  height: 22px;
+  font: 700 15px/22px var(--text);
+  color: var(--mute);
+}
+.tn .td-qout:hover {
+  background: var(--ink);
+  color: #fff;
+}
+.td-qpanel .td-qwent {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid var(--ink);
+}
+.td-qpanel .q-compose,
+.td-qpanel .q-mail {
   flex: none;
+}
+.td-qpanel .q-body {
+  font-size: 13.5px;
+}
+.td-qpanel .q-compose > h2 {
+  display: none; /* the panel's own head says it, with the count */
+}
+
+/* tender, questions and prices on one document (D-071) */
+/* the two things to do next, above the map: ask the client, ask for prices */
+.td-acts {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 8px var(--td-gut, 16px);
+  background: var(--tint); /* the map turns under it */
+}
+.td-flow.acted > .td-map {
+  padding-top: 44px;
+}
+.td-flow.acted > .td-compose {
+  padding-top: 54px;
+}
+.td-actbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 11px;
+  background: var(--yellow);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  font: 700 11.5px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  transition: background-color 120ms var(--ease), color 120ms var(--ease);
+}
+.td-actbtn:hover {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.td-actbtn.on {
+  background: var(--ink);
+  color: #fff;
+}
+.td-actbtn b {
+  min-width: 18px;
+  padding: 0 5px;
+  background: var(--ink);
+  color: var(--yellow);
+  font: 700 11px/18px var(--text);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.td-actbtn:hover b {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.td-actbtn i {
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+/* while a panel stands where the map was, the page uses the whole width: the document and its cards move
+   to the right as far as there is room */
+.td-flow.composing {
+  --td-gut: 24px;
+  grid-template-columns: calc(min(520px, 36vw) + var(--td-gut)) minmax(0, 1fr);
+}
+.td-flow.composing.wide {
+  grid-template-columns: calc(min(680px, 44vw) + var(--td-gut)) minmax(0, 1fr);
+}
+/* the price of an item, on one line beside it */
+.td-prk {
+  align-items: baseline;
+  color: var(--ink-2);
+}
+.td-prk b {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.tn .td-prk .tn-src {
+  flex: none;
+  align-self: center;
+  width: 9px;
+  min-width: 9px;
+  height: 14px;
+}
+.tn .td-cd.pr h4 .tn-tick {
+  flex: none;
+}
+/* on the cover sheet: how the questions and the prices stand */
+.td-after2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 28px;
+  margin-top: 10px;
+}
+.td-after2 > div {
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+  align-content: start;
+}
+.td-after2 b {
+  font-size: 13.5px;
+}
+.td-after2 p {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+/* the price inquiries where the map was */
+.td-ipanel {
+  padding-right: 12px;
+}
+.td-ipanel > header h2 {
+  font: 700 22px/1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-ipanel > header p {
+  margin: 6px 0 14px;
+  max-width: 60ch;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.td-ipanel .questions.sup {
+  height: auto;
+  padding: 0;
+  overflow: visible;
+}
+/* in the panel a firm's row has less room: who and how it stands on one line, what was last said under it */
+.td-ipanel .sup-ask > li {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+.td-ipanel .sup-ask > li > small {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+/* while a panel is open (Atahan, 2026-11-22): the map leaves the screen, the document stands at the left,
+   its findings in the middle, the panel at the far right with the two buttons above it */
+.td-flow.composing {
+  --td-gut: 24px;
+  --td-panel: calc(min(500px, 34vw) + var(--td-gut));
+  grid-template-columns: minmax(0, 1fr) var(--td-panel);
+}
+.td-flow.composing.wide {
+  --td-panel: calc(min(600px, 38vw) + var(--td-gut));
+  grid-template-columns: minmax(0, 1fr) var(--td-panel);
+}
+.td-flow.composing > .td-page {
+  grid-column: 1;
+  grid-row: 1;
+  padding-left: var(--td-gut);
+  padding-right: 0;
+}
+.td-flow.composing > .td-compose {
+  grid-column: 2;
+  grid-row: 1;
+  padding: 54px var(--td-gut) 40px 18px;
+  border-left: 1px solid var(--line-2);
+}
+.td-flow.composing > .td-acts {
+  left: auto;
+  right: 0;
+  width: var(--td-panel);
+  padding: 10px var(--td-gut) 8px 18px;
+}
+.td-flow.composing > .td-tools {
+  right: calc(var(--td-panel) + 14px);
+}
+.td-flow.composing .td-qpanel,
+.td-flow.composing .td-ipanel {
+  padding-right: 0;
+}
+
+/* the findings stand exactly in the middle of the screen while a panel is open: the document at their
+   left and the panel at their right are equally wide (350px is the findings' column, see .td-r) */
+.td-flow.composing,
+.td-flow.composing.wide {
+  --td-panel: calc((100% - 350px) / 2);
+  grid-template-columns: minmax(0, 1fr) var(--td-panel);
+}
+.td-flow.composing > .td-page {
+  scrollbar-width: none; /* a scrollbar between the findings and the panel would push them off the middle */
+}
+
+/* the two things to do next stand in the band, beside the steps (Atahan, 2026-11-22) */
+.tn-acts:empty {
+  display: none;
+}
+.td-flow.composing > .td-compose {
+  padding-top: 16px;
+}
+
+/* a finding whose question is ticked for the message: a green bar on top, a green frame, "In the message" in
+   green; the mark on the map is ringed in the same green (Atahan, 2026-11-22) */
+.td-cd:has(.td-ask.on) {
+  border-color: var(--go);
+  box-shadow: inset 0 6px 0 var(--go), 0 0 0 1px var(--go);
+  padding-top: 15px;
+  background: color-mix(in srgb, var(--go) 5%, #fff);
+}
+.td-cd:has(.td-ask.on)::before {
+  height: 2px;
+  background: var(--go);
+}
+.questions.td-ask.on {
+  border-top-color: var(--go);
+}
+.questions.td-ask.on textarea {
+  border-color: var(--go);
+  box-shadow: inset 3px 0 0 var(--go);
+}
+.td-ask.on .q-status.is-drafted,
+.td-ask.on .td-askrow .text-link {
+  border-color: var(--go);
+  background: var(--go);
+  color: #fff;
+}
+.td-ask.on .td-askrow .text-link {
+  padding: 1px 6px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.td-ask.on input[type="checkbox"] {
+  accent-color: var(--go);
+}
+.tn :is(.td-strip, .td-legend) .tn-flag.td-qm.on {
+  box-shadow: 0 0 0 1px #fff, 0 0 0 3px var(--go);
+}
+.td-qin {
+  border-color: var(--go);
+  box-shadow: inset 4px 0 0 var(--go);
+}
+.td-qin li {
+  padding-left: 13px;
+}
+.td-askrow > :last-child {
+  flex: none;
+  white-space: nowrap;
+}
+.questions.td-ask .td-askrow label {
+  min-width: 0;
+}
+
+/* ticked for the message, as the cards of the board fill their head by where a tender stands: the head of
+   the finding card (what kind, its title) is filled green with white type; the rest of the card stays white */
+.td-cd:has(.td-ask.on) {
+  padding-top: 9px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--go);
+}
+.td-cd:has(.td-ask.on) > h4 {
+  margin: -9px -12px 8px;
+  padding: 9px 12px 8px;
+  background: var(--go);
+  color: #fff;
+  transition: background-color 160ms var(--ease);
+}
+.td-cd:has(.td-ask.on) > h4:has(+ .td-ft) {
+  margin-bottom: 0;
+  padding-bottom: 4px;
+}
+.td-cd:has(.td-ask.on) > h4 + .td-ft {
+  margin: 0 -12px 8px;
+  padding: 0 12px 10px;
+  background: var(--go);
+  color: #fff;
+}
+.td-cd:has(.td-ask.on) > h4 .td-id {
+  color: rgb(255 255 255 / 0.75);
+}
+/* the severity sign keeps its colour on a white plate, so it reads on the green */
+.td-cd:has(.td-ask.on) > h4 > svg:first-child,
+.td-cd:has(.td-ask.on) > h4 > .sign:first-child {
+  padding: 1px;
+  background: #fff;
+  border-radius: 2px;
+  box-sizing: content-box;
+}
+
+/* only the head of a ticked card is green (Atahan, 2026-11-22): its frame, the line above the question,
+   the question's field, its tag and its tick are as on any other card */
+.td-cd:has(.td-ask.on) {
+  border-color: var(--ink);
+  box-shadow: none;
+}
+.td-cd:has(.td-ask.on)::before {
+  height: 1px;
+  background: var(--ink);
+}
+.questions.td-ask.on {
+  border-top-color: var(--ink);
+}
+.questions.td-ask.on textarea {
+  border-color: var(--line-2);
+  box-shadow: none;
+}
+.questions.td-ask.on textarea:focus {
+  border-color: var(--ink);
+}
+.td-ask.on .q-status.is-drafted,
+.td-ask.on .td-askrow .text-link {
+  border-color: var(--ink);
+  background: #fff;
+  color: var(--ink);
+}
+.td-ask.on input[type="checkbox"] {
+  accent-color: auto;
+}
+
+/* the panel is a sheet like the document beside it (Atahan, 2026-11-22): the same ink head with a yellow
+   plate, white under it in a hairline frame, the same section head; no rule between it and the findings */
+.td-flow.composing > .td-compose {
+  border-left: 0;
+  padding-left: 6px;
+}
+.td-sheet.td-sheet {
+  display: block;
+  gap: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--line-2);
+}
+/* the head stays where it stands, on one line with the document's head and the findings' head, while the
+   panel is read under it (a sticky head holds below its scroller's top padding, as .td-lvh does) */
+.td-phead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: -1px -1px 0;
+  padding: 12px 16px;
+  background: var(--ink);
+  color: #fff;
+}
+.td-phead .tn-ix {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 4px;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 22px/1 var(--display);
+  font-variant-numeric: tabular-nums;
+}
+.td-phead b {
+  display: block;
+  font: 600 21px/1.1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-phead small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.68);
+}
+.tn .td-phead .tn-tag {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+  cursor: pointer;
+}
+.tn .td-phead .tn-tag:hover {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--ink);
+}
+.td-pbody {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+.td-pbody:empty {
+  display: none;
+}
+/* inside the sheet nothing has a heavy frame of its own: the message's fields stand on the white, a
+   message that went out in a hairline */
+.td-sheet .q-compose {
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.td-sheet .q-mail {
+  background: #fff;
+  border: 1px solid var(--line-2);
+}
+.td-sheet .q-mail.is-draft {
+  border-style: dashed;
+  border-color: var(--ink);
+}
+.td-sheet.questions input[type="email"],
+.td-sheet.questions input[type="text"],
+.td-sheet.questions textarea {
+  background: #fff;
+  border-width: 1px;
+}
+.td-sheet .td-sech {
+  margin: 0;
+}
+.td-sheet .q-head {
+  border: 0;
+  padding: 0;
+}
+
+/* the findings' column has a head of its own, as the document and the panel have (Atahan, 2026-11-22):
+   it stands over the column, says how many findings there are to look at and which one the reading
+   stands at, and leads back and on */
+.td-tools,
+.td-flow.composing > .td-tools {
+  top: 16px;
+  right: calc(var(--td-gut, 16px) + 16px);
+  width: 322px; /* the cards' width: the column's 350px less its padding (see .td-rgt) */
+  flex-direction: column;
+  align-items: stretch;
+}
+.td-flow.composing > .td-tools {
+  right: calc(var(--td-panel) + 16px);
+}
+.td-pts {
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  padding: 12px 12px 12px 16px;
+  background: var(--ink);
+  box-shadow: none;
+  border-radius: 0;
+  color: #fff;
+}
+.td-pts .tn-ix {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 4px;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 22px/1 var(--display);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.td-pts > div {
+  flex: 1;
+  min-width: 0;
+}
+.td-pts b {
+  display: block;
+  font: 600 21px/1.1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-pts small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.68);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tn .td-pts button,
+.tn .td-pts button:first-child,
+.tn .td-pts button:last-child {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  font: 600 24px/32px var(--display);
+  color: #fff;
+}
+.tn .td-pts button + button {
+  margin-left: -6px;
+}
+.tn .td-pts button:hover {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--ink);
+}
+
+/* the three heads are one line: the document's head has a hairline on top and a 2px rule below, so the
+   findings' and the panel's get the same 3px; and the gap at either side of the findings is the same 12px */
+.td-pts,
+.td-phead {
+  padding-top: 13px;
+  padding-bottom: 14px;
+}
+.td-flow.composing .td-rgt {
+  padding-right: 12px;
+}
+.td-flow.composing > .td-tools {
+  right: calc(var(--td-panel) + 12px);
+  width: 326px;
+}
+.td-flow.composing > .td-compose {
+  padding-left: 0;
+}
+
+/* the findings' head over its column: the page's scrollbar lies between the column and the edge (--td-sb,
+   measured in TenderDoc.tsx) */
+.td-tools {
+  right: calc(var(--td-gut, 16px) + 16px + var(--td-sb, 0px));
+}
+.td-flow.composing > .td-tools {
+  right: calc(var(--td-panel) + 12px + var(--td-sb, 0px));
+}
+
+/* A panel comes or goes (Tender.tsx `movePanel`, Atahan 2026-11-22): everything moves on one clock. The map
+   leaves at the left exactly as far as the document's left edge moves, the panel comes in at the right
+   exactly as far as its right edge moves, the findings and their head ride on that right edge; shutting
+   the panel runs the same way back. Each part is a picture of its own for the time of the movement. */
+:root[data-panel] .td-map {
+  view-transition-name: td-map;
+}
+:root[data-panel] .td-page {
+  view-transition-name: td-page;
+}
+:root[data-panel] .td-compose {
+  view-transition-name: td-compose;
+}
+:root[data-panel] .td-tools {
+  view-transition-name: td-tools;
+}
+:root[data-panel]::view-transition-group(*),
+:root[data-panel]::view-transition-old(*),
+:root[data-panel]::view-transition-new(*) {
+  animation-duration: 460ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  animation-fill-mode: both;
+}
+:root[data-panel]::view-transition-old(td-map):only-child {
+  animation-name: slide-out-left;
+}
+:root[data-panel]::view-transition-new(td-map):only-child {
+  animation-name: slide-in-left;
+}
+:root[data-panel]::view-transition-old(td-compose):only-child {
+  animation-name: slide-out-right;
+}
+:root[data-panel]::view-transition-new(td-compose):only-child {
+  animation-name: slide-in-right;
+}
+/* the document is not squeezed while its room changes: both pictures keep their size and hold on to the
+   right edge, where the findings stand */
+:root[data-panel]::view-transition-group(td-page) {
+  overflow: clip;
+}
+:root[data-panel]::view-transition-old(td-page),
+:root[data-panel]::view-transition-new(td-page) {
+  left: auto;
+  right: 0;
+  width: auto;
+  height: 100%;
+}
+
+/* while a panel is open the page ends in room enough for its last item to come up under the head: the
+   last finding can be led to like any other */
+.td-flow.composing > .td-page {
+  padding-bottom: 70vh;
+}
+
+/* asking for prices (Atahan, 2026-11-22): the card of an item says what is asked and how the inquiry
+   stands; its package is a button into the panel; its head is green once the inquiry has gone out */
+.tn .td-pkgbtn {
+  display: block;
+  width: 100%;
+  margin-bottom: 4px;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: underline;
+  text-decoration-color: var(--line-2);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.tn .td-pkgbtn:hover {
+  text-decoration-color: var(--ink);
+}
+.td-cd.pr .td-price small {
+  display: block;
+}
+.td-cd.pr .td-open {
+  padding-left: 8px;
+  border-left: 3px solid var(--yellow);
+  font-size: 12.5px;
+}
+.td-cd.pr.is-out > h4 {
+  margin: -9px -12px 8px;
+  padding: 9px 12px 8px;
+  background: var(--go);
+  color: #fff;
+}
+.td-cd.pr.is-out > h4 .td-id {
+  color: rgb(255 255 255 / 0.8);
+}
+.td-cd.pr.is-out > h4 .tn-src {
+  border-color: #fff;
+  background: #fff;
+}
+/* the packages in the panel read as the document's sections do: a tint head under an ink rule, the
+   number of items on a yellow plate, the name in the display face */
+.sup-n {
+  display: none;
+}
+.td-sheet .sup-pkg {
+  margin: 20px -16px 0;
+  padding: 0 16px 6px;
+  border-top: 0;
+  scroll-margin-top: 78px;
+}
+.td-sheet .sup-pkg > header {
+  align-items: center;
+  margin: 0 -16px 10px;
+  padding: 10px 16px;
+  background: var(--tint);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line-2);
+}
+.td-sheet .sup-n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  background: var(--yellow);
+  font: 600 16px/1 var(--display);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.td-sheet .sup-pkg h2 {
+  font: 600 18px/1.15 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.td-sheet .sup-pkg.flash > header {
+  animation: td-pkg-flash 1100ms var(--ease) both;
+}
+@keyframes td-pkg-flash {
+  0%,
+  35% {
+    background: var(--yellow);
+  }
+}
+.td-sheet .sup-why {
+  font-size: 13px;
+}
+.td-sheet .sup-items,
+.td-sheet .sup-ask > li {
+  font-size: 13.5px;
+}
+.td-sheet .sup-add select {
+  width: 100%;
+}
+.td-sheet .questions.sup > .q-head {
+  padding-bottom: 12px;
+  border-bottom: 0;
+}
+
+/* the three heads are three tones, not three black slabs (Atahan, 2026-11-22): the document's stays ink
+   (the client's text, the source); the findings' is white over a 2px ink rule (Polier's notes, quiet); the
+   panel's is yellow (the estimator's move: what goes out). No hue outside the palette: red, blue and
+   green say something else on this page. The rules are drawn inside, so no head changes its size. */
+.td-pts {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--ink), inset 0 0 0 1px var(--line-2);
+}
+.td-pts small {
+  color: var(--mute);
+}
+.tn .td-pts button,
+.tn .td-pts button:first-child,
+.tn .td-pts button:last-child {
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+.tn .td-pts button:hover {
+  border-color: var(--yellow);
+}
+.td-phead {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.td-phead .tn-ix {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.td-phead small {
+  color: var(--yellow-ink);
+}
+.tn .td-phead .tn-tag {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.tn .td-phead .tn-tag:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+/* the unit price and the total stand on every item of the document (D-075): quantity, unit price to type,
+   total. A price Polier put there is set quieter and says its source; one the estimator typed is ink. */
+.td-it.priced {
+  grid-template-columns: 66px minmax(0, 1fr) 96px 84px 96px;
+}
+.td-it .ep {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+}
+.td-it .ep input {
+  width: 100%;
+  height: 22px;
+  padding: 0 5px;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  font: 600 13px var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink);
+}
+.td-it .ep input::placeholder {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--dim);
+}
+.td-it .ep input:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+.td-it .ep input:focus {
+  border-color: var(--ink);
+  outline: 2px solid var(--yellow);
+  outline-offset: 0;
+}
+.td-it .ep input:disabled {
+  background: var(--tint);
+  border-style: dashed;
+  color: var(--mute);
+}
+.td-it .ep.auto input {
+  background: var(--tint);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.td-it .ep small,
+.td-it .gp small {
+  display: block;
+  font: 400 11.5px var(--text);
+  text-align: right;
+  white-space: nowrap;
+  color: var(--dim);
+}
+.td-it .gp {
+  padding-top: 2px;
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.td-it .gp small {
+  margin-top: 4px;
+}
+/* what the three figures of a row are, on the section's head */
+.td-sech.priced {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+.td-cols {
+  display: grid;
+  grid-template-columns: 96px 84px 96px;
+  column-gap: 10px;
+}
+.td-cols em {
+  font: 700 10.5px var(--text);
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--dim);
 }

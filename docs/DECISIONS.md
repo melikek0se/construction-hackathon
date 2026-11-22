@@ -1262,6 +1262,87 @@ and the marks say changes). Built for Questions and Prices; Bid and Award keep t
   Inquiries are gone from its switch.
 - For a tender of several LVs both steps still ask for an LV first (questions and inquiries are per LV).
 
+
+## D-069 — The Questions step is the Tender step's document; the message is behind a button
+
+**Decided** 2026-11-22 (Atahan: "the UI I see in Tender and in Questions is the same, nothing changes;
+the steps work as steps"). Replaces the Questions part of D-068; Prices keeps its layer.
+
+- The Questions step draws the tender's document exactly as the Tender step does: cover sheet, map,
+  every finding beside its item. Nothing is taken away for it.
+- Under a finding the client has to settle ("Ask the client") stands its question (`AskLayer` in
+  `TenderDoc.tsx`, `AskCard` in `Questions.tsx`): a tick for the next message, and the German wording in
+  a text field to change. Nothing is ticked at first. A question that was asked shows how it stands, the
+  client's answer and what it changes to decide, and a tick to ask it again.
+- What is ticked and reworded is kept in the browser per LV file (`lvcheck.questions.draft`); a reworded
+  question keeps its key (`texts` on compose and on the message) and reads as it was asked afterwards
+  (`mail.standing`).
+- The ticked questions are one message. It is behind "Message to the client" at the top right of the
+  page (with the number ticked), which opens a dialog: the message at the left (to, subject, signature,
+  text, send), the messages that went out with their replies and "Check the inbox" at the right. Where
+  the app has an account, "Send from …" is the button and the mail program and .eml are links beside it.
+- Marks on the map, in place of the item's own: "?" on the colour of its finding (stop red, caution
+  yellow, note blue) can be asked, the same ringed in ink ticked for the next message, outlined "→" with
+  the client, ink "✓" answered. The legend of the map names them in this step.
+
+## D-070 — The message is written beside the items, not in a dialog
+
+**Decided** 2026-11-22 (Atahan: the dialog of D-069 was not liked; "the items to ask about in the middle,
+our finding at the right, the message at the left, a tick adds it"). Replaces the dialog of D-069; the
+rest of D-069 stands.
+
+- "Message to the client" at the top right of the Questions step turns the page into the place where the
+  message is written; "Back to the tender" turns it back. No dialog.
+- While it is written: the map is gone and the message stands in its place (how many questions are in
+  it, each on one line with a cross to take it out, "Take all" / "Take all out", to, subject, signature,
+  text, send; below it the messages that went out with their replies and "Check the inbox"). The page
+  keeps only the items a question is about, each with the findings that carry a question; a tick on a
+  finding adds its question to the message at once (`only` and `panel` of `AskLayer`).
+
+## D-071 — Tender, questions and prices are one page; Bid and Award stay steps
+
+**Decided** 2026-11-22 (Atahan: "these are one project as it grows over time; I do not want to see the
+steps apart, I want to see the analyses grow from one place"). Replaces the separate Questions and
+Prices steps of D-050/D-068; D-069 and D-070 stand, on this one page.
+
+- The band has three cells: Tender, Bid, Award. What Polier does at the questions and the prices is
+  said in the Tender cell.
+- In the intake the page is the tender and its findings, with "Take it on". Once taken on, the same
+  document also carries what the questions and the prices stations made: under a finding for the client
+  its question, beside an item its price on one line (how firm, the figure, the source), on the cover
+  sheet "Questions and prices" (how many asked and answered, where the prices come from).
+- Two buttons at the top left, above the map: "Ask the client" (the message, D-070) and "Ask for
+  prices" (the price inquiries where the map was; the page keeps the items of the packages, each with
+  its package and who it goes to). Either button turns into "Back to the tender".
+- While a panel is open the page uses the whole width: the document and its cards move to the right.
+- The addresses stay: `/projects/:id` the page, `/questions` with the message open, `/prices` with the
+  inquiries open (`place.step` says which panel is open; nothing else in the app had to change).
+
+- Amended the same day (Atahan): an open panel stands at the far right, not where the map was. The map
+  leaves the screen, the document moves to the left edge, its findings stand in the middle, the panel
+  (message or inquiries) at the right with the two buttons above it. This holds for D-070 too.
+  The findings stand exactly in the middle of the screen: the document and the panel are equally wide.
+  The two buttons stand in the band beside the steps, not above the map (Atahan, later the same day).
+
+## D-072 — The three steps stand in the band, right of the project's name; no strip under it
+
+Atahan, 2026-11-22: a strip of its own for Tender, Bid, Award is not needed. They stand in the yellow band
+right of the project's name, as a statement of where the tender stands (name plus one line of state, the
+open one ink, Polier's tape under the one he is working on) and still lead to the step. What is to do next
+(run or stop the checks, "Ask the client", "Ask for prices", "Close the questions", "Take it on" / "Pass")
+follows them in the band. The name takes what room is left and ends in an ellipsis (it stands in full on
+the cover sheet); "Risk report" and "Settings" lose their second line and are signs only under 1700 px.
+`Tender.tsx` puts the steps into `App.tsx`'s `.band-steps` through a portal, as the partners page does.
+
+## D-073 — One step stands in the band: the one the project is at; the others are behind a press
+
+Atahan, 2026-11-22, amending D-072: the three steps need not stand side by side (after the bid went out
+nobody goes back to the tender). The band shows one cell, the open step with its line of state; a press
+lists Tender, Bid, Award with their states and leads to the one chosen. A project opened without a step
+named (from the board, the engine room, Polier) opens on the step it stands at: intake, check, pricing
+on Tender, a submitted bid on Bid, a tender that ended on Award (`openTenderPage` in `App.tsx`, from
+`stageOf`). An address that names a step is opened as it says.
+
 ## D-074 — The board's columns are Intake, Tender, Bid, Award
 
 **Decided** 2026-11-22 (Atahan), replacing the columns of D-067 (Tender, Pricing, Submitted, Result).
@@ -1277,6 +1358,27 @@ and the marks say changes). Built for Questions and Prices; Bid and Award keep t
   board only: a document is still a tender, a bid or an award.
 - Nothing is migrated on the server (it still accepts "check"). Where a single stage is named (schedule,
   project settings) they read Intake, Pricing, Bid, Award.
+
+## D-075 — Unit price and total stand on every item of the document; Polier fills them
+
+**Decided** 2026-11-22 (Atahan: "there is no field for the unit price and the total on the main document;
+show it from the start, let it be typed once the tender is taken on, and let the agent fill it").
+
+- Every item of the tender's document carries quantity, unit price (a field) and total; the section head
+  names the three, the LV's head says how many are priced and the net. In the intake the fields stand
+  there and take nothing.
+- Once the tender is taken on, Polier puts a unit price on every item it has one for (`api._autofill`,
+  each time the bid is read): the quote for this tender where one is in and is a whole unit price (a
+  subcontractor's, with the firm's surcharge; source `quote`), else the price book (what a partner quoted
+  for the same thing before), else past bids (both source `suggestion`), else nothing. A quote read from
+  the inbox changes the field by itself. A price the estimator typed (`own`) is never touched; an item
+  that waits for the client's answer is left as it is.
+- A supplier's price is the material part only and is never put in as a unit price (the domain rule
+  stands): it is said on the line beside the item and in the field's tooltip.
+- A package nobody can be asked for is looked up on the web by itself, once (`WebFinds`); taking a firm
+  found there stays the estimator's.
+- The same prices are the bid's (`bid_prices`): the Bid step shows what is typed here.
+
 ## D-076 — A clause in the remarks is a finding without an item
 Status: decided · 2026-11-22
 

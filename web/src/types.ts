@@ -607,7 +607,7 @@ export interface BidRow {
   suggestion: { unit_price: number; low: number | null; high: number | null; confidence: string; sources: number; basis: "partners" | "past bids"; stale: boolean } | null;
   material: BookPrice | null; // a supplier's earlier price for the material, beside the unit price
   unit_price: number | null; // entered, before any allowance
-  source: "own" | "suggestion" | "file" | null;
+  source: "own" | "suggestion" | "quote" | "file" | null; // own: typed; suggestion: price book or past bids; quote: a quote for this tender (both put in by Polier)
   allowance_percent: number | null; // accepted from an open point of the client's answers
   price: number | null; // what goes into the bid: unit price with the allowance
   total: number | null;

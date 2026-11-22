@@ -1523,9 +1523,58 @@ def _source_bytes(analysis_id: str) -> bytes | None:
     return catalog.file_bytes(doc["id"]) if doc else None
 
 
+AUTOFILL = True  # Polier puts its prices on the items by itself (a test of the bid alone switches this off)
+
+
+def _autofill(analysis_id: str) -> int:
+    """Polier puts a unit price on every item it has one for, once the tender is taken on (D-075): the
+    quote for this tender where one is in and is a whole unit price (a subcontractor's, with the firm's
+    surcharge), else what a partner quoted for the same thing before (the price book), else what past bids
+    suggest, else nothing. A price the estimator typed is never touched. A supplier's price is the material
+    part only and is not put in as a unit price. An item that waits for the client's answer is left as it
+    is. Looked at again each time the bid is read, so a quote that came in changes the price by itself.
+    Returns how many prices were set or changed."""
+    project_id = _project_id(analysis_id)
+    project = catalog.find(project_id) if project_id else None
+    if not AUTOFILL or project is None or project["plan"].get("stage") == "intake":
+        return 0
+    boq, _ = _analysis(analysis_id)
+    if any(i.total is not None for i in boq.items):  # a file that carries its prices (a bid, an award)
+        return 0
+    have = bid.entered(project_id, boq.file)
+    rows = bid.sheet(boq, _prices(boq, project_id), [], have)["rows"]
+    sources = _supply_state(analysis_id)["prices"] if supply.find_plan(project_id, boq.file) else {}
+    changes: dict[str, tuple] = {}
+    for row in rows:
+        oz, mine, src = row["item_oz"], have.get(row["item_oz"]), sources.get(row["item_oz"]) or {}
+        if (mine and mine["source"] == "own") or src.get("status") == "waits":
+            continue
+        if src.get("status") == "quoted" and str(src.get("part", "")).startswith("unit price"):
+            want = (bid.price_of(f"{src['unit_price']:.2f}"), "quote")
+        elif row["suggestion"]:
+            want = (bid.price_of(f"{row['suggestion']['unit_price']:.2f}"), "suggestion")
+        else:
+            continue
+        if want[0] is not None and (not mine or mine["source"] != want[1] or Decimal(mine["unit_price"]) != want[0]):
+            changes[oz] = want
+    if changes:
+        bid.keep(project_id, boq.file, changes)
+        quoted = sum(1 for _, source in changes.values() if source == "quote")
+        events.record(project_id, "price",
+                      f"Polier put {len(changes)} unit price{'' if len(changes) == 1 else 's'} on {boq.file}: "
+                      f"{quoted} from quotes for this tender, {len(changes) - quoted} from the price book and past bids. "
+                      f"What you typed yourself stays.", "")
+    return len(changes)
+
+
 @app.get("/api/analyses/{analysis_id}/bid")
 def bid_sheet(analysis_id: str):
-    """The bid in progress: per item the suggested price, the price entered, allowance, total; and the sums."""
+    """The bid in progress: per item the suggested price, the price entered, allowance, total; and the sums.
+    Before it is read, Polier's prices are brought up to date (`_autofill`)."""
+    try:
+        _autofill(analysis_id)
+    except Exception:  # the sheet is read all the same: the estimator's own prices do not depend on it
+        pass
     return _bid(analysis_id)
 
 
@@ -2354,9 +2403,6 @@ async def _sort_mail(messages: list[dict]) -> dict:
 def inbox_state():
     """The mailbox the app looks into for tenders and replies; `user` is null where none is set."""
     return {"user": (mail.inbox() or {}).get("user") or None}
-
-
-_SCAN = asyncio.Lock()
 
 
 @app.post("/api/inbox/scan")

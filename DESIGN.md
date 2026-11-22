@@ -236,6 +236,10 @@ Yellow and white with near-black ink; red and blue appear only as severity.
 - **Stop Red** (`stop-red`): Stop sign, Stop blocks and strip marks, error notices, a broken term or a missing
   item in a finding picture, an unfavourable difference in what-if.
 - **Note Blue** (`note-blue`): Note sign, Note blocks and strip marks.
+- **Go Green** (`go`, #1b7f3b): what the estimator has taken into the next message to the client: the filled head (white type) of a
+  finding card whose question is ticked, as the board cards fill their head, its "In the message" tag, the ring of its mark on the map (Atahan,
+  2026-11-22). Also the head of an item's price card once its inquiry has gone out to a supplier or subcontractor. Nothing else
+  is green: green says "this goes out, or went out".
 
 ### Neutral
 - **Ink** (`ink`): text, the selected state of chips and switches, the top rule of a table, the secondary dark button.
