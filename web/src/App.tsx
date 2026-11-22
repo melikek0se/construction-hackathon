@@ -967,31 +967,31 @@ export default function App() {
         )}
         {!partners && !pipeline && tender && current && (
           <>
-            <div className="doc">
-              <input
-                key={current.project.name}
-                className="doc-name"
-                defaultValue={current.project.name}
-                aria-label="Project name"
-                maxLength={80}
-                onBlur={(e) => void rename(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-              />
-            </div>
-            <div className="actions">
+            {/* the project's name, written as the Pipeline's and the Partners page's; it is renamed in Settings */}
+            <h1 className="band-here band-project" title={current.project.name}>
+              {current.project.name}
+            </h1>
+            {/* what one does with the project, as slabs filling the right end of the band (home.css `.band-slab`) */}
+            <nav className="actions band-slabs" aria-label="Project">
               {/* Server-rendered from the findings so far; includes the AI review once it has run. */}
               {analysis && checkKey && checked.current === checkKey && (
-                <a className="btn" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer">
-                  Risk report
+                <a className="band-slab" href={`/api/analyses/${analysis.id}/report.html`} target="_blank" rel="noreferrer" title="The findings so far as a page to read and print">
+                  <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+                    <path d="M4 2h10l4 4v14H4z" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <path d="M8 10h6M8 14h6" fill="none" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                  <b>Risk report</b>
+                  <small>The findings, to print</small>
                 </a>
               )}
-              <button className="btn plain" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
-                <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-                  <path d="M1 3.5h12M1 10.5h12M4 1.5v4M10 8.5v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" />
+              <button className="band-slab" onClick={() => setSettingsOpen(true)} title="Name, dates, files of this project">
+                <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+                  <path d="M2 6h18M2 16h18M7 2v8M15 12v8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
                 </svg>
-                Settings
+                <b>Settings</b>
+                <small>Name, dates, files</small>
               </button>
-            </div>
+            </nav>
           </>
         )}
       </header>

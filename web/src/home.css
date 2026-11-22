@@ -2721,3 +2721,22 @@
   background: var(--ink);
   color: #fff;
 }
+
+/* ------------------------------------------------------------------ the band of an open project */
+
+/* The project's name stands after the way back as the Pipeline's and the Partners page's names do
+   (runs.css `.band .band-here`); a long one ends in an ellipsis before the slabs. */
+.band .band-project {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.band-slab {
+  text-decoration: none;
+}
+
+a.band-slab:hover {
+  color: #fff;
+}
