@@ -165,6 +165,39 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   the course of a price as a line, "ask again", previous / next, the open sheet in the address. Seen in
   headless Chrome at 1500 wide, no console error: a supplier with everything, a subcontractor without
   prices, a source opened, "Edit", back to the table and the browser's back.
+  **A firm's page drawn, not written (2026-11-22)**, at the user's word ("a page of text"): as wide as the
+  table (1320 px, same edges, measured). A yellow plate with the firm's initials beside the name; contact on
+  one line with small signs, what it sells as tags. "Right now" (the firm's questions as a numbered list, the
+  row inside the column) beside "How this firm answers" as three drawings: a square per inquiry, this firm's
+  reply time as a mark on a line among all firms, a square per item both firms priced with the ones it is
+  cheapest on filled. "What Polier knows" as cards, one per topic (terms, asks before quoting, reliability,
+  products, price trend), the German passage shown on the card (`read_firm` asks for a `topic` per point; all
+  six example firms were read again, 26 points kept, none dropped). Prices quote by quote (tender, day and
+  validity once above the items), each item with "cheapest" or "+8,7 %" against the other firms' price,
+  quotes out of date folded away. Conversations as a line of steps (Asked, Asked back, Quoted, "your reply is
+  needed"), the messages behind a press, ours at the right, theirs at the left.
+  Checked: build, full pytest; in headless Chrome without a console error: five cases (a supplier with
+  everything at 1500, a subcontractor without prices, one with papers and quotes, 900 and 1920 wide), each
+  measured for anything reaching outside the column: nothing.
+  Another session took the voice agent out of the app the same hour; the page has no call and shows a phone
+  number as text.
+  **The other partner pages drawn the same way (2026-11-22).** Coverage: a bar of where the packages stand
+  (in the bid, quotes to compare, your reply needed, not asked, nobody to ask), then one row per package that
+  ends in its one next step (Compare the quotes, Answer, Write the inquiry, Search the web / Look at the N
+  found); gone: "Every plan", the reason under each package (now a tooltip), the key, and the page of web
+  searches with its list of 38 gaps and the settings of Polier's own looking (its address shows Coverage).
+  Follow-ups: two groups, "Your reply is needed" and "Waiting for their reply"; per conversation the firm, the
+  steps so far as a line, the firm's questions numbered or a bar of the days waited against the firm's usual
+  time (red when over), and the next message one press away; gone: the column of the submission day, the
+  note on examples, the intro. Prices (was Price book): what more than one firm priced, a bar per firm, the
+  cheapest marked and the others with their distance, terms beside each; what one firm priced is folded
+  away; gone: the six chips, the range line and its key. Your firm: the form beside a card "An inquiry names
+  you as", name and e-mail marked where missing; mailbox, .eml and the examples are three small buttons
+  under "For the demo".
+  Checked: build; in headless Chrome at 1500 and 900 wide, every page measured for anything outside its
+  column: nothing, no console error. Full pytest: 221 passed, 3 failed, all three in `tests/test_mockmail.py`
+  (another session's new mail work, `src/boq/mockmail.py`, not this page). **Not run**: sending from
+  Follow-ups or Coverage, "Search the web" from Coverage.
   **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
   freight per unit), grouping the price book by material group proper (the package stands in for it). The
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:

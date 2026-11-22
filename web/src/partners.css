@@ -670,12 +670,6 @@
   max-width: 90ch;
 }
 
-.pt-talk audio {
-  display: block;
-  height: 32px;
-  margin-top: 6px;
-}
-
 .pt-drop-hint {
   margin: 8px 0 0;
   font-size: 12.5px;
@@ -2162,51 +2156,11 @@
   background: var(--ink);
 }
 
-.pt-band-find {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 18px 0 20px;
-  color: #c9cbc5;
-}
 
-.pt-band-find .pt-search {
-  width: 230px;
-  height: 34px;
-  border: 1px solid #4a4e4b;
-  background: #222524;
-  color: #fff;
-}
 
-.pt-band-find .pt-search::placeholder {
-  color: #8b8e87;
-}
 
-.pt-band-find .pt-search:focus {
-  border-color: var(--yellow);
-}
 
-.pt-band-add {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 34px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 2px;
-  background: var(--yellow);
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: pointer;
-}
 
-.pt-band-add:hover {
-  background: #fff;
-}
 
 .pt-band-firm.is-on,
 .pt-band-firm.is-on:hover {
@@ -2236,10 +2190,6 @@
   .pt-band-tab {
     padding: 0 11px;
     font-size: 17px;
-  }
-
-  .pt-band-find .pt-search {
-    width: 160px;
   }
 }
 
@@ -2320,10 +2270,6 @@ ol.pt-points button {
   margin-left: 16px;
 }
 
-.pt-follow-call .text-link {
-  justify-self: start;
-}
-
 .pt-cov-ask {
   grid-column: 1 / -1;
 }
@@ -2374,30 +2320,18 @@ ol.pt-points button {
   white-space: nowrap;
 }
 
-/* when the band is short of room, the search field gives way first, then the tabs' padding */
+/* when the band is short of room, the tabs' padding gives way */
 .pt-band-tools {
   flex: 0 1 auto;
   min-width: 0;
 }
 
-.pt-band-find {
-  flex: 0 1 auto;
-  min-width: 0;
-}
 
-.pt-band-find .pt-search {
-  flex: 0 1 230px;
-  width: auto;
-  min-width: 90px;
-}
 
 .pt-band-tabs {
   flex: none;
 }
 
-.pt-band-find > svg {
-  flex: none;
-}
 
 /* the tabs start right at the way back (styles.css `.band-back`), which draws the rule between them */
 .band .band-place {
@@ -3026,4 +2960,959 @@ ol.pt-points button {
   .pt-fp-prices td:nth-child(4) {
     display: none;
   }
+}
+
+/* a firm's page is as wide as the table it is opened from (`.pt-wide`: 1320px, the same side margins) */
+.pt-fp {
+  padding: 18px max(20px, calc((100% - 1320px) / 2)) 150px;
+}
+
+.pt-fp-in {
+  max-width: none;
+}
+
+@media (max-width: 1000px) {
+  .pt-fp {
+    padding: 14px 14px 150px;
+  }
+}
+
+/* and it keeps the scrollbar's room like the other pages (styles.css gives `.pt-wide` the same), so both end
+   at the same right edge */
+.pt-fp {
+  scrollbar-gutter: stable;
+}
+
+/* the row that waits for your reply stays inside the column: the yellow ground is padded, not pulled outwards */
+.pt-fp-now li,
+.pt-fp-now li.is-you {
+  margin: 0;
+  padding: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.pt-fp-now li:last-child {
+  border-bottom: 0;
+}
+
+/* the sources opened under a sentence are not sentences: they do not count on */
+ol.pt-points .pt-point-src li {
+  counter-increment: none;
+}
+
+/* 2026-11-22: no search in the band; "Add a firm" at the top right of the list, as "New project" on the projects page */
+.pt-reg .pt-chips .pt-reg-new {
+  margin-left: auto;
+}
+
+/* 2026-11-22: a firm's page drawn, not written. An identity strip; what is open beside three small drawings of
+   how the firm answers; Polier's points as cards with their evidence; prices by quote beside the conversations
+   as lines of steps. */
+.pt-fp-id {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.pt-fp-plate {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  background: var(--yellow);
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pt .pt-fp-who h2 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1.1;
+}
+
+.pt-fp-who p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--mute);
+}
+
+.pt-fp-reach {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 26px;
+  margin-top: 14px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+  font-size: 14.5px;
+}
+
+.pt-fp-reach > span,
+.pt-fp-reach > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pt-fp-reach > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pt-fp-reach svg {
+  flex: none;
+  color: var(--mute);
+}
+
+.pt-fp-reach .pt-fp-sells {
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.pt-fp-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  gap: 0 40px;
+  align-items: start;
+}
+
+.pt-fp-cols.is-lower {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+.pt-fp-cols.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* three small drawings */
+.pt-fp-draws {
+  display: grid;
+  gap: 18px;
+}
+
+.is-single .pt-fp-draws {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 40px;
+}
+
+.pt-fp-draws > div > b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.pt-fp-draws p {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.pt-fp-draws strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pt-squares {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.pt-squares i {
+  width: 16px;
+  height: 16px;
+  background: var(--ink);
+}
+
+.pt-squares .is-declined {
+  background: var(--line-2);
+}
+
+.pt-squares .is-waiting,
+.pt-squares .is-low {
+  background: var(--yellow);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.pt-squares .is-silent {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--red);
+}
+
+.pt-squares .is-not {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+}
+
+.pt-scale {
+  position: relative;
+  display: block;
+  height: 16px;
+  margin: 0 7px;
+}
+
+.pt-scale::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  right: -7px;
+  top: 7px;
+  height: 2px;
+  background: var(--strip-base, #e4e6e1);
+}
+
+.pt-scale i {
+  position: absolute;
+  top: 3px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--ground);
+  box-shadow: inset 0 0 0 1.5px var(--dim);
+}
+
+.pt-scale .is-this {
+  top: 1px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  background: var(--ink);
+  box-shadow: none;
+  z-index: 1;
+}
+
+/* what the firm asked back, as a short numbered list */
+.pt-fp-asks {
+  margin: 6px 0 0;
+  padding: 0 0 0 18px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.pt-fp-asks li {
+  display: list-item;
+  padding: 1px 0;
+  border: 0;
+}
+
+/* Polier's points */
+.pt-fp-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pt-fp-cards li {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 14px 12px;
+  border: 1px solid var(--line-2);
+}
+
+.pt-fp-cards b {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pt-fp-cards p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+.pt .pt-fp-cards q {
+  display: block;
+  margin: 0;
+  padding: 7px 10px;
+  background: var(--tint);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  quotes: "„" "“";
+}
+
+.pt-fp-cards small {
+  margin-top: auto;
+  font-size: 12px;
+}
+
+/* prices, quote by quote */
+.pt-fp-colhead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px 118px;
+  margin: 0;
+  padding: 0 0 6px;
+  border-bottom: 1px solid var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.pt-fp-colhead span:nth-child(2) {
+  padding-right: 18px;
+  text-align: right;
+}
+
+.pt-fp-quote {
+  margin-top: 12px;
+}
+
+.pt-fp-quotehead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 0;
+  padding: 6px 10px;
+  background: var(--tint);
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.pt-fp-quotehead b {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pt-fp-quote .pt-fp-prices td:first-child {
+  padding-left: 10px;
+}
+
+.pt-fp-prices td:last-child {
+  padding-right: 0;
+}
+
+.pt-vs {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid var(--line-2);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pt-vs.is-low {
+  border-color: var(--ink);
+  background: var(--yellow);
+}
+
+.pt-vs-none {
+  font-size: 12.5px;
+}
+
+.pt-rise {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.pt-fp-old {
+  margin-top: 16px;
+}
+
+.pt-fp-old > summary {
+  padding: 7px 0;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pt-fp-old > summary .num {
+  margin-left: 8px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mute);
+}
+
+.pt-fp-old .pt-fp-prices {
+  color: var(--ink-2);
+}
+
+/* conversations: a line of steps, the messages behind a press */
+.pt-fp .pt-thread {
+  border-left: 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.pt-fp .pt-thread > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  padding: 10px 0;
+}
+
+.pt-fp .pt-thread > summary > span {
+  font-size: 12.5px;
+}
+
+.pt-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 22px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pt-track li {
+  position: relative;
+  padding: 2px 8px;
+  border: 1px solid var(--line-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.pt-track li .num {
+  margin-left: 4px;
+  font-weight: 400;
+  color: var(--mute);
+}
+
+.pt-track li + li::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  top: 50%;
+  width: 14px;
+  height: 1.5px;
+  background: var(--line-2);
+}
+
+.pt-track .is-theirs {
+  background: var(--tint);
+}
+
+.pt-track .is-now {
+  border-style: dashed;
+  border-color: var(--ink);
+  font-weight: 400;
+}
+
+.pt-track .is-now.is-you {
+  border-style: solid;
+  background: var(--yellow);
+  font-weight: 600;
+}
+
+.pt-fp .pt-thread .pt-talk {
+  display: grid;
+  gap: 8px;
+  padding: 2px 0 12px;
+}
+
+.pt-fp .pt-talk li,
+.pt-fp .pt-talk li.is-theirs {
+  width: 88%;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line-2);
+}
+
+.pt-fp .pt-talk li.is-ours {
+  justify-self: end;
+}
+
+.pt-fp .pt-talk li.is-theirs {
+  border-color: var(--tint);
+  background: var(--tint);
+}
+
+.pt-fp .pt-talk li.is-theirs pre {
+  background: var(--ground);
+}
+
+.pt-fp .pt-unkept {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 1100px) {
+  .pt-fp-cols,
+  .pt-fp-cols.is-lower {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .is-single .pt-fp-draws {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .pt-fp-reach .pt-fp-sells {
+    margin-left: 0;
+  }
+}
+
+/* the two columns keep their share whatever stands in them (a long line of a message does not widen one) */
+.pt-fp-cols > section {
+  min-width: 0;
+}
+
+.pt-fp .pt-thread .pt-talk {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pt-fp .pt-talk li,
+.pt-fp .pt-talk li.is-theirs {
+  min-width: 0;
+}
+
+/* small corrections after looking at the page: the questions keep their numbers, the mark stands at the first
+   line of its row, and a quote's head is always its name over its dates */
+.pt-fp-now .pt-fp-asks {
+  list-style: decimal;
+}
+
+.pt-fp-now .pt-fp-asks li,
+.pt-fp-now li.is-you .pt-fp-asks li {
+  display: list-item;
+  margin: 0;
+  padding: 1px 0;
+  border: 0;
+}
+
+.pt-fp-now > li {
+  align-items: start;
+}
+
+.pt-fp-now > li > .pt-mark {
+  margin-top: 5px;
+}
+
+.pt-fp-now > li > button {
+  align-self: center;
+}
+
+.pt-fp-quotehead {
+  display: grid;
+  justify-content: start;
+}
+
+/* 2026-11-22: the other pages drawn like the firm's page. */
+
+/* coverage: a bar of where the packages stand, then a row per package that ends in its one next step */
+.pt-seg {
+  display: flex;
+  gap: 2px;
+  margin: 12px 0 6px;
+}
+
+.pt-seg span {
+  flex-basis: 0;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--ink);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pt-seg b {
+  margin-right: 3px;
+  font-size: 14px;
+}
+
+.pt-seg .is-bid,
+.pt-seg .is-compare,
+.pt-seg .is-quote {
+  background: var(--ink);
+  color: #fff;
+}
+
+.pt-seg .is-you {
+  background: var(--yellow);
+}
+
+.pt-seg .is-unasked {
+  border-style: dashed;
+  border-color: var(--dim);
+}
+
+.pt-seg .is-nobody {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
+.pt-cv .pt-cov {
+  margin-top: 14px;
+}
+
+.pt-cv .pt-cov > ul {
+  border-top: 2px solid var(--ink);
+}
+
+.pt-cv .pt-cov li {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.7fr) 190px;
+  min-height: 60px;
+  padding: 10px 0;
+}
+
+.pt-cv .pt-cov > ul > li:first-child {
+  border-top: 0;
+}
+
+.pt-cov-stands > button {
+  min-width: 170px;
+  justify-content: center;
+}
+
+.pt-cov-done::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  background: var(--ink);
+}
+
+/* follow-ups: a card per open conversation */
+.pt-fu h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pt .pt-fu h2:not(:first-child) {
+  margin-top: 30px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.pt-fu h2 .num {
+  font-family: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--mute);
+}
+
+.pt-fu-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid var(--ink);
+}
+
+.pt-fu-list > li {
+  border-bottom: 1px solid var(--rule);
+}
+
+.pt-fu-list > li.is-you {
+  background: var(--hover);
+}
+
+.pt-fu-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 180px;
+  gap: 28px;
+  align-items: center;
+  padding: 14px 12px;
+}
+
+.pt-fu-firm {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 15.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pt-fu-firm:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pt-fu-row .pt-track {
+  margin-top: 9px;
+}
+
+.pt-fu-asks {
+  margin: 0;
+  padding: 0 0 0 20px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.pt-fu-what p {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.pt-fu-what strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* how long a firm has been silent, against how long it usually takes (the mark) */
+.pt-wait {
+  position: relative;
+  display: block;
+  height: 10px;
+  max-width: 320px;
+  background: var(--strip-base, #e4e6e1);
+}
+
+.pt-wait b {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+
+.pt-wait b.is-over {
+  background: var(--red);
+}
+
+.pt-wait i {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 16px;
+  background: var(--ink);
+}
+
+.pt-fu-act {
+  display: grid;
+  justify-items: stretch;
+  gap: 6px;
+  text-align: center;
+}
+
+.pt-fu-act .text-link {
+  justify-self: center;
+  font-size: 12.5px;
+}
+
+.pt-fu-list .pt-follow-draft {
+  margin: 0 12px 14px;
+  background: var(--ground);
+}
+
+/* prices side by side */
+.pt-pc-list {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 2px solid var(--ink);
+}
+
+.pt-pc-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr);
+  gap: 28px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.pt-pc-item b {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.pt-pc-bars {
+  display: grid;
+  gap: 6px;
+}
+
+.pt-pc-bars > div {
+  display: grid;
+  grid-template-columns: 210px minmax(60px, 1fr) 96px 86px 150px;
+  gap: 12px;
+  align-items: center;
+  font-size: 13.5px;
+}
+
+.pt-pc-bars .text-link {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.pt-pc-bar {
+  display: block;
+  height: 12px;
+  background: none;
+}
+
+.pt-pc-bar i {
+  display: block;
+  height: 100%;
+  background: var(--line-2);
+}
+
+.pt-pc-bars .is-low .pt-pc-bar i {
+  background: var(--yellow);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.pt-pc-bars .is-stale .pt-pc-bar i {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+}
+
+.pt-pc-bars > div > b {
+  text-align: right;
+  font-weight: 600;
+}
+
+.pt-pc-bars .is-stale > b {
+  color: var(--mute);
+  font-weight: 400;
+}
+
+.pt-pc-single {
+  margin-top: 26px;
+}
+
+.pt-pc-single > summary {
+  padding: 9px 0;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pt-pc-single > summary .num {
+  margin-left: 8px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mute);
+}
+
+.pt-pc-single tr.is-stale td {
+  color: var(--mute);
+}
+
+/* your firm */
+.pt-yf-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+.pt-yf .pt-fields label.is-missing > span {
+  color: var(--red);
+}
+
+.pt-yf .pt-fields label.is-missing input {
+  border-color: var(--red);
+}
+
+.pt-yf-card {
+  padding: 14px 16px;
+  border: 1px solid var(--ink);
+}
+
+.pt-yf-card > b {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pt-yf-card p {
+  display: grid;
+  gap: 2px;
+  margin: 10px 0 12px;
+  font-size: 15px;
+}
+
+.pt-yf-card p span:first-child {
+  font-weight: 600;
+}
+
+.pt-yf-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 36px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-2);
+  font-size: 12.5px;
+}
+
+.pt-yf-demo > b {
+  margin-right: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+@media (max-width: 1100px) {
+  .pt-fu-row,
+  .pt-pc-list > li,
+  .pt-yf-cols,
+  .pt-cv .pt-cov li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .pt-pc-bars > div {
+    grid-template-columns: minmax(0, 1fr) 96px 86px;
+  }
+
+  .pt-pc-bars > div > .pt-pc-bar,
+  .pt-pc-bars > div > small {
+    display: none;
+  }
+
+  .pt-fu-act {
+    justify-items: start;
+  }
+
+  .pt-seg {
+    flex-wrap: wrap;
+  }
+}
+
+.pt-fu-asks {
+  list-style: decimal;
+}
+
+.pt-fu-asks li {
+  padding: 1px 0;
 }

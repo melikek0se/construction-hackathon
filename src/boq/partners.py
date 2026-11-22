@@ -106,6 +106,7 @@ def _thread(rec: dict, key: tuple, ms: list[dict]) -> dict:
             "calls": sum(1 for m in ms if (m["meta"] or {}).get("kind") == "call"),
             "first_sent": sent and sent["sent_at"], "summary": (said or {}).get("summary") or "",
             "asks": len((said or {}).get("asks") or []), "example": bool((ms[0]["meta"] or {}).get("example")),
+            "questions": [str(a.get("question") or "").strip() for a in (said or {}).get("asks") or [] if a.get("question")],
             # what the follow-up from the partners page needs to find the conversation again
             "package_id": key[3], "file_name": key[2]}
 
@@ -423,9 +424,10 @@ READ_SCHEMA = {
     "type": "object",
     "properties": {"points": {"type": "array", "items": {
         "type": "object",
-        "properties": {"text": {"type": "string"}, "sources": {"type": "array", "items": {"type": "string"}},
+        "properties": {"topic": {"type": "string", "enum": ["terms", "questions", "reliability", "products", "prices", "other"]},
+                       "text": {"type": "string"}, "sources": {"type": "array", "items": {"type": "string"}},
                        "quote": {"type": "string"}},
-        "required": ["text", "sources", "quote"], "additionalProperties": False}}},
+        "required": ["topic", "text", "sources", "quote"], "additionalProperties": False}}},
     "required": ["points"], "additionalProperties": False,
 }
 READ_SYSTEM = """\
@@ -437,6 +439,10 @@ quotes, on which terms it prices, whether it offers other products than specifie
 
 Rules:
 - Three to five points, each one plain English sentence of at most 30 words. The most useful first.
+- Every point has a topic, and no two points share one: terms (on which terms it prices: ex works, freight, \
+payment, validity, binding), questions (what it asks back before it quotes), reliability (whether and how fast \
+it answers), products (other products than specified, what it does not supply), prices (how its prices have \
+moved), other.
 - Every point names its sources: the ids of the facts and messages it rests on. A point without a source is \
 not written. Do not use what is usual in the trade; only what stands in the facts and messages.
 - A point that rests on a message carries in quote the passage of that message that shows it, copied \
@@ -509,7 +515,7 @@ async def read_firm(supplier_id: str, client: anthropic.AsyncAnthropic | None = 
         ground = " ".join([facts[i] for i in ids if i in facts] + [m["text"] for m in said])
         if not _figures(point["text"]) <= _figures(ground):
             continue
-        points.append({"text": str(point["text"]).strip()[:300], "quote": quote[:240] if said else "",
+        points.append({"topic": point["topic"], "text": str(point["text"]).strip()[:300], "quote": quote[:240] if said else "",
                        "sources": [{"id": i, "kind": "fact", "text": facts[i]} if i in facts else
                                    {"id": i, "kind": "message", "event": messages[i]["id"], "at": messages[i]["at"],
                                     "who": "them" if messages[i]["direction"] == "in" else "us",

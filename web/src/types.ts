@@ -693,6 +693,8 @@ export interface PartnerThread extends PartnerWhere {
   asks: number;
   due: string | null;
   example: boolean;
+  questions: string[]; // what the firm asked back, where it did
+  first_sent: string | null; // when the first message of the conversation went out
   package_id: string | null; // with file_name: what a follow-up from the partners page is written by
   file_name: string | null;
 }
@@ -734,6 +736,7 @@ export interface PartnerPrice extends PartnerWhere {
   binding: "binding" | "non_binding" | "unknown";
   basis: "free_to_site" | "ex_works" | "unknown";
   via: string;
+  quote: string; // the quote this line is of
   example: boolean;
   before: { net: number; date: string; change_pct: number | null } | null; // the same partner's price for it before
   package_id: string | null; // with file_name: the package it was quoted for, to ask for it again
@@ -773,6 +776,7 @@ export interface PartnerProfile extends Supplier {
 /** What an estimator should know about a partner, each sentence resting on facts of the record or a passage. */
 export interface PartnerRead {
   points: {
+    topic?: "terms" | "questions" | "reliability" | "products" | "prices" | "other"; // reads of before 2026-11-22 have none
     text: string;
     quote: string; // the passage of their message, where the sentence rests on one
     sources: ({ id: string; kind: "fact"; text: string } | { id: string; kind: "message"; event: string; at: string; who: "them" | "us"; text: string })[];
