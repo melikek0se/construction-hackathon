@@ -580,6 +580,9 @@ export interface Spend {
   requests: number; // sent to the API
   cached: number; // answered from the app's cache
   unpriced: number; // requests whose model has no list price here: tokens only
+  /** Asked of one project only: what was spent on no project at all (mail sorted, partners read, searches
+   *  from the partners page), the most costly purpose first. */
+  outside: { usd: number; requests: number; purposes: string[] } | null;
   keys: string[];
   by_purpose: { purpose: string; requests: number; cached: number; usd: number; input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number }[];
   calls: SpendCall[];

@@ -1089,3 +1089,12 @@
   cursor: default;
   background: var(--ink);
 }
+
+.spend-outside {
+  padding: 0 16px 10px;
+}
+
+.spend-outside .num {
+  color: var(--ink);
+  font-weight: 600;
+}

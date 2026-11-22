@@ -651,7 +651,10 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   app's own cache is a row too, at 0 USD. What a request belongs to is said once around the call
   (`spend.scope`), not passed through the callers. UI: a line "Claude $x, n requests" at the top of the
   pipeline dialog (per project behind "Record" on the strip, all projects from the band), opening to the
-  sums per purpose and the latest requests.
+  sums per purpose and the latest requests. 2026-11-22: web searches (server tool) are now in the USD figure
+  ($0.01 each, read from `usage.server_tool_use`; before, only the tokens of a web search were counted).
+  A project's audit also says what was spent on no project at all (`outside`: mail sorted before a project
+  existed, partners read, searches from the partners page), one line under the sum.
   Checked: `tests/test_spend.py` (2, with a stand-in for the API); on the dev stack a cached run (5 rows at
   0 USD under its project, file and run) and one real chat question (0.0306 USD, the same figure the chat
   returns); the dialog in headless Chrome. Not checked: the row of a real, uncached AI review and of a

@@ -490,6 +490,13 @@ function SpendAudit({ projectId, at, open = false }: { projectId: string | null;
           </>
         )}
       </summary>
+      {spend.outside && spend.outside.requests > 0 && (
+        <p className="spend-note spend-outside">
+          Not tied to any project: <span className="num">${spend.outside.usd.toFixed(2)}</span> in {spend.outside.requests}{" "}
+          request{spend.outside.requests === 1 ? "" : "s"} ({spend.outside.purposes.slice(0, 3).join(", ")}
+          {spend.outside.purposes.length > 3 ? ", …" : ""}).
+        </p>
+      )}
       {!none && (
         <div className="spend-body">
           <p className="spend-note">
