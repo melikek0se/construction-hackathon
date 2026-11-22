@@ -2191,3 +2191,92 @@ ol.pt-points button {
     display: none;
   }
 }
+
+/* 2026-11-22, third pass: firms side by side, the price book by package, web finds under a gap */
+.pt-pick {
+  width: 14px;
+  height: 14px;
+  margin: 0 9px 0 0;
+  accent-color: var(--ink);
+  vertical-align: -1px;
+  cursor: pointer;
+}
+
+.pt-compare {
+  margin-top: 22px;
+}
+
+.pt-compare h3 {
+  align-items: center;
+  border-top-width: 2px;
+}
+
+.pt-compare td:first-child {
+  width: 30%;
+}
+
+.pt-compare th .text-link {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--ink);
+}
+
+.pt-lowest {
+  padding: 0 3px;
+  background: var(--yellow);
+}
+
+.pt-book > li > h3 {
+  margin: 18px 0 0;
+  padding: 8px 6px;
+  border-top-width: 2px;
+  font-size: 13.5px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.pt-book-from .tag {
+  margin-left: 8px;
+}
+
+.pt-lines td .text-link {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+}
+
+.pt-cov .pt-cands {
+  padding: 4px 0 4px 14px;
+  border-left: 1px solid var(--line-2);
+}
+
+.pt-profile > .pt-follow-draft,
+.pt-profile .pt-follow-draft {
+  margin-left: 0;
+}
+
+/* Polier stands smaller on this page, so it does not lie over the last column; it grows back under the pointer */
+body:has(.pt) .agent-button {
+  transform: scale(0.6);
+  transform-origin: bottom right;
+  transition: transform 160ms var(--ease);
+}
+
+body:has(.pt) .agent-button:hover,
+body:has(.pt) .agent-button:focus-visible {
+  transform: none;
+}
+
+.pt-table .pt-pick {
+  margin: 0 9px 0 0;
+}
+
+.pt-compare .pt-strip {
+  margin-right: 8px;
+}
+
+.pt-cov .pt-cands li {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}

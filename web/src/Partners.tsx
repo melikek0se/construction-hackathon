@@ -63,7 +63,6 @@ const TABS: { id: PartnerTab; label: string }[] = [
   { id: "coverage", label: "Coverage" },
   { id: "waiting", label: "Follow-ups" },
   { id: "prices", label: "Price book" },
-  { id: "discovered", label: "Found on the web" },
 ];
 
 /** Whose move: a yellow square is the estimator's, an open one the partner's (the marks of the board cards). */
@@ -162,7 +161,8 @@ export function PartnersPage({
   const [adding, setAdding] = useState(false);
   const [searching, setSearching] = useState<string | null>(null); // the package a web search runs for (Coverage)
 
-  // the first time the directory is there, its rows come in one after the other (partners.css, `pt-fresh`)
+  // the first time the directory is there, its rows come in one after the other (partners.css, `pt-fresh`);
+  // not when the copy read in the background stood on the page from the start (it slid in with it)
   const [fresh, setFresh] = useState(false);
   const shown = useRef(false);
   const load = useCallback(
@@ -241,7 +241,7 @@ export function PartnersPage({
       <div className="pt-tabs">
         <div className="views" role="tablist" aria-label="Partners">
           {TABS.map((t) => (
-            <button key={t.id} role="tab" aria-selected={place.tab === t.id || (t.id === "suppliers" && directory)} onClick={() => onPlace({ tab: t.id, partner: null })}>
+            <button key={t.id} role="tab" aria-selected={place.tab === t.id || (t.id === "suppliers" && directory) || (t.id === "coverage" && place.tab === "discovered")} onClick={() => onPlace({ tab: t.id, partner: null })}>
               {t.label}
               {count(t.id) !== null && <span className={`pt-count${t.id === "waiting" && data?.waiting.some(yours) ? " is-you" : t.id === "coverage" ? " is-gap" : ""}`} title={t.id === "coverage" ? "Packages of tenders in work with nobody to ask" : undefined}>{count(t.id)}</span>}
             </button>
@@ -336,6 +336,9 @@ export function PartnersPage({
           onOpenTender={onOpenTender}
           onChanged={changed}
           onError={setError}
+          onDecide={(sr, k, take) =>
+            decideCandidate(sr.id, k, take).then((next) => (setSearches((before) => (before ?? []).map((x) => (x.id === next.id ? next : x))), take && void changed()), (e) => setError(say(e)))
+          }
           onFound={() => onPlace({ tab: "discovered", partner: null })}
           onSearch={(n) => {
             setSearching(n.package);
@@ -466,6 +469,8 @@ function Register({
   const examples = all.filter((p) => p.more.example).length;
   // firms with something on record that Polier has not summed up yet
   const unread = all.filter((p) => !p.more.read && (p.card.asked > 0 || p.card.prices > 0));
+  const [picked, setPicked] = useState<string[]>([]);
+  const pick = (id: string) => setPicked((now) => (now.includes(id) ? now.filter((x) => x !== id) : now.length < 3 ? [...now, id] : now));
   const [reading, setReading] = useState<number | null>(null);
   const readAll = async () => {
     for (let i = 0; i < unread.length; i += 1) {
@@ -557,6 +562,16 @@ function Register({
               return (
                 <tr key={p.id} className={p.more.blocked ? "is-blocked" : ""} onClick={() => onOpen(p.id)}>
                   <td>
+                    <input
+                      type="checkbox"
+                      className="pt-pick"
+                      checked={picked.includes(p.id)}
+                      disabled={!picked.includes(p.id) && picked.length >= 3}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => pick(p.id)}
+                      aria-label={`Set ${p.name} beside others`}
+                      title="Tick two or three firms to set them side by side"
+                    />
                     <button className="pt-table-name" onClick={(e) => (e.stopPropagation(), onOpen(p.id))}>
                       {p.name}
                     </button>
@@ -596,6 +611,7 @@ function Register({
           </tbody>
         </table>
       )}
+      {picked.length >= 2 && <Compare firms={all.filter((p) => picked.includes(p.id))} book={book} onOpen={onOpen} onClear={() => setPicked([])} />}
       {rows.length > 0 && (
         <p className="pt-key quiet">
           Replies, one mark per inquiry:
@@ -617,9 +633,93 @@ function Register({
   );
 }
 
+/** Two or three firms side by side: how they answer, and their prices for what more than one of them priced
+    (prices that still hold, net as quoted, each with its terms). */
+function Compare({ firms, book, onOpen, onClear }: { firms: PartnerRow[]; book: PartnersOverview["book"]; onOpen: (id: string) => void; onClear: () => void }) {
+  const things = book
+    .map((b) => ({ b, per: firms.map((f) => b.offers.filter((o) => o.fresh && o.supplier_id === f.id).sort((x, y) => x.net - y.net)[0]) }))
+    .filter((t) => t.per.filter(Boolean).length >= 2);
+  return (
+    <div className="pt-compare">
+      <h3>
+        Side by side
+        <small>{things.length ? `${plural(things.length, "thing")} more than one of them priced; prices that hold, net as quoted` : "they have priced nothing in common that still holds"}</small>
+        <button className="btn-ghost small" onClick={onClear}>
+          Close
+        </button>
+      </h3>
+      <table className="pt-prices">
+        <thead>
+          <tr>
+            <th />
+            {firms.map((f) => (
+              <th key={f.id}>
+                <button className="text-link" onClick={() => onOpen(f.id)}>
+                  {f.name}
+                </button>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Replies</td>
+            {firms.map((f) => (
+              <td key={f.id}>
+                <Replies c={f.card} /> {f.card.asked > 0 && <span className="num">{f.card.answered} of {f.card.asked}</span>}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <td>First reply, median</td>
+            {firms.map((f) => (
+              <td key={f.id} className="num">
+                {took(f.card.reply_hours)}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <td>Prices that hold</td>
+            {firms.map((f) => (
+              <td key={f.id}>
+                <Holds c={f.card} />
+              </td>
+            ))}
+          </tr>
+          {things.map(({ b, per }) => {
+            const low = Math.min(...per.filter(Boolean).map((o) => o.net));
+            return (
+              <tr key={`${b.label}|${b.unit}`}>
+                <td lang="de">
+                  {b.label}
+                  <small lang="en">per {b.unit || "unit"}</small>
+                </td>
+                {per.map((o, i) => (
+                  <td key={firms[i].id} className="num">
+                    {o ? (
+                      <>
+                        <b className={o.net === low ? "pt-lowest" : ""}>{price(o.net)}</b>
+                        {o.net > low && <span className="quiet"> +{pct.format(((o.net - low) / low) * 100)} %</span>}
+                        <small>{BASIS[o.basis]}</small>
+                      </>
+                    ) : (
+                      <span className="quiet">no price that holds</span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ one firm */
 
 type Sheet = "prices" | "talk" | "terms" | "style";
+const SHEET_NAMES: readonly string[] = ["prices", "talk", "terms", "style"];
 
 /** The conversation a message belongs to: a package of a tender; older inquiries without a package stand alone;
     mail that is part of no inquiry is one group (""). */
@@ -650,7 +750,16 @@ function Profile({
   onError: (e: string) => void;
 }) {
   const [p, setP] = useState<PartnerProfile | null>(null);
-  const [sheet, setSheet] = useState<Sheet | null>(null);
+  const [sheet, setSheet] = useState<Sheet | null>(() => {
+    const named = location.hash.slice(1);
+    return SHEET_NAMES.includes(named) ? (named as Sheet) : null;
+  });
+  const show = (key: Sheet) => {
+    setSheet(key);
+    history.replaceState(history.state, "", `${location.pathname}${location.search}#${key}`);
+  };
+  const [ask, setAsk] = useState<(Message & { pkg: string }) | null>(null);
+  const [asking, setAsking] = useState(false);
   const [reading, setReading] = useState(false);
   const [summing, setSumming] = useState(false);
   const [point, setPoint] = useState<number | null>(null);
@@ -693,6 +802,19 @@ function Profile({
       .finally(() => setSumming(false));
   };
   const bare = c.asked === 0 && p.timeline.length === 0 && p.prices.length === 0;
+  const askAgain = (r: PartnerPrice) => {
+    setAsking(true);
+    composeFollowUp({ project_id: r.project_id!, file: r.file_name!, package: r.package_id!, supplier_id: p.id }, "inquiry")
+      .then((d) => setAsk({ pkg: r.package_id!, kind: "inquiry", analysis_id: d.analysis_id, to: d.to, subject: d.subject, body: d.body, points: [] }), (e) => onError(say(e)))
+      .finally(() => setAsking(false));
+  };
+  const sendAsk = (via: "smtp" | "draft") => {
+    if (!ask) return;
+    setAsking(true);
+    mailInquiry(ask.analysis_id, { package: ask.pkg, supplier_id: p.id, to: ask.to, subject: ask.subject, body: ask.body, via, kind: "inquiry" })
+      .then(() => (setAsk(null), void load(), onChanged()), (e) => onError(say(e)))
+      .finally(() => setAsking(false));
+  };
   const at: Sheet = sheet ?? (p.prices.length ? "prices" : p.timeline.length ? "talk" : "terms");
   const holds = c.prices - c.stale;
   // the next day a price that still holds runs out, and how many go with it
@@ -744,7 +866,7 @@ function Profile({
                 {p.more.website.replace(/^https?:\/\//, "")}
               </a>
             )}
-            <button className="text-link" onClick={() => setSheet("terms")}>
+            <button className="text-link" onClick={() => show("terms")}>
               edit
             </button>
           </p>
@@ -886,7 +1008,7 @@ function Profile({
 
       <div className="views pt-sheets" role="tablist" aria-label={p.name}>
         {SHEETS.map(([key, label, n]) => (
-          <button key={key} role="tab" aria-selected={at === key} onClick={() => setSheet(key)}>
+          <button key={key} role="tab" aria-selected={at === key} onClick={() => show(key)}>
             {label}
             {n !== null && <span className="pt-count">{n}</span>}
           </button>
@@ -897,7 +1019,10 @@ function Profile({
         (p.prices.length === 0 ? (
           <p className="quiet">No price from this firm yet. A quote read in the price inquiries of a tender lands here with its day and validity.</p>
         ) : (
-          <PriceLines rows={p.prices} usual={p.usual} sub={p.kind === "subcontractor"} />
+          <>
+            {ask && <DraftPanel draft={ask} sending={asking} onChange={setAsk} onSend={sendAsk} onDiscard={() => setAsk(null)} />}
+            <PriceLines rows={p.prices} usual={p.usual} sub={p.kind === "subcontractor"} busy={asking || ask !== null} onAsk={askAgain} />
+          </>
         ))}
 
       {at === "talk" && (
@@ -1090,7 +1215,7 @@ const apart = (from: string, to: string) => {
 };
 
 /** A firm's prices, one row per thing priced: the latest quote, how the price moved, how long it holds. */
-function PriceLines({ rows, usual, sub }: { rows: PartnerPrice[]; usual: PartnerProfile["usual"]; sub: boolean }) {
+function PriceLines({ rows, usual, sub, busy, onAsk }: { rows: PartnerPrice[]; usual: PartnerProfile["usual"]; sub: boolean; busy: boolean; onAsk: (r: PartnerPrice) => void }) {
   const [open, setOpen] = useState<string | null>(null);
   const groups = useMemo(() => {
     const by = new Map<string, PartnerPrice[]>();
@@ -1161,6 +1286,11 @@ function PriceLines({ rows, usual, sub }: { rows: PartnerPrice[]; usual: Partner
                     <>
                       <em className="tag">out of date</em>
                       <small>{r.valid_until ? `since ${day(r.valid_until)}` : `quoted ${day(r.date)}`}</small>
+                      {r.project_id && r.package_id && r.file_name && (
+                        <button className="text-link" disabled={busy} onClick={(e) => (e.stopPropagation(), onAsk(r))} title="Polier writes the inquiry for this package once more; you read it before it goes out">
+                          ask again
+                        </button>
+                      )}
                     </>
                   ) : left !== null && span !== null ? (
                     <>
@@ -1428,6 +1558,7 @@ function Coverage({
   onOpenTender,
   onFound,
   onSearch,
+  onDecide,
   onChanged,
   onError,
 }: {
@@ -1439,9 +1570,12 @@ function Coverage({
   onOpenTender: (projectId: string, file: number) => void;
   onFound: () => void;
   onSearch: (need: PartnerNeed) => void;
+  /** Take a firm a web search found into the directory, or pass. */
+  onDecide: (search: PartnerSearch, n: number, take: boolean) => void;
   onChanged: () => void;
   onError: (e: string) => void;
 }) {
+  const [looking, setLooking] = useState<string | null>(null); // the gap whose web finds are open
   const [draft, setDraft] = useState<(Message & { key: string; pkg: string; supplier_id: string }) | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -1492,6 +1626,9 @@ function Coverage({
         <button aria-pressed={every} onClick={() => setEvery(true)}>
           Every plan <span className="num">{data.needs.length}</span>
         </button>
+        <button onClick={onFound} title="Every web search with its queries and what it found; look for something else; let Polier look on its own">
+          Web searches <span className="num">{searches.length}</span>
+        </button>
         <span className="pt-chips-note pt-key">
           <i className="pt-dot is-answered" /> quote in
           <i className="pt-dot is-sent" /> asked
@@ -1520,6 +1657,7 @@ function Coverage({
                 const firms = firmsOf(n);
                 const found = searches.filter((s) => same(s.what, n.package)).reduce((k, s) => k + s.candidates.filter((c) => c.status === "new").length, 0);
                 const quotes = firms.filter((f) => f.status === "answered").length;
+                const gapKey = `${n.project_id}|${n.file_name}|${n.package_id}`;
                 return (
                   <li key={n.package_id} className={firms.length === 0 ? "is-gap" : ""}>
                     <span>
@@ -1547,8 +1685,8 @@ function Coverage({
                         searching === n.package ? (
                           <span className="quiet">Polier is searching the web: about half a minute…</span>
                         ) : found > 0 ? (
-                          <button className="btn-new small" onClick={onFound}>
-                            Look at the {found} found on the web
+                          <button className="btn-new small" aria-expanded={looking === gapKey} onClick={() => setLooking(looking === gapKey ? null : gapKey)}>
+                            {looking === gapKey ? "Close" : `Look at the ${found} found on the web`}
                           </button>
                         ) : (
                           <button className="btn-ghost small" disabled={searching !== null} onClick={() => onSearch(n)} title="Claude searches the web and reports firms with the page each was found on: about half a minute and a few cents">
@@ -1575,6 +1713,46 @@ function Coverage({
                         <>waiting for {firms.length === 1 ? "the firm" : "the firms"}</>
                       )}
                     </span>
+                    {looking === gapKey && firms.length === 0 && (
+                      <ul className="pt-cands pt-cov-ask">
+                        {searches
+                          .filter((sr) => same(sr.what, n.package))
+                          .flatMap((sr) => sr.candidates.map((c, k) => ({ sr, c, k })))
+                          .filter(({ c }) => c.status !== "dismissed")
+                          .map(({ sr, c, k }) => (
+                            <li key={`${sr.id}/${k}`} className={`is-${c.status}`}>
+                              <div>
+                                <b>{c.name}</b>
+                                <span lang="de">{c.place}</span>
+                                <p>{c.why}</p>
+                                <p className="pt-src">
+                                  Found on{" "}
+                                  <a href={c.source_url} target="_blank" rel="noreferrer">
+                                    {c.source_title || c.source_url}
+                                  </a>
+                                  {(c.email || c.phone) && <> · contact as the search reported it, to be checked on the page: {[c.email, c.phone].filter(Boolean).join(", ")}</>}
+                                </p>
+                              </div>
+                              <div className="pt-cand-act">
+                                {c.status === "added" ? (
+                                  <button className="text-link" onClick={() => c.supplier_id && onOpen(c.supplier_id)}>
+                                    In the directory
+                                  </button>
+                                ) : (
+                                  <>
+                                    <button className="btn-ghost small" onClick={() => onDecide(sr, k, true)}>
+                                      Take into the directory
+                                    </button>
+                                    <button className="text-link" onClick={() => onDecide(sr, k, false)}>
+                                      Pass
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
                     {n.project_id &&
                       firms
                         .filter((f) => f.status === "unasked")
@@ -1833,6 +2011,7 @@ type Shelf = "all" | "holds" | "several" | "stale";
 function PriceBook({ book, onOpen }: { book: PartnersOverview["book"]; onOpen: (id: string) => void }) {
   const [query, setQuery] = useState("");
   const [shelf, setShelf] = useState<Shelf>("all");
+  const [grouped, setGrouped] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const q = query.trim().toLowerCase();
   const fits: Record<Shelf, (b: PartnersOverview["book"][number]) => boolean> = {
@@ -1845,6 +2024,12 @@ function PriceBook({ book, onOpen }: { book: PartnersOverview["book"]; onOpen: (
     .filter((b) => fits[shelf](b) && (!q || b.label.toLowerCase().includes(q) || b.offers.some((o) => (o.supplier ?? "").toLowerCase().includes(q) || o.product.toLowerCase().includes(q))))
     // what can be compared first, then what still has a price, then by name
     .sort((a, b) => Number(b.suppliers > 1) - Number(a.suppliers > 1) || Number(b.low !== null) - Number(a.low !== null) || a.label.localeCompare(b.label));
+  // what a thing was last asked for: the package of a tender, or the tender alone where no package is on record
+  const group = (b: PartnersOverview["book"][number]) => {
+    const o = [...b.offers].sort((x, y) => y.date.localeCompare(x.date))[0];
+    return [o.project, o.package].filter(Boolean).join(" · ") || "No tender on record";
+  };
+  const listed = grouped ? [...rows].sort((a, b) => group(a).localeCompare(group(b))) : rows;
   // the widest gap between the lowest and the highest quote of one thing, in per cent: the whole line of a range
   const full = Math.min(40, Math.max(5, Math.ceil(Math.max(0, ...book.map((b) => { const n = b.offers.map((o) => o.net); const lo = Math.min(...n); return lo > 0 ? (Math.max(...n) / lo - 1) * 100 : 0; })))));
   if (book.length === 0) return <p className="pt-empty quiet">No price on record yet. Every quote read in the price inquiries of a tender is kept here, per item, with who gave it and when.</p>;
@@ -1865,6 +2050,9 @@ function PriceBook({ book, onOpen }: { book: PartnersOverview["book"]; onOpen: (
             {label} <span className="num">{book.filter(fits[s]).length}</span>
           </button>
         ))}
+        <button aria-pressed={grouped} onClick={() => setGrouped(!grouped)} title="Under the package of the tender each thing was last asked for">
+          By package
+        </button>
         <span className="pt-chips-note pt-key">
           <span className="pt-range is-key"><i className="is-low" style={{ left: "50%" }} /></span> lowest that holds
           <span className="pt-range is-key"><i style={{ left: "50%" }} /></span> holds
@@ -1874,9 +2062,11 @@ function PriceBook({ book, onOpen }: { book: PartnersOverview["book"]; onOpen: (
       </div>
       {rows.length === 0 && <p className="quiet">Nothing here by that search.</p>}
       <ul className="pt-book">
-        {rows.map((b) => {
+        {listed.map((b, at) => {
           const key = `${b.label}|${b.unit}`;
           const shown = open === key;
+          const head = grouped && (at === 0 || group(listed[at - 1]) !== group(b)) ? group(b) : null;
+          const mixed = new Set(b.offers.filter((o) => o.fresh && o.basis !== "unknown").map((o) => o.basis)).size > 1;
           const fresh = b.offers.filter((o) => o.fresh);
           const best = b.low !== null ? fresh.find((o) => o.net === b.low) : undefined;
           // each other firm's lowest price that holds, against the lowest of all
@@ -1884,6 +2074,11 @@ function PriceBook({ book, onOpen }: { book: PartnersOverview["book"]; onOpen: (
           const latest = [...b.offers].sort((x, y) => y.date.localeCompare(x.date))[0];
           return (
             <li key={key} className={shown ? "is-open" : ""}>
+              {head && (
+                <h3 lang="de">
+                  {head} <small lang="en">{plural(listed.filter((x) => group(x) === head).length, "thing")}</small>
+                </h3>
+              )}
               <button onClick={() => setOpen(shown ? null : key)} aria-expanded={shown}>
                 <b lang="de">{b.label}</b>
                 <Range offers={b.offers} low={b.low} full={full} />
@@ -1907,6 +2102,11 @@ function PriceBook({ book, onOpen }: { book: PartnersOverview["book"]; onOpen: (
                         </span>
                       ))}
                       {others.length === 0 && b.offers.length > 1 && <span className="quiet"> · {plural(b.offers.length, "quote")}</span>}
+                      {mixed && others.length > 0 && (
+                        <em className="tag" title="One price is ex works (freight comes on top), another free to site: the gap between them is not the whole difference">
+                          terms differ
+                        </em>
+                      )}
                     </>
                   ) : (
                     <span className="quiet">

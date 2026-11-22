@@ -122,10 +122,24 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   Checked: full pytest, build, and in headless Chrome at 1500, 1920 and 900 wide without a console error:
   each fault above, the inquiry written from Coverage (not sent), the call panel opened (no call started).
   **Not run**: a call from the follow-ups, sending from Coverage, "read all" in the register.
-  **Not built**: grouping the price book by material group, "ask again" on a price that is out of date,
-  comparing firms, distance to site, the open sheet of a firm in the address. The countdown to the submission
-  day shows only where the tender has one. "Found on the web" is still its own tab beside Coverage. Prices
-  are compared net as quoted: ex works and free to site are not evened out.
+  **Third pass (2026-11-22)**, what was left: two or three firms ticked in the register stand side by side
+  below it (replies, first reply, prices that hold, and every thing more than one of them priced, the lowest
+  marked, each price with its terms); the price book can be put "By package" (the package of the tender a
+  thing was last asked for) and marks "terms differ" where it compares ex works with free to site; what a web
+  search found for a package with nobody to ask opens under that package in Coverage with "Take into the
+  directory" / "Pass", and "Found on the web" is no longer a tab (Coverage has "Web searches", the page with
+  the searches, the free search and Polier's own looking is still there); a price out of date that belongs to
+  a tender's package has "ask again" (the inquiry for that package, to read and send); the open sheet of a
+  firm stands in the address after `#` and survives a reload; Polier stands smaller on this page.
+  Checked: full pytest, build, headless Chrome at 1500 wide without a console error: two firms side by side
+  (9 rows), the sheet kept over a reload, the eight web finds under the gap, the price book by package (five
+  groups, "terms differ" on five rows). **Not run**: "ask again" (no price of a real tender is out of date
+  yet), "Take into the directory" from Coverage, and whether a firm taken there is then on the package
+  without the plan being worked out again.
+  **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
+  freight per unit), grouping the price book by material group proper (the package stands in for it). The
+  countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:
+  ex works and free to site are not evened out, only marked.
 
   on a timer (`keep_looking`: same code as the button, the loop itself was not waited for); `.eml` dropped
   on the page in a browser (the API path is tested); "Take into the directory" clicked in a browser.

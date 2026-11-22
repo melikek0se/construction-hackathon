@@ -135,7 +135,9 @@ def _prices(rec: dict, supplier_id: str | None = None) -> list[dict]:
                          "date": q["created"][:10], "valid_until": terms.get("valid_until") or None,
                          "fresh": supply._fresh(q, today), "binding": terms.get("binding") or "unknown",
                          "basis": terms.get("basis") or "unknown", "via": _via(m), "quote": q["id"],
-                         "example": bool(terms.get("example")), **{k: where[k] for k in ("project_id", "project", "file", "package")}})
+                         "example": bool(terms.get("example")), **{k: where[k] for k in ("project_id", "project", "file", "package")},
+                         # what "ask again" needs to write the inquiry for the same package once more
+                         "package_id": q["package"], "file_name": q["file"]})
     rows.sort(key=lambda r: r["date"])
     last: dict[tuple, dict] = {}
     for r in rows:

@@ -736,6 +736,8 @@ export interface PartnerPrice extends PartnerWhere {
   via: string;
   example: boolean;
   before: { net: number; date: string; change_pct: number | null } | null; // the same partner's price for it before
+  package_id: string | null; // with file_name: the package it was quoted for, to ask for it again
+  file_name: string | null;
 }
 
 export interface PartnerEvent extends PartnerWhere {
