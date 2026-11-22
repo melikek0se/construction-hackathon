@@ -84,201 +84,149 @@
   .stat p { font-size: 20px; line-height: 1.4; }
   .stat.weak { border-top-color: var(--red); }
 </style>
-</head>
-<body>
+<style>
+  .big { font: 700 150px/0.9 var(--display); letter-spacing: .01em; }
+  .bla { font: 700 120px/1 var(--display); color: var(--red); transform: rotate(-4deg); display: inline-block; }
+  .strike { text-decoration: line-through; text-decoration-thickness: 4px; color: var(--dim); }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .step { border: 3px solid var(--ink); padding: 22px 22px 20px; background: #fff; min-height: 250px; display: flex; flex-direction: column; }
+  .step .k { font: 700 30px/1 var(--display); color: var(--mute); }
+  .step .t { font: 700 40px/1 var(--display); text-transform: uppercase; margin: 12px 0 12px; }
+  .step p { font-size: 23px; line-height: 1.35; }
+  .step.you { background: var(--ink); color: var(--y); }
+  .step.you p { color: #e9e9e4; } .step.you .k { color: var(--y); }
+  .step.boom { background: var(--y); }
+  .sticker { background: var(--y); border: 3px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); padding: 18px 26px; font: 700 34px/1.1 var(--display); display: inline-block; }
+</style>
 
-<!-- 1 · Title -->
+<body>
+<!-- 1 -->
 <section class="slide title">
   <div class="stripe"></div>
   <div class="in">
     <div class="col" style="flex: 0 0 820px">
       <h1>POLIER</h1>
-      <div class="sub">The estimator's assistant that reads the tender mail, checks the bill of quantities and prepares the bid.</div>
-      <div class="meta">
-        Challenge A · AI BoQ analysis and bidding assistant<br>
-        A working prototype on the six anonymised projects of the challenge
-      </div>
+      <div class="sub">An agent that does the estimator's job before the estimator has had their coffee.</div>
+      <div class="meta">Challenge A · AI BoQ analysis and bidding assistant</div>
     </div>
     <div class="shot" style="width: 860px; height: 520px; box-shadow: 18px 18px 0 var(--ink);"><img src="img/home.png" alt=""></div>
   </div>
   <div class="stripe"></div>
 </section>
 
-<!-- 2 · Problem -->
+<!-- 2 -->
 <section class="slide">
   <div class="band"><span class="no">1</span><h2>The problem</h2><span class="tag">Problem</span></div>
-  <div class="body">
-    <div class="col" style="flex: 1.15">
-      <p class="lead">A contractor gets a tender as a <b>Leistungsverzeichnis</b> (LV): hundreds to thousands of
-        numbered items, each with quantity, unit and a German long text, as GAEB XML, GAEB&nbsp;90 or a PDF.
-        A few weeks later a binding unit price for every item has to be submitted.</p>
-      <div style="height: 40px"></div>
-      <h3>What the estimator has to do in those weeks</h3>
-      <ul class="dash" style="margin-top: 20px">
-        <li><b>Read every item</b> and catch what is wrong: missing items, short and long text that contradict each
-          other (<span class="de">DN&nbsp;125</span> in one, <span class="de">DN&nbsp;100</span> in the other), quantities and units that do not fit.</li>
-        <li><b>Ask the client</b> (Bieterfragen) before the question deadline. Whatever is not asked is priced at the contractor's risk.</li>
-        <li><b>Get prices</b> from suppliers and subcontractors by e-mail and phone, then compare the quotes that come back.</li>
-        <li><b>Build each unit price</b> from labour, material, equipment and overheads, and submit.</li>
-      </ul>
-    </div>
-    <div class="col" style="flex: 0.85; padding-top: 8px">
-      <div style="background: var(--ink); color: #fff; padding: 44px 44px 40px">
-        <div class="chip">Why it costs money</div>
-        <p style="color:#e9e9e4; font-size: 27px; margin-top: 24px">Under VOB/B the submitted unit price binds. An error found
-          after the award is the contractor's loss, or a dispute about a change order.</p>
-        <p style="color:#e9e9e4; font-size: 27px; margin-top: 20px">The work is spread over a mailbox, PDFs, Excel sheets and
-          last project's prices. Under time pressure it ends in <b style="color: var(--y)">skim, copy, phone three suppliers,
-          and hope</b>.</p>
-      </div>
-      <p style="margin-top: 28px; font-size: 21px; color: var(--mute)">Who it is for: the estimator (Kalkulator) at a German
-        civil-engineering or building contractor. The domain input came from a practising civil engineer.</p>
-    </div>
+  <div class="body" style="flex-direction: column; gap: 40px; justify-content: center; padding-bottom: 90px">
+    <p class="lead" style="font-size: 40px; max-width: 1500px">A German bill of quantities (LV) has thousands of items, several cost groups and dependencies
+      between trades. Typos, calculation errors, missing items and hidden change-order potential cost real money,
+      because <span class="strike">under VOB/B the unit price binds and the estimator has two weeks and</span></p>
+    <div><span class="bla">bla bla bla bla bla.</span></div>
+    <div><span class="sticker">Upload the LV, an LLM lists the problems. Everyone builds that.</span></div>
   </div>
   <div class="foot"><span>Polier · Challenge A</span><span>2 / 7</span></div>
 </section>
 
-<!-- 3 · Solution -->
-<section class="slide">
-  <div class="band"><span class="no">2</span><h2>What we built</h2><span class="tag">Solution</span></div>
-  <div class="body" style="flex-direction: column; gap: 30px; padding-top: 44px">
-    <p class="lead" style="max-width: 1600px">Polier follows a tender from the moment it lands in the mailbox until the award.
-      It does the reading and the writing. <b>The estimator decides.</b></p>
-    <div class="loop">
-      <div><div class="k">01</div><div class="t">Found in the mail</div>
-        <p>It watches the inbox, sees an invitation to bid and files it as a new tender with its dates and documents.</p><div class="who">Polier</div></div>
-      <div><div class="k">02</div><div class="t">Checked</div>
-        <p>Parsed from GAEB XML, GAEB 90, PDF or Excel. Rule checks and Claude then review every item. Each finding is ranked by the money at stake.</p><div class="who">Polier</div></div>
-      <div><div class="k">03</div><div class="t">Client asked</div>
-        <p>It drafts the bidder questions in German. The estimator ticks what to ask, and the message is written and sent.</p><div class="who you">Estimator decides</div></div>
-      <div><div class="k">04</div><div class="t">Prices asked</div>
-        <p>Items are sorted into packages for suppliers and subcontractors, and the inquiries go out. Where nobody covers a package, it searches the web for firms.</p><div class="who you">Estimator sends</div></div>
-      <div><div class="k">05</div><div class="t">Replies read</div>
-        <p>Client answers become proposed changes to quantities and texts. Quotes are compared and placed on their items.</p><div class="who you">Estimator confirms</div></div>
-      <div><div class="k">06</div><div class="t">Bid out</div>
-        <p>Every unit price is set with its source. The bid is exported as GAEB X84 or CSV, and the tender is tracked to the award.</p><div class="who you">Estimator submits</div></div>
-    </div>
-    <div style="display: flex; gap: 40px; align-items: flex-end; min-height: 0; flex: 1">
-      <div class="col"><div class="shot" style="width: 1180px; height: 330px"><img src="img/tender.png" alt="" style="width: 1500px; max-width: none; height: auto; margin-left: -300px; margin-top: -175px"></div>
-        <div class="cap">A tender's cover sheet: checks, client, prices and bid, each with its next action</div></div>
-      <p style="font-size: 22px; flex: 1">The demo video follows one tender through all six steps, live in the
-        working app on its own mail server.</p>
+<!-- 3 -->
+<section class="slide" style="background: #fff">
+  <div class="band"><span class="no">2</span><h2>So what did we build on top of it?</h2><span class="tag">Solution</span></div>
+  <div class="body" style="align-items: center; justify-content: center; gap: 80px">
+    <div class="shot" style="width: 760px; height: 760px; border: 0"><img src="img/twerk.gif" alt="Polier twerking" style="object-fit: contain; object-position: center"></div>
+    <div class="col" style="gap: 30px">
+      <div class="big">An agent<br>that twerks.</div>
+      <div style="font: 600 44px/1 var(--display); color: var(--mute)">…just kidding. (It does, though.)</div>
     </div>
   </div>
   <div class="foot"><span>Polier · Challenge A</span><span>3 / 7</span></div>
 </section>
 
-<!-- 4 · What is different -->
+<!-- 4 -->
 <section class="slide">
-  <div class="band"><span class="no">3</span><h2>What is different</h2><span class="tag">Solution</span></div>
-  <div class="body">
-    <div class="col" style="flex: 1; gap: 34px">
-      <div><h3>It works from the mail</h3>
-        <p style="margin-top: 10px">No upload ritual. Tenders, client answers, quotes and suppliers' questions are found in the
-          inbox and read back in, and the replies are drafted. It also remembers every partner across tenders: their prices,
-          how fast they answer, how they write.</p></div>
-      <div><h3>No evidence, no finding</h3>
-        <p style="margin-top: 10px">Every finding carries the item number, the quoted German passage, why it matters, what to
-          do and the euros at stake. The rules run first and are deterministic. Claude adds what needs reading. Fewer,
-          well-founded findings beat a long list.</p></div>
-      <div><h3>No price without a source</h3>
-        <p style="margin-top: 10px">Each unit price says where it comes from: a quote for this tender, the price book of
-          other tenders, past bids, or the estimator. <b>“No reliable price”</b> is a valid result, never a guess.</p></div>
-    </div>
-    <div class="col" style="flex: 0 0 900px; justify-content: center">
-      <div class="shot" style="width: 900px; height: 610px"><img src="img/questions.png" alt="" style="width: 1525px; max-width: none; height: auto; margin-left: -595px; margin-top: -300px"></div>
-      <div class="cap">Item 1.1.30: 30 weeks of site facilities against a 22-week contract period, 35.329,20 € at stake.
-        Asked, answered, and the quantity changed.</div>
+  <div class="band"><span class="no">3</span><h2>The whole pipeline, agentic</h2><span class="tag">Solution</span></div>
+  <div class="body" style="flex-direction: column; gap: 28px; padding-top: 40px">
+    <p class="lead" style="font-size: 36px">You press two buttons. Polier does the rest.</p>
+    <div class="flow">
+      <div class="step"><div class="k">01</div><div class="t">A tender hits the inbox</div><p>Polier sees it before you do and has already parsed it: errors, contradictions, open points.</p></div>
+      <div class="step"><div class="k">02</div><div class="t">Partners, already known</div><p>From past projects and mails: their prices, products, how often they answer and how fast.</p></div>
+      <div class="step you"><div class="k">YOU</div><div class="t">Green light</div><p>One click: we bid on this one.</p></div>
+      <div class="step"><div class="k">03</div><div class="t">Mails go out</div><p>Questions to the client. Price requests to several partners. Temporary prices on every item without an open question.</p></div>
+      <div class="step"><div class="k">04</div><div class="t">Replies come in</div><p>Client answers and quotes are caught in the mailbox and filled in on the items.</p></div>
+      <div class="step"><div class="k">05</div><div class="t">Cheapest wins</div><p>Quotes from several partners are compared, and the best one replaces the temporary price.</p></div>
+      <div class="step you"><div class="k">YOU</div><div class="t">Confirm</div><p>You check what changed and say yes.</p></div>
+      <div class="step boom"><div class="k">06</div><div class="t">Boom. Bid sent.</div><p>By mail, by the agent.</p></div>
     </div>
   </div>
   <div class="foot"><span>Polier · Challenge A</span><span>4 / 7</span></div>
 </section>
 
-<!-- 5 · Architecture -->
+<!-- 5 -->
 <section class="slide">
-  <div class="band"><span class="no">4</span><h2>Tech stack and architecture</h2><span class="tag">Tech</span></div>
-  <div class="body" style="flex-direction: column; gap: 30px">
-    <div class="arch">
-      <div class="col" style="gap: 14px">
-        <div class="box t"><h4>Mailbox</h4><p>IMAP/SMTP. In the demo: our own mail server (Stalwart) with the client and the firms on it</p></div>
-        <div class="box t"><h4>Files</h4><p>GAEB XML 3.1/3.2 · GAEB 90 (cp850 / latin-1) · PDF text layer · Excel</p></div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="col" style="gap: 14px">
-        <div class="box"><h4>Intake and parsers → one LV model</h4>
-          <p>Which files belong to the same LV, the project name and the dates. Parsers built on lxml and PyMuPDF, checked
-            against <code>EP × Qty = GP</code>. Units are normalised; anonymisation tokens are ignored.</p></div>
-        <div class="box y"><h4>Pipeline: six stations, in the background</h4>
-          <div class="stations"><span>Read</span><span>Rules</span><span class="ai">AI review</span><span>Compare</span><span class="ai">Questions</span><span class="ai">Prices</span></div>
-          <p style="color: var(--yi)">Every step is recorded. It starts when a tender arrives, waits for the estimator at the
-            bidder questions, and resumes where it stopped.</p></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
-          <div class="box"><h4>Rules (deterministic)</h4><p>Arithmetic, structure, units, implausible quantities, missing companion items</p></div>
-          <div class="box"><h4>Claude API</h4><p>Item review, the German letters, reading replies, web search for firms. The model and effort are set per task (Opus 5.5 by default, Haiku 5.5 for sorting). Answers are cached and every call's cost is logged.</p></div>
-        </div>
-      </div>
-      <div class="arrow">→</div>
-      <div class="col" style="gap: 14px">
-        <div class="box t"><h4>Out</h4><p>Risk report · bidder questions · price inquiries with an Excel sheet · bid as GAEB X84 / CSV</p></div>
-        <div class="box t"><h4>Memory</h4><p>Partners across tenders: their prices with dates, their messages, how they write</p></div>
-      </div>
+  <div class="band"><span class="no">4</span><h2>Oh, and also</h2><span class="tag">Solution</span></div>
+  <div class="body" style="gap: 48px">
+    <div class="col" style="flex: 0 0 640px; gap: 26px; justify-content: center">
+      <ul class="dash" style="font-size: 30px">
+        <li style="font-size: 30px"><b>Links between LVs</b>: interfaces and dependencies across trades</li>
+        <li style="font-size: 30px"><b>Versions</b>: what changed from issue 1 to issue 2</li>
+        <li style="font-size: 30px"><b>Timelines</b>: deadlines, binding period and start of works, read from the files</li>
+        <li style="font-size: 30px"><b>Conflicts between documents</b>, shown where they are</li>
+      </ul>
+      <p style="font-size: 24px; color: var(--mute)">Talking to the agent? Obviously. We're not even mentioning it.</p>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; border-top: 4px solid var(--ink); padding-top: 22px">
-      <div><h3 style="font-size: 26px">Backend</h3><p style="font-size: 21px">Python 3.12 · FastAPI · SQLAlchemy · uv</p></div>
-      <div><h3 style="font-size: 26px">Frontend</h3><p style="font-size: 21px">React · TypeScript · Vite · one design system for a projector</p></div>
-      <div><h3 style="font-size: 26px">Data</h3><p style="font-size: 21px">Postgres (SQLite locally). Documents, runs, mails, quotes and the price book in one database</p></div>
-      <div><h3 style="font-size: 26px">Run</h3><p style="font-size: 21px">Docker Compose for dev · one image on Render with Neon Postgres (Frankfurt) · pytest on the real dataset</p></div>
+    <div class="col" style="flex: 1; gap: 20px; justify-content: center">
+      <div class="shot" style="height: 390px"><img src="img/tender.png" alt="" style="width: 1500px; max-width: none; height: auto; margin-left: -300px; margin-top: -175px"></div>
+      <div class="shot" style="height: 330px"><img src="img/questions.png" alt="" style="width: 1500px; max-width: none; height: auto; margin-left: -560px; margin-top: -290px"></div>
     </div>
   </div>
   <div class="foot"><span>Polier · Challenge A</span><span>5 / 7</span></div>
 </section>
 
-<!-- 6 · Measured -->
+<!-- 6 -->
 <section class="slide">
-  <div class="band"><span class="no">5</span><h2>Measured on the challenge data</h2><span class="tag">Results</span></div>
-  <div class="body" style="flex-direction: column; gap: 56px; justify-content: center; padding-bottom: 90px">
-    <p class="lead" style="max-width: 1500px">We tested on the six anonymised projects of the challenge, in all their formats, and we report the weak number too.</p>
-    <div class="grid4">
-      <div class="stat"><div class="num">29<small>/30</small></div><h4>Planted faults found</h4>
-        <p>30 faults of five kinds were planted in three tender LVs. Rules alone found 11, with <b>no new finding</b> on the 427
-          unchanged items. Rules plus the AI review found 29.</p></div>
-      <div class="stat"><div class="num">1.254</div><h4>PDF items vs. GAEB</h4>
-        <p>The PDF parser was scored against the GAEB twin of the same LV in six pairs: 2 items missed, 1 extra.
-          Quantity and unit match 100 %. No LLM is used, only the text layer.</p></div>
-      <div class="stat"><div class="num">4</div><h4>Input formats, all six projects</h4>
-        <p>GAEB XML, GAEB 90 with differing encodings and decimals, PDF and Excel, all read into one model.
-          225 automated tests run against the dataset.</p></div>
-      <div class="stat weak"><div class="num">5<small>/643</small></div><h4>Prices from history: honest</h4>
-        <p>Pricing each project from the other two prices only 5 items: three unlike projects are too little history.
-          Where similar items exist, 310 of 682 get a price at a <b>6 % median error</b>.</p></div>
+  <div class="band"><span class="no">5</span><h2>Tech stack and architecture</h2><span class="tag">Tech</span></div>
+  <div class="body" style="flex-direction: column; gap: 34px; justify-content: center; padding-bottom: 90px">
+    <div class="arch">
+      <div class="col" style="gap: 14px">
+        <div class="box t"><h4>Mailbox</h4><p>IMAP / SMTP (Stalwart in the demo)</p></div>
+        <div class="box t"><h4>Files</h4><p>GAEB XML · GAEB 90 · PDF · Excel</p></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="col" style="gap: 14px">
+        <div class="box y"><h4>Agentic pipeline, in the background</h4>
+          <div class="stations"><span>Read</span><span>Rules</span><span class="ai">AI review</span><span>Compare</span><span class="ai">Questions</span><span class="ai">Prices</span></div>
+          <p style="color: var(--yi)">It starts on its own when mail arrives and waits for your green light.</p></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
+          <div class="box"><h4>Deterministic rules</h4><p>Arithmetic, units, quantities, missing items</p></div>
+          <div class="box"><h4>Claude API</h4><p>Opus 5.5 / Haiku 5.5 per task, with a cache and a cost log</p></div>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="col" style="gap: 14px">
+        <div class="box t"><h4>Out</h4><p>Questions · price mails · bid (GAEB X84)</p></div>
+        <div class="box t"><h4>Memory</h4><p>Partners, prices and mails across all tenders</p></div>
+      </div>
     </div>
-    <p style="font-size: 20px; color: var(--mute)">Limits: the planted faults are our own and blunt, and the AI run was done once.
-      The PDF parser needs a text layer (no OCR). Prices need a contractor's own history to become useful.</p>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; border-top: 4px solid var(--ink); padding-top: 22px">
+      <div><h3 style="font-size: 26px">Backend</h3><p style="font-size: 22px">Python · FastAPI · SQLAlchemy</p></div>
+      <div><h3 style="font-size: 26px">Frontend</h3><p style="font-size: 22px">React · TypeScript · Vite · three.js</p></div>
+      <div><h3 style="font-size: 26px">Data</h3><p style="font-size: 22px">Postgres</p></div>
+      <div><h3 style="font-size: 26px">Run</h3><p style="font-size: 22px">Docker · Render · Neon</p></div>
+    </div>
   </div>
   <div class="foot"><span>Polier · Challenge A</span><span>6 / 7</span></div>
 </section>
 
-<!-- 7 · Next -->
-<section class="slide">
-  <div class="band"><span class="no">6</span><h2>What comes next</h2><span class="tag">Next</span></div>
-  <div class="body" style="align-items: center; padding-bottom: 90px">
-    <div class="col" style="flex: 1">
-      <ul class="dash" style="font-size: 28px">
-        <li><b>A contractor's own history.</b> Past bids and actual costs make the price book useful: the back-test shows 6 % median error once similar items exist.</li>
-        <li><b>A pilot with one estimator</b> on live tenders, measuring hours per tender and findings confirmed against findings dismissed.</li>
-        <li><b>Closing the gaps we found while using it:</b> read Excel sheets attached to quotes, carry the client's answers into replies to suppliers, and take addresses from the tender mail.</li>
-        <li><b>Submission</b> through the tender portals (GAEB X84 is already written) and change-order tracking after the award, using the findings that were not asked about.</li>
-      </ul>
+<!-- 7 -->
+<section class="slide title">
+  <div class="stripe"></div>
+  <div class="in" style="justify-content: space-between">
+    <div class="col">
+      <h1 style="font-size: 200px">POLIER</h1>
+      <div class="sub" style="max-width: 1000px">It reads the mail, so you can build.</div>
+      <div class="meta">29 of 30 planted faults found · 4 file formats · 225 tests<br>github.com/melikek0se/construction-hackathon</div>
     </div>
-    <div class="col" style="flex: 0 0 720px; justify-content: center">
-      <div style="background: var(--y); padding: 52px 52px 46px; border: 3px solid var(--ink); box-shadow: 18px 18px 0 var(--ink)">
-        <div style="font: 700 120px/0.85 var(--display)">POLIER</div>
-        <div style="font: 600 44px/1.05 var(--display); margin-top: 18px">It reads the mail, so you can build.</div>
-        <p style="margin-top: 30px; color: var(--yi); font-size: 22px">Code: github.com/melikek0se/construction-hackathon</p>
-      </div>
-    </div>
+    <img src="img/twerk.png" alt="" style="width: 520px; mix-blend-mode: multiply">
   </div>
-  <div class="foot"><span>Polier · Challenge A</span><span>7 / 7</span></div>
+  <div class="stripe"></div>
 </section>
 
 </body>
