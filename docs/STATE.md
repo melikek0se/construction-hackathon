@@ -21,7 +21,8 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   on", "Pass") with Polier's read stands above it and the three later rows are held. Scrolled past, a 39px
   strip with the tender's name, the days and the same actions lies over the document (`.td-actbar`,
   `.td-dock`; it takes no room, so nothing jumps); with a panel open it leads with "Back to the tender".
-  No action on the tender is in the band. Gone from the cover sheet: "What is left for the bid", the two
+  No action on the tender is in the band: "Close the questions" is a link under "Ask the client" in the
+  Client row while the pipeline waits for the answers (seen on OP-2614-LV1, LV 1; not pressed). Gone from the cover sheet: "What is left for the bid", the two
   lines of "Questions and prices", "Where the findings are" (the fingerprint is the Checks row's).
   Checked: type-check; in Chrome on TBA-2026-114 the board, the strip over the cover sheet and over the
   LV's head, "Ask for prices" from the board, the strip in the inquiries; a tender in the intake at rest
@@ -51,10 +52,13 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   reply was read. All test messages, the test quote and the two test replies in the inbox were taken
   out again; both states are as before.
   Not checked: a quote read by hand from a file (sheet, PDF).
-- Seen while testing, not changed (server, `mail.answered_by`): a reply found in the inbox is matched by
-  subject. When the message it answered is deleted, the next sweep reads the same reply into another
-  waiting message to the same address with the same subject (it happened to the 16-question message of
-  TBA-2026-114 and was undone by hand). Deleting an answered message while another one waits does this.
+- The reply of a deleted message is not read again (2026-11-22; `mail.discard`, `mail.replies_gone`,
+  `find_replies`): a reply found in the inbox is matched by subject, and when the message it answered was
+  deleted, the next sweep read the same reply into another waiting message to the same address (it
+  happened to the 16-question message of TBA-2026-114 while testing and was undone by hand). The
+  fingerprint of a deleted message's reply is kept in `settings` (`replies_gone`, the last 500) and such
+  a reply is passed over. Checked: `tests/test_mail.py` (the fingerprint is kept). Not checked: against
+  the demo mail server.
 
 - The message panel is a correspondence (2026-11-22, Atahan chose it from three mock-ups; `letterEl`,
   `Correspondence`, `OutEvent`, `ReplyEvent` in `Questions.tsx`, `.qc-*` at the end of `questions.css`).

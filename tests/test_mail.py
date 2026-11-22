@@ -386,3 +386,15 @@ def test_one_reply_answers_one_message_even_when_several_share_subject_and_addre
     assert mail.answered_by(waiting, reply(In_Reply_To="<x@outlook>"))["id"] == "m0"
     assert mail.answered_by(waiting, reply())["id"] == "m2"  # names nothing: the newest before it
     assert mail.answered_by(waiting[1:3], reply(In_Reply_To="<x@outlook>")) is None
+
+
+def test_the_reply_of_a_deleted_message_is_not_read_again(database):
+    """A message is taken out of the list with its reply; the reply still lies in the inbox. It is
+    remembered, so that the next look into the inbox does not read it into another waiting message that
+    shares the subject (2026-11-22)."""
+    kept = mail.keep(mail.BIDDER_QUESTIONS, None, "lv.x83", "vergabe@example.org", "Bieterfragen – Bachdurchlass", "Text", "smtp", [], True)
+    reply = "Zu Frage 1: Die Menge wird auf 150 m3 geändert."
+    mail.keep_reply(kept["id"], reply, {}, "imap")
+    assert mail.replies_gone() == set()
+    mail.discard(kept["id"])
+    assert mail.find(kept["id"]) is None and mail._print_of(reply) in mail.replies_gone()
