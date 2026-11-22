@@ -14,11 +14,17 @@ import time
 import anthropic
 
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable, _fmt_qty, _squash
-from boq import retrieve, spend
+from boq import engines, retrieve, spend
 from boq.model import BoQ, Item
 
-CHAT_MODEL = os.environ.get("BOQ_CHAT_MODEL", MODEL)
+CHAT_MODEL = os.environ.get("BOQ_CHAT_MODEL", MODEL)  # the default; the choice on the Pipeline page wins (boq.engines)
 CHAT_EFFORT = os.environ.get("BOQ_CHAT_EFFORT", "low")  # someone is waiting for the answer
+
+
+def _model() -> str:
+    return engines.of("chat", CHAT_MODEL)
+
+
 MAX_HISTORY = 12  # earlier turns sent along
 # How long the model keeps the project's documents ready. Someone reading an LV asks a question every few
 # minutes, not every few seconds: with the default five minutes most questions would pay for all documents
@@ -153,16 +159,16 @@ async def _ask(client: anthropic.AsyncAnthropic, documents_text: str, history: l
                purpose: str = "chat") -> dict:
     started = time.monotonic()
     response = await client.beta.messages.create(
-        model=CHAT_MODEL,
+        model=_model(),
         max_tokens=8000,
         betas=["server-side-fallback-2026-07-01"],
         fallbacks="default",
         thinking={"type": "adaptive"},
-        output_config={"effort": CHAT_EFFORT, "format": {"type": "json_schema", "schema": schema}},
+        output_config={"effort": engines.effort("chat", CHAT_EFFORT), "format": {"type": "json_schema", "schema": schema}},
         system=system,
         messages=_messages(documents_text, history, question, open_text, cache),
     )
-    spend.answered(purpose, response, CHAT_MODEL, ms=round((time.monotonic() - started) * 1000),
+    spend.answered(purpose, response, _model(), ms=round((time.monotonic() - started) * 1000),
                    write=2.0 if CACHE.get("ttl") == "1h" else 1.25)
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"the answer stopped with {response.stop_reason}")
@@ -201,7 +207,7 @@ def _verify(raw: dict, documents: list[BoQ]) -> dict:
 
 def cost_usd(usage: dict | None) -> float | None:
     """What a request cost at list prices, from its token counts; None for a model without a price here."""
-    price = PRICES.get(CHAT_MODEL)
+    price = PRICES.get(_model())
     if not usage or price is None:
         return None
     p_in, p_out, p_read = price
@@ -213,7 +219,7 @@ def cost_usd(usage: dict | None) -> float | None:
 def whole_project(documents: list[BoQ]) -> dict:
     """What reading every document would cost: about how many tokens, the first time and while cached."""
     tokens = int(sum(len(_document(d)) for d in documents) * TOKENS_PER_CHAR)
-    price = PRICES.get(CHAT_MODEL)
+    price = PRICES.get(_model())
     write = 2.0 if CACHE.get("ttl") == "1h" else 1.25
     return {"tokens": tokens,
             "first_usd": round(tokens * price[0] * write / 1e6, 2) if price else None,

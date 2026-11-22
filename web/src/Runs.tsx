@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { getSpend, listProjectRuns } from "./api";
+import { chooseModel, getModels, getSpend, listProjectRuns } from "./api";
+import { Select } from "./controls";
 import { Sign } from "./components";
-import { SEVERITIES, SEVERITY_LABEL, type Run, type RunStage, type RunStep, type Severity, type Spend, type StageId } from "./types";
+import { SEVERITIES, SEVERITY_LABEL, type ModelChoice, type Run, type RunStage, type RunStep, type Severity, type Spend, type StageId } from "./types";
 import "./runs.css";
 
 /* The pipeline (src/boq/pipeline.py) and its runs (src/boq/runs.py): what is done with a project's files,
@@ -73,7 +74,7 @@ export function RunsSwitch({ runs, onOpen, still = false }: { runs: Run[]; onOpe
         <path d="M2 11h18" stroke="currentColor" strokeWidth="2" />
         <path d="M1 8h4v6H1zM9 8h4v6H9zM17 8h4v6h-4z" fill="currentColor" />
       </svg>
-      <b>{still ? (active.length > 0 ? "Running" : "Idle") : "Pipeline"}</b>
+      <b>{still ? (active.length > 0 ? "Running" : "Idle") : "Engine room"}</b>
       <small>
         {active.length > 0 ? (
           <>
@@ -458,6 +459,80 @@ export function PipelineStrip({
   );
 }
 
+/** Which Claude model does which work (src/boq/engines.py): one line per task, the model chosen in a
+ *  select. A choice is kept at once and holds from the next request on. */
+function Models() {
+  const [choice, setChoice] = useState<ModelChoice | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    void getModels().then((c) => live && setChoice(c), () => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (!choice) return null;
+  const options = choice.models.map((m) => ({ value: m.id, label: m.name }));
+  const levels = choice.efforts.map((e) => ({ value: e, label: e }));
+  const changed = choice.tasks.filter((t) => t.model !== t.default || t.effort !== t.default_effort).length;
+  function pick(task: string, what: "models" | "efforts", value: string) {
+    setBusy(task);
+    setError(null);
+    chooseModel(task, what, value)
+      .then(setChoice, (e: unknown) => setError(e instanceof Error ? e.message : "The choice was not kept."))
+      .finally(() => setBusy(null));
+  }
+  return (
+    <>
+      <header className="pipe-page-head">
+        <h2>Models</h2>
+        <p>
+          Which Claude model does which work, and how much it thinks about it (effort: more is slower and costs more
+          tokens). A choice holds from the next request on.
+          {changed > 0 && ` ${changed} of ${choice.tasks.length} differ from the default.`}
+        </p>
+      </header>
+      {error && <p className="models-error" role="alert">{error}</p>}
+      <table className="spend-table models">
+        <thead>
+          <tr>
+            <th>Work</th>
+            <th>Model</th>
+            <th>Effort</th>
+            <th className="r">USD per 1M tokens in / out</th>
+          </tr>
+        </thead>
+        <tbody>
+          {choice.tasks.map((t) => {
+            const m = choice.models.find((x) => x.id === t.model);
+            return (
+              <tr key={t.key} className={t.model !== t.default || t.effort !== t.default_effort ? "is-changed" : undefined}>
+                <th>
+                  {t.name}
+                  <small>
+                    {t.what}
+                    {t.note ? ` ${t.note}` : ""}
+                  </small>
+                </th>
+                <td>
+                  <Select value={t.model} options={options} disabled={busy !== null} aria-label={`Model for ${t.name}`} onChange={(id) => pick(t.key, "models", id)} />
+                  {m && <small>{m.note}</small>}
+                </td>
+                <td>
+                  <Select value={t.effort} options={levels} disabled={busy !== null} aria-label={`Effort for ${t.name}`} onChange={(e) => pick(t.key, "efforts", e)} />
+                  {t.effort !== t.default_effort && <small>default: {t.default_effort}</small>}
+                </td>
+                <td className="r num">{m?.input != null && m.output != null ? `${m.input.toFixed(2)} / ${m.output.toFixed(2)}` : "no list price"}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 const tokens = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}k` : String(n));
 
 /** The audit of what Claude was asked and what it cost (src/boq/spend.py): one line, opening to the sums
@@ -783,6 +858,10 @@ export function PipelinePage({
             ))}
           </section>
         )}
+
+        <section className="pipe-page-block" aria-label="Which model does which work">
+          <Models />
+        </section>
 
         <section className="pipe-page-block" aria-label="What Claude cost">
           <SpendAudit projectId={project} at={at} open />

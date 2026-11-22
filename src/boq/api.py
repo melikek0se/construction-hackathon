@@ -29,7 +29,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 
-from boq import (amendments, bid, catalog, chat, db, events, inbox, mail, partners, partners_demo, pipeline, retrieve, risk,
+from boq import (amendments, bid, catalog, chat, db, engines, events, inbox, mail, partners, partners_demo, pipeline, retrieve, risk,
                  runs, spend, supply, tender)
 from boq import dates as tender_dates
 from boq import intake as intake_rules
@@ -803,6 +803,26 @@ def spend_audit(project: str | None = None):
     """The audit of the requests to Claude (boq.spend), of one project or of all: the sum in USD (an
     estimate at list prices), per purpose, and the latest requests with their token counts."""
     return spend.audit(project)
+
+
+@app.get("/api/models")
+def get_models():
+    """Which Claude model does which work (boq.engines): the models on offer, every task with its model."""
+    return engines.overview()
+
+
+class ModelChoice(BaseModel):
+    models: dict[str, str | None] = {}  # task -> model id; null: back to the default
+    efforts: dict[str, str | None] = {}  # task -> low, medium, high, xhigh, max
+
+
+@app.put("/api/models")
+def put_models(body: ModelChoice):
+    """Choose the model and the effort of some tasks. Holds from the next request on."""
+    try:
+        return engines.choose(body.models, body.efforts)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 def _run(found: dict | None) -> dict:

@@ -14,6 +14,11 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- Models and effort per task (2026-11-22, D-062; `src/boq/engines.py`, `GET/PUT /api/models`, block "Models" in
+  `Runs.tsx`): which Claude model does which of nine tasks and at which effort, chosen on the Pipeline page, now called "Engine
+  room" in the band. Checked against the running API: choose, read back at request time, a wrong model
+  refused, back to the default. Not seen in a browser yet; no request was sent on Fable or Haiku.
+
 - Polier's chat (2026-11-22, D-060; `Agent.tsx`, `Chat.tsx`, `chat.css`, `styles.css`): a click on Polier opens
   a small ask box beside him; the first question grows it into a full-height side panel on the right (440px),
   the page makes room once it has arrived and Polier moves into it, perched on the composer. Calm look apart

@@ -32,7 +32,7 @@ from urllib.parse import urlparse
 import anthropic
 from sqlalchemy import delete, insert, select, update
 
-from boq import catalog, db, mail, spend, supply
+from boq import catalog, db, engines, mail, spend, supply
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable
 
 STALE_DAYS = supply.QUOTE_FRESH_DAYS
@@ -341,14 +341,14 @@ async def _json(purpose: str, system: str, content: str, schema: dict, client: a
     started = time.monotonic()
     try:
         response = await client.beta.messages.create(
-            model=MODEL, max_tokens=12000, betas=["server-side-fallback-2026-07-01"], fallbacks="default",
+            model=engines.of("partners", MODEL), max_tokens=12000, betas=["server-side-fallback-2026-07-01"], fallbacks="default",
             thinking={"type": "adaptive"},
-            output_config={"effort": "low", "format": {"type": "json_schema", "schema": schema}},
+            output_config={"effort": engines.effort("partners"), "format": {"type": "json_schema", "schema": schema}},
             system=system, messages=[{"role": "user", "content": content}])
     except _NO_CREDENTIALS as exc:
         raise LLMUnavailable("No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
                              "root (see .env.example) and restart the server.") from exc
-    spend.answered(purpose, response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    spend.answered(purpose, response, engines.of("partners", MODEL), ms=round((time.monotonic() - started) * 1000))
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"{purpose} stopped with {response.stop_reason}")
     return {"data": json.loads(next(b.text for b in response.content if b.type == "text")), "response": response}
@@ -844,14 +844,14 @@ async def discover(what: str, kind: str, region: str = "", reason: str = "asked 
     for _ in range(4):  # a long search may pause its turn: it goes on from where it stood
         try:
             response = await client.messages.create(
-                model=MODEL, max_tokens=8000, system=SEARCH_SYSTEM, messages=messages,
-                thinking={"type": "adaptive"}, output_config={"effort": "low"},
+                model=engines.of("search", MODEL), max_tokens=8000, system=SEARCH_SYSTEM, messages=messages,
+                thinking={"type": "adaptive"}, output_config={"effort": engines.effort("search")},
                 tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 6,
                         "user_location": {"type": "approximate", "country": "DE"}}])
         except _NO_CREDENTIALS as exc:
             raise LLMUnavailable("No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
                                  "root (see .env.example) and restart the server.") from exc
-        spend.answered("partners looked for on the web", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+        spend.answered("partners looked for on the web", response, engines.of("search", MODEL), ms=round((time.monotonic() - started) * 1000))
         usd += _usd(response)
         for block in response.content:
             if block.type == "server_tool_use" and isinstance(block.input, dict) and block.input.get("query"):

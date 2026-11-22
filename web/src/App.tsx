@@ -913,7 +913,7 @@ export default function App() {
               </svg>
               {tender ? "Tender" : "Projects"}
             </button>
-            <h1 className="band-here">Pipeline</h1>
+            <h1 className="band-here">Engine room</h1>
             <div className="band-slabs actions">
               <RunsSwitch runs={runs} onOpen={() => undefined} still />
             </div>

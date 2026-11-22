@@ -29,7 +29,7 @@ from email.utils import formatdate, getaddresses, make_msgid, parseaddr, parseda
 import anthropic
 from sqlalchemy import delete, insert, select, update
 
-from boq import db, demomail, spend
+from boq import db, demomail, engines, spend
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable, _squash
 from boq.report import _positions
 
@@ -454,12 +454,12 @@ async def read_reply(items: list[dict], reply: str, client: anthropic.AsyncAnthr
     started = time.monotonic()
     try:
         response = await client.beta.messages.create(
-            model=MODEL,
+            model=engines.of("reply", MODEL),
             max_tokens=16000,
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",  # a declined request is re-run on Anthropic's recommended fallback model
             thinking={"type": "adaptive"},
-            output_config={"effort": REPLY_EFFORT, "format": {"type": "json_schema", "schema": REPLY_SCHEMA}},
+            output_config={"effort": engines.effort("reply", REPLY_EFFORT), "format": {"type": "json_schema", "schema": REPLY_SCHEMA}},
             system=REPLY_SYSTEM,
             messages=[{"role": "user", "content":
                        f"<questions>\n{asked}\n</questions>\n\n<reply>\n{reply}\n</reply>"}],
@@ -468,7 +468,7 @@ async def read_reply(items: list[dict], reply: str, client: anthropic.AsyncAnthr
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
-    spend.answered("reply read", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    spend.answered("reply read", response, engines.of("reply", MODEL), ms=round((time.monotonic() - started) * 1000))
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"Reading the reply stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))["answers"]

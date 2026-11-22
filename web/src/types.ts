@@ -588,6 +588,13 @@ export interface Spend {
   calls: SpendCall[];
 }
 
+/** Which Claude model does which work (GET /api/models, src/boq/engines.py). */
+export interface ModelChoice {
+  models: { id: string; name: string; note: string; input: number | null; output: number | null }[]; // USD per million tokens
+  efforts: string[]; // low … max: how much the model thinks
+  tasks: { key: string; name: string; what: string; note?: string; purposes: string[]; model: string; default: string; effort: string; default_effort: string }[];
+}
+
 /** One item of the bid in progress (GET /api/analyses/{id}/bid). */
 export interface BidRow {
   item_oz: string;

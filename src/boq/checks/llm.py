@@ -16,7 +16,7 @@ from pathlib import Path
 import anthropic
 from sqlalchemy import insert, select
 
-from boq import db, spend
+from boq import db, engines, spend
 from boq.model import BoQ, Finding, Item
 
 
@@ -26,8 +26,8 @@ class LLMUnavailable(RuntimeError):
 
 _NO_CREDENTIALS = (anthropic.CredentialsError, anthropic.AuthenticationError, anthropic.PermissionDeniedError)
 
-MODEL = os.environ.get("BOQ_LLM_MODEL", "claude-opus-5-5")
-EFFORT = os.environ.get("BOQ_LLM_EFFORT", "medium")
+MODEL = os.environ.get("BOQ_LLM_MODEL", "claude-opus-5-5")  # the default; the choice on the Pipeline page wins (boq.engines)
+EFFORT = os.environ.get("BOQ_LLM_EFFORT", "medium")  # the default, as MODEL
 # answers of earlier versions were files in data/cache/llm/<key>.json; boq-seed copies them into the database
 LEGACY_CACHE_DIR = Path(__file__).resolve().parents[3] / "data" / "cache" / "llm"
 PROMPT_VERSION = "2"
@@ -36,6 +36,15 @@ CONCURRENCY = 4
 # One title takes well under a minute. The SDK default of 10 minutes would leave a request that lost its
 # connection (laptop went to sleep, network dropped) hanging that long before it is retried.
 REQUEST_TIMEOUT_S = 180.0
+
+
+def _model() -> str:
+    return engines.of("review", MODEL)
+
+
+def _effort() -> str:
+    return engines.effort("review", EFFORT)
+
 
 CHECKS = {  # check name in the model's answer -> (check_id, category)
     "unclear_scope": ("L-UNCLEAR-SCOPE", "unclear_scope"),
@@ -192,19 +201,19 @@ async def _ask(client: anthropic.AsyncAnthropic, context: str, task: str, usage:
 
     Token counts of real requests are added to `usage`; answers from the cache (database) cost nothing.
     """
-    key = hashlib.sha256("\x00".join([MODEL, EFFORT, PROMPT_VERSION, SYSTEM, context, task]).encode()).hexdigest()
+    key = hashlib.sha256("\x00".join([_model(), _effort(), PROMPT_VERSION, SYSTEM, context, task]).encode()).hexdigest()
     hit = cache_get(key)
     if hit is not None:
-        spend.record("AI review", MODEL, cached=True)
+        spend.record("AI review", _model(), cached=True)
         return hit
     started = time.monotonic()
     response = await client.beta.messages.create(
-        model=MODEL,
+        model=_model(),
         max_tokens=16000,
         betas=["server-side-fallback-2026-07-01"],
         fallbacks="default",  # a declined request is re-run on Anthropic's recommended fallback model
         thinking={"type": "adaptive"},
-        output_config={"effort": EFFORT, "format": {"type": "json_schema", "schema": SCHEMA}},
+        output_config={"effort": _effort(), "format": {"type": "json_schema", "schema": SCHEMA}},
         system=SYSTEM,
         messages=[{"role": "user", "content": [
             # the context is identical for every title of this LV: cache it once, read it for the rest
@@ -212,7 +221,7 @@ async def _ask(client: anthropic.AsyncAnthropic, context: str, task: str, usage:
             {"type": "text", "text": task},
         ]}],
     )
-    spend.answered("AI review", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    spend.answered("AI review", response, _model(), ms=round((time.monotonic() - started) * 1000))
     if usage is not None:
         u = response.usage
         usage["input_tokens"] += u.input_tokens or 0
@@ -339,7 +348,7 @@ async def run_llm_checks(boq: BoQ, rule_findings: list[Finding],
         if first is not f and f.item_oz != first.item_oz and f.item_oz not in first.related_oz:
             first.related_oz.append(f.item_oz)
     return list(findings.values()), {"requests": len(tasks), "kept": len(findings), "dropped": len(raw) - len(valid),
-                                     "failed": len(failures), "failures": failures, "model": MODEL, **usage}
+                                     "failed": len(failures), "failures": failures, "model": _model(), **usage}
 
 
 # ---------------------------------------------------------------- the second look
@@ -392,22 +401,22 @@ async def second_look(boq: BoQ, rule_findings: list[Finding], ai_findings: list[
                       *(line(f"R{n}", f) for n, f in enumerate(rule_findings, 1)), "", "AI findings:",
                       *(line(f"A{n}", f) for n, f in enumerate(ai_findings, 1))])
     usage = dict.fromkeys(["api_requests", "input_tokens", "cache_write_tokens", "cache_read_tokens", "output_tokens"], 0)
-    key = hashlib.sha256("\x00".join(["second", MODEL, EFFORT, SECOND_SYSTEM, task]).encode()).hexdigest()
+    key = hashlib.sha256("\x00".join(["second", _model(), _effort(), SECOND_SYSTEM, task]).encode()).hexdigest()
     raw = cache_get(key)
     if raw is not None:
-        spend.record("second look", MODEL, cached=True)
+        spend.record("second look", _model(), cached=True)
     else:
         client = client or anthropic.AsyncAnthropic(timeout=REQUEST_TIMEOUT_S)
         started = time.monotonic()
         try:
             response = await client.beta.messages.create(
-                model=MODEL, max_tokens=8000, betas=["server-side-fallback-2026-07-01"], fallbacks="default",
+                model=_model(), max_tokens=8000, betas=["server-side-fallback-2026-07-01"], fallbacks="default",
                 thinking={"type": "adaptive"},
-                output_config={"effort": EFFORT, "format": {"type": "json_schema", "schema": SECOND_SCHEMA}},
+                output_config={"effort": _effort(), "format": {"type": "json_schema", "schema": SECOND_SCHEMA}},
                 system=SECOND_SYSTEM, messages=[{"role": "user", "content": task}])
         except _NO_CREDENTIALS as exc:
             raise LLMUnavailable("No working Claude API credentials.") from exc
-        spend.answered("second look", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+        spend.answered("second look", response, _model(), ms=round((time.monotonic() - started) * 1000))
         if response.stop_reason != "end_turn":
             raise RuntimeError(f"second look stopped with {response.stop_reason}")
         u = response.usage
@@ -429,4 +438,4 @@ async def second_look(boq: BoQ, rule_findings: list[Finding], ai_findings: list[
         if ai_findings[n].item_oz != twin.item_oz or (other[0] == "A" and m in dropped):
             continue
         dropped[n] = (ai_findings[n], f"same as {twin.title or twin.check_id}: {str(entry.get('why', ''))[:160]}")
-    return dropped, {"model": MODEL, **usage}
+    return dropped, {"model": _model(), **usage}

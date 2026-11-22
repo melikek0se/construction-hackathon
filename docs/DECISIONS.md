@@ -1137,3 +1137,21 @@ dataset's in different situations, kept as mock data so that every run fills the
   once for each (never again for the same message).
 - `boq-mail --check` and `tests/test_mockmail.py` build everything and read every LV back with the parsers.
 
+## D-062 — The model and the effort of every Claude task are chosen on the page, per task; the Pipeline page is the "Engine room"
+
+- **Why**: all requests ran on one model from the environment (`BOQ_LLM_MODEL`); the user asked to choose in
+  the UI which model does which work (2026-11-22).
+- **`boq.engines`**: nine tasks (AI review with its second look, chat, mail sorted, client's reply read, price
+  inquiries planned, quote read, answer to a supplier, partner read, partners looked for on the web) and four
+  models (Fable 5.2, Opus 5.5, Sonnet 5.5, Haiku 5.5). The choice is one row in `settings` (key "models"),
+  for the whole app, not per project. Every call asks `engines.of(task, default)` at request time, so a
+  choice holds from the next request on. Nothing chosen: the environment, else Opus 5.5.
+- **Where**: `GET/PUT /api/models`; the block "Models" on the Pipeline page, above what Claude cost. The page
+  is called "Engine room" in the band (address still `/pipeline`; the strip of six stations is still the
+  pipeline): the place for what runs the app, not only the runs.
+- **Consequences**: the AI review's cache is keyed by model, so another model reads every LV afresh (paid).
+  Haiku 5.5 has no server-side refusal fallback (`fallbacks: "default"` is accepted and does nothing).
+  `spend.PRICES` knows all four models.
+- **Effort too** (same day): per task, low to max, chosen beside the model (`engines.effort(task, default)`,
+  key "efforts", `PUT /api/models` takes `{models, efforts}`). Defaults as before: medium for the AI review,
+  low for the rest, or the environment. The AI review's cache is keyed by effort as well.

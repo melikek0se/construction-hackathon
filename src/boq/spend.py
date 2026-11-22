@@ -21,7 +21,9 @@ from boq import db
 
 # USD per million tokens: input, output, cache read. A cache write costs 1.25 × input for five minutes,
 # 2 × for one hour (`write`). A model that is not here has no USD figure, only token counts.
-PRICES = {"claude-opus-5-5": (4.0, 20.0, 0.20), "claude-sonnet-5-5": (2.0, 10.0, 0.10)}
+# Haiku 5.5: the rate for prompts up to 100K tokens (longer ones cost five times as much).
+PRICES = {"claude-fable-5-2": (8.0, 40.0, 0.20), "claude-opus-5-5": (4.0, 20.0, 0.20),
+          "claude-sonnet-5-5": (2.0, 10.0, 0.10), "claude-haiku-5-5": (0.10, 0.50, 0.01)}
 SEARCH_USD = 0.01  # one web search (server tool), billed on top of the tokens
 TOKENS = ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
 

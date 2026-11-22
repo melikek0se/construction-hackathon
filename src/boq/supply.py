@@ -31,7 +31,7 @@ import anthropic
 from openpyxl import Workbook, load_workbook
 from sqlalchemy import delete, insert, select, update
 
-from boq import db, spend
+from boq import db, engines, spend
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable
 from boq.model import BoQ, Item
 
@@ -311,12 +311,12 @@ async def plan(boq: BoQ, skip: set[str], client: anthropic.AsyncAnthropic | None
     started = time.monotonic()
     try:
         response = await client.beta.messages.create(
-            model=MODEL,
+            model=engines.of("plan", MODEL),
             max_tokens=16000,
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
             thinking={"type": "adaptive"},
-            output_config={"effort": "low", "format": {"type": "json_schema", "schema": PLAN_SCHEMA}},
+            output_config={"effort": engines.effort("plan"), "format": {"type": "json_schema", "schema": PLAN_SCHEMA}},
             system=PLAN_SYSTEM,
             messages=[{"role": "user", "content":
                        f"<firm>\nDoes itself: {firm['own_trades']}\n</firm>\n\n"
@@ -328,7 +328,7 @@ async def plan(boq: BoQ, skip: set[str], client: anthropic.AsyncAnthropic | None
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
-    spend.answered("price inquiries planned", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    spend.answered("price inquiries planned", response, engines.of("plan", MODEL), ms=round((time.monotonic() - started) * 1000))
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"Planning the price inquiries stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))["packages"]
@@ -676,12 +676,12 @@ async def read_quote(asked: list[dict], reply: str, client: anthropic.AsyncAnthr
     started = time.monotonic()
     try:
         response = await client.beta.messages.create(
-            model=MODEL,
+            model=engines.of("quote", MODEL),
             max_tokens=16000,
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
             thinking={"type": "adaptive"},
-            output_config={"effort": "low", "format": {"type": "json_schema", "schema": QUOTE_SCHEMA}},
+            output_config={"effort": engines.effort("quote"), "format": {"type": "json_schema", "schema": QUOTE_SCHEMA}},
             system=QUOTE_SYSTEM,
             messages=[{"role": "user", "content": f"<asked>\n{listed}\n</asked>\n\n<reply>\n{reply}\n</reply>"}],
         )
@@ -689,7 +689,7 @@ async def read_quote(asked: list[dict], reply: str, client: anthropic.AsyncAnthr
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
-    spend.answered("quote read", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    spend.answered("quote read", response, engines.of("quote", MODEL), ms=round((time.monotonic() - started) * 1000))
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"Reading the quote stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))
@@ -778,12 +778,12 @@ async def answer(items: list[Item], thread: list[dict], asks: list[dict], dates:
     started = time.monotonic()
     try:
         response = await client.beta.messages.create(
-            model=MODEL,
+            model=engines.of("answer", MODEL),
             max_tokens=16000,
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
             thinking={"type": "adaptive"},
-            output_config={"effort": "low", "format": {"type": "json_schema", "schema": ANSWER_SCHEMA}},
+            output_config={"effort": engines.effort("answer"), "format": {"type": "json_schema", "schema": ANSWER_SCHEMA}},
             system=ANSWER_SYSTEM,
             messages=[{"role": "user", "content":
                        f"<firm>\n{particulars}\n</firm>\n\n"
@@ -800,7 +800,7 @@ async def answer(items: list[Item], thread: list[dict], asks: list[dict], dates:
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
-    spend.answered("answer to a supplier drafted", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    spend.answered("answer to a supplier drafted", response, engines.of("answer", MODEL), ms=round((time.monotonic() - started) * 1000))
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"Writing the answer stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))

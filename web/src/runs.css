@@ -1098,3 +1098,56 @@
   color: var(--ink);
   font-weight: 600;
 }
+
+/* ------------------------------------------------------------------ which model does which work */
+
+.spend-table.models {
+  margin-top: 4px;
+  font-size: 13.5px;
+}
+
+.spend-table.models th,
+.spend-table.models td {
+  padding: 10px 16px 10px 0;
+  vertical-align: top;
+  white-space: normal;
+}
+
+.spend-table.models thead th {
+  padding-top: 8px;
+  padding-bottom: 6px;
+}
+
+.spend-table.models small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--mute);
+  max-width: 62ch;
+}
+
+.spend-table.models td:nth-child(2) {
+  width: 230px;
+}
+
+.spend-table.models td:nth-child(3) {
+  width: 120px;
+}
+
+.spend-table.models td.r {
+  white-space: nowrap;
+  padding-right: 0;
+}
+
+/* a task taken off its default carries the mark of a choice on its left */
+.spend-table.models tr.is-changed th {
+  box-shadow: inset 3px 0 0 var(--ink);
+  padding-left: 10px;
+}
+
+.models-error {
+  padding: 8px 0 0;
+  font-size: 13px;
+  color: var(--red);
+}

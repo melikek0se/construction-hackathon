@@ -1,4 +1,4 @@
-import type { PartnerProfile, PartnerSearch, PartnerRead, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, Tender, TenderDate, WhatIfResult } from "./types";
+import type { PartnerProfile, PartnerSearch, PartnerRead, PartnerStyle, PartnersOverview, AnswerPoint, BidRisk, Company, Supplier, SupplyState, Adjustment, Amendment, Analysis, Bid, CatalogProject, ChatAnswer, Finding, Intake, ModelChoice, PdfMarks, Plan, Prices, Project, ProjectSummary, QuestionMail, QuestionsState, ReviewProgress, Run, Sample, Spend, Tender, TenderDate, WhatIfResult } from "./types";
 
 async function read<T>(response: Response): Promise<T> {
   if (response.ok) return response.json();
@@ -252,6 +252,16 @@ export async function listRuns(): Promise<Run[]> {
 /** The audit of the requests to Claude, of one project or of all: sum, per purpose, the latest requests. */
 export async function getSpend(projectId?: string): Promise<Spend> {
   return read(await fetch(projectId ? `/api/spend?project=${encodeURIComponent(projectId)}` : "/api/spend"));
+}
+
+/** Which Claude model does which work: the models on offer and every task with its model. */
+export async function getModels(): Promise<ModelChoice> {
+  return read(await fetch("/api/models"));
+}
+
+/** Choose the model or the effort of one task; it holds from the next request on. */
+export async function chooseModel(task: string, what: "models" | "efforts", value: string): Promise<ModelChoice> {
+  return read(await fetch("/api/models", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [what]: { [task]: value } }) }));
 }
 
 /** The latest runs of one project, newest first, each with the record of its steps. */

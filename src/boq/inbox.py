@@ -24,7 +24,7 @@ from email.utils import parseaddr, parsedate_to_datetime
 import anthropic
 from sqlalchemy import delete, insert, select
 
-from boq import db, mail, spend, supply
+from boq import db, engines, mail, spend, supply
 from boq.checks.llm import _NO_CREDENTIALS, MODEL, REQUEST_TIMEOUT_S, LLMUnavailable
 
 LOOK_BACK_DAYS = 14
@@ -163,12 +163,12 @@ async def read_invitation(message: dict, lvs: list[dict], client: anthropic.Asyn
     started = time.monotonic()
     try:
         response = await client.beta.messages.create(
-            model=MODEL,
+            model=engines.of("inbox", MODEL),
             max_tokens=4000,
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
             thinking={"type": "adaptive"},
-            output_config={"effort": "low", "format": {"type": "json_schema", "schema": INVITATION_SCHEMA}},
+            output_config={"effort": engines.effort("inbox"), "format": {"type": "json_schema", "schema": INVITATION_SCHEMA}},
             system=INVITATION_SYSTEM,
             messages=[{"role": "user", "content":
                        f"<firm>\nDoes itself: {supply.company()['own_trades']}\n</firm>\n\n"
@@ -179,7 +179,7 @@ async def read_invitation(message: dict, lvs: list[dict], client: anthropic.Asyn
         raise LLMUnavailable(
             "No working Claude API credentials. Put ANTHROPIC_API_KEY=... into .env in the repository "
             "root (see .env.example) and restart the server.") from exc
-    spend.answered("mail sorted", response, MODEL, ms=round((time.monotonic() - started) * 1000))
+    spend.answered("mail sorted", response, engines.of("inbox", MODEL), ms=round((time.monotonic() - started) * 1000))
     if response.stop_reason != "end_turn":
         raise RuntimeError(f"Sorting the mail stopped with {response.stop_reason}")
     raw = json.loads(next(b.text for b in response.content if b.type == "text"))
