@@ -159,6 +159,19 @@ def test_many_zero_quantities_are_one_finding():
     assert found(run_checks(_lv(*one)), "R-QTY-ZERO") == {"1.1"}
 
 
+def test_a_clause_in_the_remarks_is_a_finding_on_every_item_under_its_title():
+    """Project C, LV Schachtbauwerk: "für alle Aussparungen keine gesonderte Vergütung" stands in the
+    preliminary remarks, so no item carries it. The quote is the client's sentence, word for word."""
+    boq = parse_file(str(XML.parent / "04_pdf_tiefbau_sonstige" / "LV-Schachtbauwerk.pdf"))
+    on_remarks = [f for f in run_checks(boq) if f.check_id == "R-REMARK-WORDING"]
+    assert on_remarks and all(f.item_oz is None and f.severity == "warn" for f in on_remarks)
+    assert "„Bei Neuerstellung von Wänden wird für alle Aussparungen keine gesonderte Vergütung gewährt.“" in on_remarks[0].evidence
+    assert f"the {len(boq.items)} items of the LV" in on_remarks[0].explanation
+    text = " ".join(" ".join(r.text.split()) for r in boq.remarks)
+    for f in on_remarks:
+        assert all(quote in text for quote in f.evidence.strip("„“").split("“ | „"))
+
+
 def test_unless_listed_separately_price_it_in_is_a_risk_shift():
     """Project E 3.6.8: "soweit nicht separat ausgeschrieben sind einzukalkulieren" was skipped by the guard
     meant for "soweit … nicht gesondert vergütet wird"."""

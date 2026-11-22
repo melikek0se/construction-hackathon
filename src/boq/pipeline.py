@@ -329,6 +329,8 @@ STEPS: list[Step] = [
           "\"wie Position …\" pointing at an item that is not in the LV."),
     _rule("R-WORDING", "Wording that shifts cost or scope", rules.wording,
           "Clauses like \"ohne gesonderte Vergütung\", \"nach Erfordernis\", \"inklusive aller …\"."),
+    _rule("R-REMARK-WORDING", "Remarks that shift cost or scope", rules.remarks,
+          "The same wording in the preliminary remarks: it holds for every item under that title."),
     _rule("R-LUMP-SUM-SCOPE", "Lump sums with a large scope", rules.lump_sums, "A long description paid as one lump sum."),
     _rule("R-NUMBER-TWICE", "Item numbers used twice", rules.numbering, "Two items under one number."),
     _rule("R-REPEATED", "The same description twice in a section", rules.repeats,

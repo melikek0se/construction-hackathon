@@ -2283,7 +2283,7 @@ async def _take_message(message: dict, ours: set[str]) -> dict:
             dates += tender_dates.read(data, name)
         if suffix in SUPPORTED and len(data) <= MAX_BYTES:
             try:
-                read.append((name, data, _parse_bytes(data, name)))
+                read.append((name, data, await asyncio.to_thread(_parse_bytes, data, name)))
             except HTTPException:
                 pass
     # An LV of a tender that is a project already: a new issue, our bid as it went out, the award. It joins
@@ -2354,6 +2354,9 @@ async def _sort_mail(messages: list[dict]) -> dict:
 def inbox_state():
     """The mailbox the app looks into for tenders and replies; `user` is null where none is set."""
     return {"user": (mail.inbox() or {}).get("user") or None}
+
+
+_SCAN = asyncio.Lock()
 
 
 @app.post("/api/inbox/scan")

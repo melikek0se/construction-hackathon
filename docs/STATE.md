@@ -426,6 +426,16 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   **Not checked: on Render and Neon themselves** (Stalwart's TLS connection to Neon, `CREATE DATABASE` there,
   Roundcube's redirects behind Render's HTTPS), the app's pages against filled mailboxes.
 
+- Clauses in the remarks are findings (2026-11-22, D-076; `rules.remarks`, `pdfmarks._locate`): a rule
+  (`R-REMARK-WORDING`) finds the wording of `R-WORDING` ("keine gesonderte Vergütung", "in die Einheitspreise
+  einzurechnen", "soweit erforderlich") in the preliminary remarks and the notes between items: one finding
+  per block, the client's sentence quoted whole, with how many items stand under that title (and their value
+  in a priced file). 55 findings over the German dataset files, 0 to 6 per LV. They are in the findings list
+  and the risk report, and marked on the PDF page where the sentence stands; picking one opens the page.
+  The Remarks tab is gone: for a day it showed these passages marked in the remark text, which the PDF tab
+  shows already, and before that only the text. Not done: the amount is in the explanation, not in "money
+  at stake" (the finding has no item to take a price from); remarks are not read by the AI review on their
+  own, only as context for the items.
 - Price order: quote, then price book, then past bids (2026-11-22, D-049; `supply.book`, `api._prices`,
   `supply.item_prices`, `risk.BANDS`): an item is asked for in its tender even where an earlier price
   exists; until the quote is in, a partner's price for the same thing from another tender stands in

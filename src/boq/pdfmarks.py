@@ -153,7 +153,11 @@ def _locate(doc, findings: list[Finding], positions: dict[str, tuple[int, float]
         if quote:
             # an item's finding is looked for in that item only; the remarks are for findings without a
             # place of their own (no item, or an item the PDF parser gave no position)
+            if f.item_oz is None:  # a remark's finding quotes several sentences: the first one is its place
+                quote = quote.split("“ | „")[0]
             hit = _search(doc, quote, stretch[f.item_oz] if f.item_oz in stretch else remarks)
+            if not hit and f.item_oz is None:  # a remark under a title stands between the items, not before them
+                hit = _search(doc, quote, [(n, doc[n - 1].rect) for n in range(1, doc.page_count + 1)])
         if hit:
             n, rects = hit
             mark.update(page=n, rects=_rects(doc[n - 1], rects), located="quote")

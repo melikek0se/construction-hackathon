@@ -1588,50 +1588,6 @@ table.items {
   text-align: left;
 }
 
-/* ---------------------------------------------------------------- remarks */
-
-.remarks {
-  padding: 4px 24px 40px;
-}
-
-.remarks details {
-  max-width: 78ch;
-  border-bottom: 1.5px solid var(--ink);
-}
-
-.remarks summary {
-  display: flex;
-  flex-direction: column;
-  padding: 12px 0;
-  cursor: pointer;
-  list-style: none;
-}
-
-.remarks summary::-webkit-details-marker {
-  display: none;
-}
-
-.remark-path {
-  font-size: 14px;
-  color: var(--ink-2);
-}
-
-.remark-first {
-  font-size: 18px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.remarks details[open] .remark-first {
-  display: none;
-}
-
-.remarks .lv-text {
-  padding-bottom: 18px;
-}
-
 /* ---------------------------------------------------------------- adapt */
 
 /* Projector and large displays: the whole interface grows with the screen, not only the plan. */
@@ -2888,29 +2844,6 @@ button.flow-plate:hover {
   font-weight: 700;
 }
 
-/* remarks */
-.remarks {
-  padding: 0 20px 32px;
-}
-
-.remarks details {
-  border-bottom: 1px solid var(--rule);
-}
-
-.remarks summary {
-  padding: 9px 0;
-}
-
-.remark-path {
-  font-size: 12px;
-  color: var(--mute);
-}
-
-.remark-first {
-  font-size: 13.5px;
-  font-weight: 600;
-}
-
 .lv-text {
   font-size: 13.5px;
 }
@@ -2998,7 +2931,6 @@ button.flow-plate:hover {
   .left-head,
   .map,
   .table-tools,
-  .remarks,
   .versions {
     padding-inline: 14px;
   }

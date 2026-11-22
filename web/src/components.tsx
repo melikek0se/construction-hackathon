@@ -256,7 +256,7 @@ export function FindingsList({
                   <span className="finding-oz">{oz ?? "LV"}</span>
                   <span className="finding-text">
                     <span className="finding-title" lang="de">
-                      <LvText text={itemLabel(itemByOz.get(oz ?? "")) || "Whole LV"} />
+                      <LvText text={itemLabel(itemByOz.get(oz ?? "")) || (oz === null && findings[0].title) || "Whole LV"} />
                     </span>
                     <span className="finding-why">
                       {findings.some((f) => f.origin === "llm") && <b className="ai-tag">AI</b>}
@@ -323,7 +323,14 @@ function FindingPlate({
               {finding.money_basis && <span className="quiet"> · the value of this item, from {finding.money_basis}</span>}
             </>
           ) : (
-            <span className="quiet">Not quantified: {priced ? "this item has no price" : "nobody has a price for this item yet"}</span>
+            <span className="quiet">
+              Not quantified:{" "}
+              {finding.item_oz === null
+                ? "it is spread over the items it holds for"
+                : priced
+                  ? "this item has no price"
+                  : "nobody has a price for this item yet"}
+            </span>
           )}
         </dd>
         {finding.related_oz.length > 0 && (
@@ -418,7 +425,9 @@ export function ItemSheet({
       <div className="panel sheet">
         <header className="panel-head">{back}</header>
         <div className="scroll" ref={top}>
-          <h2 className="sheet-oz">{selection.oz ?? "Whole LV"}</h2>
+          <h2 className="sheet-oz">
+            {selection.oz ?? (selected?.check_id === "R-REMARK-WORDING" ? "Remarks" : "Whole LV")}
+          </h2>
           {selection.oz && <p className="quiet">This item number is not in the parsed file.</p>}
           {selected && (
             <FindingPlate
@@ -755,30 +764,6 @@ export function ItemsView({
         {shown === 0 && <p className="empty">No item matches. Clear the search or the filter.</p>}
       </div>
       <Pager page={paged.page} pages={paged.pages} total={shown} size={ITEMS_PER_PAGE} what="items" onPage={onPage} />
-    </div>
-  );
-}
-
-/* ----------------------------------------------------------------- remarks */
-
-export function RemarksView({ analysis }: { analysis: Analysis }) {
-  const { remarks } = analysis.boq;
-  return (
-    <div className="scroll remarks">
-      {remarks.length === 0 && <p className="empty">This file carries no preliminary remarks.</p>}
-      {remarks.map((r, i) => (
-        <details key={i} open={i === 0}>
-          <summary>
-            <span className="remark-path">
-              <LvText text={r.path.join(" / ") || "General"} />
-            </span>
-            <span className="remark-first">{r.text.split("\n", 1)[0]}</span>
-          </summary>
-          <p className="lv-text" lang="de">
-            <LvText text={r.text} />
-          </p>
-        </details>
-      ))}
     </div>
   );
 }

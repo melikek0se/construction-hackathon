@@ -112,15 +112,20 @@ def _reference(item: Item, known: set[str]) -> Finding | None:
     )
 
 
+def _shifts(text: str) -> list[tuple[re.Match, str]]:
+    """Every phrase of `_WORDING` in a text, in reading order, with what it means."""
+    return sorted(((m, meaning) for pattern, meaning in _WORDING
+                   for m in re.finditer(pattern, text, re.I)
+                   # "soweit ... nicht gesondert vergütet wird" means the opposite. Only there: "soweit
+                   # nicht separat ausgeschrieben, sind … einzukalkulieren" is exactly the risk shift.
+                   if not (meaning == _NO_PAY and
+                           re.search(r"\b(soweit|sofern)\b[^.;]{0,50}$", text[:m.start()], re.I))),
+                  key=lambda x: x[0].start())
+
+
 def _wording(item: Item) -> Finding | None:
     hits, quoted_until = [], -1
-    matches = sorted(((m, meaning) for pattern, meaning in _WORDING
-                      for m in re.finditer(pattern, item.text, re.I)
-                      # "soweit ... nicht gesondert vergütet wird" means the opposite. Only there: "soweit
-                      # nicht separat ausgeschrieben, sind … einzukalkulieren" is exactly the risk shift.
-                      if not (meaning == _NO_PAY and
-                              re.search(r"\b(soweit|sofern)\b[^.;]{0,50}$", item.text[:m.start()], re.I))),
-                     key=lambda x: x[0].start())
+    matches = _shifts(item.text)
     seen = set()
     matches = [(m, meaning) for m, meaning in matches if not (meaning in seen or seen.add(meaning))]
     for m, meaning in matches:
@@ -206,6 +211,62 @@ def references(boq: BoQ) -> list[Finding]:
 
 def wording(boq: BoQ) -> list[Finding]:
     return _each(boq, _wording)
+
+
+def _sentence(text: str, start: int, end: int) -> str:
+    """The sentence around a match in a text that is on one line; a long one is cut to the words around it."""
+    a = start
+    while a > 0 and start - a < 30:  # "… o. ä. sind einzurechnen": a stop that near is an abbreviation
+        a = max(text.rfind(". ", 0, a - 2), text.rfind(": ", 0, a - 2)) + 2 if a > 2 else 0
+        a = 0 if a < 2 else a
+    b = text.find(". ", end)
+    b = len(text) if b < 0 else b + 1
+    if b - a > 280:  # cut at a space, so the quote stays a run of whole words of the LV
+        if start - a > 120:
+            a = text.find(" ", start - 120) + 1
+        if b - end > 120:
+            b = text.rfind(" ", 0, end + 120)
+    return text[a:b].strip()
+
+
+def remarks(boq: BoQ) -> list[Finding]:
+    """The same wording in the preliminary remarks and in the notes between items. There it is worse than in
+    an item: it holds for every item under that title, and no item says so. One finding per remark block;
+    a block the LV repeats under several titles is reported where it stands first."""
+    out, seen = [], set()
+    for remark in boq.remarks:
+        text = " ".join(remark.text.split())  # as the quotes of the AI review: found again whatever the line breaks
+        matches = _shifts(text)
+        if not matches:
+            continue
+        quotes, meanings = [], []
+        for m, meaning in matches:
+            quote = _sentence(text, m.start(), m.end())
+            if quote not in quotes:
+                quotes.append(quote)
+            if meaning not in meanings:
+                meanings.append(meaning)
+        key = " | ".join(quotes)
+        if key in seen:
+            continue
+        seen.add(key)
+        depth = len(remark.path)
+        covered = [i for i in boq.items if i.path[:depth] == remark.path]
+        where = f"under „{' / '.join(remark.path)}“" if remark.path else "of the LV"
+        value = sum((i.total for i in covered if i.total), Decimal(0))
+        hard = any(m in (_NO_PAY, "cost to be priced into the unit price") for m in meanings)
+        out.append(Finding(
+            item_oz=None, category="contract_risk", check_id="R-REMARK-WORDING",
+            title="Remark puts cost into the unit prices" if hard else "Remark leaves scope open",
+            severity="warn" if hard and len(covered) > 1 else "info",
+            evidence=" | ".join(f"„{q}“" for q in quotes[:3]),
+            explanation=f"Stands in the remarks, not in an item: it holds for the {len(covered)} items {where}"
+                        + (f" (together {value:,.2f} EUR in this file)" if value else "")
+                        + ", and none of them says so. " + ", ".join(meanings).capitalize()
+                        + ". Price it into those items, or ask for an item of its own.",
+            action="add_surcharge",
+        ))
+    return out
 
 
 def lump_sums(boq: BoQ) -> list[Finding]:
