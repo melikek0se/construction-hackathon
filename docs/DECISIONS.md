@@ -855,6 +855,11 @@ counters, every section of the same weight, the open work on the third tab.
 - **The next message is written where the waiting is seen**, by the code of the price inquiries, and goes out
   only after it was read (D-047 stands: the app writes to nobody on its own).
 
+- **No summary line across the tabs.** Each tab says its own state in its badge (gaps on Coverage, open
+  conversations on Follow-ups, prices about to run out on Price book, a "!" on "Your firm"); a line that
+  repeats them on one tab and sends to the others was tried and taken out (2026-11-22).
+- **A firm is a page under the directory** ("Directory › name", previous / next), not a pane beside a second
+  list of the same firms.
 - **What Polier says about a firm is held to the record** (the finding rule, applied to firms): each sentence
   names the counted fact or the message it rests on, a quoted passage must stand in that message, a figure must
   stand in a source; what fails is dropped and counted. It is written on request, not on every visit.

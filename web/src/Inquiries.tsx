@@ -270,7 +270,7 @@ function Package({
             <span className={`q-status is-${CHIP[a.status]}`}>{STATUS[a.status]}</span>
             <small>
               {lastSaid(a.thread) ??
-                (a.mail?.sent_at ? `sent ${dayText(a.mail.sent_at.slice(0, 10))}${a.mail.reminders ? `, reminded ${a.mail.reminders}×` : ""}` : a.mail ? "written, not sent yet" : a.email || "no address in the directory")}
+                (a.mail?.sent_at ? `sent ${dayText(a.mail.sent_at.slice(0, 10))}${a.mail.reminders ? `, reminded ${a.mail.reminders}×` : ""}` : a.mail ? "written, not sent yet" : a.email || "no address on record")}
             </small>
             <span className="sup-acts">
               {a.status === "new" && (
@@ -347,7 +347,7 @@ function Package({
         ))}
         {p.ask.length === 0 && (
           <li className="sup-nobody">
-            Nobody in your directory sells this. Add a {want} to the directory, or pick one below.
+            None of your firms sells this. Add a {want} to your firms, or pick one below.
           </li>
         )}
         {others.length > 0 && p.ask.length < 5 && (

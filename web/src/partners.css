@@ -2280,3 +2280,72 @@ body:has(.pt) .agent-button:focus-visible {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
 }
+
+/* 2026-11-22, fourth pass: no "Today" line (each tab says its own state); a firm is a page under the directory */
+.pt-solo {
+  flex: 1;
+  padding-left: max(28px, calc((100% - 1320px) / 2));
+  padding-right: max(28px, calc((100% - 1320px) / 2));
+}
+
+.pt-crumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.pt-crumb-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.pt-crumb .text-link:disabled {
+  color: var(--dim);
+  text-decoration: none;
+  cursor: default;
+}
+
+.pt-count.is-soon,
+.pt-band-tab .pt-count.is-soon {
+  padding: 1px 5px;
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+[aria-selected="true"] > .pt-count.is-soon {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.pt-band-firm small.is-missing {
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+@media (max-width: 1000px) {
+  .pt-solo {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+/* "Your firm" has no name or e-mail yet: a mark that stays when the band has no room for the line under it */
+.pt-band-warn {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  vertical-align: 3px;
+  letter-spacing: 0;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 700 13px/1 var(--text);
+  font-style: normal;
+}

@@ -136,6 +136,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   groups, "terms differ" on five rows). **Not run**: "ask again" (no price of a real tender is out of date
   yet), "Take into the directory" from Coverage, and whether a firm taken there is then on the package
   without the plan being worked out again.
+  **Fourth pass (2026-11-22)**, the structure, at the user's word ("I never understood this"): the "Today"
+  line is gone. It stood on the directory only, sent to other tabs, and three of its five counts were the
+  badges of those tabs again; the two it alone said moved to where they belong: prices that run out within 7
+  days are the price book's badge and a shelf there, a missing name or e-mail of the firm is a "!" on "Your
+  firm". A firm is a page under the directory, the full width, with "Directory › name" and "Previous / Next"
+  above it; the narrow second list beside it is gone. Seen in headless Chrome at 1500 wide, no console error.
   **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
   freight per unit), grouping the price book by material group proper (the package stands in for it). The
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:
