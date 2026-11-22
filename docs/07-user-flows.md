@@ -196,3 +196,88 @@ between documents is a candidate bidder question, never decided by the app; the 
 named; a re-issued LV is a version in time, a separate axis from format; steps (tender, bid, award) are
 where the tender stands, and a priced file is a price column over the same items, not a page of its own.
 Project, LV, section, item: one LV is the case with one level less.
+
+## The intake and the tender page as one document (researched 2026-11-22; decided as D-064, D-065, D-068)
+
+Question from Atahan: a tender arrives, sometimes as several LVs, sometimes as one LV in several formats,
+sometimes a new issue comes while it still stands in the intake. What would the estimator want to see?
+Researched by web search and measured on our own data; five mock-ups were drawn (A register, B by arrival,
+C only what needs a decision, D the three combined, E the tender as one document). E was chosen and built;
+the mock-ups are gone. Each source below is marked **read** (the page was opened), **excerpt** (only the
+search result's excerpt was seen) or **not found**.
+
+**What the estimator asks at this stage** (ours): what tender is this and does it fit; how many LVs, and
+which file is which; do the formats of one LV say the same; is this the latest issue; is the package
+complete; on which file does the bid go back; what is expected of me. The stage has one outcome, "Take it
+on" or "Pass", and nothing open may block it.
+
+**German tools and tender portals**
+- AI Bietercockpit (evergabe.de, HAD, several state portals): tender documents are kept as numbered
+  versions, each file is "Ungelesen" or "Gelesen", a new version is announced in a window of its own.
+  ([manual §7.2](https://www.had.de/pdf/AI-BC_Benutzerhandbuch.pdf), read)
+- GAEB-Vergleich: compares two LVs item by item, matched by Ordnungszahl, by order, or each against each,
+  with a share of what is alike; made for contractors who "erhalten eine neue Version der Ausschreibung".
+  ([softguide](https://www.softguide.de/programm/gaeb-tester), read)
+- BPS Bau: the LV comparison shows what changed between versions, and "bereits erstellte Kalkulationen
+  lassen sich in neue LV-Versionen übernehmen". ([softguide, vendor listing](https://www.softguide.de/programm/bps-bau), read)
+- DTVP / cosinex notices: the bidder has to watch the portal's messages "wie ein eigenes E-Mail-Postfach";
+  one who is not registered has to look for news himself. ([TED notice](https://ted.europa.eu/de/notice/282701-2024/pdf), excerpt)
+- iTWO, NEVARIS, ORCA, California.pro, Sidoun, BRZ, Nova, Dangl: no public description of how a re-issued
+  tender is compared at intake. The term "Änderungspaket": no source. (not found)
+
+**Bid tools elsewhere**
+- Bluebeam Sets matches revisions by file name ("A-101 Rev 1", "Addendum 1") and stacks them; a renamed
+  sheet does not match. ([manual](https://support.bluebeam.com/user-manual/menus/batch/auto-matching.html), excerpt)
+- Autodesk Docs: version history, a "current" mark, any two versions compared.
+  ([help](https://help.autodesk.com/cloudhelp/ENU/Docs-Files/files/view-files/Compare_Files.html), excerpt)
+- Procore: an addendum is a "correspondence" mailed to the invited bidders.
+  ([tutorial](https://support.procore.com/products/online/user-guide/project-level/bidding/tutorials/send-a-new-correspondence-in-the-bidding-tab), excerpt)
+- BuildingConnected: subcontractors are not told by themselves when files are added.
+  ([support](https://support.buildingconnected.com/hc/en-us/articles/4404733377171), excerpt; the page answered 403)
+
+**Patterns from other fields**
+- Dext keeps a suspected duplicate in "To review", side by side, and deletes nothing before someone decides.
+  ([help](https://help.dext.com/en/s/article/how-does-dext-handle-duplicate-documents), excerpt)
+- Lightroom hides the JPEG of a RAW+JPEG pair by default, and users are puzzled that they cannot see it.
+  ([forum](https://community.adobe.com/questions-675/seeing-both-raw-and-jpeg-in-lr-classic-961759), excerpt)
+- Zotero asks for a "master item" among duplicates. ([guide](https://library-guides.ucl.ac.uk/zotero/desktop-duplicates), excerpt)
+- GitHub drops approvals when new commits arrive; users complain where nothing really changed.
+  ([changelog](https://github.blog/changelog/2023-06-06-security-enhancements-to-required-approvals-on-pull-requests/), excerpt)
+- Google PAIR: coarse levels in place of percentages; no confidence shown that changes no decision.
+  ([guidebook](https://pair.withgoogle.com/chapter/explainability-trust/), read)
+
+**What goes wrong at this stage**
+- VK Bund, 17.07.2018, VK 2-54/18: a bidder priced the earlier LV version after the client had put up a
+  new one; the bid was excluded "zwingend wegen Änderungen an den Vergabeunterlagen", although its price
+  already held the change. ([GvW](https://www.gvw.com/aktuelles/blog/detail/verwendung-veralteter-vergabeunterlagen-fuehrt-zum-ausschluss), read)
+- Later decisions of the VK Bund are reported as milder: clarification before exclusion. A risk, not a
+  certainty. ([vergabeblog](https://vergabeblog.de/2023-06-19/wann-fuehren-aenderungen-der-vergabeunterlagen-zum-angebotsausschluss-vk-bund-beschl-v-04-01-2023-vk1-105-22/), excerpt)
+- Whether the GAEB file or the PDF binds: no general rule in VOB/A was found; each tender's conditions say.
+  Courts hold bidders to the demanded format (OLG Düsseldorf Verg 54/21, OLG Köln 11 U 118/20).
+  ([Heuking](https://www.heuking.de/de/news-events/newsletter-fachbeitraege/artikel/pdf-lv-fehlt-ausschluss-keine-nachforderung.html), read)
+- Addenda gather in the last one or two weeks before bid day; a large job can collect half a dozen.
+  ([ConstructConnect](https://www.constructconnect.com/blog/how-often-do-drawings-specs-and-addenda-conflict-in-commercial-construction-bidding), vendor blog, read; United States)
+- Figures or estimators' own words for Germany: not found.
+
+**Measured on our data**
+- T1 Birkenweg (demo mail world, as the dev API read it): issue 1 has 76 items, its X83 and its print-out
+  differ on 6 (3 quantities, 3 wordings), and one passage, a penalty of 1.500 EUR per working day, stands
+  only in the PDF. Issue 2 came three days later: 78 items; 5 quantities, 1 wording, 3 new, 1 dropped; the
+  deadline moved from 07.12. to 10.12.; 4 of the 6 differences between X83 and print-out are gone.
+- The same mail names plans, a manhole list and a ground report and does not send them; the second mail
+  asks for a confirmation of receipt.
+- Project F: 27 LVs, 1.076 items, all PDF, no GAEB file; the file numbers go from 15a to 17, so there is
+  no LV 16.
+- The app's own fault of this kind: until 2026-11-22 a run read the first file of an LV, also when the
+  client had replaced it; T1's AI review ran on issue 1 while the page showed issue 2 (put right, D-065).
+
+**Principles drawn from it** (ours): an LV is one thing with formats side by side and issues in order, one
+of them current; a new issue is known by its content, the name and the mail only support it; nothing is
+deleted, a replaced file stays struck through; the difference is the headline ("issue 2: 5 quantities,
+1 wording, 3 new, 1 dropped", with the dates that moved); the work follows to the new issue and only what
+changed is opened again; two states, "sorted" and "yours", no percentage, the passage under every point;
+the app does not decide between two documents, the difference is a question for the client.
+
+**Not built from it:** the client's mail as text with the passages marked (its body is not kept), documents
+a mail names and does not send, the request to confirm receipt, the tick "bid for this LV", read / unread
+per file.
