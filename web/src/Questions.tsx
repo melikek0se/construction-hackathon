@@ -8,7 +8,7 @@
    is put up under its question for the estimator to accept, change or reject. */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { AskLayer } from "./TenderDoc";
-import { checkReplies, composeQuestions, decideAmendment, discardMail, mailQuestions, markMailSent, readReply } from "./api";
+import { composeQuestions, decideAmendment, discardMail, mailQuestions, markMailSent, readReply } from "./api";
 import { dayText } from "./controls";
 import type { Amendment, BidderQuestion, Finding, QuestionMail, QuestionsState } from "./types";
 
@@ -85,8 +85,7 @@ export function QuestionsView({
   const [busy, setBusy] = useState<"draft" | "file" | "smtp" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const [checked, setChecked] = useState<string | null>(null); // what the last look into the inbox found
+  const [ways, setWays] = useState(false); // the other ways to send stand open under the letter
 
   const questions = state?.questions ?? [];
   // What is ticked and reworded is kept in this browser per LV file: it outlives a change of step.
@@ -185,22 +184,6 @@ export function QuestionsView({
   }
 
   const waiting = state.mails.filter((m) => m.sent_at && !m.reply).length; // a message not sent waits for no reply
-  function lookForReplies() {
-    setChecking(true);
-    setChecked(null);
-    setError(null);
-    checkReplies(analysisId).then(
-      (next) => {
-        setChecking(false);
-        setChecked(next.found === 0 ? "No reply in the inbox yet." : `${next.found} ${next.found === 1 ? "reply" : "replies"} came in and ${next.found === 1 ? "was" : "were"} read.`);
-        onState(next);
-      },
-      (e) => {
-        setChecking(false);
-        setChecked(e instanceof Error ? e.message : String(e));
-      },
-    );
-  }
   const proposals = (key: string) => state.amendments.filter((a) => a.key === key);
   // A question is closed once what its answer changes on our side has been decided, one way or the other.
   const closed = (key: string) => proposals(key).length > 0 && proposals(key).every((a) => a.status !== "proposed");
@@ -220,7 +203,7 @@ export function QuestionsView({
             </>
           )}
         </p>
-        {state.questions_due && (
+        {!layout && state.questions_due && (
           <p className={`q-due${daysLeft(state.questions_due).includes("ago") || daysLeft(state.questions_due) === "yesterday" ? " past" : ""}`}>
             Questions until <b>{dayText(state.questions_due)}</b> ({daysLeft(state.questions_due)})
           </p>
@@ -236,11 +219,8 @@ export function QuestionsView({
         <div className="q-inbox">
           {state.inbox && (
             <>
-              <button className="btn" disabled={checking || waiting === 0} onClick={lookForReplies}>
-                {checking ? "Looking into the inbox" : "Check the inbox for replies"}
-              </button>
               <span className="quiet">
-                {checked ?? (state.mails.length === 0 ? "No message has gone out yet." : waiting === 0 ? (state.mails.some((m) => !m.sent_at && !m.reply) ? "No message has gone out yet: one is not sent." : "Every message has its reply.") : `${waiting} ${waiting === 1 ? "message waits" : "messages wait"} for a reply · inbox of ${state.inbox}`)}
+                {(state.mails.length === 0 ? "No message has gone out yet." : waiting === 0 ? (state.mails.some((m) => !m.sent_at && !m.reply) ? "No message has gone out yet: one is not sent." : "Every message has its reply.") : `${waiting} ${waiting === 1 ? "message waits" : "messages wait"} for a reply · inbox of ${state.inbox}`)}
               </span>
             </>
           )}
@@ -421,6 +401,100 @@ export function QuestionsView({
     setBody(m.body);
     setEdited(true); // the text is the one that was written, not one composed afresh
   };
+  // The message as a letter (the panel on the tender's document): who it goes to and its subject as the
+  // letter's head, the German text on the sheet, the signature under it, and under the sheet how it is sent.
+  const takeAll = () => change({ ...draft, picked: [...new Set([...draft.picked, ...fresh.map((q) => q.key)])] });
+  const main = state.account ? "smtp" : "draft"; // the one way the yellow button takes
+  const copyText = () => {
+    void navigator.clipboard.writeText(`${subject}\n\n${body}`).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    });
+  };
+  const letterEl =
+    keys.length === 0 ? (
+      <div className="qc-paper">
+        <div className="qc-none">
+          {fresh.length > 0 ? (
+            <>
+              <h3>{fresh.length} {fresh.length === 1 ? "question waits" : "questions wait"} to be asked</h3>
+              <p className="quiet">Tick them on their findings and the letter writes itself here, in German, in the order of the LV.</p>
+              <button className="qc-btn yel" onClick={takeAll}>{fresh.length === 1 ? "Take it into a message" : `Take all ${fresh.length} into a message`}</button>
+            </>
+          ) : questions.length === 0 ? (
+            <>
+              <h3>Nothing to ask</h3>
+              <p className="quiet">No finding of this LV needs the client so far. The AI review writes a question for every unclear description, contradiction or missing item it finds.</p>
+            </>
+          ) : (
+            <>
+              <h3>Nothing to send</h3>
+              <p className="quiet">Every question is with the client. To ask one again, tick “Ask again” on its finding.</p>
+            </>
+          )}
+        </div>
+      </div>
+    ) : (
+      <div className="qc-paper">
+        <div className="qc-head">
+          <label>
+            <span>To</span>
+            <input type="email" value={to} placeholder="vergabestelle@…" onChange={(e) => setTo(e.target.value)} />
+            {fromFile.includes("@") && to === fromFile && <small className="side">read from the LV</small>}
+          </label>
+          {fromFile.includes("@") && to !== fromFile ? (
+            <p className="qc-hint">The LV names <button type="button" className="text-link" onClick={() => setTo(fromFile)}>{fromFile}</button>.</p>
+          ) : fromFile && !fromFile.includes("@") ? (
+            <p className="qc-hint">The LV names an address, but this copy has it blanked out ({fromFile}).</p>
+          ) : null}
+          <label>
+            <span>Subject</span>
+            <input type="text" lang="de" value={subject} onChange={(e) => { setSubject(e.target.value); setEdited(true); }} />
+          </label>
+        </div>
+        <textarea className="qc-text" lang="de" aria-label="The text of the message" rows={16} value={body} onChange={(e) => { setBody(e.target.value); setEdited(true); }} />
+        <div className="qc-sign">
+          {edited ? (
+            <p className="quiet">You changed the text: it is yours now and no longer follows the questions.</p>
+          ) : (
+            <label>
+              <span>Signature</span>
+              <textarea rows={2} value={sender} placeholder={"Name\nCompany"} onChange={(e) => setSender(e.target.value)} />
+            </label>
+          )}
+          {edited && <button className="text-link" onClick={() => setEdited(false)}>Write it again from the questions</button>}
+        </div>
+        {error && <p className="q-error" role="alert">{error}</p>}
+        <div className="qc-foot">
+          <p>
+            <b>{keys.length} {keys.length === 1 ? "question" : "questions"}</b>
+            <span>{state.account ? `from ${state.account}` : "sent by you, from your own address"}</span>
+          </p>
+          <button className="qc-btn line" aria-expanded={ways} onClick={() => setWays(!ways)}>Other ways</button>
+          <button className="qc-btn yel" disabled={!ready || busy !== null} onClick={() => void send(main)}>
+            <OutIcon />
+            {state.account ? (busy === "smtp" ? "Sending" : "Send") : busy === "draft" ? "Opening" : "Open in mail program"}
+          </button>
+        </div>
+        {ways && (
+          <div className="qc-ways">
+            {state.account && (
+              <button className="text-link" disabled={!ready || busy !== null} onClick={() => void send("draft")}>
+                {busy === "draft" ? "Opening" : "Open in mail program"}
+              </button>
+            )}
+            <button className="text-link" disabled={!ready || busy !== null} onClick={() => void send("file")}>
+              {busy === "file" ? "Writing the file" : "Download for Outlook (.eml)"}
+            </button>
+            <button className="text-link" disabled={!body} onClick={copyText}>{copied ? "Copied" : "Copy the text"}</button>
+            <p>
+              A message opened in your mail program or downloaded is sent by you; a long one can be cut on the way into
+              the mail program, the .eml file has no such limit. It is kept below as not sent until you mark it as sent.
+            </p>
+          </div>
+        )}
+      </div>
+    );
   const mailsEl = [...state.mails].reverse().map((m) => <MailCard key={m.id} mail={m} onChanged={onReload} onBack={takeBack} />);
   const unsent = state.mails.filter((m) => !m.sent_at && !m.reply).length;
 
@@ -445,14 +519,12 @@ export function QuestionsView({
           mark: (oz: string) => {
             const qs = of(oz);
             if (!qs.length) return null;
+            // the round beside the item's mark (D-077): to ask, ticked, in a message not sent, with the client, answered
             const fresh = qs.filter((q) => q.status === "new");
-            if (fresh.length) {
-              // can be asked: the "?" stands on the colour of its finding (stop, caution, note); ticked: ringed
-              const sev = (["high", "warn", "info"] as const).find((x) => fresh.some((q) => q.severity === x)) ?? "warn";
-              return { cls: `tn-flag ${sev} td-qm${fresh.some((q) => keys.includes(q.key)) ? " on" : ""}`, text: "?" };
-            }
-            if (qs.some((q) => q.status === "drafted" || q.status === "sent")) return { cls: "tn-blk td-qm", text: "→" }; // with the client
-            return { cls: "tn-blk diff td-qm", text: "✓" }; // answered
+            if (fresh.length) return { cls: `td-q is-new${fresh.some((q) => keys.includes(q.key)) ? " on" : ""}`, text: "?" };
+            if (qs.some((q) => q.status === "sent")) return { cls: "td-q is-out", text: "→" };
+            if (qs.some((q) => q.status === "drafted")) return { cls: "td-q is-draft", text: "→" };
+            return { cls: "td-q is-done", text: "✓" };
           },
           count: keys.length,
           toDecide,
@@ -474,16 +546,19 @@ export function QuestionsView({
                       {keys.length > 0 && <button className="tn-tag" onClick={() => change({ ...draft, picked: [] })}>Take all out</button>}
                     </span>
                   </header>
-                  <div className="td-pbody">
-                    {questions.length === 0 ? noneEl : composeEl}
-                  </div>
-                  <h3 className="td-sech"><i>{state.mails.length}</i>{unsent ? `Messages · ${unsent} not sent yet` : "Messages that went out"}</h3>
-                  <div className="td-pbody">
-                    {inboxEl}
-                    {state.mails.length === 0 && <p className="quiet">None yet. A message that went out stands here with the place for the client's reply.</p>}
-                    {mailsEl}
-                    {headEl}
-                  </div>
+                  <div className="qc-desk">{letterEl}</div>
+                  <h3 className="td-sech">
+                    <i>{state.mails.length}</i>Correspondence
+                    {(unsent > 0 || toDecide > 0) && (
+                      <span className="qc-right">
+                        {unsent > 0 && <><b>{unsent}</b> not sent yet</>}
+                        {unsent > 0 && toDecide > 0 && " · "}
+                        {toDecide > 0 && <><b>{toDecide}</b> to decide</>}
+                      </span>
+                    )}
+                  </h3>
+                  <Correspondence state={state} notAsked={fresh.length} onItem={onItem} onChanged={onReload} onBack={takeBack} />
+                  <div className="td-pbody">{headEl}</div>
                 </div>
               )
             : null,
@@ -806,5 +881,262 @@ function MailCard({ mail, onChanged, onBack }: { mail: QuestionMail; onChanged: 
         )}
       </div>
     </section>
+  );
+}
+
+export const OutIcon = () => (
+  <svg className="qc-ic" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M5 3h6v6" /></svg>
+);
+export const InIcon = () => (
+  <svg className="qc-ic" viewBox="0 0 14 14" aria-hidden="true"><path d="M11 3 3 11M9 11H3V5" /></svg>
+);
+export const ClockIcon = () => (
+  <svg className="qc-ic" viewBox="0 0 14 14" aria-hidden="true"><rect x="1.5" y="1.5" width="11" height="11" /><path d="M7 4v3l2.5 1.5" /></svg>
+);
+
+export const clock = (iso: string) => new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+const dayKey = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+/** How long ago, in the two largest units that matter: "12 min", "2 h 31 min", "3 days". */
+export function since(iso: string): string {
+  const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
+  if (min < 60) return `${min} min`;
+  if (min < 24 * 60) return `${Math.floor(min / 60)} h ${min % 60} min`;
+  const days = Math.floor(min / (24 * 60));
+  return `${days} ${days === 1 ? "day" : "days"}`;
+}
+
+/** What went out and what came back, on one line of time, the newest on top (the panel on the tender's
+ *  document). The line ends at the last day for bidder questions. A message that waits has the place for
+ *  its reply standing over it; a reply is read question by question: the passage, what it means, and
+ *  whether what it changes on our side is decided. */
+function Correspondence({ state, notAsked, onItem, onChanged, onBack }: { state: QuestionsState; notAsked: number; onItem: (oz: string) => void; onChanged: () => void; onBack: (mail: QuestionMail) => void }) {
+  const [notes, setNotes] = useState<Record<string, string>>({}); // per message: what was left out when its reply was read
+  // every message is on the line where it went out (or was written), its reply where it came in
+  const events = state.mails
+    .flatMap((m) => [
+      { at: m.sent_at ?? m.created, mail: m, reply: false },
+      ...(m.reply ? [{ at: m.reply_at ?? m.sent_at ?? m.created, mail: m, reply: true }] : []),
+    ])
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime() || Number(b.reply) - Number(a.reply));
+  const today = dayKey(new Date().toISOString());
+  const due = state.questions_due;
+  const late = due !== null && due < today;
+  let day = "";
+  return (
+    <div className="qc-line">
+      {due && (
+        <div className={`qc-ev future${late ? " late" : ""}`}>
+          <div className="at num">
+            <b>{due.slice(8, 10)}.{due.slice(5, 7)}.</b>
+            <small>{dayText(due).slice(0, 3)}</small>
+          </div>
+          <i className="node" />
+          <div className="what">
+            <h4>Last day for bidder questions</h4>
+            <p className="sub">
+              {daysLeft(due)} · {notAsked > 0 ? `${notAsked} ${notAsked === 1 ? "question" : "questions"} not asked yet` : "nothing left to ask"}
+            </p>
+          </div>
+        </div>
+      )}
+      {events.length === 0 && (
+        <div className="qc-ev slot">
+          <div className="at" />
+          <i className="node" />
+          <div className="what"><h4>Nothing has gone out yet</h4><p>A message that goes out stands here, and the client's reply over it.</p></div>
+        </div>
+      )}
+      {events.map((e) => {
+        const head = dayKey(e.at) !== day ? ((day = dayKey(e.at)), <p key={`d${day}`} className="qc-day">{day === today ? "Today, " : ""}{dayText(day)}</p>) : null;
+        return [
+          head,
+          e.reply ? (
+            <ReplyEvent key={`r${e.mail.id}`} mail={e.mail} state={state} note={notes[e.mail.id] ?? null} onItem={onItem} />
+          ) : (
+            <OutEvent key={e.mail.id} mail={e.mail} inbox={state.inbox} onItem={onItem} onChanged={onChanged} onBack={onBack} onNote={(note) => setNotes((n) => ({ ...n, [e.mail.id]: note }))} />
+          ),
+        ];
+      })}
+    </div>
+  );
+}
+
+/** A reply on the line: every answer with its question's item, the passage of the reply and what it means. */
+function ReplyEvent({ mail, state, note, onItem }: { mail: QuestionMail; state: QuestionsState; note: string | null; onItem: (oz: string) => void }) {
+  const answers = mail.answers ?? {};
+  const n = (s: string) => Object.values(answers).filter((a) => a.status === s).length;
+  const open = mail.items.filter((i) => !answers[i.key] || answers[i.key].status === "not_answered");
+  const label = (key: string) => state.questions.find((q) => q.key === key)?.item_label ?? "";
+  const counts = [n("answered") && `${n("answered")} answered`, n("partly") && `${n("partly")} in part`, open.length && `${open.length} still open`].filter(Boolean).join(", ");
+  return (
+    <div className="qc-ev in">
+      <div className="at num"><b>{clock(mail.reply_at ?? mail.created)}</b></div>
+      <i className="node"><InIcon /></i>
+      <div className="what">
+        <h4><span className="qc-st read">Reply</span>{counts || "nothing answered"}</h4>
+        <p className="sub">{state.lv.client ? `from ${state.lv.client}` : `from ${mail.to}`} · {mail.reply_via === "imap" ? "found in the inbox" : "pasted in"}{note ? ` · ${note}` : ""}</p>
+        {mail.items.map((i) => {
+          const a = answers[i.key];
+          if (!a || a.status === "not_answered") return null;
+          const mine = state.amendments.filter((x) => x.key === i.key && x.mail_id === mail.id);
+          const waits = mine.some((x) => x.status === "proposed");
+          const kept = mine.filter((x) => x.status === "accepted").length;
+          return (
+            <div key={i.key} className="qc-pair">
+              <header>
+                {i.item_oz ? <button className="qc-oz" onClick={() => onItem(i.item_oz!)}>{i.item_oz}</button> : <span className="qc-oz">LV</span>}
+                <span lang="de">{label(i.key)}</span>
+                <span className={`qc-st ${a.status === "partly" ? "part" : "read"}`}>{a.status === "partly" ? "In part" : "Answered"}</span>
+              </header>
+              <div>
+                <p className="q-quote" lang="de">„{a.quote}“</p>
+                {a.meaning && <p className="means">{a.meaning}</p>}
+                {waits ? (
+                  <p className="do">
+                    <span className="qc-st decide">To decide</span>
+                    {i.item_oz ? <button className="text-link" onClick={() => onItem(i.item_oz!)}>What it changes on the item</button> : <span>what it changes, under its finding</span>}
+                  </p>
+                ) : mine.length > 0 ? (
+                  <p className="do quiet">{kept > 0 ? "Closed: taken over on the item." : "Closed: nothing changes on our side."}</p>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
+        {open.length > 0 && (
+          <p className="qc-ozs">
+            <span className="quiet">Still open:</span>
+            {open.map((i) => (i.item_oz ? <button key={i.key} className="qc-oz" onClick={() => onItem(i.item_oz!)}>{i.item_oz}</button> : <span key={i.key} className="qc-oz">LV</span>))}
+          </p>
+        )}
+        <details className="qc-fold">
+          <summary><i className="chev" />The reply as it came</summary>
+          <pre>{mail.reply}</pre>
+        </details>
+      </div>
+    </div>
+  );
+}
+
+/** A message on the line. Sent and without a reply: the place for the reply stands over it (the inbox is
+ *  watched where the app may look into one; a reply can always be pasted in). Not sent: its text stands
+ *  open with what can be done with it (the app cannot see what happened in the mail program). */
+function OutEvent({ mail, inbox, onItem, onChanged, onBack, onNote }: { mail: QuestionMail; inbox: string | null; onItem: (oz: string) => void; onChanged: () => void; onBack: (mail: QuestionMail) => void; onNote: (note: string) => void }) {
+  const [reply, setReply] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [removing, setRemoving] = useState(false); // asked once, waiting for the second click
+  const act = (what: string, run: () => Promise<unknown>) => {
+    setBusy(what);
+    setError(null);
+    run().then(
+      () => (setBusy(null), onChanged()),
+      (e) => (setBusy(null), setError(e instanceof Error ? e.message : String(e))),
+    );
+  };
+  const n = mail.items.length;
+  const questions = `${n} ${n === 1 ? "question" : "questions"}`;
+  const ozs = (
+    <p className="qc-ozs">
+      {mail.items.map((i) => (i.item_oz ? <button key={i.key} className="qc-oz" onClick={() => onItem(i.item_oz!)}>{i.item_oz}</button> : <span key={i.key} className="qc-oz">LV</span>))}
+    </p>
+  );
+  const paste = (
+    <div className="qc-paste">
+      <textarea rows={4} value={reply} aria-label="The client's reply" placeholder="Paste the text of the reply e-mail here" onChange={(e) => setReply(e.target.value)} />
+      <div className="q-actions">
+        <button
+          className="qc-btn ink"
+          disabled={busy !== null || reply.trim().length < 10}
+          onClick={() =>
+            act("reply", async () => {
+              const read = await readReply(mail.id, reply);
+              if (read.dropped) onNote(`${read.dropped} passage${read.dropped === 1 ? " was" : "s were"} not found in the reply and left out`);
+            })
+          }
+        >
+          {busy === "reply" ? "Reading the reply" : "Read the reply"}
+        </button>
+        <span className="q-note">Each answer is matched to its question.</span>
+      </div>
+    </div>
+  );
+  if (!mail.sent_at) {
+    return (
+      <div className="qc-ev draft">
+        <div className="at num"><b>{clock(mail.created)}</b></div>
+        <i className="node" />
+        <div className="what">
+          <h4><span className="qc-st draft">Not sent yet</span>{questions}</h4>
+          <p className="sub">to {mail.to} · opened in your mail program</p>
+          {ozs}
+          <pre className="qc-msg" lang="de">{mail.body}</pre>
+          {error && <p className="q-error" role="alert">{error}</p>}
+          <div className="q-actions">
+            <button className="qc-btn yel" disabled={busy !== null} onClick={() => act("sent", () => markMailSent(mail.id, true))}>Mark as sent</button>
+            <a className="text-link" target="_blank" rel="noopener" href={`mailto:${encodeURIComponent(mail.to)}?subject=${encodeURIComponent(mail.subject)}&body=${encodeURIComponent(mail.body)}`}>Open in mail program again</a>
+            <a className="text-link" href={`/api/mails/${mail.id}/message.eml`} download>Download .eml</a>
+          </div>
+          <div className="q-actions qc-end">
+            <span className="q-note">Nothing counts as sent until you say so.</span>
+            <button className="text-link quiet" disabled={busy !== null} onClick={() => act("discard", async () => (await discardMail(mail.id), onBack(mail)))}>Take it back and write it again</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <>
+      {!mail.reply && (
+        <div className="qc-ev slot">
+          <div className="at num"><small>{since(mail.sent_at)}</small></div>
+          <i className="node" />
+          <div className="what">
+            <h4><ClockIcon />No reply yet to the {questions} below</h4>
+            {inbox ? (
+              <>
+                <p className="qc-inbox"><i />The inbox of <b>{inbox}</b> is watched: a reply is read as it arrives.</p>
+                <details className="qc-fold">
+                  <summary><i className="chev" />Paste a reply by hand</summary>
+                  {paste}
+                </details>
+              </>
+            ) : (
+              paste
+            )}
+            {error && <p className="q-error" role="alert">{error}</p>}
+          </div>
+        </div>
+      )}
+      <div className="qc-ev out">
+        <div className="at num"><b>{clock(mail.sent_at)}</b></div>
+        <i className="node"><OutIcon /></i>
+        <div className="what">
+          <h4><span className="qc-st wait">Sent</span>{questions}</h4>
+          <p className="sub">to {mail.to} · {mail.via === "smtp" ? "sent by the app" : "sent from your mail program"}</p>
+          {!mail.reply && ozs}
+          <details className="qc-fold">
+            <summary><i className="chev" />The message as it went out</summary>
+            <pre lang="de">{mail.body}</pre>
+          </details>
+          {mail.reply && error && <p className="q-error" role="alert">{error}</p>}
+          {/* Off the line: asked a second time, since the reply and what was decided from it go with it. */}
+          <div className="q-actions qc-end">
+            {!removing ? (
+              <button className="text-link quiet" disabled={busy !== null} onClick={() => setRemoving(true)}>{mail.reply ? "Delete this message and its reply" : "Delete this message"}</button>
+            ) : (
+              <>
+                <span className="q-note">{mail.reply ? "The reply and what was decided from it go too. " : ""}The message itself stays with the recipient.</span>
+                <button className="qc-btn ink" disabled={busy !== null} onClick={() => act("discard", () => discardMail(mail.id))}>Delete</button>
+                <button className="text-link" disabled={busy !== null} onClick={() => setRemoving(false)}>Keep it</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

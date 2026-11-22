@@ -14,6 +14,72 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- The actions on the tender left the band (2026-11-22, Atahan): "Take it on", "Pass", "Ask the client" and
+  "Ask for prices" are a strip at the head of the cover sheet, as wide as the document, that stays at the
+  top of the page once the cover sheet is scrolled; the head of an LV sticks under it (`.td-actbar`, `acts`
+  of `TenderDocView`; `.td-lvh` moves down by `--td-actbar`; the line that says which part is being read,
+  `readAt`, stands lower by the strip's height, or the map names the section before the one led to). The
+  band keeps "Run the checks", "Stop" and "Close the questions". The two buttons under "Questions and
+  prices" on the cover sheet are gone (the strip is the same). In the message and the inquiries the strip
+  carries "Back to the tender". The class is not `.td-bar`: that one is the old drawer bar's and gave the
+  strip 16px of padding. Checked: type-check; in Chrome on TBA-2026-114 the strip at rest, scrolled over
+  an LV's head, a section opened from the map (the map names it), the inquiries; on two tenders in the
+  intake "Take it on" and "Pass" at rest and scrolled. Not checked: the two pressed; a tender of several
+  LVs with none open and not in the intake has no strip, as it had no buttons in the band.
+
+- The price inquiries speak the same correspondence (2026-11-22, Atahan, after the message panel;
+  `Package`, `FirmLine`, `Composer`, `Reader` in `Inquiries.tsx`, `.sup-firm` and after at the end of
+  `questions.css`). A firm asked is a head (name, plate of how it stands, the one thing to do next) and
+  under it the line of time with this firm, always open: inquiry, reminder, our answer, and what came
+  back (Quote, Asks back, Declined, Quote promised) with its summary and questions. While the last
+  message waits, a dashed place for the quote stands over it (how long, needed by when, the inbox is
+  watched; "Read a reply by hand" with file or text is folded away). The inquiry is written as a letter;
+  with an account the yellow button is "Send", "Mail program" beside it. Gone: "Conversation (n)",
+  "Read the reply" as buttons, `Thread`, `lastSaid`. Package heads, the comparison and the head of the
+  panel are as before. Nothing changed on the server.
+  Checked: type-check; in Chrome on TBA-2026-114 a firm with a quote in (p5) and the inquiry to Nordrohr
+  written as a letter (not sent), no sideways scroll in the panel.
+  Pressed through in Chrome on the demo mail server (the test inquiry taken out again, the state as
+  before): the inquiry to Nordrohr sent, the place for the quote over it, the reminder written (not
+  sent), a reply read by hand in which the firm asks back ("Asks back", "Write the answer" offered).
+  Not checked: "Write the answer" and a reminder sent, a quote read by hand, a message not sent yet
+  ("Mail program", "Mark as sent"), the page without the tender's document.
+
+- The message panel is a correspondence (2026-11-22, Atahan chose it from three mock-ups; `letterEl`,
+  `Correspondence`, `OutEvent`, `ReplyEvent` in `Questions.tsx`, `.qc-*` at the end of `questions.css`).
+  Above, the message is a letter: to and subject as its head, the German text, the signature under it, an
+  ink foot with one yellow way to send and "Other ways" (mail program, .eml, copy). Below, "Messages that
+  went out" is one line of time, the newest on top, ending at the last day for bidder questions: a sent
+  message, a dashed place for the reply over it while it waits (says the inbox is watched; pasting a reply
+  is folded away), a reply read answer by answer (passage, meaning, "To decide" or "Closed"), a message
+  not sent with its text and "Mark as sent". The page of its own without the document (`composeEl`,
+  `MailCard`) is as before. Nothing changed on the server.
+  Checked: type-check; in Chrome on TBA-2026-114 the line (a waiting message, a reply with two answers),
+  "Nothing to send", and the letter with one question ticked.
+  Pressed through in Chrome on the demo mail server (the test message taken out again, the state as
+  before): "Other ways" → .eml (kept as not sent), "Take it back and write it again", "Send", a reply
+  pasted in and read ("To decide" on its answer), "Delete this message and its reply".
+  Not checked: "Open in mail program", "Mark as sent", a reply found in the inbox by itself, a tender
+  without an account or inbox, a deadline that has passed.
+
+- The mark of an item is compound (D-077, 2026-11-22, Atahan: priced items did not show, and an item is in
+  several states at once): on the map of the tender's document the body is the finding's colour with the
+  item's letter, a round beside it is the question to the client (to ask, ticked, not sent, sent, answered),
+  a green foot is the unit price (block: holds; line: Polier's, not confirmed). In the text the number
+  carries the same foot and the round, a price that holds has a green field and a bold total. The legend is
+  grouped by place and always open, two marks to a line with a word each (one to a line did not fit beside
+  the map; folded it was too hidden). Only where the prices are loaded (the open LV). Checked: type-check; in Chrome on
+  TBA-2026-114 the map and the items of section 6 with quotes. Not checked: a ticked and an unsent question,
+  a price of Polier's (none in that tender now), the Bid step's own strips (unchanged, `Tender.tsx`).
+
+- The buttons that look into the mailbox are gone (2026-11-22, Atahan): "Check the inbox for replies"
+  (`Questions.tsx`), "Check the inbox" (`Inquiries.tsx`) and "Check mail" on the projects page
+  (`Projects.tsx`, its `mail` prop and `mailBusy` in `App.tsx`). The page still looks into the mailbox by
+  itself when it opens and every three minutes (`scanInbox` in `App.tsx`), which finds tenders and the
+  replies to questions and inquiries. The endpoints `/questions/replies` and `/supply/replies` and their
+  functions in `api.ts` stay, unused by the page. Older entries below that name these buttons describe
+  what was. Checked: type-check. Not checked: in a browser.
+
 - A message opened in the mail program is plainly not sent (2026-11-22, Atahan lost sight of his text
   after "Open in mail program"; `MailCard`, `takeBack` in `Questions.tsx`): the card reads "Not sent yet",
   its text stands open, with "Mark as sent", "Open in mail program again", "Download .eml" and "Take it
@@ -105,6 +171,23 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   package and firms, 3 waiting for the client, 4 from past bids; the rail's "4 stops".
   Not checked: the 8 s reading after something sent, a card of an inquiry that is out.
 
+- What is left for the bid, and a unit price built on a supplier's price (2026-11-22, D-078; `Tender.tsx`,
+  `TenderDoc.tsx` (`Build`), `tenderdoc.css`): the block on the cover sheet with the three counts, the
+  deadline and "Write the X84"; under the field of an item with a material price the parts of a unit price.
+  Checked in Chrome on TBA-2026-114: 72 items without a price, 0 to decide, 9 packages; a supplier's quote
+  for three items read from the inbox stays out of the field, "material 4,85: build" with 5 % waste, 6,50
+  labour, 1,20 equipment and 15 % gives 14,71, which goes in as "built on material" (31.626,50 EUR).
+- The loop tried end to end on the dev stack (2026-11-22, TBA-2026-114, demo mail server): two bidder
+  questions sent from the app, the client's reply found in the inbox and read (one answered with a new
+  quantity, one in part), both decided on their cards (the bid keeps the file's quantity and shows
+  "client: 22", an allowance of 5 % goes into the unit price); a price inquiry sent to a subcontractor,
+  its quote read from the inbox, four unit prices put on the items by themselves with the 10 % surcharge
+  (the fifth waits for the client); the web search ran by itself for the two packages with nobody to ask;
+  a tender of two LVs opens, an LV opened shows its findings and closed price fields in the intake.
+  Found and fixed: a reply was read into a second message of the same subject as well (`mail.find_replies`:
+  a reply is read once); "1 priced · 0,00 EUR" for an item without a quantity.
+  Not tried: a tender of several LVs after it is taken on. The test messages, the quote and the firms
+  found on the web are still on TBA-2026-114.
 - Unit price and total on every item, filled by Polier (2026-11-22, D-075; `api.py` (`_autofill`,
   `AUTOFILL`), `TenderDoc.tsx` (`PriceCells`, `DocPrices`), `Tender.tsx`, `WebFinds.tsx`, `tenderdoc.css`,
   tests `test_bid.py`, `test_whatif.py`): fields on the document from the start, typed after "Take it on";

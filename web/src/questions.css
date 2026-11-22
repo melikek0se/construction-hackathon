@@ -579,3 +579,624 @@
   margin-right: auto;
   color: var(--mute);
 }
+
+/* ---------------------------------------------------------------------------------------------------
+   The panel on the tender's document, as a correspondence (Atahan, 2026-11-22). Above: the message as a
+   letter on its desk — head (to, subject), the German text, the signature, and under the sheet an ink foot
+   with the one way it is sent. Below: what went out and what came back on one line of time, the newest on
+   top; the line ends at the last day for bidder questions. A message that waits has a dashed place for its
+   reply over it. Plates: dashed = not sent, ink = sent, yellow = the client's reply, half = in part. */
+.qc-desk {
+  padding: 16px;
+  background: var(--tint);
+}
+.qc-paper {
+  background: #fff;
+  border: 1px solid var(--line-2);
+  box-shadow: 0 1px 2px rgba(18, 20, 19, 0.06), 0 6px 16px -8px rgba(18, 20, 19, 0.18);
+}
+.qc-paper p,
+.qc-line p,
+.qc-line h4,
+.qc-paper h3 {
+  margin: 0;
+}
+.qc-head {
+  padding: 4px 18px;
+  border-bottom: 1px solid var(--ink);
+}
+.questions .qc-head label {
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+.questions .qc-head label + label,
+.questions .qc-head .qc-hint + label {
+  border-top: 1px solid var(--rule);
+}
+.questions .qc-paper label > span {
+  display: block;
+  font: 600 11px/1.3 var(--text);
+  letter-spacing: 0.1em;
+}
+.questions .qc-paper .qc-head input[type] {
+  padding: 6px 0;
+  border: 0;
+  border-radius: 0;
+  font-weight: 600;
+}
+.questions .qc-paper .qc-head input[type]:focus-visible {
+  outline: 0;
+  background: var(--hover);
+}
+.questions .qc-head label small.side {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.qc-hint {
+  padding: 0 0 6px 70px;
+  font-size: 12.5px;
+  color: var(--mute);
+  overflow-wrap: anywhere;
+}
+.questions .qc-paper textarea.qc-text {
+  padding: 16px 18px 8px;
+  border: 0;
+  border-radius: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.questions .qc-paper textarea.qc-text:focus-visible {
+  outline: 0;
+}
+.qc-sign {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  padding: 8px 18px 14px;
+  border-top: 1px dashed var(--line-2);
+  font-size: 13px;
+}
+.questions .qc-sign label {
+  flex: 1;
+  min-width: 200px;
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+.questions .qc-sign label > span {
+  padding-top: 6px;
+}
+.questions .qc-paper .qc-sign textarea {
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  resize: none;
+  font-size: 13.5px;
+}
+.questions .qc-paper .qc-sign textarea:focus-visible {
+  outline: 0;
+  background: var(--hover);
+}
+.qc-paper > .q-error {
+  margin: 0 18px 12px;
+}
+.qc-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 18px;
+  background: var(--ink);
+  color: #fff;
+}
+.qc-foot p {
+  /* takes the room that is left and asks for none: its one-line address must not widen the panel */
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.qc-foot p b {
+  display: block;
+  font-weight: 600;
+}
+.qc-foot p span {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.qc-ways {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  padding: 12px 18px 14px;
+  border-top: 1px solid var(--ink);
+  font-size: 13px;
+}
+.qc-ways p {
+  flex-basis: 100%;
+  color: var(--mute);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.qc-none {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding: 22px 18px;
+}
+.qc-none h3 {
+  font: 600 20px/1.1 var(--display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.qc-none p {
+  max-width: 56ch;
+}
+
+.qc-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 2px;
+  font: 700 12px var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease), color 150ms var(--ease);
+}
+.qc-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.qc-btn.yel {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.qc-btn.yel:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.qc-foot .qc-btn.yel:hover:not(:disabled) {
+  background: #fff;
+  color: var(--ink);
+}
+.qc-btn.ink {
+  background: var(--ink);
+  color: #fff;
+}
+.qc-btn.ink:hover:not(:disabled) {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.qc-btn.line {
+  background: none;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+.qc-btn.line:hover,
+.qc-btn.line[aria-expanded="true"] {
+  background: #fff;
+  color: var(--ink);
+}
+.qc-ic {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: square;
+}
+
+.td-sech .qc-right {
+  margin-left: auto;
+  font: 400 13px var(--text);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+.td-sech .qc-right b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* the line of time: the hour at the left, a node on the line, what happened at the right */
+.qc-line {
+  padding: 6px 16px 14px 0;
+}
+.qc-day {
+  margin: 14px 0 2px 100px !important;
+  font: 600 11px/1.3 var(--text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.qc-ev {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 0 24px;
+  padding: 10px 0 12px;
+}
+.qc-ev::before {
+  content: "";
+  position: absolute;
+  left: 87px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ink);
+}
+.qc-ev.future::before {
+  background: none;
+  border-left: 2px dashed var(--line-2);
+  top: 14px;
+}
+.qc-ev:first-child:not(.future)::before {
+  top: 14px;
+}
+.qc-ev:last-child::before {
+  bottom: auto;
+  height: 18px;
+}
+.qc-ev:first-child:last-child::before {
+  display: none;
+}
+.qc-ev > .at {
+  padding-top: 1px;
+  text-align: right;
+}
+.qc-ev > .at b {
+  display: block;
+  font: 600 18px/1.1 var(--display);
+}
+.qc-ev > .at small {
+  font-size: 12px;
+  color: var(--mute);
+}
+.qc-ev > .node {
+  position: absolute;
+  left: 81px;
+  top: 13px;
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: #fff;
+}
+.qc-ev > .node svg {
+  width: 10px;
+  height: 10px;
+  stroke-width: 2.2;
+}
+.qc-ev.in > .node {
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+.qc-ev.draft > .node,
+.qc-ev.future > .node {
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+.qc-ev.future.late > .node {
+  background: var(--red);
+  box-shadow: none;
+}
+.qc-ev.future.late h4 {
+  color: var(--red);
+}
+.qc-ev.slot > .node {
+  background: #fff;
+  border: 1.5px dashed var(--ink);
+}
+.qc-ev > .what {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 13.5px;
+}
+.qc-ev h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font: 600 14.5px/1.3 var(--text);
+}
+.qc-ev .sub {
+  margin-top: -6px;
+  font-size: 12.5px;
+  color: var(--mute);
+  overflow-wrap: anywhere;
+}
+.qc-ev.slot > .what {
+  padding: 9px 12px 10px;
+  border: 1px dashed var(--ink);
+}
+.qc-ev.slot h4 {
+  font-weight: 500;
+}
+.qc-inbox {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.qc-inbox i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  background: var(--ink);
+  animation: qc-watch 2.4s var(--ease) infinite;
+}
+@keyframes qc-watch {
+  30% {
+    opacity: 0.2;
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+.qc-st {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--ink);
+  font: 700 10.5px/1.75 var(--text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.qc-st.draft {
+  border-style: dashed;
+}
+.qc-st.wait {
+  background: var(--ink);
+  color: #fff;
+}
+.qc-st.read {
+  background: var(--yellow);
+  border-color: var(--yellow);
+}
+.qc-st.decide {
+  background: var(--yellow);
+}
+.qc-st.part {
+  background: linear-gradient(90deg, var(--yellow) 50%, #fff 50%);
+}
+.qc-oz {
+  display: inline-block;
+  padding: 0 5px;
+  border: 0;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 12px/1.55 var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+button.qc-oz {
+  cursor: pointer;
+}
+button.qc-oz:hover {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.qc-ozs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.qc-ozs .quiet {
+  margin-right: 4px;
+  font-size: 13px;
+}
+
+.qc-fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+.qc-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.qc-fold > summary:hover {
+  background: var(--hover);
+}
+.qc-fold > summary .chev {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 2px 3px 3px;
+  border: solid var(--ink);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+  transition: transform 200ms var(--ease);
+}
+.qc-fold[open] > summary .chev {
+  margin-bottom: -3px;
+  transform: rotate(225deg);
+}
+.qc-fold[open] > summary {
+  margin-bottom: 8px;
+}
+.qc-fold pre,
+.qc-msg {
+  margin: 0;
+  max-height: 240px;
+  overflow: auto;
+  padding: 10px 12px;
+  background: var(--tint);
+  font: 400 13px/1.45 var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.qc-msg {
+  max-height: 170px;
+}
+.qc-paste {
+  display: grid;
+  gap: 8px;
+}
+.qc-end {
+  justify-content: flex-end;
+}
+.qc-end .q-note {
+  margin-right: auto;
+}
+.qc-line .text-link.quiet {
+  font-weight: 400;
+}
+
+/* one answer of a reply: the item it is about, the passage, what it means, how it stands */
+.qc-pair {
+  border: 1px solid var(--line-2);
+}
+.qc-pair > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.qc-pair > header > span[lang] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+.qc-pair > header .qc-st {
+  margin-left: auto;
+}
+.qc-pair > div {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+.qc-pair .q-quote {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13.5px;
+}
+.qc-pair .means {
+  color: var(--ink-2);
+}
+.qc-pair .do {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 2px;
+  font-size: 13px;
+}
+
+/* the same correspondence in the price inquiries (Inquiries.tsx): per firm asked a head (who, how it
+   stands, what to do next) and under it the line of time with this firm; the inquiry is written as a letter */
+.questions .sup-ask > li.sup-firm {
+  display: block;
+  padding: 10px 0 6px;
+}
+.sup-firmhead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+.sup-firmhead > small {
+  flex-basis: 100%;
+  order: 9;
+  font-size: 12.5px;
+  color: var(--mute);
+  overflow-wrap: anywhere;
+}
+.sup-firmhead .sup-acts {
+  margin-left: auto;
+}
+.sup-firm .qc-st.plain {
+  border-color: var(--line-2);
+  color: var(--mute);
+}
+.sup-desk {
+  margin: 10px 0 6px;
+}
+.sup-desk .qc-paper > .quiet,
+.sup-desk .qc-paper > .sup-styled,
+.sup-desk .qc-paper > .sup-points {
+  margin: 12px 18px 0;
+}
+.sup-desk .sup-styled {
+  border-left: 0;
+  border: 1px solid var(--line-2);
+}
+.sup-desk .sup-points li {
+  border-left: 0;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  font-size: 13.5px;
+}
+.sup-desk .sup-points li.is-open {
+  border-color: var(--ink);
+  background: var(--hover);
+}
+.sup-line.qc-line {
+  padding: 4px 0 2px;
+}
+.sup-line .qc-ev > .at b {
+  font-size: 16px;
+}
+.sup-line .qc-ev:first-child::before {
+  top: 14px;
+}
+.sup-line .qc-fold > summary b {
+  font-weight: 600;
+}
+.sup-line .qc-subject {
+  margin-bottom: 6px !important;
+  font-weight: 600;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.sup-asks {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sup-asks li {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--ink);
+  background: var(--hover);
+}
+.sup-asks .q-quote {
+  margin: 0;
+  background: #fff;
+}
+.sup-more {
+  margin: 0 0 8px 100px;
+}
+.sup-reader {
+  font-size: 13px;
+}
+.sup-reader small {
+  color: var(--mute);
+}

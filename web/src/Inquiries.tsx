@@ -4,8 +4,9 @@
    line per item, and each package gets a comparison on what it costs on site with a proposal. Items that
    cannot be priced as written wait for the client's answer and are not asked for. */
 import { useEffect, useRef, useState } from "react";
-import { checkQuoteReplies, chooseQuote, composeInquiry, getSupply, mailInquiry, markMailSent, planSupply, quotesToBid, readQuote, setPackageSuppliers } from "./api";
+import { chooseQuote, composeInquiry, getSupply, mailInquiry, markMailSent, planSupply, quotesToBid, readQuote, setPackageSuppliers } from "./api";
 import { dayText } from "./controls";
+import { ClockIcon, InIcon, OutIcon, clock, since } from "./Questions";
 import { eur } from "./format";
 import type { AnswerPoint, Comparison, InquiryTurn, SupplyPackage, SupplyState } from "./types";
 import "./supply.css";
@@ -20,13 +21,15 @@ const STATUS: Record<SupplyPackage["ask"][number]["status"], string> = {
   declined: "Declined",
   later: "Quote promised",
 };
-// the chip classes of the bidder questions: yellow is the estimator's move
-const CHIP: Record<SupplyPackage["ask"][number]["status"], string> = { new: "new", drafted: "drafted", sent: "sent", answered: "answered", question: "partly", declined: "new", later: "sent" };
+// the plates of the correspondence (questions.css): dashed = not sent, ink = with the firm, yellow = its
+// quote is in, yellow with a keyline = the estimator's move
+const PLATE: Record<SupplyPackage["ask"][number]["status"], string> = { new: "plain", drafted: "draft", sent: "wait", answered: "read", question: "decide", declined: "plain", later: "wait" };
+const dm = (iso: string) => new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
 const num = (v: number) => v.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const qty = (v: number | null) => (v === null ? "–" : v.toLocaleString("de-DE", { maximumFractionDigits: 3 }));
 const say = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-type Open = { kind: "write" | "remind" | "answer" | "read" | "thread"; pkg: string; supplier: string } | null;
+type Open = { kind: "write" | "remind" | "answer"; pkg: string; supplier: string } | null;
 
 
 export function InquiriesView({
@@ -102,22 +105,6 @@ export function InquiriesView({
         <button className="btn-ghost small" onClick={() => onDirectory()} title="Suppliers and subcontractors: their prices, the conversations with them">
           Partners ({state.suppliers.length})
         </button>
-        {state.inbox && state.plan && (
-          <button
-            className="btn-ghost small"
-            disabled={busy !== null}
-            title={`Looks into ${state.inbox} for replies to the inquiries that have none yet`}
-            onClick={() =>
-              void act("inbox", async () => {
-                const next = await checkQuoteReplies(analysisId);
-                setNote(next.found ? `${next.found} repl${next.found === 1 ? "y" : "ies"} found, ${next.read} read as a quote.` : "No reply in the inbox yet.");
-                return next;
-              })
-            }
-          >
-            {busy === "inbox" ? "Looking…" : "Check the inbox"}
-          </button>
-        )}
         <button className="btn-new" disabled={busy !== null || state.priced_file} onClick={() => void act("plan", () => planSupply(analysisId))}>
           {busy === "plan" ? "Polier is grouping the items…" : state.plan ? "Plan again" : "Plan the inquiries"}
         </button>
@@ -264,74 +251,59 @@ function Package({
 
       <ul className="sup-ask">
         {p.ask.map((a) => (
-          <li key={a.supplier_id} className={`is-${a.status}`}>
-            <button className="text-link sup-who" onClick={() => onPartner(a.supplier_id)} title="What is known about this partner: prices, conversations, how it writes">
-              {a.supplier}
-            </button>
-            <span className={`q-status is-${CHIP[a.status]}`}>{STATUS[a.status]}</span>
-            <small>
-              {lastSaid(a.thread) ??
-                (a.mail?.sent_at ? `sent ${dayText(a.mail.sent_at.slice(0, 10))}${a.mail.reminders ? `, reminded ${a.mail.reminders}×` : ""}` : a.mail ? "written, not sent yet" : a.email || "no address on record")}
-            </small>
-            <span className="sup-acts">
-              {a.status === "new" && (
-                <button className="btn-ghost small" onClick={() => onOpen({ kind: "write", pkg: p.id, supplier: a.supplier_id })}>
-                  Write the inquiry
-                </button>
-              )}
-              {a.mail && a.status === "drafted" && (
-                <>
-                  <a className="text-link" href={`/api/mails/${a.mail.id}/items.xlsx`} download title="The items as the sheet the supplier fills in: attach it to your message">
-                    Sheet
-                  </a>
-                  <button className="btn-ghost small" disabled={busy !== null} onClick={() => void act("sent", async () => (await markMailSent(a.mail!.id, true), getSupply(analysisId)))}>
-                    I have sent it
+          <li key={a.supplier_id} className={`sup-firm is-${a.status}`}>
+            {/* who, how it stands, the one thing to do next; under it the line of time with this firm */}
+            <div className="sup-firmhead">
+              <button className="text-link sup-who" onClick={() => onPartner(a.supplier_id)} title="What is known about this partner: prices, conversations, how it writes">
+                {a.supplier}
+              </button>
+              <span className={`qc-st ${PLATE[a.status]}`}>{a.status === "drafted" ? "Not sent yet" : STATUS[a.status]}</span>
+              {a.thread.length === 0 && <small>{a.email || "no address on record"}</small>}
+              <span className="sup-acts">
+                {a.status === "new" && (
+                  <button className="btn-ghost small" onClick={() => onOpen({ kind: "write", pkg: p.id, supplier: a.supplier_id })}>
+                    Write the inquiry
                   </button>
-                </>
-              )}
-              {a.status === "question" && (
-                <button className="btn-new" title="Polier writes the answer from the LV; you read and send it" onClick={() => onOpen({ kind: "answer", pkg: p.id, supplier: a.supplier_id })}>
-                  Write the answer
-                </button>
-              )}
-              {a.mail && (a.status === "sent" || a.status === "later") && (
-                <button className="btn-ghost small" onClick={() => onOpen({ kind: "remind", pkg: p.id, supplier: a.supplier_id })}>
-                  Remind
-                </button>
-              )}
-              {a.thread.length > 0 && (a.thread.length > 1 || a.thread[0].reply) && (
-                <button className="text-link" onClick={() => onOpen(open?.kind === "thread" && open.supplier === a.supplier_id ? null : { kind: "thread", pkg: p.id, supplier: a.supplier_id })}>
-                  Conversation ({a.thread.length + a.thread.filter((t) => t.reply).length})
-                </button>
-              )}
-              {a.mail && (
-                <button className="btn-ghost small" onClick={() => onOpen({ kind: "read", pkg: p.id, supplier: a.supplier_id })}>
-                  {a.status === "answered" || a.thread.some((t) => t.reply) ? "Read another reply" : "Read the reply"}
-                </button>
-              )}
-              {!a.mail && (
-                <button className="sup-x" aria-label={`Do not ask ${a.supplier}`} title="Do not ask this one" onClick={() => setAsk(p.ask.filter((x) => x.supplier_id !== a.supplier_id).map((x) => x.supplier_id))}>
-                  ×
-                </button>
-              )}
-            </span>
-            {open && open.supplier === a.supplier_id && open.kind === "thread" && <Thread turns={a.thread} supplier={a.supplier} />}
-            {open && open.supplier === a.supplier_id && (open.kind === "write" || open.kind === "remind" || open.kind === "answer") && (
+                )}
+                {a.status === "question" && (
+                  <button className="btn-new" title="Polier writes the answer from the LV; you read and send it" onClick={() => onOpen({ kind: "answer", pkg: p.id, supplier: a.supplier_id })}>
+                    Write the answer
+                  </button>
+                )}
+                {a.mail && (a.status === "sent" || a.status === "later") && (
+                  <button className="btn-ghost small" onClick={() => onOpen({ kind: "remind", pkg: p.id, supplier: a.supplier_id })}>
+                    Remind{a.mail.reminders ? ` (${a.mail.reminders}× so far)` : ""}
+                  </button>
+                )}
+                {!a.mail && (
+                  <button className="sup-x" aria-label={`Do not ask ${a.supplier}`} title="Do not ask this one" onClick={() => setAsk(p.ask.filter((x) => x.supplier_id !== a.supplier_id).map((x) => x.supplier_id))}>
+                    ×
+                  </button>
+                )}
+              </span>
+            </div>
+            {open && open.supplier === a.supplier_id && (
               <Composer
                 analysisId={analysisId}
                 pkg={p.id}
                 supplier={a.supplier_id}
+                supplierName={a.supplier}
                 kind={open.kind === "remind" ? "reminder" : open.kind === "answer" ? "answer" : "inquiry"}
                 account={state.account}
                 onDone={(next) => (act("", async () => next), onOpen(null))}
                 onCancel={() => onOpen(null)}
               />
             )}
-            {open && open.supplier === a.supplier_id && open.kind === "read" && a.mail && (
-              <Reader
+            {a.mail && a.thread.length > 0 && (
+              <FirmLine
+                ask={a}
                 mailId={a.mail.id}
-                onDone={(text) => (onNote(text), void act("", () => getSupply(analysisId)), onOpen(null))}
-                onCancel={() => onOpen(null)}
+                to={a.mail.to}
+                inbox={state.inbox}
+                replyBy={state.reply_by}
+                busy={busy}
+                onSent={() => void act("sent", async () => (await markMailSent(a.mail!.id, true), getSupply(analysisId)))}
+                onRead={(text) => (onNote(text), void act("", () => getSupply(analysisId)))}
               />
             )}
           </li>
@@ -371,58 +343,105 @@ function Package({
   );
 }
 
-/** What the supplier said last, in a few words: under its name while the conversation is going. */
-function lastSaid(thread: InquiryTurn[]): string | null {
-  const last = thread[thread.length - 1];
-  if (!last?.reply || last.reply.kind === "quote") return null;
-  return last.reply.summary || (last.reply.asks[0]?.question ?? null);
-}
+const TURN = { inquiry: "Inquiry", reminder: "Reminder", answer: "Our answer" } as const;
+const REPLY: Record<NonNullable<InquiryTurn["reply"]>["kind"], [string, string]> = {
+  quote: ["read", "Quote"],
+  question: ["decide", "Asks back"],
+  decline: ["plain", "Declined"],
+  later: ["part", "Quote promised"],
+  other: ["read", "Reply"],
+};
 
-/** The conversation with one supplier about one package: our messages and what came back, in order. */
-function Thread({ turns, supplier }: { turns: InquiryTurn[]; supplier: string }) {
-  const LABEL = { inquiry: "Inquiry", reminder: "Reminder", answer: "Our answer" } as const;
+/** The conversation with one firm about one package on a line of time, the newest on top: our messages
+ *  and what came back. While the last message waits, the place for the reply stands over it: the inbox is
+ *  watched where the app may look into one, and a reply (sheet, PDF, text) can always be read in by hand. */
+function FirmLine({ ask, mailId, to, inbox, replyBy, busy, onSent, onRead }: { ask: SupplyPackage["ask"][number]; mailId: string; to: string; inbox: string | null; replyBy: string | null; busy: string | null; onSent: () => void; onRead: (note: string) => void }) {
+  const last = ask.thread[ask.thread.length - 1];
+  const waits = last.sent_at !== null && !last.reply;
+  const reader = <Reader mailId={mailId} onDone={onRead} />;
   return (
-    <ol className="sup-thread">
-      {turns.map((t) => (
-        <li key={t.id}>
-          <article className="is-ours">
-            <header>
-              <b>{LABEL[t.kind]}</b>
-              <span>{t.sent_at ? `sent ${dayText(t.sent_at.slice(0, 10))}` : "written, not sent yet"}</span>
-            </header>
-            <details>
-              <summary lang="de">{t.subject}</summary>
-              <pre lang="de">{t.body}</pre>
-            </details>
-          </article>
-          {t.reply && (
-            <article className="is-theirs">
-              <header>
-                <b>{supplier}</b>
-                <span>
-                  {t.reply.at ? dayText(t.reply.at.slice(0, 10)) : ""}
-                  {t.reply.via === "imap" ? " · from the inbox" : ""}
-                </span>
-              </header>
-              {t.reply.summary && <p>{t.reply.summary}</p>}
-              {t.reply.asks.length > 0 && (
-                <ul>
-                  {t.reply.asks.map((q, i) => (
-                    <li key={i}>
-                      <b>Asks{q.pos ? ` about ${q.pos}` : ""}:</b> {q.question} <q lang="de">{q.quote}</q>
-                    </li>
-                  ))}
-                </ul>
+    <>
+      <div className="qc-line sup-line">
+        {waits && (
+          <div className="qc-ev slot">
+            <div className="at num"><small>{since(last.sent_at!)}</small></div>
+            <i className="node" />
+            <div className="what">
+              <h4><ClockIcon />{ask.status === "later" ? "A quote is promised, none is in yet" : "No quote yet"}</h4>
+              {replyBy && <p className="sub">needed by {dayText(replyBy)}</p>}
+              {inbox && <p className="qc-inbox"><i />The inbox of <b>{inbox}</b> is watched: a reply is read as it arrives.</p>}
+              {inbox ? (
+                <details className="qc-fold">
+                  <summary><i className="chev" />Read a reply by hand</summary>
+                  {reader}
+                </details>
+              ) : (
+                reader
               )}
-              <details>
-                <summary>The reply as it came</summary>
-                <pre lang="de">{t.reply.text}</pre>
-              </details>
-            </article>
-          )}
-        </li>
-      ))}
-    </ol>
+            </div>
+          </div>
+        )}
+        {[...ask.thread].reverse().map((t) => {
+          const r = t.reply;
+          return [
+            r && (
+              <div key={`r${t.id}`} className="qc-ev in">
+                <div className="at num">{r.at && <><b>{dm(r.at)}</b><small>{clock(r.at)}</small></>}</div>
+                <i className="node"><InIcon /></i>
+                <div className="what">
+                  <h4><span className={`qc-st ${REPLY[r.kind][0]}`}>{REPLY[r.kind][1]}</span>{ask.supplier}</h4>
+                  <p className="sub">{r.via === "imap" ? "found in the inbox" : "read in by hand"}{r.kind === "quote" ? " · the prices stand in the comparison below" : ""}</p>
+                  {r.summary && <p>{r.summary}</p>}
+                  {r.asks.length > 0 && (
+                    <ul className="sup-asks">
+                      {r.asks.map((q, i) => (
+                        <li key={i}>
+                          <b>Asks{q.pos ? ` about ${q.pos}` : ""}: {q.question}</b>
+                          {q.quote && <p className="q-quote" lang="de">„{q.quote}“</p>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {r.unmatched.length > 0 && (
+                    <p className="quiet">{r.unmatched.length} line{r.unmatched.length === 1 ? "" : "s"} fit no asked item and {r.unmatched.length === 1 ? "was" : "were"} left out.</p>
+                  )}
+                  <details className="qc-fold">
+                    <summary><i className="chev" />The reply as it came</summary>
+                    <pre lang="de">{r.text}</pre>
+                  </details>
+                </div>
+              </div>
+            ),
+            <div key={t.id} className={`qc-ev ${t.sent_at ? "out" : "draft"}`}>
+              <div className="at num"><b>{dm(t.sent_at ?? t.created)}</b><small>{clock(t.sent_at ?? t.created)}</small></div>
+              <i className="node">{t.sent_at && <OutIcon />}</i>
+              <div className="what">
+                <h4><span className={`qc-st ${t.sent_at ? "wait" : "draft"}`}>{t.sent_at ? "Sent" : "Not sent yet"}</span>{TURN[t.kind]}</h4>
+                <p className="sub">to {to} · {!t.sent_at ? "opened in your mail program" : t.via === "smtp" ? "sent by the app" : "sent from your mail program"}</p>
+                <details className="qc-fold">
+                  <summary><i className="chev" />{t.sent_at ? "The message as it went out" : "The message as it was written"}</summary>
+                  <p className="qc-subject" lang="de">{t.subject}</p>
+                  <pre lang="de">{t.body}</pre>
+                </details>
+                {!t.sent_at && (
+                  <div className="q-actions">
+                    <button className="qc-btn yel" disabled={busy !== null} onClick={onSent}>Mark as sent</button>
+                    <a className="text-link" href={`/api/mails/${t.id}/items.xlsx`} download title="The items as the sheet the supplier fills in: attach it to your message">The sheet to attach</a>
+                    <span className="q-note">Nothing counts as sent until you say so.</span>
+                  </div>
+                )}
+              </div>
+            </div>,
+          ];
+        })}
+      </div>
+      {!waits && last.sent_at !== null && (
+        <details className="qc-fold sup-more">
+          <summary><i className="chev" />Read another reply by hand</summary>
+          {reader}
+        </details>
+      )}
+    </>
   );
 }
 
@@ -431,6 +450,7 @@ function Composer({
   analysisId,
   pkg,
   supplier,
+  supplierName,
   kind,
   account,
   onDone,
@@ -439,6 +459,7 @@ function Composer({
   analysisId: string;
   pkg: string;
   supplier: string;
+  supplierName: string;
   kind: "inquiry" | "reminder" | "answer";
   account: string | null;
   onDone: (next: SupplyState) => void;
@@ -487,74 +508,77 @@ function Composer({
   }
 
   return (
-    <div className="sup-compose q-mail is-draft">
-      {writing && kind === "answer" && <p className="quiet">Polier is writing the answer from the LV…</p>}
-      {writing && kind === "inquiry" && <p className="quiet">Polier is writing the inquiry…</p>}
-      {styled && (
-        <div className="sup-styled">
-          <b>{plain ? "The plain template" : "Written the way this partner is written to"}</b>
-          {!plain && <span>{styled.changed.join(" ")} The items and what is asked for are as in every inquiry.</span>}
-          <button
-            className="text-link"
-            onClick={() => {
-              if (!plain) fitted.current = body;
-              setBody(plain ? fitted.current : styled.plain);
-              setPlain(!plain);
-            }}
-          >
-            {plain ? "Use their style again" : "Use the plain template instead"}
+    <div className="qc-desk sup-desk">
+      <div className="qc-paper">
+        {writing && <p className="quiet">{kind === "answer" ? "Polier is writing the answer from the LV…" : kind === "reminder" ? "Polier is writing the reminder…" : "Polier is writing the inquiry…"}</p>}
+        {styled && (
+          <div className="sup-styled">
+            <b>{plain ? "The plain template" : "Written the way this partner is written to"}</b>
+            {!plain && <span>{styled.changed.join(" ")} The items and what is asked for are as in every inquiry.</span>}
+            <button
+              className="text-link"
+              onClick={() => {
+                if (!plain) fitted.current = body;
+                setBody(plain ? fitted.current : styled.plain);
+                setPlain(!plain);
+              }}
+            >
+              {plain ? "Use their style again" : "Use the plain template instead"}
+            </button>
+          </div>
+        )}
+        {points.length > 0 && (
+          <ul className="sup-points">
+            {points.map((pt, i) => (
+              <li key={i} className={pt.settled ? "is-settled" : "is-open"}>
+                <b>{pt.question}</b>
+                <span>{pt.answer}</span>
+                {pt.settled ? (
+                  <small lang="de">
+                    LV{pt.pos ? `, item ${pt.pos}` : ""}: „{pt.lv_quote}“
+                  </small>
+                ) : (
+                  <small>Not in the LV: the message says so and asks for a quote on a stated assumption. Decide it yourself, or ask the client.</small>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="qc-head">
+          <label>
+            <span>To</span>
+            <input type="email" value={to} onChange={(e) => setTo(e.target.value)} placeholder="address of the supplier" />
+          </label>
+          <label>
+            <span>Subject</span>
+            <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} lang="de" />
+          </label>
+        </div>
+        <textarea className="qc-text" aria-label="The text of the message" rows={14} value={body} onChange={(e) => setBody(e.target.value)} lang="de" />
+        {error && <p className="q-error">{error}</p>}
+        <div className="qc-foot">
+          <p>
+            <b>{kind === "reminder" ? "Reminder" : kind === "answer" ? "Answer" : "Inquiry"} to {supplierName}</b>
+            <span>{account ? `from ${account}${kind === "inquiry" ? " · the items attached as an Excel sheet" : ""}` : "sent by you: attach the sheet from the line below afterwards"}</span>
+          </p>
+          <button className="qc-btn line" onClick={onCancel}>Cancel</button>
+          {account && (
+            <button className="qc-btn line" disabled={busy !== null || !body} onClick={() => void send("draft")} title="Opens the message in your mail program. Attach the sheet from the line below afterwards.">
+              {busy === "draft" ? "Opening" : "Mail program"}
+            </button>
+          )}
+          <button className="qc-btn yel" disabled={busy !== null || !body} onClick={() => void send(account ? "smtp" : "draft")}>
+            <OutIcon />
+            {account ? (busy === "smtp" ? "Sending" : "Send") : busy === "draft" ? "Opening" : "Open in mail program"}
           </button>
         </div>
-      )}
-      {points.length > 0 && (
-        <ul className="sup-points">
-          {points.map((pt, i) => (
-            <li key={i} className={pt.settled ? "is-settled" : "is-open"}>
-              <b>{pt.question}</b>
-              <span>{pt.answer}</span>
-              {pt.settled ? (
-                <small lang="de">
-                  LV{pt.pos ? `, item ${pt.pos}` : ""}: „{pt.lv_quote}“
-                </small>
-              ) : (
-                <small>Not in the LV: the message says so and asks for a quote on a stated assumption. Decide it yourself, or ask the client.</small>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      <label>
-        <span>To</span>
-        <input type="email" value={to} onChange={(e) => setTo(e.target.value)} placeholder="address of the supplier" />
-      </label>
-      <label>
-        <span>Subject</span>
-        <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} lang="de" />
-      </label>
-      <label>
-        <span>Message{kind === "reminder" ? " (reminder)" : kind === "answer" ? " (answer)" : ""}</span>
-        <textarea className="q-body" rows={14} value={body} onChange={(e) => setBody(e.target.value)} lang="de" />
-      </label>
-      {error && <p className="q-error">{error}</p>}
-      <div className="q-actions">
-        <button className="btn q-send" disabled={busy !== null || !body} onClick={() => void send("draft")} title="Opens the message in your mail program. Attach the sheet from the row afterwards.">
-          {busy === "draft" ? "Opening…" : "Open in my mail program"}
-        </button>
-        {account && (
-          <button className="btn q-file" disabled={busy !== null || !body} onClick={() => void send("smtp")} title="Sent now, with the items as an Excel sheet attached">
-            {busy === "smtp" ? "Sending…" : `Send from ${account}`}
-          </button>
-        )}
-        <button className="btn-ghost small" onClick={onCancel}>
-          Cancel
-        </button>
       </div>
     </div>
   );
 }
 
 /** A reply: the filled-in sheet, the quote as PDF, or the text of the e-mail. */
-function Reader({ mailId, onDone, onCancel }: { mailId: string; onDone: (note: string) => void; onCancel: () => void }) {
+function Reader({ mailId, onDone }: { mailId: string; onDone: (note: string) => void }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -583,7 +607,7 @@ function Reader({ mailId, onDone, onCancel }: { mailId: string; onDone: (note: s
     }
   }
   return (
-    <div className="sup-compose q-mail">
+    <div className="qc-paste sup-reader">
       <label>
         <span>The reply as a file</span>
         <input type="file" accept=".xlsx,.xlsm,.pdf,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
@@ -591,15 +615,12 @@ function Reader({ mailId, onDone, onCancel }: { mailId: string; onDone: (note: s
       </label>
       <label>
         <span>or the text of the e-mail</span>
-        <textarea className="q-body" rows={7} value={text} onChange={(e) => setText(e.target.value)} lang="de" disabled={file !== null} placeholder="Paste the supplier's reply here" />
+        <textarea rows={5} value={text} onChange={(e) => setText(e.target.value)} lang="de" disabled={file !== null} placeholder="Paste the supplier's reply here" />
       </label>
       {error && <p className="q-error">{error}</p>}
       <div className="q-actions">
-        <button className="btn q-send" disabled={busy || (!file && text.trim().length < 10)} onClick={() => void go()}>
-          {busy ? "Reading…" : "Read the reply"}
-        </button>
-        <button className="btn-ghost small" onClick={onCancel}>
-          Cancel
+        <button className="qc-btn ink" disabled={busy || (!file && text.trim().length < 10)} onClick={() => void go()}>
+          {busy ? "Reading the reply" : "Read the reply"}
         </button>
       </div>
     </div>
