@@ -38,7 +38,6 @@ const price = (n: number) => `${money.format(n)} €`;
 const pct = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 const took = (h: number | null) => (h === null ? "–" : h < 36 ? `${Math.round(h)} h` : `${Math.round(h / 24)} days`);
 const KIND: Record<Supplier["kind"], string> = { supplier: "Supplier", subcontractor: "Subcontractor" };
-const BASIS: Record<string, string> = { free_to_site: "free to site", ex_works: "ex works, freight on top", unknown: "not stated" };
 const STATUS: Record<PartnerThread["status"], string> = {
   question: "asked something back",
   drafted: "written, not sent",
@@ -51,7 +50,6 @@ const yours = (t: PartnerThread) => t.status === "question" || t.status === "dra
 
 const TABS: { id: PartnerTab; label: string }[] = [
   { id: "suppliers", label: "Firms" },
-  { id: "prices", label: "Prices" },
 ];
 
 /** Whose move: a yellow square is the estimator's, an open one the partner's (the marks of the board cards). */
@@ -129,7 +127,7 @@ export function PartnersPage({
   const changed = useCallback(() => (onChanged(), load()), [onChanged, load]);
 
   // suppliers and subcontractors are one directory now; the old address of the second list leads there
-  const directory = place.tab !== "prices" && place.tab !== "firm"; // the firms; the addresses of the tabs that are gone lead here too
+  const directory = place.tab !== "firm"; // the firms; the addresses of the tabs that are gone lead here too
   useEffect(() => {
     if (directory && place.tab !== "suppliers") onPlace({ tab: "suppliers", partner: place.partner });
   }, [place, onPlace]);
@@ -161,9 +159,7 @@ export function PartnersPage({
       ? null
       : tab === "suppliers"
         ? data.partners.length
-        : tab === "prices"
-            ? data.book.filter((b) => b.suppliers > 1).length || null
-            : null;
+        : null;
   const openPartner = (id: string) => onPlace({ tab: "suppliers", partner: id });
   const unsigned = data !== null && (!data.company.name.trim() || !data.company.email.trim());
 
@@ -173,7 +169,7 @@ export function PartnersPage({
         {TABS.map((t) => (
           <button key={t.id} role="tab" className="pt-band-tab" aria-selected={place.tab === t.id || (t.id === "suppliers" && directory)} onClick={() => onPlace({ tab: t.id, partner: null })}>
             {t.label}
-            {count(t.id) !== null && <span className={`pt-count${t.id === "suppliers" && data?.waiting.some(yours) ? " is-you" : ""}`} title={t.id === "prices" ? "Items more than one firm priced" : undefined}>{count(t.id)}</span>}
+            {count(t.id) !== null && <span className={`pt-count${t.id === "suppliers" && data?.waiting.some(yours) ? " is-you" : ""}`}>{count(t.id)}</span>}
           </button>
         ))}
       </div>
@@ -246,8 +242,6 @@ export function PartnersPage({
             />
           )}
         </>
-      ) : place.tab === "prices" ? (
-        <PriceBook book={data.book} onOpen={openPartner} />
       ) : (
         <Firm data={data} onChanged={changed} onError={setError} />
       )}
@@ -1141,107 +1135,6 @@ function Waiting({
         </>
       )}
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------ prices side by side */
-
-/** What more than one firm priced, firm beside firm: a bar per firm as long as its price, the cheapest marked,
-    the others with how far they lie above it. What only one firm priced is folded away below. */
-function PriceBook({ book, onOpen }: { book: PartnersOverview["book"]; onOpen: (id: string) => void }) {
-  if (book.length === 0) return <p className="pt-empty quiet">No price on record yet. Every quote read in the price inquiries of a tender is kept here, per item, with who gave it and when.</p>;
-  // per item, each firm's latest price
-  const items = book.map((b) => {
-    const by = new Map<string, PartnerPrice>();
-    for (const o of [...b.offers].sort((x, y) => y.date.localeCompare(x.date))) if (!by.has(o.supplier_id)) by.set(o.supplier_id, o);
-    const firms = [...by.values()].sort((x, y) => x.net - y.net);
-    const holds = firms.filter((o) => o.fresh);
-    return { b, firms, low: holds.length ? holds[0].net : null, mixed: new Set(holds.filter((o) => o.basis !== "unknown").map((o) => o.basis)).size > 1 };
-  });
-  const compared = items.filter((x) => x.firms.length > 1).sort((x, y) => Number(y.low !== null) - Number(x.low !== null) || x.b.label.localeCompare(y.b.label));
-  const single = items.filter((x) => x.firms.length === 1).sort((x, y) => Number(y.firms[0].fresh) - Number(x.firms[0].fresh) || x.b.label.localeCompare(y.b.label));
-  return (
-    <section className="pt-wide pt-pc">
-      <h2>{compared.length ? `${plural(compared.length, "item")} priced by more than one firm` : "No item priced by more than one firm yet"}</h2>
-      <p className="quiet">Net prices as quoted. Where one firm quotes ex works and another free to site, the gap between them is not the whole difference: the row says so.</p>
-      <ul className="pt-pc-list">
-        {compared.map(({ b, firms, low, mixed }) => {
-          const top = Math.max(...firms.map((o) => o.net));
-          return (
-            <li key={`${b.label}|${b.unit}`}>
-              <div className="pt-pc-item">
-                <b lang="de">{b.label}</b>
-                <small>
-                  per {b.unit || "unit"}
-                  {mixed && " · terms differ"}
-                  {low === null && " · every price is out of date"}
-                </small>
-              </div>
-              <div className="pt-pc-bars">
-                {firms.map((o) => {
-                  const cheapest = low !== null && o.fresh && o.net === low;
-                  return (
-                    <div key={o.supplier_id} className={`${cheapest ? "is-low" : ""}${o.fresh ? "" : " is-stale"}`}>
-                      <button className="text-link" onClick={() => onOpen(o.supplier_id)}>
-                        {o.supplier}
-                      </button>
-                      <span className="pt-pc-bar">
-                        <i style={{ width: `${(o.net / top) * 100}%` }} />
-                      </span>
-                      <b className="num">{price(o.net)}</b>
-                      <span className="pt-pc-vs">
-                        {!o.fresh ? <span className="quiet">out of date</span> : cheapest ? <span className="pt-vs is-low">cheapest</span> : low !== null ? <span className="pt-vs">+{pct.format(((o.net - low) / low) * 100)} %</span> : null}
-                      </span>
-                      <small>{o.basis !== "unknown" ? BASIS[o.basis] : ""}</small>
-                    </div>
-                  );
-                })}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-      {single.length > 0 && (
-        <details className="pt-pc-single">
-          <summary>
-            Priced by one firm only <span className="num">{plural(single.length, "item")}</span>
-          </summary>
-          <table className="pt-fp-prices">
-            <colgroup>
-              <col />
-              <col style={{ width: "150px" }} />
-              <col style={{ width: "30%" }} />
-              <col style={{ width: "130px" }} />
-            </colgroup>
-            <tbody>
-              {single.map(({ b, firms }) => {
-                const o = firms[0];
-                return (
-                  <tr key={`${b.label}|${b.unit}`} className={o.fresh ? "" : "is-stale"}>
-                    <td lang="de">
-                      <b>{b.label}</b>
-                    </td>
-                    <td className="r num">
-                      <b>{price(o.net)}</b>
-                      <small>per {b.unit || "unit"}</small>
-                    </td>
-                    <td>
-                      <button className="text-link" onClick={() => onOpen(o.supplier_id)}>
-                        {o.supplier}
-                      </button>
-                    </td>
-                    <td className="num">
-                      {day(o.date)}
-                      {!o.fresh && <small>out of date</small>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </details>
-      )}
-    </section>
   );
 }
 

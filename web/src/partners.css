@@ -3929,3 +3929,33 @@ ol.pt-points .pt-point-src li {
 .pt-reg > .pt-fu + .pt-chips {
   padding-top: 0;
 }
+
+/* "Add a firm" stands in the row of the chips but is the page's one primary action, not a chip: the chips'
+   own rule (white, 26px, plain) had made it a white box with white text */
+.pt-reg .pt-chips > .pt-reg-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin-left: auto;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pt-reg .pt-chips > .pt-reg-new:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+.pt-reg .pt-chips > .pt-reg-new:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

@@ -367,6 +367,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   two tabs, Firms and Prices, and "Your firm"; the Firms tab's badge is yellow while a reply is needed; the
   old address of Follow-ups opens Firms. Seen in headless Chrome at 1500 and 900 wide: three cards over
   twenty firms, nothing outside the column, no console error; build clean.
+  **The Prices tab is gone too (2026-11-22)**, at the user's word: a tender's quotes are compared in its price
+  inquiries, where a firm stands against the others is on the firm's page ("cheapest on n of m", "cheapest" /
+  "+8,7 %" beside each price), and a price is asked for again at every tender. The partners page is the firms
+  (the open conversations, the table, a firm's page) and "Your firm"; every old address opens the firms.
+  "Add a firm" in the row of the chips is yellow and readable again (the chips' rule had made it a white box).
+  Seen in headless Chrome, no console error; build clean.
   **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
   freight per unit), grouping the price book by material group proper (the package stands in for it). The
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:
