@@ -14,6 +14,15 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- Demo video "The Estimator" (2026-11-22, Atahan: a fun demo story of two minutes, then shoot it): a
+  film-trailer parody, story and how it is made in `10-demo-video.md`, the tooling in `scripts/demo_video/`
+  (`story.mjs` the lines and shots, `make.mjs` voice and music from ElevenLabs, the shots recorded from the
+  running app with Playwright, cut with ffmpeg). A first cut exists (`scripts/demo_video/out/demo.mp4`,
+  2:00, git-ignored): app shots on TBA-2026-114, type on black where the staged scenes go.
+  Checked: the length, sound is in it, frames looked over on a contact sheet. Not checked: nobody has
+  listened to it; the close-ups of scenes 7 and 8 are roughly framed. Not done: the staged scenes generated
+  on ElevenLabs Image & Video.
+
 - The live demo database was driven like an estimator would (2026-11-22, Atahan: "use the app realistically, answer
   the mails"): five partners added (Rohrleitungsbau Krohn, Pflasterbau Thießen, Hagemann Baustoffe, Wasser-Rohr
   Nord, Vermessungsbüro Dethlefsen) and products on five existing ones; Überseering and the Rahmenvertrag passed,

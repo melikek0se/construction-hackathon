@@ -20,6 +20,7 @@ Read when relevant:
 - `docs/07-user-flows.md` — projects, LVs and versions: researched flows, what is built, what is not
 - `docs/08-deploy.md` — free hosting options (researched 2026-11-21), the chosen setup, deploy steps
 - `docs/09-price-inquiries.md` — how suppliers and subcontractors are asked for prices (researched 2026-11-21), what is built
+- `docs/10-demo-video.md` — the demo video: story, how `scripts/demo_video/` makes it
 
 ## Keeping state
 
