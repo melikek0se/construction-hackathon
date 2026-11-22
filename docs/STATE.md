@@ -14,6 +14,42 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- The live demo database was driven like an estimator would (2026-11-22, Atahan: "use the app realistically, answer
+  the mails"): five partners added (Rohrleitungsbau Krohn, Pflasterbau Thießen, Hagemann Baustoffe, Wasser-Rohr
+  Nord, Vermessungsbüro Dethlefsen) and products on five existing ones; Überseering and the Rahmenvertrag passed,
+  WVG-2026-031 and Reiterhof taken on (Reiterhof renamed, the "WG:" gone); questions sent and answered as the client
+  on TBA-2026-114, WVG-2026-031, Reiterhof (with a follow-up) and Ahornring (whose answer brought LV Stand 2 with
+  four new items); inquiries sent and answered as the firms (by hand, and with `scripts/demo_counterpart.py`);
+  the bids of TBA-2026-114 (77/78, 759.158 EUR) and WVG-2026-031 (51/53, 415.489 EUR) built on the quotes; nothing
+  submitted. Seen on the way, not fixed:
+  - The inbox sweep reads a quote's mail text only: a filled-in Excel sheet attached to the reply is not read
+    (`find_replies` → `_take_quote(…, sheet=None)`); the reply is kept as "wrote back without prices". Read by
+    hand the sheet works, but then the terms in the mail text (Skonto, pallets) are not summarised.
+  - The bid's "material" beside an item comes from the price book only (other tenders), never from the quote taken
+    for this tender; it can be wrong in kind: TBA 4.2.10 "Schachtunterteil" showed 2.140 EUR, Ahornring's price for
+    a whole manhole, while Betonwerk's quote here is 895 EUR.
+  - A question answered in part counts as unanswered for the run's Q-GATE and the inquiries' "waits" (WVG: "6 no
+    answer yet" = its 6 partly answered); only "Close the questions" lets them go.
+  - The answer to a firm's question back (`supply.answer`) reads the LV as it is now and not the client's answers:
+    it quoted "Abrechnung nach Meter Bauhöhe" after the client had changed it to Stück, and called a unit the client
+    corrected in Stand 2 "our transcription error". It also asks for the quote three days before the bid is due.
+  - The bidder-questions mail has no address where the tender came by mail (`lv.email` empty, `found.sender` known),
+    and says "zur Ausschreibung" also to a private client.
+  - Reader: a quantity in the answer ("um 14 St erhöht") is no quantity amendment; the proposal of a package says
+    "the only complete quote" where two are complete (TBA p3).
+
+- A round of small things seen while looking over the pages (2026-11-22, Atahan: "fix them all"):
+  the Client row counts a question once (answered in part is answered, not also "with the client"); the
+  strip opens in place and no longer slides over the band; on the schedule two days with several
+  submissions say "2 due Mon 30.11." (the title has it in full) and no longer write over each other;
+  "Take it on" is the ink button on the board's cards as on the cover sheet; beside a panel the strip is
+  as high as the findings' head and the panel's (71px), one lower edge; the tender's page and its panels
+  have 130px at the foot so the last rows scroll clear of Polier; a firm that answers within the hour says
+  so, not "within 0 h"; the map never leaves empty room above its legend; the Bid row has "Next one
+  without a price". Left as it is: the schedule stays docked under the band (D-043). Checked: type-check;
+  in Chrome each of them on TBA-2026-114, OP-2614-LV1, a tender in the intake, the projects and partners
+  pages. Not checked: a narrow window; Engine Room, Risk Report, Settings; a tender whose bid went out.
+
 - The cover sheet is the board of the tender (D-081, 2026-11-22, Atahan chose it from a mock of three
   options): the head carries the days to the bid; under it a row each for Checks, Client, Prices and Bid
   with how it stands and its action at the end ("Next to look at", "Ask the client", "Ask for prices",

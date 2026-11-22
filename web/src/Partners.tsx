@@ -33,7 +33,7 @@ const money = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximum
 const price = (n: number) => `${money.format(n)} €`;
 const pct = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
 /** How fast a firm usually answers, in words: under an hour is "within the hour", not "within 0 h". */
-const within = (h: number) => (Math.round(h) < 1 ? "usually within the hour" : `usually within ${took(h)}`);
+const within = (h: number | null) => (h !== null && Math.round(h) < 1 ? "usually within the hour" : `usually within ${took(h)}`);
 const took = (h: number | null) => (h === null ? "–" : h < 36 ? `${Math.round(h)} h` : `${Math.round(h / 24)} days`);
 const KIND: Record<Supplier["kind"], string> = { supplier: "Supplier", subcontractor: "Subcontractor" };
 const STATUS: Record<PartnerThread["status"], string> = {
@@ -664,7 +664,7 @@ function Profile({
                       </span>
                     )}
                     <p>
-                      <strong className="num">usually within {took(c.reply_hours)}</strong>
+                      <strong className="num">{within(c.reply_hours)}</strong>
                       {speeds.length > 1 && ` · all partners: ${took(fastest)} to ${took(slowest)}`}
                     </p>
                   </>

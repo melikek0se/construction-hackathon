@@ -2342,6 +2342,16 @@
 .kc-decide .btn-ghost {
   border: 1px solid var(--line-2);
 }
+/* "Take it on" is the same button wherever it stands: ink, as on the tender's cover sheet (D-081) */
+.kc-decide .btn-new {
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: #fff;
+}
+.kc-decide .btn-new:hover:not(:disabled) {
+  background: var(--yellow);
+  color: var(--ink);
+}
 
 .kc-move {
   flex: none;

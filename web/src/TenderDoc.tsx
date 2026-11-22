@@ -632,7 +632,7 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
       const y = turning.current;
       at = 0;
       for (let n = 0; n < pieces.length; n++) if (mid(pieces[n]) <= y) at = n;
-      list.style.transform = `translateY(${(box.clientHeight / 2 - y).toFixed(1)}px)`;
+      list.style.transform = `translateY(${Math.min(12, box.clientHeight / 2 - y).toFixed(1)}px)`; // never below the map's top: no empty room above the legend
       pieces.forEach((p, n) => {
         p.classList.toggle("cur", n === at);
         p.classList.toggle("past", n < at);
@@ -647,7 +647,7 @@ export function TenderDocView({ tender, plan, place, views, onAsk, onDates, onDr
     const toEnd = next ? 0 : Math.min(1, Math.max(0, (r.scrollTop + readAt() - start) / Math.max(1, end - start)));
     const y = mid(pieces[at]) + (next ? through * (mid(next) - mid(pieces[at])) : toEnd * AFTER);
     mapAt.current = y;
-    list.style.transform = `translateY(${(box.clientHeight / 2 - y).toFixed(1)}px)`;
+    list.style.transform = `translateY(${Math.min(12, box.clientHeight / 2 - y).toFixed(1)}px)`; // never below the map's top: no empty room above the legend
     pieces.forEach((p, n) => {
       p.classList.toggle("cur", n === at);
       p.classList.toggle("past", n < at);

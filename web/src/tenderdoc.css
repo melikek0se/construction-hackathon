@@ -3283,3 +3283,20 @@
 .td-fwhat > summary {
   position: static;
 }
+
+/* Where a panel stands beside the document, three heads stand in one line: the strip, the findings' and
+   the panel's. The strip is as high as the other two there, so their lower edges are one line. */
+.td-page.barred.paneled {
+  --td-actbar: 71px;
+}
+.td-page.barred.paneled > .td-s.td-actbar {
+  height: 71px;
+}
+.td-page.paneled .td-dock {
+  height: 71px;
+}
+/* room at the foot, so the last rows and buttons scroll clear of Polier in its corner (as the board does) */
+.td-page,
+.td-flow > .td-compose {
+  padding-bottom: 130px;
+}

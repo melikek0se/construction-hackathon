@@ -1210,6 +1210,7 @@ export function TenderPage({ bandSlot, tender, plan, place, onPlace, onDocuments
                 sub: offer ? <>{rows.length - unpriced.length} of {rows.length} priced · {eur(offer.net)} net{onMaterial > 0 && ` · ${onMaterial} have a supplier's price to build on`}{ready && " · the bid can go out"}</> : undefined,
                 share: offer && rows.length ? (rows.length - unpriced.length) / rows.length : null,
                 act: submitted ? null : { label: "Finish the bid", count: unpriced.length, title: "What is left, the price, the X84, and saying that the bid went out", onClick: () => toStep(finishing ? "check" : "bid") },
+                more: !submitted && unpriced.length > 0 ? { label: "Next one without a price", title: "To the next item that has no unit price yet", onClick: nextUnpriced } : null,
               },
             ];
             const cover = (
