@@ -91,7 +91,7 @@ def test_a_step_that_cannot_run_is_skipped_with_its_reason_and_a_failing_one_doe
     assert done["status"] == "waiting" and review["status"] == "failed" and "boom" in review["detail"]
 
 
-def test_a_building_is_compared_across_its_lvs_and_a_new_project_starts_a_run(monkeypatch):
+def test_a_building_is_compared_across_its_lvs_and_a_new_project_starts_a_run_when_taken_on(monkeypatch):
     _stub_review(monkeypatch, lambda ctx: [])
     started = []
     monkeypatch.setattr(runs, "AUTO", True)
@@ -99,7 +99,10 @@ def test_a_building_is_compared_across_its_lvs_and_a_new_project_starts_a_run(mo
     folder = DATASET / "03_pdf_hochbau_projekt"
     files = [("files", (p.name, p.read_bytes())) for p in (folder / "LV_18_Estrich.pdf", folder / "LV_07_Teppichboden.pdf")]
     created = client.post("/api/projects", files=files, data={"name": "Two trades"}).json()
-    assert started == [(created["id"], "project created")]
+    assert started == []  # a new project stands in the intake: nothing runs before the estimator takes it on
+    assert client.get(f"/api/catalog/{created['id']}/summary").json()["checked"] is False
+    assert client.patch(f"/api/catalog/{created['id']}", json={"stage": "check"}).json()["plan"]["stage"] == "check"
+    assert started == [(created["id"], "taken on")]
     monkeypatch.undo()
     monkeypatch.setattr(runs, "AUTO", False)
     _stub_review(monkeypatch, lambda ctx: [])
@@ -119,7 +122,7 @@ def test_the_prices_do_not_wait_for_the_questions_and_the_person_can_close_them(
     gate = next(r for r in waiting["steps"] if r["step"] == "Q-GATE" and r["doc"] == 0)
     prices = next(r for r in waiting["steps"] if r["step"] == "P-PRICES" and r["doc"] == 0)
     assert gate["status"] == "waiting" and prices["status"] == "done"
-    assert "stage" not in catalog.find(pid)["plan"]  # the run does not move the tender: the estimator does
+    assert catalog.find(pid)["plan"]["stage"] == "intake"  # the run does not move the tender: the estimator does
 
     rules_before = [r["ms"] for r in waiting["steps"] if r["stage"] == "rules"]
     runs.go_on(waiting["id"], wait=True)  # the person closes the questions without the answers

@@ -495,9 +495,11 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     fill only the dates it does not have yet, unless `dates` says otherwise.
 
     `found`, a JSON object, is for the agent that reads the mailbox: where it found this tender (`via`, e.g.
-    "mail"; `sender`, `subject`, `received` as YYYY-MM-DD, all optional). A new project with `found` stands
-    in the intake: its files are kept and read, but no check runs until the estimator takes it on
-    (PATCH with stage "check") or passes (outcome "passed").
+    "mail"; `sender`, `subject`, `received` as YYYY-MM-DD, all optional).
+
+    A new project stands in the intake, dropped by the estimator or found by the agent: its files are kept
+    and read, but no check runs until the estimator takes it on (PATCH with stage "check") or passes
+    (outcome "passed"). Files added to a project that was taken on start its checks again.
     """
     where = None
     if found:
@@ -542,16 +544,14 @@ async def create_project(files: list[UploadFile], name: str | None = Form(None),
     else:
         found = intake_rules.identity(new)
         title = (name or "").strip()[:80] or found["name"] or f"{len(boqs)} LVs, {datetime.now():%d.%m.%Y %H:%M}"
-        if where is not None:
-            plan |= {"stage": "intake", "found": where}
+        # a new tender stands in the intake, whoever brought it: no check before the estimator takes it on
+        plan |= {"stage": "intake"} | ({"found": where} if where is not None else {})
         project_id = catalog.save_project(title, stored, kind, number=found["number"], plan=plan)
-        if where is not None:
-            return {"id": project_id, "kind": kind, "name": title}
-    # Nothing is analysed here: the pipeline runs on the project in the background (boq.runs) and the pages
-    # show how far it is.
-    if existing and existing["plan"].get("stage") == "intake":  # not taken on yet: more files, still no check
         return {"id": project_id, "kind": kind, "name": title}
-    runs.autostart(project_id, "files added" if existing else "project created")
+    # Nothing is analysed here: the pipeline runs on the project in the background (boq.runs) and the pages
+    # show how far it is. A project still in the intake gets more files and still no check.
+    if existing["plan"].get("stage") != "intake":
+        runs.autostart(project_id, "files added")
     return {"id": project_id, "kind": kind, "name": title}
 
 
@@ -852,7 +852,7 @@ def run_cancel(run_id: str):
 
 
 PLAN_DATES = ("questions_due", "due", "opening", "sent", "binding_until", "exec_start", "exec_end")
-# intake: found for the estimator (in the mail), not taken on yet. Submitted follows from the files.
+# intake: a new tender (dropped by the estimator or found in the mail), not taken on yet. Submitted follows from the files.
 PLAN_STAGES = ("intake", "check", "pricing")
 # how a tender ended; an award among the files is "won" without being said. passed: no bid was made.
 PLAN_OUTCOMES = ("won", "lost", "passed", "cancelled")

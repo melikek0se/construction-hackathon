@@ -394,7 +394,7 @@ def _since(run: dict, results: dict) -> dict | None:
 
 def start(project_id: str, trigger: str, wait: bool = False) -> dict | None:
     """Start a run on a project; None if there is no such project. `trigger`: why it runs, for the record
-    ("project created", "files added", "started by hand"). `wait`: run it here and return when it is done."""
+    ("taken on", "files added", "started by hand"). `wait`: run it here and return when it is done."""
     project = catalog.find(project_id)
     if project is None:
         return None

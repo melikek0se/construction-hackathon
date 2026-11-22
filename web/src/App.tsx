@@ -701,7 +701,7 @@ export default function App() {
       asked.current.delete(id); // its numbers have changed
       setSummaries(({ [id]: _old, ...rest }) => rest);
       const saved = (await refreshCatalog()).find((p) => p.id === id);
-      void refreshRuns(); // the server has started the pipeline on it
+      void refreshRuns(); // files added to a tender taken on start its checks again; a new one waits in the intake
       setPending(null);
       setBusy(null);
       if (saved) void openTenderPage(saved);

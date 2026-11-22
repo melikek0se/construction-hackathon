@@ -665,7 +665,7 @@ it; assume the Gmail MCP will be added"). Changes D-039 in one point (the gate) 
 - **Intake** holds only what the agent found (the mail agent to come): `POST /api/projects` with `found`
   ({via, sender, subject, received}) keeps the files with stage "intake" and starts no run. "Take it on"
   (PATCH stage "check") starts the checks; "Pass" sets outcome "passed". Files dropped by the estimator are
-  taken on by that and start in Check, as before.
+  taken on by that and start in Check, as before. (Changed by D-063: they stand in the intake too.)
   Nothing is checked in the intake, the free rules neither: a card with rule findings and no AI findings
   reads as a finished analysis (`catalog_summary` gives `checked: false` and counts nothing).
 - **Result replaces Award**: `plan.outcome` is won, lost, passed (no bid) or cancelled (by the client); an
@@ -1155,3 +1155,15 @@ dataset's in different situations, kept as mock data so that every run fills the
 - **Effort too** (same day): per task, low to max, chosen beside the model (`engines.effort(task, default)`,
   key "efforts", `PUT /api/models` takes `{models, efforts}`). Defaults as before: medium for the AI review,
   low for the rest, or the environment. The AI review's cache is keyed by effort as well.
+
+## D-063 — A new project always stands in the intake; no check starts by itself
+
+**Decided** 2026-11-22 (Atahan: "what I add as a new project goes into the intake too; it must not go on to
+Check by itself"). Changes D-042 in one point: files dropped by the estimator no longer count as taken on.
+
+- `POST /api/projects` without `project` keeps the files with stage "intake" and starts no run, with or
+  without `found`. The card has no "Found in your mail" block then, only "Take it on" / "Pass".
+- "Take it on" (PATCH stage "check") starts the checks, trigger "taken on"; "project created" is no trigger
+  any more. Files added to a project still in the intake start nothing; added to one taken on they start
+  the checks again, as before.
+- Not touched: the seeded dataset projects, and a mail whose LV joins a project that is known already.

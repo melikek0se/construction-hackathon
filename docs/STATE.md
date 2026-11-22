@@ -14,6 +14,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- New projects into the intake (2026-11-22, D-063; `POST /api/projects` in `api.py`, texts in `Projects.tsx`):
+  a project made in the new-project dialog (or by dropping files) stands in the Intake column, read and not
+  checked, until "Take it on"; no run starts by itself. Checked: `tests/test_runs.py` (no run on creation,
+  "taken on" starts it), 224 tests pass, type-check; a throwaway project on the dev server had stage intake,
+  `checked: false`, no run. Not seen in a browser.
+
 - Models and effort per task (2026-11-22, D-062; `src/boq/engines.py`, `GET/PUT /api/models`, block "Models" in
   `Runs.tsx`): which Claude model does which of nine tasks and at which effort, chosen on the Pipeline page, now called "Engine
   room" in the band. Checked against the running API: choose, read back at request time, a wrong model

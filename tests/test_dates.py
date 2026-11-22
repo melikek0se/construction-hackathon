@@ -107,17 +107,17 @@ def test_intake_reads_the_dates_also_from_a_file_that_is_no_lv():
     # kept as read when the dates are left out; what the user says wins
     created = client.post("/api/projects", files=files).json()
     plan = client.get("/api/catalog").json()[0]["plan"]
-    assert plan == {"due": "2026-12-12", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}
+    assert plan == {"stage": "intake", "due": "2026-12-12", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}
     client.delete(f"/api/catalog/{created['id']}")
     # the dialog says every date at once: a day it changed, one it added, and one it took out ("")
     said = {"due": "2026-12-11", "exec_start": "2027-02-01", "binding_until": ""}
     created = client.post("/api/projects", files=files, data={"dates": json.dumps(said)}).json()
-    assert client.get("/api/catalog").json()[0]["plan"] == {"due": "2026-12-11", "exec_start": "2027-02-01", "exec_end": "2025-11-28"}
+    assert client.get("/api/catalog").json()[0]["plan"] == {"stage": "intake", "due": "2026-12-11", "exec_start": "2027-02-01", "exec_end": "2025-11-28"}
     client.delete(f"/api/catalog/{created['id']}")
     assert client.post("/api/projects", files=files, data={"dates": '{"deadline": "2026-12-11"}'}).status_code == 422
     created = client.post("/api/projects", files=files, data={"due": "2026-12-10", "questions_due": "2026-12-01"}).json()
     assert client.get("/api/catalog").json()[0]["plan"] == {
-        "due": "2026-12-10", "questions_due": "2026-12-01", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}
+        "stage": "intake", "due": "2026-12-10", "questions_due": "2026-12-01", "binding_until": "2027-01-15", "exec_end": "2025-11-28"}
     client.delete(f"/api/catalog/{created['id']}")
 
 

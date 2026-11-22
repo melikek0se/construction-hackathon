@@ -217,7 +217,7 @@ export interface Project {
 /** Where a tender stands and its dates. Read from the files where these state them (FoundDate), else set
  *  by the user. Days are YYYY-MM-DD. */
 export interface Plan {
-  // intake: found for the estimator (in the mail), not taken on yet. Submitted follows from the files.
+  // intake: a new tender (dropped by the estimator or found in the mail), not taken on yet. Submitted follows from the files.
   stage?: "intake" | "check" | "pricing";
   // how the tender ended; an award among the files is "won" without being said. passed: no bid was made
   outcome?: "won" | "lost" | "passed" | "cancelled";
@@ -525,7 +525,7 @@ export interface Run {
   id: string;
   project_id: string;
   project: string; // its name when the run started
-  trigger: string; // "project created", "files added", "started by hand"
+  trigger: string; // "taken on", "files added", "started by hand"
   // waiting: everything else is done and the bidder questions are still open (to send, or with the client)
   status: "queued" | "running" | "waiting" | "done" | "failed" | "interrupted" | "cancelled";
   active: boolean; // queued or running

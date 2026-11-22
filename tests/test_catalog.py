@@ -224,7 +224,7 @@ def test_a_tender_keeps_its_dates_and_stage():
     created = client.post("/api/projects", files=[("files", (x83.name, x83.read_bytes()))],
                           data={"name": "Dated", "due": "2026-12-03"}).json()
     url = f"/api/catalog/{created['id']}"
-    assert next(p for p in client.get("/api/catalog").json() if p["id"] == created["id"])["plan"] == {"due": "2026-12-03", "exec_end": "2025-11-28"}  # the file states when the work is done
+    assert next(p for p in client.get("/api/catalog").json() if p["id"] == created["id"])["plan"] == {"stage": "intake", "due": "2026-12-03", "exec_end": "2025-11-28"}  # the file states when the work is done
     changed = client.patch(url, json={"questions_due": "2026-11-23", "stage": "pricing"}).json()
     assert changed["plan"] == {"due": "2026-12-03", "exec_end": "2025-11-28", "questions_due": "2026-11-23", "stage": "pricing"}
     assert changed["name"] == "Dated"  # a change of dates leaves the name alone

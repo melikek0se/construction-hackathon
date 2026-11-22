@@ -21,15 +21,15 @@ export function stepOf(role: string): Step {
 
 /* Where a tender stands on the contractor's side (D-042). A column says where it stands, not what is being
    done on it: the bidder questions run beside the checks and the prices, so they are a line on the card
-   and no column. Intake holds what the agent found and nobody has taken on yet; files dropped by the
-   estimator are taken on by that and start in Check. Submitted follows from the files (a bid is there);
+   and no column. Intake holds every new tender nobody has taken on yet, found by the agent in the mail or
+   dropped by the estimator: nothing is checked there. Submitted follows from the files (a bid is there);
    Result holds every way a tender ends, not only the award. */
 const STAGES = ["intake", "check", "pricing", "submitted", "result"] as const;
 export type Stage = (typeof STAGES)[number];
 export const STAGE_LABEL: Record<Stage, string> = { intake: "Intake", check: "Check", pricing: "Pricing", submitted: "Submitted", result: "Result" };
 const STAGE_EMPTY: Record<Stage, string> = {
-  intake: "Tenders Polier finds in your mail stand here until you take them on or pass. No mailbox is connected yet.",
-  check: "No new tender. Drop its files anywhere on the page.",
+  intake: "No new tender. Drop its files anywhere on the page; what Polier finds in your mail stands here too, until you take it on or pass.",
+  check: "Nothing is being checked. Take a tender on from the intake.",
   pricing: "Nothing is being priced.",
   submitted: "No bid is with a client.",
   result: "No tender has ended yet.",
