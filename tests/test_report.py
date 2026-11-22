@@ -27,7 +27,9 @@ def test_report_counts_add_up():
     r = build_report(boq, findings)
     assert sum(r["counts"].values()) == len(findings) == len(r["findings"])
     assert sum(s["items"] for s in r["sections"]) == len(boq.items) == r["lv"]["items"]
-    assert sum(s["high"] + s["warn"] + s["info"] for s in r["sections"]) == len(findings)
+    # a finding on a remark holds for a title or the whole LV: it is in the list, in no section
+    assert sum(s["high"] + s["warn"] + s["info"] for s in r["sections"]) == sum(1 for f in findings if f.item_oz)
+    assert any(f.check_id == "R-REMARK-WORDING" for f in findings)
     assert sum(a["count"] for a in r["actions"]) == len(findings)
     assert r["lv"]["net_total"] is None and all(s["value"] is None for s in r["sections"])  # no prices, no money
     assert r["top_items"][0]["points"] >= r["top_items"][-1]["points"]

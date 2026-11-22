@@ -2911,6 +2911,64 @@ button.flow-plate:hover {
   font-weight: 600;
 }
 
+.remarks-lead {
+  max-width: 78ch;
+  padding: 14px 0 12px;
+  border-bottom: 1.5px solid var(--ink);
+  font-size: 13.5px;
+}
+
+.remarks-lead p {
+  margin: 0;
+}
+
+.remarks-count {
+  padding-top: 6px;
+  color: var(--mute);
+}
+
+.remarks details {
+  max-width: 78ch;
+}
+
+.remarks details.on {
+  box-shadow: -3px 0 0 var(--ink);
+  padding-left: 10px;
+  margin-left: -10px;
+}
+
+.remark-path {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.remark-scope {
+  margin-left: auto;
+  padding-left: 12px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.remark-findings {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.remark-findings .finding-why {
+  white-space: normal;
+}
+
+.remark-findings .finding {
+  padding-inline: 0;
+}
+
+.remark-findings .finding.no-oz {
+  grid-template-columns: 16px minmax(0, 1fr);
+}
+
 .lv-text {
   font-size: 13.5px;
 }

@@ -863,3 +863,15 @@ counters, every section of the same weight, the open work on the third tab.
 
 Revisit if: the directory grows past what one table holds on a screen (then search and paging), or freight
 is known per quote (then the comparison can be free to site).
+
+## D-052 — A clause in the remarks is a finding without an item
+Status: decided · 2026-11-22
+
+`R-REMARK-WORDING` findings carry `item_oz = None`: the clause holds for every item under the remark's title
+(all items for a general remark), and putting it on the first of them, as the zero-quantity group does, would
+show it on an item that does not say it. So they are in the findings list, the report's list and on the PDF
+page, but in no section's count and not on the LV map; the Remarks tab is where they are read. Code that
+walks findings must not expect an item (`tests/test_report.py`, `tests/test_catalog.py` were changed for
+that). Which items a remark holds for is `item.path` starting with `remark.path`.
+Revisit if: findings get a scope of their own (a title, a set of items) — then the map and the section
+counts can show them, and the value of the covered items can be the money at stake.

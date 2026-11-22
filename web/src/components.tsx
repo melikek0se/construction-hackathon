@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Select } from "./controls";
 import { LvText, eur, qty, quotedFragments } from "./format";
 import { FindingVisual, PriceRange, ValueRank } from "./ItemVisual";
@@ -256,7 +256,7 @@ export function FindingsList({
                   <span className="finding-oz">{oz ?? "LV"}</span>
                   <span className="finding-text">
                     <span className="finding-title" lang="de">
-                      <LvText text={itemLabel(itemByOz.get(oz ?? "")) || "Whole LV"} />
+                      <LvText text={itemLabel(itemByOz.get(oz ?? "")) || (oz === null && findings[0].title) || "Whole LV"} />
                     </span>
                     <span className="finding-why">
                       {findings.some((f) => f.origin === "llm") && <b className="ai-tag">AI</b>}
@@ -323,7 +323,14 @@ function FindingPlate({
               {finding.money_basis && <span className="quiet"> · the value of this item, from {finding.money_basis}</span>}
             </>
           ) : (
-            <span className="quiet">Not quantified: {priced ? "this item has no price" : "nobody has a price for this item yet"}</span>
+            <span className="quiet">
+              Not quantified:{" "}
+              {finding.item_oz === null
+                ? "it is spread over the items it holds for"
+                : priced
+                  ? "this item has no price"
+                  : "nobody has a price for this item yet"}
+            </span>
           )}
         </dd>
         {finding.related_oz.length > 0 && (
@@ -418,7 +425,9 @@ export function ItemSheet({
       <div className="panel sheet">
         <header className="panel-head">{back}</header>
         <div className="scroll" ref={top}>
-          <h2 className="sheet-oz">{selection.oz ?? "Whole LV"}</h2>
+          <h2 className="sheet-oz">
+            {selection.oz ?? (selected?.check_id === "R-REMARK-WORDING" ? "Remarks" : "Whole LV")}
+          </h2>
           {selection.oz && <p className="quiet">This item number is not in the parsed file.</p>}
           {selected && (
             <FindingPlate
@@ -761,24 +770,155 @@ export function ItemsView({
 
 /* ----------------------------------------------------------------- remarks */
 
-export function RemarksView({ analysis }: { analysis: Analysis }) {
-  const { remarks } = analysis.boq;
+const squash = (s: string) => s.split(/\s+/).filter(Boolean).join(" ");
+
+/** The passages of a finding's evidence: „quoted“ ones, or the pieces between "…" of the wording rule. */
+function passages(evidence: string): string[] {
+  const quoted = quotedFragments(evidence);
+  const pieces = quoted.length ? quoted : evidence.split(" | ").map((x) => x.replace(/^…|…$/g, ""));
+  return pieces.map(squash).filter((x) => x.length >= 12);
+}
+
+/** Remark text with the passages marked, whatever the line breaks of the file are inside them. */
+function MarkedText({ text, marks }: { text: string; marks: string[] }) {
+  if (!marks.length) return <LvText text={text} />;
+  const source = marks.map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ /g, "\\s+")).join("|");
+  const out: ReactNode[] = [];
+  let last = 0;
+  for (const m of text.matchAll(new RegExp(source, "g"))) {
+    const at = m.index ?? 0;
+    if (at > last) out.push(<LvText key={`t${at}`} text={text.slice(last, at)} />);
+    out.push(
+      <mark key={at}>
+        <LvText text={m[0]} />
+      </mark>,
+    );
+    last = at + m[0].length;
+  }
+  if (last < text.length) out.push(<LvText key="end" text={text.slice(last)} />);
+  return <>{out}</>;
+}
+
+/**
+ * What the client wrote outside the items. A remark holds for every item under its title, so a clause in
+ * it costs money on all of them: the view says how many items each block governs and marks the passages
+ * the findings quote (rule R-REMARK-WORDING, and AI findings that quote the remarks against an item).
+ */
+export function RemarksView({
+  analysis,
+  itemByOz,
+  selection,
+  onSelect,
+}: {
+  analysis: Analysis;
+  itemByOz: Map<string, Item>;
+  selection: Selection;
+  onSelect: (s: Selection) => void;
+}) {
+  const { remarks, items } = analysis.boq;
+
+  const blocks = useMemo(() => {
+    const quotes = analysis.findings.flatMap((f, index) => {
+      if (f.item_oz !== null && f.origin !== "llm") return []; // a rule on an item quotes that item
+      const own = f.item_oz === null ? "" : squash(itemByOz.get(f.item_oz)?.long_text ?? "");
+      return passages(f.evidence)
+        .filter((q) => !own.includes(q))
+        .map((quote) => ({ index, quote }));
+    });
+    return remarks.map((r) => {
+      const flat = squash(r.text);
+      const hits = quotes.filter((q) => flat.includes(q.quote));
+      const covered = items.filter((i) => r.path.every((label, n) => i.path[n] === label));
+      return {
+        remark: r,
+        marks: [...new Set(hits.map((h) => h.quote))],
+        findings: [...new Set(hits.map((h) => h.index))],
+        covered: covered.length,
+        value: covered.reduce((sum, i) => sum + Number(i.total ?? 0), 0),
+      };
+    });
+  }, [analysis, remarks, items, itemByOz]);
+
+  const marked = blocks.filter((b) => b.findings.length > 0);
+  const [all, setAll] = useState(false);
+  const shown = all || marked.length === 0 ? blocks : marked;
+  const chosen = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    chosen.current?.scrollIntoView({ block: "nearest" });
+  }, [selection.finding]);
+
   return (
     <div className="scroll remarks">
-      {remarks.length === 0 && <p className="empty">This file carries no preliminary remarks.</p>}
-      {remarks.map((r, i) => (
-        <details key={i} open={i === 0}>
-          <summary>
-            <span className="remark-path">
-              <LvText text={r.path.join(" / ") || "General"} />
-            </span>
-            <span className="remark-first">{r.text.split("\n", 1)[0]}</span>
-          </summary>
-          <p className="lv-text" lang="de">
-            <LvText text={r.text} />
+      <div className="remarks-lead">
+        <p>
+          <b>What the client wrote outside the items.</b> A remark holds for every item under its title. What it
+          asks for has no line in the LV to bill it on, so it has to be inside the unit prices of those items.
+        </p>
+        {remarks.length > 0 && (
+          <p className="remarks-count">
+            {marked.length === 0
+              ? `${blocks.length} blocks of text, none with a passage a finding quotes.`
+              : `${marked.length} of ${blocks.length} blocks carry a passage that puts cost or scope on the bidder.`}{" "}
+            {marked.length > 0 && marked.length < blocks.length && (
+              <button className="text-link" onClick={() => setAll(!all)}>
+                {all ? "Show only those" : `Show all ${blocks.length}`}
+              </button>
+            )}
           </p>
-        </details>
-      ))}
+        )}
+      </div>
+      {remarks.length === 0 && <p className="empty">This file carries no preliminary remarks.</p>}
+      {shown.map((b) => {
+        const found = b.findings.map((index) => ({ index, finding: analysis.findings[index] }));
+        const on = selection.finding !== null && b.findings.includes(selection.finding);
+        const first = on && shown.find((x) => x.findings.includes(selection.finding!)) === b; // a block the LV repeats
+        return (
+          <details
+            key={blocks.indexOf(b)}
+            open={found.length > 0 || shown.length === 1 || undefined}
+            className={on ? "on" : undefined}
+            ref={first ? chosen : undefined}
+          >
+            <summary>
+              <span className="remark-path">
+                {found.length > 0 && <Sign severity={worst(found.map((f) => f.finding))!} size={18} />}
+                <LvText text={b.remark.path.join(" / ") || "Whole LV"} />
+                <span className="remark-scope">
+                  holds for {b.covered} item{b.covered === 1 ? "" : "s"}
+                  {b.value > 0 && ` · ${eur(b.value)}`}
+                </span>
+              </span>
+              <span className="remark-first">{b.remark.text.split("\n", 1)[0]}</span>
+            </summary>
+            <p className="lv-text" lang="de">
+              <MarkedText text={b.remark.text} marks={b.marks} />
+            </p>
+            {found.length > 0 && (
+              <ul className="remark-findings">
+                {found.map(({ index, finding: f }) => (
+                  <li key={index}>
+                    <button
+                      className={f.item_oz === null ? "finding no-oz" : "finding"}
+                      aria-pressed={selection.finding === index}
+                      onClick={() => onSelect({ oz: f.item_oz, finding: index })}
+                    >
+                      <Sign severity={f.severity} size={22} />
+                      {f.item_oz !== null && <span className="finding-oz">{f.item_oz}</span>}
+                      <span className="finding-text">
+                        <span className="finding-title">{f.title || CATEGORY_LABEL[f.category]}</span>
+                        <span className="finding-why">
+                          {f.origin === "llm" && <b className="ai-tag">AI</b>}
+                          {f.explanation}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </details>
+        );
+      })}
     </div>
   );
 }

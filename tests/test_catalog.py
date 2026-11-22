@@ -167,8 +167,10 @@ def test_a_gaeb_file_is_shown_on_the_clients_print_out_when_the_project_has_one(
     assert client.get(f"/api/analyses/{body['id']}/source.pdf").content == original
     marks = client.get(f"/api/analyses/{body['id']}/marks").json()
     assert set(marks["items"]) == {i["oz"] for i in body["boq"]["items"]}
-    placed = [m for f, m in zip(body["findings"], marks["marks"]) if f["item_oz"]]
+    placed = [m for m in marks["marks"] if m["oz"]]  # a finding on an item; one on a remark has no item
     assert placed and all(m["located"] != "none" for m in placed)
+    on_remarks = [m for m in marks["marks"] if m["key"].startswith("R-REMARK-WORDING")]
+    assert on_remarks and all(m["located"] == "quote" for m in on_remarks)  # marked where the client wrote it
     dn = next(m for m in marks["marks"] if m["oz"] == "5.1.46" and m["key"].startswith("R-DIM-MISMATCH"))
     assert dn["located"] == "quote"
 

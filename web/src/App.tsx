@@ -867,6 +867,13 @@ export default function App() {
 
   const open = selection.oz !== null || selection.finding !== null;
 
+  // A finding on a remark has no item to open: it is shown where it stands, in the remarks (or on the page).
+  function pick(s: Selection) {
+    setSelection(s);
+    const f = s.finding !== null ? analysis?.findings[s.finding] : undefined;
+    if (f && f.item_oz === null && f.check_id === "R-REMARK-WORDING" && view !== "pdf") setView("remarks");
+  }
+
   const chatKey = current?.project.id ?? analysis?.id ?? "";
 
   // A passage of an answer: show its item, in this file or in the file of the project it stands in.
@@ -1286,7 +1293,9 @@ export default function App() {
                 onSelect={(oz) => setSelection({ oz, finding: null })}
               />
             )}
-            {view === "remarks" && <RemarksView analysis={analysis} />}
+            {view === "remarks" && (
+              <RemarksView analysis={analysis} itemByOz={itemByOz} selection={selection} onSelect={setSelection} />
+            )}
             {view === "pdf" && analysis.pdf && (
               <PdfView
                 key={analysis.id}
@@ -1358,7 +1367,7 @@ export default function App() {
                 onSeverities={setSeverities}
                 section={section}
                 onSection={setSection}
-                onSelect={setSelection}
+                onSelect={pick}
                 page={fpage}
                 onPage={setFpage}
                 // the project's pipeline run is reviewing this file: the button waits for it instead of asking twice
