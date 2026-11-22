@@ -19,21 +19,22 @@ export function stepOf(role: string): Step {
   return ["bid", "submitted bid", "offer"].includes(role) ? "bid" : "tender";
 }
 
-/* Where a tender stands on the contractor's side (D-042). A column says where it stands, not what is being
-   done on it: the bidder questions run beside the checks and the prices, so they are a line on the card
-   and no column. A new tender, found by the agent in the mail or dropped by the estimator, is checked the
-   moment it arrives (D-065), so the board has one column Tender for both stages "intake" (nobody has taken
-   it on yet: its card asks for that decision) and "check" (taken on). Submitted follows from the files (a
-   bid is there); Result holds every way a tender ends, not only the award. */
+/* Where a tender stands on the contractor's side (D-042, D-074). A column says where it stands, not what is
+   being done on it. Intake: the tender arrived (found by the agent in the mail or dropped by the estimator)
+   and is checked the moment it does (D-065), but nobody has said go yet: its card asks for that decision.
+   Tender: taken on, so the questions go to the client, the price inquiries to the suppliers and the prices
+   are worked out: the stage after the intake is "pricing" (the checks are done in the intake; "check" is
+   the same stage under its old name and is read as "pricing"). Bid: the bid is with the
+   client (it follows from the files: a bid is there). Award: every way a tender ends, not only the award. */
 const STAGES = ["intake", "check", "pricing", "submitted", "result"] as const;
 export type Stage = (typeof STAGES)[number];
-export const STAGE_LABEL: Record<Stage, string> = { intake: "New tender", check: "Tender", pricing: "Pricing", submitted: "Submitted", result: "Result" };
+export const STAGE_LABEL: Record<Stage, string> = { intake: "Intake", check: "Pricing", pricing: "Pricing", submitted: "Bid", result: "Award" };
 /** The columns of the board: the stages a column holds, in the order their cards stand in it. */
 const COLUMNS: { key: string; label: string; stages: Stage[]; empty: string }[] = [
-  { key: "tender", label: "Tender", stages: ["intake", "check"], empty: "No tender at work. Drop its files anywhere on the page; what Polier finds in your mail stands here too." },
-  { key: "pricing", label: "Pricing", stages: ["pricing"], empty: "Nothing is being priced." },
-  { key: "submitted", label: "Submitted", stages: ["submitted"], empty: "No bid is with a client." },
-  { key: "result", label: "Result", stages: ["result"], empty: "No tender has ended yet." },
+  { key: "intake", label: "Intake", stages: ["intake"], empty: "No tender waits for your go. Drop its files anywhere on the page; what Polier finds in your mail stands here too." },
+  { key: "tender", label: "Tender", stages: ["pricing"], empty: "No tender at work." },
+  { key: "bid", label: "Bid", stages: ["submitted"], empty: "No bid is with a client." },
+  { key: "award", label: "Award", stages: ["result"], empty: "No tender has ended yet." },
 ];
 
 export type Outcome = NonNullable<Plan["outcome"]>;
@@ -53,7 +54,8 @@ export function outcomeOf(p: CatalogProject): Outcome | null {
 export function stageOf(p: CatalogProject): Stage {
   if (outcomeOf(p)) return "result";
   if (p.files.some((f) => stepOf(f.role) === "bid")) return "submitted";
-  return p.plan.stage ?? "check";
+  const stage = p.plan.stage ?? "pricing";
+  return stage === "check" ? "pricing" : stage; // the checks are part of the intake (D-074)
 }
 
 type Change = { [K in keyof Plan]?: Plan[K] | null };
@@ -962,10 +964,10 @@ function Card({
       <Select
         className="kc-sel"
         value={stage as string}
-        options={[...(["check", "pricing"] as const).map((st) => ({ value: st as string, label: STAGE_LABEL[st] })), { value: "passed", label: "No bid" }]}
+        options={[{ value: "pricing", label: STAGE_LABEL.pricing }, { value: "passed", label: "No bid" }]}
         disabled={busy}
         aria-label={`Stage of ${p.name}`}
-        onChange={(st) => onChange(p, st === "passed" ? { outcome: "passed" } : { stage: st as "check" | "pricing" })}
+        onChange={(st) => st === "passed" && onChange(p, { outcome: "passed" })}
       />
     ) : stage === "submitted" || (stage === "result" && p.plan.outcome) ? (
       // a bid that is out ends one way or another; an award among the files says "won" by itself
@@ -1073,10 +1075,10 @@ function Card({
         <footer className={`kc-now is-${who}`}>
           {stage === "intake" ? (
             <span className="kc-decide" onClick={stop}>
-              <button className="btn-new" disabled={busy} title="It goes on to the questions and the prices" onClick={() => onChange(p, { stage: "check" })}>
+              <button className="btn-new" disabled={busy} title="It goes on to the questions and the prices" onClick={() => onChange(p, { stage: "pricing" })}>
                 Take it on
               </button>
-              <button className="btn-ghost" disabled={busy} title="No bid: it goes to Result as passed" onClick={() => onChange(p, { outcome: "passed" })}>
+              <button className="btn-ghost" disabled={busy} title="No bid: it goes to Award as passed" onClick={() => onChange(p, { outcome: "passed" })}>
                 Pass
               </button>
             </span>
@@ -1494,7 +1496,6 @@ export function ProjectsPage({
         </header>
         <div className="board">
           {COLUMNS.map((col) => {
-            // a tender still to be taken on stands above the ones at work: it asks for a decision
             const here = col.stages.flatMap((stage) => projects.filter((p) => stageOf(p) === stage));
             return (
               <section key={col.key} className="col" aria-label={col.label}>

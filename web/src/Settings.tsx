@@ -159,7 +159,7 @@ export function ProjectSettings({
               <span>Stage</span>
               <Select
                 value={stage}
-                options={(stage === "intake" ? (["intake", "check", "pricing"] as const) : (["check", "pricing"] as const)).map((st) => ({ value: st, label: STAGE_LABEL[st] }))}
+                options={(stage === "intake" ? (["intake", "pricing"] as const) : (["pricing"] as const)).map((st) => ({ value: st, label: STAGE_LABEL[st] }))}
                 disabled={busy}
                 aria-label="Stage of the tender"
                 onChange={(st) => onChange({ stage: st })}

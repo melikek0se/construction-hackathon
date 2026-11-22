@@ -1110,7 +1110,7 @@ export default function App() {
             ) : null
           }
           whatif={analysis && checkKey && checked.current === checkKey ? <WhatIfView key={analysis.id} analysisId={analysis.id} sections={sections} onBid={() => setTender({ ...tender, view: "items" })} /> : null}
-          intake={intakeOpen ? { onTake: () => void changePlan(current.project, { stage: "check" }), onPass: () => void changePlan(current.project, { outcome: "passed" }) } : null}
+          intake={intakeOpen ? { onTake: () => void changePlan(current.project, { stage: "pricing" }), onPass: () => void changePlan(current.project, { outcome: "passed" }) } : null}
           outcome={outcomeOf(current.project)}
           onOutcome={(outcome) => void changePlan(current.project, { outcome })}
           bid={{

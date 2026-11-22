@@ -1022,7 +1022,7 @@ async def ask_project(analysis_id: str, body: Question):
     return {**out, "documents": names, "whole": whole}
 
 
-_STAGE = {"intake": "Intake (found for the estimator, not taken on yet)", "check": "Check", "pricing": "Pricing"}
+_STAGE = {"intake": "Intake (found for the estimator, not taken on yet)", "check": "Pricing (taken on; the checks ran in the intake)", "pricing": "Pricing (taken on; the checks ran in the intake)"}
 _OUTCOME = {"won": "won", "lost": "lost", "passed": "no bid was made", "cancelled": "cancelled by the client"}
 _DATE = {"sent_out": "tender sent out", "questions_due": "bidder questions until", "due": "submission deadline",
          "opening": "bid opening", "binding_until": "bid binding until", "exec_start": "work starts",
@@ -1047,7 +1047,7 @@ def _overview() -> list[dict]:
         stage = (f"Result: {_OUTCOME[plan['outcome']]}" if plan.get("outcome") in _OUTCOME
                  else "Result: won (an award is among the files)" if "award" in roles
                  else "Submitted (a bid is among the files)" if roles & {"bid", "submitted bid", "offer"}
-                 else _STAGE.get(plan.get("stage") or "check", "Check"))
+                 else _STAGE.get(plan.get("stage") or "pricing", _STAGE["pricing"]))
         lines = [f"stage: {stage}"]
         if p.get("trade"):
             lines.append(f"trade: {p['trade']}")

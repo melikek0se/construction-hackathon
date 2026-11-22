@@ -304,8 +304,8 @@ Every page is a column: band, an optional bar, then the content filling the heig
 
 - **Projects page.** Content is centred with a maximum width of 1320px and at least 28px at the sides. A head
   line (title and the next date left, drop hint and the primary button right), then two parts, each under a
-  2px ink rule with a label-style heading. **Board:** four columns (Tender, Pricing,
-  Submitted, Result; D-042, D-067) divided by hairlines, one outlined card per tender. **Schedule** (D-043): one lane
+  2px ink rule with a label-style heading. **Board:** four columns (Intake, Tender,
+  Bid, Award; D-042, D-074) divided by hairlines, one outlined card per tender. **Schedule** (D-043): one lane
   docked under the band, above the board, the full width, over a 2px ink rule: the line of all deadlines, or the
   lane of the tender whose card is pointed at; held open from the count on a card, it lists that tender's dates
   under the lane. It stays under the band while the board scrolls.

@@ -1262,3 +1262,18 @@ and the marks say changes). Built for Questions and Prices; Bid and Award keep t
   Inquiries are gone from its switch.
 - For a tender of several LVs both steps still ask for an LV first (questions and inquiries are per LV).
 
+## D-074 — The board's columns are Intake, Tender, Bid, Award
+
+**Decided** 2026-11-22 (Atahan), replacing the columns of D-067 (Tender, Pricing, Submitted, Result).
+
+- **Intake** (stage "intake"): the tender arrived and every check ran on it (D-065); it waits for the
+  estimator's go. **Tender** (stage "pricing"): taken on, so the questions go to the client, the price
+  inquiries go out and the prices are worked out; the card says what is open. The checks belong to the
+  intake, so there is no stage "check" to choose any more: taking a tender on writes "pricing", and a
+  "check" kept from before is read as "pricing" (`stageOf`). **Bid** (stage
+  "submitted"): the bid went back to the client. **Award** (stage "result"): how it ended, won or not.
+- Why: the go is the one decision the estimator makes and gets a column of its own; the other three carry
+  the names of the documents (X83, X84, X86) and of the steps of the tender page (D-071). This is the
+  board only: a document is still a tender, a bid or an award.
+- Nothing is migrated on the server (it still accepts "check"). Where a single stage is named (schedule,
+  project settings) they read Intake, Pricing, Bid, Award.

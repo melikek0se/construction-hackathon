@@ -1051,7 +1051,7 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
         {intake && (
           <span className="tn-decide">
             <button className="btn-new" title="It goes on to the questions and the prices" onClick={intake.onTake}>Take it on</button>
-            <button className="btn-ghost" title="No bid: it goes to Result as passed" onClick={intake.onPass}>Pass</button>
+            <button className="btn-ghost" title="No bid: it goes to Award as passed" onClick={intake.onPass}>Pass</button>
           </span>
         )}
       </nav>
@@ -1275,7 +1275,7 @@ export function TenderPage({ tender, plan, place, onPlace, onDocuments, check, q
                   <button key={o} aria-pressed={outcome === o} aria-selected={outcome === o} onClick={() => onOutcome(outcome === o ? null : o)}>{name}</button>
                 ))}
               </div>
-              <p className="tn-quiet">{outcome ? "It stands under Result on the board. Press it again to take it back." : "Not said yet: the tender is still running."}</p>
+              <p className="tn-quiet">{outcome ? "It stands under Award on the board. Press it again to take it back." : "Not said yet: the tender is still running."}</p>
             </div>
           </main>
         ) : bidding && place.view !== "map" ? (

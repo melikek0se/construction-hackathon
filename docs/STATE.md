@@ -14,6 +14,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
+- The board's columns are Intake, Tender, Bid, Award (2026-11-22, D-074, replacing D-067; `COLUMNS` and
+  `STAGE_LABEL` in `Projects.tsx`): Intake holds what waits for the go (the checks are done there), Tender what was taken on (stage
+  "pricing"; "check" is no stage to choose any more and is read as "pricing"), Bid what is with the
+  client, Award what ended. Nothing migrated on the server.
+  Checked: type-check. Not checked: the board in a browser.
+
 - The way from a mail to the first results, checked end to end (2026-11-22, before "Take it on"): a new
   tender (made up for it: SWN-K-2026-077 Regenwasserkanal Ahornring, 15 items, X83 and print-out, with
   planted faults; `data/processed/e2e/`, git-ignored) was sent by SMTP from the client's mailbox to
