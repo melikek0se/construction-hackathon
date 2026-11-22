@@ -83,15 +83,6 @@
         ],
         "createdAt": "2026-11-22T03:10:13.863Z",
         "reason": "user confirmed: picked the night-shift mockup (yellow-edged cards, LIVE dot, 11.5px mono labels) to apply to the real panel, D-060; file is a throwaway proposal page"
-      },
-      {
-        "rule": "pulsing-dot",
-        "value": "*",
-        "files": [
-          "web/src/styles.css"
-        ],
-        "createdAt": "2026-11-22T03:14:58.379Z",
-        "reason": "user confirmed 2026-11-22: the LIVE dot of Polier's side panel (.agent-live) keeps pulsing, D-060"
       }
     ]
   }

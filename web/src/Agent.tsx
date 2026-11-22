@@ -1,10 +1,11 @@
-// Polier in the corner, and the conversation a click on it opens: questions about a project (Chat.tsx)
-// in a side panel along the right edge of the window (the page makes room for it), the only place they
-// are asked. Inside a project or an LV it is that project's conversation; on the list of projects it is
+// Polier in the corner, and the conversation a click on it opens: questions about a project (Chat.tsx),
+// the only place they are asked. It opens small, a box beside Polier to type a question into; the first
+// question grows it into a side panel along the right edge of the window (the page makes room for it).
+// A conversation already under way opens as the panel. Inside a project or an LV it is that project's conversation; on the list of projects it is
 // about all projects at once (answered from their overview), or about one that is picked there.
 import { useEffect, useRef, useState } from "react";
 import { openCatalogFile } from "./api";
-import { Chat } from "./Chat";
+import { Chat, Icon } from "./Chat";
 import { Mascot } from "./Mascot";
 import type { CatalogProject, ChatCitation, ChatTurn } from "./types";
 
@@ -64,27 +65,36 @@ export function Agent({
         ? { key: project.id, analysisId: ids[project.id], openFile: "", label: project.name }
         : null);
 
+  // small until there is a conversation to show; the list of projects to pick from is always the panel
+  const full = !target || (chats[target.key]?.length ?? 0) > 0;
+
   return (
     <>
       {open && (
         <section
-          className="agent-chat"
+          className={`agent-chat ${full ? "full" : "compact"}`}
           aria-label="Ask Polier"
           onKeyDown={(e) => e.key === "Escape" && onOpen(false)}
         >
           <header className="agent-head">
-            <div>
+            <span className="agent-mark" aria-hidden="true">
+              <Helmet />
+            </span>
+            <div className="agent-who">
               <strong>Polier</strong>
-              <span lang="de">{target?.label ?? project?.name ?? "Pick a project"}</span>
+              {!here && projects.length > 0 && picked !== null ? (
+                <button className="agent-scope" onClick={() => setPicked(null)} title="Ask about another project">
+                  <span lang="de">{target?.label ?? project?.name}</span>
+                  <Icon d="M4 6l4 4 4-4" />
+                </button>
+              ) : (
+                <span className="agent-scope" lang="de">
+                  {target?.label ?? (picked === null ? "Pick what to ask about" : project?.name)}
+                </span>
+              )}
             </div>
-            <span className="agent-live">Live</span>
-            {!here && picked !== null && projects.length > 0 && (
-              <button className="agent-link" onClick={() => setPicked(null)}>
-                {picked === ALL ? "One project" : "Other project"}
-              </button>
-            )}
             <button className="agent-close" aria-label="Close" title="Close" onClick={() => onOpen(false)}>
-              ×
+              <Icon d="M4 4l8 8M12 4l-8 8" />
             </button>
           </header>
           {target ? (
@@ -121,21 +131,27 @@ export function Agent({
                 <p>There is no project yet. Add one, then ask me about its documents.</p>
               ) : (
                 <>
-                  <p>Which project do you want to ask about? I answer from its documents and show the passage.</p>
-                  <button className="chat-example agent-all" onClick={() => setPicked(ALL)}>
-                    <b>All projects</b>
-                    <span>stages, dates, files, findings and net totals, from the overview</span>
-                  </button>
-                  {projects.map((p) => (
-                    <button key={p.id} className="chat-example" onClick={() => setPicked(p.id)}>
-                      <b lang="de">{p.name}</b>
-                      <span>
-                        {[p.number, `${p.files.length} ${p.files.length === 1 ? "file" : "files"}`, (chats[p.id]?.length ?? 0) > 0 && "conversation kept"]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
-                    </button>
-                  ))}
+                  <p>What do you want to ask about? I answer from the documents and show the passage.</p>
+                  <ul>
+                    <li>
+                      <button className="agent-proj all" onClick={() => setPicked(ALL)}>
+                        <b>All projects</b>
+                        <span>Stages, dates, files, findings and net totals</span>
+                      </button>
+                    </li>
+                    {projects.map((p) => (
+                      <li key={p.id}>
+                        <button className="agent-proj" onClick={() => setPicked(p.id)}>
+                          <b lang="de">{p.name}</b>
+                          <span>
+                            {[p.number, `${p.files.length} ${p.files.length === 1 ? "file" : "files"}`, (chats[p.id]?.length ?? 0) > 0 && "conversation kept"]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </>
               )}
             </div>
@@ -153,5 +169,15 @@ export function Agent({
         </button>
       </div>
     </>
+  );
+}
+
+/** Polier's helmet, the mark of the conversation (the favicon's drawing). */
+function Helmet() {
+  return (
+    <svg width="18" height="18" viewBox="4 12 58 38" aria-hidden="true">
+      <path d="M9 41 C9 25 18.5 14 31.5 14 C44 14 52 23.5 53 38 L53.5 41 Z" fill="currentColor" />
+      <path d="M5 40.5 H52 C56.5 40.5 60 41.8 61.5 44 C62.2 45.3 61.4 46.8 59.8 46.8 H7 C5 46.8 4 44.5 5 40.5 Z" fill="currentColor" />
+    </svg>
   );
 }

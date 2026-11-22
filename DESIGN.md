@@ -613,17 +613,27 @@ is pointed at or picked, then only its arrows remain, solid and named on a yello
 lettering in Barlow Condensed, the view turns about 57 degrees to either side. A tint readout below explains
 how to read it.
 
-### Polier's side panel (night shift, D-060)
+### Polier's ask box and side panel (D-060)
 
-The one dark place of the app, so the conversation with Polier reads as its own room: a full-height panel on
-the right edge (420px), the page making room for it, Polier standing to its left. Ground `#121413` with a faint
-yellow glow in the top-right corner and scan lines; a 5px hazard stripe along the top; "CH 1 · POLIER" in
-condensed yellow capitals and a pulsing yellow LIVE dot, like the site radio. The log: who spoke in small mono
-capitals (`ui-monospace`, 11.5px; the only place mono is used), the question in white mono, Polier's answer at
-15px Barlow on a 2px yellow rule with a blinking yellow block cursor after the newest one. Passages are cards on
-`#1c1f1d` with a 4px yellow left edge, the item number in condensed yellow; the read line in mono `#8b8e87`.
-The input is a dark field that turns its border yellow on focus, with a yellow "ASK ⏎" button. Mockups of the
-other directions considered: `playground/chat-panel/`.
+Apart from the pages but calm: the one place with soft corners and a soft shadow, on warm paper `#f5f4ef`
+instead of white; Barlow throughout, Barlow Condensed only for an item number. No stripe, no mono, no texture.
+- **Ask box**: a click on Polier opens a small box beside his head (400px, 18px radius, a soft two-layer drop
+  shadow): the yellow helmet mark, "Polier", the project, and the composer. Nothing else.
+- **Side panel**: the first question grows the box into a full-height panel on the right (440px; its edges
+  travel there in 0.45s, exponential ease-out); the page makes room in one step once it has arrived, and Polier
+  moves into the panel, at 58% of his size, perched on the top edge of the composer at its right. A
+  conversation under way, and the list of projects, open as the panel. Header: helmet mark in a 32px yellow
+  disc, "Polier" 15px 600, below it the project in `#5f635c`, a button with a chevron where another project
+  can be picked; a drawn close icon.
+- **Log**: the question is an ink bubble on the right (16px radius, the corner toward the edge 4px); the
+  answer is plain 15px text on the paper, no bubble. Passages are white cards (12px radius, 1px `#e3e1d9`):
+  item number in condensed 16px, the file in 12px soft grey, the German quote in `ink-2`; a chevron comes
+  forward on hover. Waiting is three ink dots that rise in turn beside "Reading the project documents".
+  Flags are soft pills; the unverified warning is a `hover`-yellow note; errors a pale red note.
+- **Composer**: one white field (14px radius) with the send button inside it, a 34px yellow square with a
+  drawn arrow, grey while empty; focus draws an ink border and a soft yellow ring.
+- **Project list**: rows, not cards; "All projects" first on a white card; hover lifts a row onto white.
+Mockups of the directions considered first: `playground/chat-panel/`.
 
 ## Do's and Don'ts
 

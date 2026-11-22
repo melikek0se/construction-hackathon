@@ -1,6 +1,6 @@
-/* Questions answered from the project's documents (Chat.tsx), in the side panel a click on Polier opens
-   (Agent.tsx). Night shift: the one dark place of the app, read like the site radio's log: who spoke in
-   small mono capitals, Polier's lines on a yellow rule, the passages as cards with a yellow edge. */
+/* Questions answered from the project's documents (Chat.tsx), in the box and side panel a click on Polier
+   opens (Agent.tsx). Calm and apart from the pages: warm paper, soft corners, Barlow only. The question is a
+   dark bubble on the right; Polier's answer is plain text on the paper, its passages white cards below it. */
 
 .chat {
   display: flex;
@@ -12,13 +12,14 @@
 .chat-turns {
   flex: 1;
   min-height: 0;
-  overflow: auto;
-  padding: 18px 16px;
+  overflow: hidden auto;
+  padding: 20px 20px 8px;
+  scrollbar-color: var(--a-line-2) transparent;
 }
 
 .chat-empty p {
-  margin: 0 0 14px;
-  color: var(--night-mute);
+  margin: 0 0 12px;
+  color: var(--a-soft);
   line-height: 1.5;
 }
 
@@ -26,45 +27,33 @@
   display: block;
   width: 100%;
   margin-bottom: 6px;
-  padding: 7px 10px;
-  border: 1px solid var(--night-line);
-  background: none;
-  color: var(--night-ink-2);
-  font: 12.5px var(--mono);
+  padding: 9px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 10px;
+  background: var(--a-card);
+  color: var(--ink);
+  font: inherit;
   text-align: left;
   cursor: pointer;
-}
-
-.chat-example::before {
-  content: "› ";
-  color: var(--yellow);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .chat-example:hover {
-  border-color: var(--yellow);
-  color: var(--yellow);
-}
-
-/* who spoke: a small mono line above each turn */
-.chat-q::before,
-.chat-a::before {
-  display: block;
-  margin-bottom: 5px;
-  font: 500 11.5px var(--mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  border-color: var(--a-line-2);
+  box-shadow: 0 2px 8px -2px rgba(18, 20, 19, 0.12);
 }
 
 .chat-q {
-  margin: 22px 0 14px;
+  width: fit-content;
+  max-width: 85%;
+  margin: 22px 0 14px auto;
+  padding: 9px 14px;
+  border-radius: 16px 16px 4px 16px;
+  background: var(--ink);
   color: #fff;
-  font: 500 14px/1.45 var(--mono);
+  font-size: 14.5px;
+  line-height: 1.45;
   white-space: pre-wrap;
-}
-
-.chat-q::before {
-  content: "You";
-  color: var(--night-mute);
 }
 
 .chat-q:first-child {
@@ -72,189 +61,239 @@
 }
 
 .chat-a {
-  margin: 0 0 6px;
-  padding-left: 12px;
-  border-left: 2px solid var(--yellow);
+  margin: 0 0 8px;
+  animation: chat-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.chat-a::before {
-  content: "Polier";
-  color: var(--yellow);
+@keyframes chat-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
 
 .chat-text {
   margin: 0;
+  max-width: 62ch;
   font-size: 15px;
-  line-height: 1.5;
-  color: #f4f4ef;
+  line-height: 1.55;
+  color: var(--ink);
   white-space: pre-wrap;
 }
 
-/* the cursor after the newest answer, as if the line were still coming in */
-.chat-a:nth-last-child(2) .chat-text::after {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 15px;
-  margin-left: 4px;
-  vertical-align: -2px;
-  background: var(--yellow);
-  animation: chat-cursor 1s steps(2) infinite;
-}
-
-@keyframes chat-cursor {
-  50% {
-    opacity: 0;
-  }
-}
-
 .chat-flag {
-  margin: 0 0 6px;
-  font: 500 11.5px var(--mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--night-mute);
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--a-sunk);
+  font: 600 12px var(--text);
+  color: var(--a-soft);
 }
 
 .chat-flag.warn {
-  padding: 5px 8px;
-  background: var(--yellow);
-  color: var(--ink);
-  font: 500 13px var(--text);
-  letter-spacing: 0;
-  text-transform: none;
+  display: block;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: var(--hover);
+  color: var(--yellow-ink);
+  font: 500 13px/1.4 var(--text);
 }
 
 .chat-cites {
   list-style: none;
-  margin: 10px 0 0;
+  margin: 14px 0 0;
   padding: 0;
   display: grid;
   gap: 8px;
 }
 
 .chat-cites button {
+  position: relative;
   display: block;
   width: 100%;
-  padding: 9px 11px;
-  border: 1px solid var(--night-line);
-  border-left: 4px solid var(--yellow);
-  background: var(--night-2);
-  color: var(--night-ink-2);
+  padding: 10px 34px 11px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 12px;
+  background: var(--a-card);
+  color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* an arrow that comes forward on hover: the passage opens the item */
+.chat-cites button::after {
+  content: "";
+  position: absolute;
+  right: 13px;
+  top: 14px;
+  width: 7px;
+  height: 7px;
+  border-top: 1.75px solid currentColor;
+  border-right: 1.75px solid currentColor;
+  transform: rotate(45deg);
+  color: var(--a-line-2);
+  transition: color 0.15s, translate 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .chat-cites button:hover {
-  background: var(--night-3);
-  border-color: var(--yellow);
+  border-color: var(--a-line-2);
+  box-shadow: 0 3px 10px -3px rgba(18, 20, 19, 0.14);
+}
+
+.chat-cites button:hover::after {
+  color: var(--ink);
+  translate: 2px 0;
 }
 
 .chat-cites button:focus-visible,
 .chat-example:focus-visible,
 .chat-whole:focus-visible {
-  outline: 2px solid var(--yellow);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
 .chat-cite-head {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
   gap: 10px;
-  font: 11.5px var(--mono);
-  color: var(--night-mute);
 }
 
 .chat-cite-head b {
-  color: var(--yellow);
-  font: 600 17px var(--display);
-  letter-spacing: 0.02em;
-}
-
-.chat-cite-head b {
+  flex: none;
   min-width: 0;
+  max-width: 70%;
+  font: 600 16px var(--display);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .chat-cite-head span {
-  flex: none;
-  max-width: 45%;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 12px;
+  color: var(--a-soft);
+}
+
+/* a line of the overview that names a project: the project's name, in the face of the text */
+.cite-project .chat-cite-head b {
+  flex: 1 1 auto;
+  max-width: none;
+  font: 600 14px/1.3 var(--text);
+  letter-spacing: 0;
+}
+
+.cite-project .chat-cite-head span {
+  display: none; /* the arrow says it opens */
 }
 
 .chat-cite-quote {
   display: block;
-  margin-top: 3px;
+  margin-top: 4px;
   font-size: 13px;
-  line-height: 1.4;
-}
-
-.chat-cite-quote .anon {
-  color: inherit;
+  line-height: 1.45;
+  color: var(--ink-2);
 }
 
 .chat-read {
   margin: 10px 0 0;
-  font: 11.5px var(--mono);
-  color: var(--night-mute);
+  font-size: 12px;
+  color: var(--a-soft);
 }
 
 .chat-wait {
-  margin: 8px 0;
-  padding-left: 12px;
-  border-left: 2px solid var(--yellow);
-  font: 500 12.5px var(--mono);
-  color: var(--yellow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 8px;
+  font-size: 13.5px;
+  color: var(--a-soft);
 }
 
-.chat-wait::after {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 14px;
-  margin-left: 6px;
-  vertical-align: -2px;
-  background: var(--yellow);
-  animation: chat-cursor 1s steps(2) infinite;
+.chat-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.chat-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: chat-dot 1.1s ease-in-out infinite;
+}
+
+.chat-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chat-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes chat-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+    transform: none;
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }
 
 .chat-error {
   margin: 8px 0;
-  padding: 7px 10px;
-  border: 1px solid #ff6b6b;
-  color: #ff8a8a;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: #fbeceb;
+  color: var(--red);
+  font-size: 13px;
 }
 
+/* the composer: one white field with the send button inside it */
 .chat-form {
   flex: none;
   display: flex;
+  align-items: flex-end;
   gap: 8px;
-  margin: 0 12px 14px;
-  padding: 6px 6px 6px 12px;
-  border: 1px solid var(--night-line);
-  background: var(--night-2);
+  margin: 8px 14px 14px;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--a-line-2);
+  border-radius: 14px;
+  background: var(--a-card);
+  box-shadow: 0 1px 2px rgba(18, 20, 19, 0.06);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .chat-form:focus-within {
-  border-color: var(--yellow);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.45);
 }
 
 .chat-form textarea {
   flex: 1;
   min-width: 0;
-  padding: 6px 0 0;
+  min-height: 34px;
+  max-height: 160px;
+  field-sizing: content;
+  padding: 7px 0;
   border: 0;
   background: none;
-  font: 13px/1.45 var(--mono);
-  color: #fff;
+  font: 14.5px/1.4 var(--text);
+  color: var(--ink);
+  caret-color: var(--ink);
   resize: none;
 }
 
 .chat-form textarea::placeholder {
-  color: var(--night-mute);
+  color: var(--a-soft);
 }
 
 .chat-form textarea:focus {
@@ -262,22 +301,31 @@
 }
 
 .chat-form button {
-  padding: 0 14px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
   border: 0;
+  border-radius: 10px;
   background: var(--yellow);
   color: var(--ink);
-  font: 700 13px var(--display);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
 }
 
-.chat-form button::after {
-  content: " ⏎";
+.chat-form button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.chat-form button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 .chat-form button:disabled {
-  opacity: 0.4;
+  background: var(--a-sunk);
+  color: var(--a-soft);
   cursor: default;
 }
 
@@ -303,21 +351,23 @@
   flex-wrap: wrap;
   gap: 2px 8px;
   align-items: baseline;
-  margin-top: 8px;
-  padding: 5px 9px;
-  border: 1px solid var(--night-line);
-  background: none;
-  color: var(--night-ink-2);
-  font: 600 12px var(--text);
+  margin-top: 10px;
+  padding: 6px 11px;
+  border: 1px solid var(--a-line-2);
+  border-radius: 12px;
+  background: var(--a-card);
+  color: var(--ink);
+  font: 600 12.5px var(--text);
+  text-align: left;
   cursor: pointer;
+  transition: border-color 0.15s;
 }
 
 .chat-whole span {
   font-weight: 400;
-  color: var(--night-mute);
+  color: var(--a-soft);
 }
 
 .chat-whole:hover {
-  border-color: var(--yellow);
-  color: var(--yellow);
+  border-color: var(--ink);
 }

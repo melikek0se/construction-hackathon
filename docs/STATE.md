@@ -14,12 +14,12 @@ very low coverage, see below), and a what-if view varies the total of the bid in
 
 ## Started
 
-- Polier's chat as a dark side panel (2026-11-22, D-060; `Agent.tsx`, `chat.css`, `styles.css`): a click on
-  Polier opens the conversation as a full-height panel on the right edge (420px), the page makes room for it
-  and Polier steps to its left; "night shift" look (dark, yellow, mono speaker labels). Mockups of the four
-  directions in `playground/chat-panel/`. Seen in Chrome on the projects page with an answer about all
-  projects; not checked inside a project (LV citations, "Read every document"), on the tender page, or under
-  900px wide.
+- Polier's chat (2026-11-22, D-060; `Agent.tsx`, `Chat.tsx`, `chat.css`, `styles.css`): a click on Polier opens
+  a small ask box beside him; the first question grows it into a full-height side panel on the right (440px),
+  the page makes room once it has arrived and Polier moves into it, perched on the composer. Calm look apart
+  from the pages: warm paper, soft corners, ink question bubble, white passage cards, drawn icons. Seen in Chrome on the projects page: box, project
+  list, a question growing the box, an answer with passages, a conversation about all projects. Not checked:
+  the tender page, inside an LV (a passage opening its item), under 900px wide.
 
 - Tender page (2026-11-22, D-050; `src/boq/tender.py`, `GET /api/catalog/{id}/tender`, `web/src/Tender.tsx`,
   `tender.css`, routes in `router.ts`): a project opens on its tender, read from all the documents of the

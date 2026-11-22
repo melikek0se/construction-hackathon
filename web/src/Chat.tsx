@@ -102,7 +102,16 @@ export function Chat({
             />
           ),
         )}
-        {busy && <p className="chat-wait">{analysisId === null ? "Reading the overview of the projects…" : "Reading the project documents…"}</p>}
+        {busy && (
+          <p className="chat-wait" role="status">
+            <span className="chat-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            {analysisId === null ? "Reading the overview of the projects" : "Reading the project documents"}
+          </p>
+        )}
         {error && (
           <p className="chat-error" role="alert">
             {error}
@@ -119,7 +128,7 @@ export function Chat({
       >
         <textarea
           value={draft}
-          rows={2}
+          rows={1}
           autoFocus={autoFocus}
           placeholder={analysisId === null ? "Ask about your projects…" : "Ask about the project…"}
           aria-label="Question about the project"
@@ -131,8 +140,8 @@ export function Chat({
             }
           }}
         />
-        <button type="submit" disabled={busy || !draft.trim()}>
-          Ask
+        <button type="submit" disabled={busy || !draft.trim()} aria-label="Ask" title="Ask (Enter)">
+          <Icon d="M8 13V3M3.5 7.5L8 3l4.5 4.5" />
         </button>
       </form>
     </div>
@@ -171,7 +180,7 @@ function Answer({
             if (c.project)
               return (
                 <li key={k}>
-                  <button onClick={() => onCite(c)} title={`Open ${c.project_name}`}>
+                  <button className="cite-project" onClick={() => onCite(c)} title={`Open ${c.project_name}`}>
                     <span className="chat-cite-head">
                       <b lang="de">{c.project_name}</b>
                       <span>open the project</span>
@@ -230,5 +239,14 @@ function Answer({
         </button>
       )}
     </div>
+  );
+}
+
+/** A line icon on a 16px grid, drawn in the current colour. */
+export function Icon({ d, size = 16 }: { d: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={d} />
+    </svg>
   );
 }

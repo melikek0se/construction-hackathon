@@ -1099,13 +1099,17 @@ Price inquiries go by e-mail only. A firm's phone number stays as contact data, 
 link that dials. `docs/05-voice-agent.md` is deleted too.
 Supersedes the voice part of priority 3 in CLAUDE.md.
 
-## D-060 — Polier's chat is a dark side panel ("night shift")
+## D-060 — Polier's chat: a small ask box that grows into a side panel, calm and apart from the pages
 
 2026-11-22. The conversation opens as a full-height side panel on the right (the page makes room), not as a
 floating window. It is the one dark surface of the app (ink ground, yellow accents, mono speaker labels, a
 site-radio header), so the AI part stands apart from the white, yellow-banded pages. Chosen by the user from
 four mockups in `playground/chat-panel/` (night shift, site diary, blueprint, Polier's stage). Styles in
 `web/src/chat.css` and the `.agent-*` rules of `styles.css`; described in DESIGN.md.
+Revised the same day on the user's word: the panel opens first as a small ask box beside Polier and grows
+into the side panel with the first question; then the dark night-shift look was dropped altogether ("every
+agent UI looks bad") for one that is different from the pages but calm: warm paper, soft corners, a soft
+shadow, Barlow only, the question as an ink bubble, passages as white cards (DESIGN.md).
 
 ## D-061 — The demo mailboxes hold a mock world, kept as data and put in at every start
 
