@@ -52,7 +52,7 @@ as TT.MM.JJJJ>{freight}.
 
 def write(system: str, text: str) -> str:
     response = anthropic.Anthropic().messages.create(
-        model=engines.of("reply", MODEL), max_tokens=3000, system=system,
+        model=engines.of("reply", MODEL), max_tokens=12000, system=system,
         messages=[{"role": "user", "content": text}])
     return "".join(b.text for b in response.content if b.type == "text").strip()
 

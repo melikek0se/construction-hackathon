@@ -2,6 +2,8 @@ node_modules/
 # recorded frames and the full-quality cut are made again by make.mjs; voice and sound are kept (they cost credits)
 out/shots/
 out/shots.txt
-out/sound.log
+out/labels/
+out/*.log
+out/*.png
 out/sheet.jpg
 out/demo.mp4

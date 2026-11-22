@@ -20,14 +20,14 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   Screenshots of TBA-2026-114 from the dev app. Numbers from this file only (planted 29/30, PDF 1.254 items,
   prices 5/643). Not checked: read by the team; the submission form (Tally, by Sunday 12:00) not filled.
 
-- Demo video "The Estimator" (2026-11-22, Atahan: a fun demo story of two minutes, then shoot it): a
-  film-trailer parody, story and how it is made in `10-demo-video.md`, the tooling in `scripts/demo_video/`
-  (`story.mjs` the lines and shots, `make.mjs` voice and music from ElevenLabs, the shots recorded from the
-  running app with Playwright, cut with ffmpeg). A first cut exists (`scripts/demo_video/out/demo.mp4`,
-  2:00, git-ignored): app shots on TBA-2026-114, type on black where the staged scenes go.
-  Checked: the length, sound is in it, frames looked over on a contact sheet. Not checked: nobody has
-  listened to it; the close-ups of scenes 7 and 8 are roughly framed. Not done: the staged scenes generated
-  on ElevenLabs Image & Video.
+- Demo video "Jürgen gets a tender" (2026-11-22, Atahan: the app instead of a trailer, from the mail to the
+  award): story and what is open in `10-demo-video.md`, tooling in `scripts/demo_video/` (`story.mjs`,
+  `make.mjs`, `tender.py` the film's own tender TBA-2026-131 Fliederweg and its award). A first cut exists:
+  `scripts/demo_video/demo.mp4`, 2:00, split screen with the mailbox where mail arrives. The recording acts
+  in the app on that tender only. `scripts/demo_counterpart.py`: `max_tokens` 3000 → 12000 (the client's
+  reply to 19 questions came out empty and was not read).
+  Checked: every shot recorded from the running app, frames looked over on a contact sheet, length, sound in it.
+  Not checked: nobody has listened to it. Not done: see "Open" in `10-demo-video.md`.
 
 - The live demo database was driven like an estimator would (2026-11-22, Atahan: "use the app realistically, answer
   the mails"): five partners added (Rohrleitungsbau Krohn, Pflasterbau Thießen, Hagemann Baustoffe, Wasser-Rohr

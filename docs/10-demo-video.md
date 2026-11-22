@@ -6,7 +6,7 @@ the mail by itself and the estimator only decides. The humour is Jürgen, who sa
 
 Second version (Atahan, 2026-11-22). The first, a film-trailer parody ("The Estimator"), spent a quarter of
 its time on staged scenes and title cards; he asked for the app instead, and for this order of scenes.
-The first cut of the old version is `scripts/demo_video/demo.mp4` until the new one replaces it.
+The first cut of this version is `scripts/demo_video/demo.mp4`.
 
 ## The picture
 
@@ -21,21 +21,29 @@ The first cut of the old version is `scripts/demo_video/demo.mp4` until the new 
   waits are cut, and the film says so.
 - Jürgen is heard, not seen (German, subtitled in English). A narrator says one short line per scene.
 
-## Story
+## Story (as cut, 2026-11-22)
+
+The lines are in `scripts/demo_video/story.mjs` (`LINES`); the shots there are in the order of the film.
 
 | # | Time | Left: the mailbox | Right: Polier | Said |
 |---|------|-------------------|---------------|------|
-| 1 | 0:00–0:10 | An invitation to bid arrives from the Stadt Norderbek, an LV attached. | The board. A card appears in the Intake by itself; the six stations run: read, rules, AI review, compare. | Narrator: "Monday, 8:12. A tender lands in Jürgen's inbox. Jürgen is getting coffee." |
-| 2 | 0:10–0:18 | | Polier calls: "A tender was found in the mail." A click on it: the tender, checked already. | Narrator: "By the time he is back, it has been read. All of it." |
-| 3 | 0:18–0:32 | | The document with the findings beside it; close-up of the worst item with its quoted passage and the money at stake. | Jürgen: "Was ist das denn für eine Position? Wollen die uns verarschen?" Narrator: "Polier put it more politely." |
-| 4 | 0:32–0:42 | | "Take it on". Polier writes the questions for the client, sorts the items into packages for suppliers and subcontractors, and fills in what the price book knows. The document: question marks and first prices appear. | Narrator: "One click: take it on. The questions are drafted, the inquiries sorted, the known prices filled in." |
-| 5 | 0:42–0:54 | The message to the client leaves. | Jürgen ticks the questions he wants asked; the message is written beside them; sent. | Narrator: "Jürgen decides what is asked. Polier writes it. In German." |
-| 6 | 0:54–1:04 | The inquiries leave. | The packages: who is asked for what; sent. | Narrator: "Then the suppliers." |
-| 7 | 1:04–1:16 | | One package has nobody to ask. "Find firms": Polier looks on the web, proposes firms, one is added. | Jürgen: "Dafür haben wir keinen." Narrator: "Nobody for this one. So Polier goes and finds somebody." |
-| 8 | 1:16–1:32 | Replies come in: the client's answers, two quotes, a supplier who asks back. | Polier calls each one out; in the document the answers stand at their questions and the quotes at their items; a reply to the supplier is drafted. | Narrator: "Jürgen does nothing. The answers are read, the quotes compared, the next reply drafted." |
-| 9 | 1:32–1:44 | | Jürgen confirms what the answers change (a quantity, an allowance) and takes the prices; the document is nearly full. The partner's page: its prices and products are up to date. | Narrator: "He confirms what changes. Every price keeps its source, and every partner its record." |
-| 10 | 1:44–1:52 | The bid leaves. | "Finish the bid": what is left for him, filled, the document complete, submitted. | Narrator: "What is left is his. Then it goes out." |
-| 11 | 1:52–2:00 | "Three weeks later": the award arrives. | Polier: "You won it!", confetti, the card moves to Award. | Jürgen: "Na also." Narrator: "Polier. It reads the mail, so you can build." |
+| 1 | 0:00 | The invitation to bid arrives (Stadt Norderbek, X83 and PDF). | The board: a card appears in the Intake, the checks run. | "Monday, eight twelve. A tender lands in Jürgen's inbox. Jürgen is getting coffee." |
+| 2 | 0:09 | | He opens it: fits your work, 5 stops, 16 cautions. | "By the time he is back, Polier has read it. All of it." |
+| 3 | 0:14 | | Item 3.3.10, dewatering as a lump sum "Mehrkosten gleich welcher Ursache werden nicht gesondert vergütet", and the finding beside it. | Jürgen: "Was ist das denn für eine Position? Wollen die uns verarschen?" "Polier put it more politely." |
+| 4 | 0:24 | | "Take it on": 19 questions to ask, 8 packages, first prices. | "He takes it on. Polier drafts the questions, sorts the items into packages, and fills in the prices it already knows." |
+| 5 | 0:32 | | He ticks a question, takes all, the letter stands there in German; sent. | "Jürgen picks what to ask. Polier writes it. In German." |
+| 6 | 0:42 | | An inquiry written and sent (the other twelve off camera). | "Thirteen suppliers and subcontractors get their inquiry." |
+| 7 | 0:51 | The client's reply arrives. | "The client answered!": 18 answered, 1 in part, each under its question. | "Two days later, the client answers. Jürgen does nothing. …" |
+| 8 | 1:01 | | The decision on item 1.1.30: 26 weeks become 18; accepted. | "What changes on his side, he decides. Twenty-six weeks become eighteen." |
+| 9 | 1:09 | The firms' replies arrive. | "Prices are in!": the quotes in their packages. | "Then the quotes come in. Read, checked, side by side." |
+| 10 | 1:18 | | The package Kampfmittelsondierung: nobody to ask; firms Polier found on the web. | Jürgen: "Kampfmittelsondierung? Dafür haben wir keinen." "So Polier went and found licensed firms. In Hamburg's own register." |
+| 11 | 1:28 | | The comparison of two quotes; the cheapest per item taken. | "The cheapest per item. Every price keeps its source." |
+| 12 | 1:36 | | The cover sheet, fuller; what is left for the bid. | "The rest is his: his crews, his prices." |
+| 13 | 1:43 | | 37 of 37 priced, 328.717,26 €; "The bid went out". | "Thirty-seven of thirty-seven. The bid goes out." |
+| 14 | 1:49 | "Zuschlag" arrives. | "You won it!", the card in Award: the contract is ours. | "Three weeks later." Jürgen: "Na also." "Polier. It reads the mail, so you can build." |
+
+Against the order Atahan gave, one thing moved: the package with nobody to ask comes after the client's
+answer, because its item (1.1.70) carried an open question and waited for that answer.
 
 ## What is real, and what is helped along
 
@@ -58,5 +66,15 @@ mail server and submits a bid, all on the film's own tender.
 
 ## Open
 
-- Not shot yet. Scenes 4 to 11 are written from the code and the pages, not from a run-through.
+- Nobody has listened to this cut: voices, music level, timing of the lines against the picture.
+- The document in the middle filling up step by step is only hinted at (the cover sheet's rows in scenes 4 and
+  12, the answers and quotes beside the items). The same items in the same framing after every step is not shot.
+- Scene 13: the click on "The bid went out" did not register (the project was not marked as sent); the award
+  moved it on all the same. Scene 10: "Add and ask" is pressed but nothing visibly follows.
+- Polier's cheer at the award is what the app has (the call, confetti, a bounce); no dance.
+- The firms found on the web in scene 10 are real ones with real addresses. No inquiry was sent to any of
+  them, and the recording takes a firm it added out of the directory again. Keep it that way.
 - Jürgen's voice: no German voice on the account; a library voice speaks German with an accent.
+- Polier does not answer a supplier by itself (it drafts, the estimator sends): not in the film.
+- The film's tender (TBA-2026-131 Fliederweg) stays in the app, won; a new take deletes it and starts afresh
+  (`node make.mjs record` from s1: about fifteen minutes, a few dollars of Claude, no ElevenLabs credits).

@@ -12,12 +12,12 @@
 
 import { chromium } from 'playwright';
 import sharp from 'sharp';
-import { spawn, execFileSync } from 'node:child_process';
+import { spawn, execFile, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { APP, SHOTS, LINES, VOICES, MUSIC, HITS } from './story.mjs';
+import { APP, API, MAILBOX, SHOTS, LINES, VOICES, MUSIC, HITS } from './story.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(HERE, 'out');
@@ -83,6 +83,7 @@ async function sound() {
 
 const total = () => SHOTS.reduce((s, x) => s + x.dur, 0);
 const startOf = id => { let t = 0; for (const s of SHOTS) { if (s.id === id) return t; t += s.dur; } };
+const MW = 640; // the mailbox beside the app, in px of the film
 
 // A cursor that can be seen in the recording, and a ring where it clicks.
 const CURSOR = `(() => {
@@ -103,73 +104,63 @@ const CURSOR = `(() => {
   document.documentElement ? add() : addEventListener('DOMContentLoaded', add);
 })()`;
 
-function cardHtml(c, dur) {
-  const dark = c.kind !== 'light';
-  const bg = c.kind === 'title' ? '#ffc400' : dark ? '#0b0c0b' : '#f4f4ef';
-  const fg = c.kind === 'title' ? '#121413' : dark ? '#f4f4ef' : '#121413';
-  const logo = `<svg viewBox="5 12 58 36" style="height:.62em;vertical-align:-.02em;margin-right:.14em"><path d="M9 41 C9 25 18.5 14 31.5 14 C44 14 52 23.5 53 38 L53.5 41 Z" fill="#121413"/><path d="M5 40.5 H52 C56.5 40.5 60 41.8 61.5 44 C62.2 45.3 61.4 46.8 59.8 46.8 H7 C5 46.8 4 44.5 5 40.5 Z" fill="#121413"/><path d="M7 40.6 H52" stroke="#ffc400" stroke-width="1.6"/><path d="M16 39.5 C16.5 29 21.5 21 29 17.5" fill="none" stroke="#ffc400" stroke-width="2.4" stroke-linecap="round"/><path d="M25 39.5 C25.5 30 30 23 37 19" fill="none" stroke="#ffc400" stroke-width="2.4" stroke-linecap="round"/></svg>`;
-  const lines = c.lines.map(l => `<div class="l${l.mark ? ' mark' : ''}${l.quiet ? ' quiet' : ''}" style="font-size:${l.size}px;animation-delay:${l.at}s">${l.logo ? logo : ''}<span>${l.text}</span></div>`).join('');
-  return `<style>
-    #card{position:fixed;inset:0;z-index:99999;background:${bg};color:${fg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-      font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.01em;overflow:hidden}
-    #card .bar{position:absolute;left:0;right:0;height:${c.kind === 'title' ? 46 : 26}px;background:repeating-linear-gradient(-45deg,#121413 0 16px,#ffc400 16px 32px)}
-    #card .bar.t{top:0}#card .bar.b{bottom:0}
-    #card .l{line-height:1.02;opacity:0;transform:translateY(26px) scale(1.06);animation:in .5s cubic-bezier(.2,.9,.2,1) forwards;white-space:nowrap}
-    #card .l.mark span{background:#ffc400;color:#121413;padding:0 .16em}
-    #card .l.quiet{font-family:"Barlow",system-ui,sans-serif;font-weight:500;text-transform:none;font-style:italic;margin-top:34px}
-    ${c.kind === 'quote' ? '#card .l{text-transform:none;font-family:"Barlow",system-ui,sans-serif;font-weight:600;letter-spacing:0}' : ''}
-    ${c.kind === 'title' ? '#card .l:first-of-type{animation:slam .42s cubic-bezier(.2,1.4,.3,1) forwards;letter-spacing:.02em}#card .l+.l{letter-spacing:.14em;margin-top:6px}' : ''}
-    #card .corner{position:absolute;left:70px;top:70px;font-size:34px;letter-spacing:.16em;opacity:.62}
-    #card .corner i{display:inline-block;width:14px;height:14px;background:#c4161c;border-radius:50%;margin-right:16px;animation:blink 1s steps(2) infinite}
-    #card .sub{position:absolute;bottom:92px;left:0;right:0;text-align:center;font:500 36px "Barlow",system-ui,sans-serif;text-transform:none;letter-spacing:0;opacity:0;animation:in .6s .6s forwards}
-    #card .staged{position:absolute;right:70px;bottom:62px;font:500 24px "Barlow",system-ui,sans-serif;text-transform:none;letter-spacing:0;opacity:.38}
-    #card .zoom{display:flex;flex-direction:column;align-items:center;gap:10px;animation:drift ${dur}s linear forwards}
-    @keyframes in{to{opacity:1;transform:none}}
-    @keyframes slam{0%{opacity:0;transform:scale(2.6)}60%{opacity:1}100%{opacity:1;transform:none}}
-    @keyframes drift{from{transform:scale(1)}to{transform:scale(1.07)}}
-    @keyframes blink{50%{opacity:.15}}
-  </style><div id="card"><div class="bar t"></div><div class="bar b"></div>
-    ${c.corner ? `<div class="corner"><i></i>${c.corner}</div>` : ''}<div class="zoom">${lines}</div>
-    ${c.sub ? `<div class="sub">${c.sub}</div>` : ''}${c.staged ? `<div class="staged">scene to come: ${c.staged}</div>` : ''}</div>`;
-}
+// film seconds ↔ real seconds of a shot: 1:1, except where a wait was cut short (points of a line)
+const realAt = (pts, f) => { let a = pts[0]; for (const p of pts) { if (p.f <= f) a = p; } const b = pts[pts.indexOf(a) + 1];
+  return b && b.f > a.f ? a.r + (f - a.f) * (b.r - a.r) / (b.f - a.f) : a.r + (f - a.f); };
 
 async function record(ids) {
   const shots = SHOTS.filter(s => !ids.length || ids.includes(s.id));
   const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: DSF, locale: 'en-GB' });
+  await context.addInitScript(CURSOR);
+  const app = await context.newPage();
+  // the mailbox as on a narrow window, so that its type is large enough to read in a third of the picture
+  const mailContext = await browser.newContext({ viewport: { width: 448, height: 756 }, deviceScaleFactor: 3, locale: 'de-DE' });
+  const mail = await mailContext.newPage();
+  await mail.goto(MAILBOX.url, { waitUntil: 'load' });
+  if (await mail.locator('#rcmloginuser').count()) { // the demo mailbox of the mock world (docs: password "demo")
+    await mail.fill('#rcmloginuser', MAILBOX.user); await mail.fill('#rcmloginpwd', MAILBOX.password);
+    await mail.click('#rcmloginsubmit'); await mail.waitForLoadState('load'); await sleep(2500);
+  }
   for (const shot of shots) {
     const d = dir('shots', shot.id);
     for (const f of fs.readdirSync(d)) fs.rmSync(path.join(d, f));
-    const context = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: DSF, locale: 'en-GB' });
-    await context.addInitScript(CURSOR);
-    const page = await context.newPage();
-    await page.goto(shot.card ? APP + '/' : shot.url, { waitUntil: 'load' });
-    await page.waitForTimeout(shot.card ? 1500 : 3000);
-    await page.evaluate(() => document.fonts.ready);
-
-    const frames = [], cams = [{ t: 0, r: [0, 0, W, H] }];
-    let t0 = 0, n = 0;
-    const now = () => Date.now() / 1000 - t0;
+    const frames = { app: [], mail: [] }, cams = [{ t: 0, r: [0, 0, W, H] }], splits = [{ t: 0, v: shot.split ? 1 : 0 }], clocks = [{ t: 0, text: shot.clock || '' }];
+    const pts = [{ f: 0, r: 0 }];
+    let t0 = 0, lapsing = false;
+    const real = () => Date.now() / 1000 - t0;
+    const now = () => { const p = pts[pts.length - 1]; return p.f + (real() - p.r); };
     const rectOf = async target => {
       const list = Array.isArray(target) ? target : [target];
       let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
       for (const t of list) {
-        if (t.boundingBox) await t.waitFor({ state: 'attached', timeout: 10000 });
-        const b = t.x !== undefined && !t.boundingBox ? { x: t.x, y: t.y, width: t.w || 0, height: t.h || 0 } : await t.boundingBox();
+        if (t.boundingBox) await t.waitFor({ state: 'attached', timeout: 15000 });
+        const b = t.boundingBox ? await t.boundingBox() : { x: t.x, y: t.y, width: t.w || 0, height: t.h || 0 };
         if (!b) throw new Error(`${shot.id}: nothing on the page for ${t}`);
         x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
       }
       return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
     };
     const c = {
-      page,
-      wait: sleep,
+      page: app, app, mail, wait: sleep, now,
       until: async s => { const left = s - now(); if (left > 0) await sleep(left * 1000); },
-      // the cursor goes to the middle of an element, or to a point
+      // a wait that the film does not sit through: `what` (ms, or something to await) takes `film` seconds of it
+      async lapse(what, film) {
+        const f0 = now(), r0 = real(); lapsing = true;
+        try { typeof what === 'number' ? await sleep(what) : await what(); } finally { lapsing = false; }
+        pts.push({ f: f0, r: r0 }, { f: f0 + film, r: Math.max(real(), r0 + film) });
+        const left = r0 + film - real(); if (left > 0) await sleep(left * 1000);
+      },
+      split(on, ms = 700) { const t = now(); splits.push({ t, v: splits[splits.length - 1].v }, { t: t + ms / 1000, v: on ? 1 : 0 }); },
+      clock(text) { clocks.push({ t: now(), text }); },
+      sh: (cmd) => new Promise((ok, no) => execFile('sh', ['-c', cmd], { cwd: path.join(HERE, '..', '..'), maxBuffer: 1 << 26 }, (e, out, err) => (e ? no(new Error(String(err || e).slice(0, 300))) : ok(out)))),
+      api: async (method, p, body) => { const r = await fetch(API + p, { method, headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined }); const t = await r.text(); try { return JSON.parse(t); } catch { return t; } },
+      checkmail: () => mail.evaluate(() => window.rcmail && window.rcmail.command('checkmail')),
       async move(target, ms = 800) {
         const b = target.boundingBox ? await rectOf(target) : { x: target.x, y: target.y, w: 0, h: 0 };
-        await page.mouse.move(b.x + b.w / 2, b.y + Math.min(b.h / 2, 60), { steps: Math.max(2, Math.round(ms / 16)) });
+        await app.mouse.move(b.x + b.w / 2, b.y + Math.min(b.h / 2, 60), { steps: Math.max(2, Math.round(ms / 16)) });
       },
-      async click(target) { await c.move(target, 250); await page.mouse.down(); await sleep(70); await page.mouse.up(); },
+      async click(target, ms = 250) { await c.move(target, ms); await app.mouse.down(); await sleep(70); await app.mouse.up(); },
       // the camera goes onto an element: 16:9 around it. w: fixed width of the picture; pad: room around;
       // anchor top: the element's top at the picture's top; up, dx, dy: shifted by so many px; maxH: only so much of it
       async cam(target, ms = 1200, o = {}) {
@@ -186,9 +177,8 @@ async function record(ids) {
         cams.push({ t, r: from }, { t: t + ms / 1000, r: [x, y, w, h] });
       },
       async wide(ms = 1000) { const from = cams[cams.length - 1].r, t = now(); cams.push({ t, r: from }, { t: t + ms / 1000, r: [0, 0, W, H] }); },
-      // a scrolling area moved by so many px, eased
       async scroll(sel, by, ms = 1200) {
-        await page.evaluate(([sel, by, ms]) => new Promise(done => {
+        await app.evaluate(([sel, by, ms]) => new Promise(done => {
           const el = document.querySelector(sel); if (!el) return done();
           const from = el.scrollTop, to = Math.max(0, Math.min(el.scrollHeight - el.clientHeight, from + by)), t0 = performance.now();
           if (!ms) { el.scrollTop = to; return done(); }
@@ -197,78 +187,124 @@ async function record(ids) {
           requestAnimationFrame(step);
         }), [sel, by, ms]);
       },
-      // a scrolling area moved so that an element stands at `where` (0 top … 1 bottom) of the window
-      async reveal(target, sel, ms = 1200, where = 0.45) {
-        if (!sel) { // the area that scrolls is whichever one the element stands in
+      // the scrolling area an element stands in, moved so that the element is at `where` (0 top … 1 bottom) of the window
+      async reveal(target, ms = 1200, where = 0.45) {
+        for (const pass of [ms, 250]) {
+          await target.waitFor({ state: 'attached', timeout: 15000 });
           await target.evaluate(el => {
             document.querySelectorAll('[data-demo-scroll]').forEach(e => e.removeAttribute('data-demo-scroll'));
             for (let x = el.parentElement; x; x = x.parentElement) if (x.scrollHeight > x.clientHeight + 20 && /auto|scroll/.test(getComputedStyle(x).overflowY)) { x.setAttribute('data-demo-scroll', ''); break; }
           });
-          sel = '[data-demo-scroll]';
+          const b = await rectOf(target), off = b.y + b.h / 2 - H * where;
+          if (Math.abs(off) > 30) await c.scroll('[data-demo-scroll]', off, pass);
         }
-        const b = await rectOf(target);
-        await c.scroll(sel, b.y + b.h / 2 - H * where, ms);
-        const after = await rectOf(target); // the page may have moved under it: once more, without a show
-        if (Math.abs(after.y + after.h / 2 - H * where) > 40) await c.scroll(sel, after.y + after.h / 2 - H * where, 250);
       },
     };
 
-    if (shot.prep) { await shot.prep(c); await sleep(600); }
-    const cdp = await context.newCDPSession(page);
-    cdp.on('Page.screencastFrame', f => {
-      const file = String(n++).padStart(5, '0') + '.jpg';
-      fs.writeFileSync(path.join(d, file), Buffer.from(f.data, 'base64'));
-      frames.push({ file, t: f.metadata.timestamp });
-      cdp.send('Page.screencastFrameAck', { sessionId: f.sessionId }).catch(() => {});
-    });
-    await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 93, maxWidth: W * DSF, maxHeight: H * DSF, everyNthFrame: 1 });
+    if (shot.url) { await app.goto(shot.url, { waitUntil: 'load' }); await sleep(3000); }
+    await app.evaluate(() => document.fonts.ready);
+    let failed = null;
+    try { if (shot.prep) { await shot.prep(c); await sleep(600); } } catch (e) { failed = e; }
+    const casts = [];
+    for (const [name, page] of [['app', app], ['mail', mail]]) {
+      let n = 0, kept = 0;
+      const cdp = await page.context().newCDPSession(page);
+      cdp.on('Page.screencastFrame', f => {
+        cdp.send('Page.screencastFrameAck', { sessionId: f.sessionId }).catch(() => {});
+        if (lapsing && f.metadata.timestamp - kept < 0.1) return; // a wait cut short needs few of its frames
+        kept = f.metadata.timestamp;
+        const file = `${name}-${String(n++).padStart(5, '0')}.jpg`;
+        fs.writeFileSync(path.join(d, file), Buffer.from(f.data, 'base64'));
+        frames[name].push({ file, t: f.metadata.timestamp });
+      });
+      await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 92, maxWidth: W * DSF, maxHeight: H * DSF, everyNthFrame: 1 });
+      casts.push(cdp);
+    }
     await sleep(400);
     t0 = Date.now() / 1000;
-    let failed = null;
-    try {
-      if (shot.card) await page.evaluate(html => { const d = document.createElement('div'); d.innerHTML = html; document.body.appendChild(d); }, cardHtml(shot.card, shot.dur));
-      else await shot.run(c);
-    } catch (e) { failed = e; }
+    try { if (!failed) await shot.run(c); } catch (e) { failed = e; }
     await c.until(shot.dur + 0.15);
-    await cdp.send('Page.stopScreencast');
+    for (const cdp of casts) { await cdp.send('Page.stopScreencast').catch(() => {}); await cdp.detach().catch(() => {}); }
     await sleep(200);
-    fs.writeFileSync(path.join(d, 'meta.json'), JSON.stringify({ t0, dur: shot.dur, cams, frames }));
-    console.log(`${shot.id}: ${frames.length} frames${failed ? '  FAILED: ' + failed.message.split('\n')[0] : ''}`);
-    await context.close();
+    fs.writeFileSync(path.join(d, 'meta.json'), JSON.stringify({ t0, dur: shot.dur, cams, splits, clocks, pts, frames }));
+    console.log(`${shot.id}: ${frames.app.length}+${frames.mail.length} frames, ${real().toFixed(0)} s real${failed ? '  FAILED: ' + failed.message.split('\n')[0] : ''}`);
+    if (failed) { await app.screenshot({ path: path.join(OUT, 'failed.png') }); break; }
+    try { if (shot.after) await shot.after(c); } catch (e) { console.log(`${shot.id}: after it FAILED: ${e.message.split('\n')[0]}`); await app.screenshot({ path: path.join(OUT, 'failed.png') }); break; }
   }
   await browser.close();
 }
 
 // ---------------------------------------------------------------- rendering
 
-function camAt(cams, t) {
-  let a = cams[0], b = cams[0];
-  for (let i = 0; i < cams.length; i++) { if (cams[i].t <= t) { a = cams[i]; b = cams[i + 1] || cams[i]; } }
-  if (a === b || b.t <= a.t) return a.r;
+function lineAt(keys, t) { // keys [{t, r|v}] in pairs: where the value stands at t, eased between a pair
+  let a = keys[0], b = keys[0];
+  for (let i = 0; i < keys.length; i++) { if (keys[i].t <= t) { a = keys[i]; b = keys[i + 1] || keys[i]; } }
+  const va = a.r ?? [a.v], vb = b.r ?? [b.v];
+  if (a === b || b.t <= a.t) return va;
   const k = ease(Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))));
-  return a.r.map((v, i) => v + (b.r[i] - v) * k);
+  return va.map((v, i) => v + (vb[i] - v) * k);
+}
+
+// Small pieces of type laid over the picture (the clock, what Jürgen says): made once as pictures, in the app's own faces.
+async function labels(texts) {
+  const made = {}, d = dir('labels');
+  const need = texts.filter(t => !fs.existsSync(path.join(d, hash(t) + '.png')));
+  if (need.length) {
+    const browser = await chromium.launch();
+    const page = await (await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
+    await page.goto(APP + '/', { waitUntil: 'load' }); await sleep(1500);
+    for (const t of need) {
+      await page.evaluate(t => {
+        document.body.innerHTML = t.kind === 'clock'
+          ? `<div id="l" style="display:inline-block;background:#121413;color:#ffc400;font:700 34px 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:8px 18px 8px 16px;border-left:10px solid #ffc400">${t.text}</div>`
+          : `<div id="l" style="display:inline-block;max-width:1100px;text-align:center;background:rgba(18,20,19,.92);color:#fff;padding:14px 28px 16px;font:600 40px/1.25 'Barlow',sans-serif"><span style="color:#ffc400;font:700 26px 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:4px">${t.who}</span>${t.text}<span style="display:block;font:500 28px/1.3 'Barlow',sans-serif;color:#c9c9c2;margin-top:6px">${t.sub || ''}</span></div>`;
+        document.body.style.background = 'transparent'; document.documentElement.style.background = 'transparent';
+      }, t);
+      await page.evaluate(() => document.fonts.ready);
+      await page.locator('#l').screenshot({ path: path.join(d, hash(t) + '.png'), omitBackground: true });
+    }
+    await browser.close();
+  }
+  for (const t of texts) { const f = path.join(d, hash(t) + '.png'); const m = await sharp(f).metadata(); made[hash(t)] = { input: fs.readFileSync(f), w: m.width, h: m.height }; }
+  return made;
 }
 
 async function render(ids) {
+  const subs = LINES.filter(l => l.sub).map(l => ({ ...l, label: { kind: 'sub', who: l.who || 'Jürgen', text: l.show || l.text, sub: l.sub }, end: l.at + (fs.existsSync(voiceFile(l)) ? probe(voiceFile(l)) : 3) + 0.5 }));
   for (const shot of SHOTS.filter(s => !ids.length || ids.includes(s.id))) {
     const d = path.join(OUT, 'shots', shot.id);
     if (!fs.existsSync(path.join(d, 'meta.json'))) { console.log(shot.id, 'is not recorded'); continue; }
     const m = JSON.parse(fs.readFileSync(path.join(d, 'meta.json'), 'utf8'));
+    const pics = await labels([...m.clocks.filter(k => k.text).map(k => ({ kind: 'clock', text: k.text })), ...subs.map(s => s.label)]);
     const ff = spawn('ffmpeg', ['-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${W}x${H}`, '-r', String(FPS), '-i', '-',
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '15', '-pix_fmt', 'yuv420p', '-r', String(FPS), path.join(OUT, 'shots', shot.id + '.mp4')], { stdio: ['pipe', 'inherit', 'inherit'] });
     const done = new Promise((ok, no) => ff.on('close', code => (code ? no(new Error('ffmpeg ' + code)) : ok())));
-    let fi = 0, lastKey = '', buf = null, src = null, srcFile = '', sw = 0, sh = 0;
-    for (let i = 0; i < Math.round(m.dur * FPS); i++) {
-      const t = i / FPS;
-      while (fi + 1 < m.frames.length && m.frames[fi + 1].t - m.t0 <= t) fi++;
-      const f = m.frames[fi], r = camAt(m.cams, t);
-      const key = f.file + r.map(v => v.toFixed(1)).join();
+    const at = { app: 0, mail: 0 }, src = {};
+    const frameOf = (name, r) => { const fr = m.frames[name]; if (!fr.length) return null; while (at[name] + 1 < fr.length && fr[at[name] + 1].t - m.t0 <= r) at[name]++; return fr[at[name]].file; };
+    const load = async file => { if (src.file !== file) { src.file = file; src.buf = fs.readFileSync(path.join(d, file)); const md = await sharp(src.buf).metadata(); src.w = md.width; src.h = md.height; } return src; };
+    let lastKey = '', buf = null, mailKept = { file: '', buf: null };
+    const film0 = startOf(shot.id);
+    for (let i = 0; i < Math.round(Math.min(m.dur, shot.dur) * FPS); i++) { // a shot may be cut shorter than it was recorded
+      const t = i / FPS, r = realAt(m.pts, t);
+      const appFile = frameOf('app', r), mailFile = frameOf('mail', r);
+      const cam = lineAt(m.cams, t), s = lineAt(m.splits, t)[0];
+      const clock = [...m.clocks].reverse().find(k => k.t <= t)?.text || '';
+      const sub = subs.find(x => film0 + t >= x.at && film0 + t < x.end);
+      const key = [appFile, s > 0 ? mailFile : '', cam.map(v => v.toFixed(1)), s.toFixed(3), clock, sub?.id].join();
       if (key !== lastKey) {
-        if (f.file !== srcFile) { src = fs.readFileSync(path.join(d, f.file)); const md = await sharp(src).metadata(); sw = md.width; sh = md.height; srcFile = f.file; }
-        const k = sw / W;
-        const left = Math.round(r[0] * k), top = Math.round(r[1] * k);
-        const width = Math.min(sw - left, Math.round(r[2] * k)), height = Math.min(sh - top, Math.round(r[3] * k));
-        buf = await sharp(src).extract({ left, top, width, height }).resize(W, H, { fit: 'fill', kernel: 'lanczos3' }).removeAlpha().raw().toBuffer();
+        const a = await load(appFile), k = a.w / W;
+        const left = Math.round(cam[0] * k), top = Math.round(cam[1] * k);
+        const width = Math.min(a.w - left, Math.round(cam[2] * k)), height = Math.min(a.h - top, Math.round(cam[3] * k));
+        const aw = Math.round(W - MW * s), ah = Math.round(aw * 9 / 16), ax = W - aw, ay = Math.round((H - ah) / 2);
+        const layers = [{ input: await sharp(a.buf).extract({ left, top, width, height }).resize(aw, ah, { fit: 'fill', kernel: 'lanczos3' }).png({ compressionLevel: 0 }).toBuffer(), left: ax, top: ay }];
+        if (s > 0.001 && mailFile) {
+          if (mailKept.file !== mailFile) mailKept = { file: mailFile, buf: await sharp(path.join(d, mailFile)).resize(MW, H, { fit: 'cover', position: 'top' }).png({ compressionLevel: 0 }).toBuffer() };
+          const mx = Math.round(-MW + MW * s);
+          layers.push(mx >= 0 ? { input: mailKept.buf, left: mx, top: 0 } : { input: await sharp(mailKept.buf).extract({ left: -mx, top: 0, width: MW + mx, height: H }).toBuffer(), left: 0, top: 0 });
+        }
+        if (clock) { const p = pics[hash({ kind: 'clock', text: clock })]; layers.push({ input: p.input, left: Math.round(40 + MW * s), top: Math.round(H - 70 - (H - 70 - 60) * s) }); }
+        if (sub) { const p = pics[hash(sub.label)]; layers.push({ input: p.input, left: Math.round(MW * s + (W - MW * s) / 2 - p.w / 2), top: H - 60 - p.h }); }
+        buf = await sharp({ create: { width: W, height: H, channels: 3, background: '#121413' } }).composite(layers).removeAlpha().raw().toBuffer();
         lastKey = key;
       }
       if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
@@ -295,14 +331,15 @@ function mix() {
   const said = `${mixin.join('')}amix=inputs=${mixin.length}:normalize=0:dropout_transition=0,apad=whole_dur=${T}[said]`;
   let last = '[said]', graph = [...parts, said];
   const under = [];
-  if (fs.existsSync(hitFile())) for (const at of HITS.at) {
+  if (HITS.at.length && fs.existsSync(hitFile())) for (const at of HITS.at) {
     args.push('-i', hitFile()); graph.push(`[${k}:a]adelay=${Math.round(at * 1000)}:all=1,volume=0.9[h${k}]`); under.push(`[h${k}]`); k++;
   }
   if (fs.existsSync(musicFile())) {
     args.push('-i', musicFile());
     // the music goes down while somebody speaks
     graph.push(`[said]asplit=2[said1][key]`);
-    graph.push(`[${k}:a]atrim=0:${T},afade=t=out:st=${T - 1.2}:d=1.2,volume=0.55[m0]`);
+    const fit = Math.min(1, Math.max(0.85, probe(musicFile()) / T)); // a track a little short is played a little slower
+    graph.push(`[${k}:a]atempo=${fit.toFixed(4)},atrim=0:${T},afade=t=out:st=${T - 1.2}:d=1.2,volume=0.5[m0]`);
     graph.push(`[m0][key]sidechaincompress=threshold=0.03:ratio=9:attack=40:release=500[m1]`);
     under.push('[m1]'); last = '[said1]'; k++;
   }
@@ -320,7 +357,7 @@ function sheet() {
 }
 
 const [cmd, ...ids] = process.argv.slice(2);
-if (total() !== 120) console.log(`the shots add up to ${total()} s`);
+console.log(`the shots add up to ${total()} s`);
 if (cmd === 'voice') await voice();
 else if (cmd === 'sound') await sound();
 else if (cmd === 'record') await record(ids);
