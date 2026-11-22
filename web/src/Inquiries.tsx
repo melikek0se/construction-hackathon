@@ -9,6 +9,7 @@ import { dayText } from "./controls";
 import { eur } from "./format";
 import type { AnswerPoint, Comparison, InquiryTurn, SupplyPackage, SupplyState } from "./types";
 import "./supply.css";
+import WebFinds from "./WebFinds";
 
 const STATUS: Record<SupplyPackage["ask"][number]["status"], string> = {
   new: "Not asked",
@@ -347,7 +348,8 @@ function Package({
         ))}
         {p.ask.length === 0 && (
           <li className="sup-nobody">
-            None of your firms sells this. Add a {want} to your firms, or pick one below.
+            {/* the gap shows here, in the tender, and is closed here: firms from the web, one press to add and ask */}
+            <WebFinds what={p.name} kind={want} region={state.company.place} onTaken={(id) => setAsk([...p.ask.map((x) => x.supplier_id), id])} />
           </li>
         )}
         {others.length > 0 && p.ask.length < 5 && (

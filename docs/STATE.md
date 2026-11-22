@@ -198,6 +198,23 @@ very low coverage, see below), and a what-if view varies the total of the bid in
   column: nothing, no console error. Full pytest: 221 passed, 3 failed, all three in `tests/test_mockmail.py`
   (another session's new mail work, `src/boq/mockmail.py`, not this page). **Not run**: sending from
   Follow-ups or Coverage, "Search the web" from Coverage.
+  **Coverage is gone from the partners page; "nobody to ask" is closed in the tender (2026-11-22)**, at the
+  user's word (the packages and where they stand are the project's price inquiries already; a gap belongs
+  there). In the price inquiries a package none of the firms can be asked for shows "Nobody to ask" with
+  "Search the web for firms" and the firms found, each with "Add and ask" (it becomes one of the firms and is
+  put on that package) and "Pass" (`web/src/WebFinds.tsx`, `webfinds.css`, one line in `Inquiries.tsx`).
+  The partners page has three tabs: Firms, Follow-ups, Prices; the old addresses of Coverage and of the web
+  searches open Firms. `partners.needs` is still worked out on the server and no longer shown.
+  Seen in headless Chrome: project D's price inquiries with the eight firms found for "Tragwerksplanung /
+  Statik" under that package, the three tabs, the old address; no console error; build clean. **Not run**:
+  "Add and ask", "Pass", "Search the web for firms" (a Claude call with web search).
+  **Follow-ups is no tab any more (2026-11-22)**, at the user's word (why a page of its own?): the open
+  conversations stand at the top of the Firms page, above the table, as the same cards ("Your reply is
+  needed" with the firm's questions and "Write the answer"; "Waiting for their reply" with the days waited
+  against the firm's usual time and "Write a reminder"); nothing open, nothing shown. The partners page has
+  two tabs, Firms and Prices, and "Your firm"; the Firms tab's badge is yellow while a reply is needed; the
+  old address of Follow-ups opens Firms. Seen in headless Chrome at 1500 and 900 wide: three cards over
+  twenty firms, nothing outside the column, no console error; build clean.
   **Not built**: distance to site and freight (the places in the dataset are anonymised and no quote says its
   freight per unit), grouping the price book by material group proper (the package stands in for it). The
   countdown to the submission day shows only where the tender has one. Prices are compared net as quoted:

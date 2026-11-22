@@ -860,6 +860,10 @@ counters, every section of the same weight, the open work on the third tab.
   repeats them on one tab and sends to the others was tried and taken out (2026-11-22).
 - **A firm is a page under the directory** ("Directory › name", previous / next), not a pane beside a second
   list of the same firms.
+- **Where a tender stands with its packages is shown in the tender, not on the partners page**: a package
+  nobody can be asked for is found and closed in the price inquiries (search the web, add the firm, ask). The
+  partners page is about the firms: who they are, what waits with them, how their prices compare (2026-11-22;
+  a Coverage tab was built and taken out).
 - **What Polier says about a firm is held to the record** (the finding rule, applied to firms): each sentence
   names the counted fact or the message it rests on, a quoted passage must stand in that message, a figure must
   stand in a source; what fails is dropped and counted. It is written on request, not on every visit.

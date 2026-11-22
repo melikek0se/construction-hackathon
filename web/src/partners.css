@@ -3916,3 +3916,16 @@ ol.pt-points .pt-point-src li {
 .pt-fu-asks li {
   padding: 1px 0;
 }
+
+/* 2026-11-22: what is open with the firms stands above the table of firms (it was a tab of its own) */
+.pt-reg > .pt-fu {
+  margin-bottom: 34px;
+}
+
+.pt-reg > .pt-fu h2:first-child {
+  margin-top: 0;
+}
+
+.pt-reg > .pt-fu + .pt-chips {
+  padding-top: 0;
+}

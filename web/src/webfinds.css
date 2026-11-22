@@ -1,0 +1,84 @@
+/* WebFinds.tsx: firms found on the web for a package nobody can be asked for. White ground, hairlines, square;
+   red only for "nobody to ask" (DESIGN.md: red is an error or a stop). */
+.wf {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--red);
+}
+
+.wf-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 13.5px;
+}
+
+.wf-head > b {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.wf-head > button {
+  margin-left: auto;
+}
+
+.wf-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--red);
+}
+
+.wf-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line-2);
+}
+
+.wf-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+
+.wf-list li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.wf-list b {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.wf-list li > div > span {
+  color: var(--mute);
+}
+
+.wf-list p {
+  margin: 3px 0 0;
+  max-width: 90ch;
+}
+
+.wf-src {
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.wf-src a {
+  color: inherit;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.wf-act {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
